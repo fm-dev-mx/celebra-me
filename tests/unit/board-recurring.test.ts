@@ -93,6 +93,7 @@ const CLOSE = [
 	'--saltada=ninguna',
 	'--pendiente=ninguno',
 	'--coordinador',
+	'--quien=claude',
 ];
 
 /** recurring.mjs's nextCycle at a fixed `now`. */

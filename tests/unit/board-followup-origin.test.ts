@@ -71,7 +71,14 @@ describe('deriva on write and in show (T481)', () => {
 			{ id: 'seguimiento', titulo: 'Seguimiento' },
 		]);
 		const set = (rev: number, value: string) =>
-			cli(dir, ['set', 'seguimiento', `--rev=${rev}`, `deriva=${value}`, '--coordinador']);
+			cli(dir, [
+				'set',
+				'seguimiento',
+				`--rev=${rev}`,
+				`deriva=${value}`,
+				'--coordinador',
+				'--quien=claude',
+			]);
 		expect(set(1, 'nadie').err).toContain('deriva nadie no está en el tablero');
 		expect(set(1, 'seguimiento').err).toContain('deriva no puede ser la misma tarea');
 		expect(set(1, 'T1').status).toBe(0);

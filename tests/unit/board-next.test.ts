@@ -176,6 +176,7 @@ describe('board heartbeat and session title (T126)', () => {
 			'busca=Que funcione.\nTerminado cuando: pasa.',
 			'carrilPlaneado=f10-libre',
 			'--coordinador',
+			'--quien=claude',
 		]);
 		expect(add.status).toBe(0);
 		expect(readTask(dir, 'nueva').contrato).toBe(3);

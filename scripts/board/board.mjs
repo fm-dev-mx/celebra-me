@@ -23,7 +23,7 @@
  *                                               the git-safety session --session=<rama>)
  *   entregada <id> --agente=<a> [--quien=<a>]  d249: its prompt was pasted into <a>'s chat; it leaves «Le toca
  *                                               a usted» until 15 min pass without a claim (claim clears it)
- *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it;
+ *   plan <id> --carril=<id> --coordinador --quien=<q> --rev=<n> d177: the lane a ready task runs in; --carril= clears it;
  *                                               T382: refused on a busy lane (other branch, uncommitted)
  *   release <id> --agente=<a> [--nombre=<s>] [--coordinador]   copies the lock's session into `sesion`;
  *                                               --coordinador frees a legacy lock without sesion, or
@@ -31,7 +31,7 @@
  *                                               a task still en curso goes back to pendiente (T172), a
  *                                               review with its verdict becomes hecha; T297: from the lane,
  *                                               --git-safety=commit[,history] also finishes git-safety
- *   merged [<id>] --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
+ *   merged [<id>] --coordinador --quien=<q> [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
  *   review <id> [--agente=<b>] [--sha=<sha>]    cross review: round <id>-revision, then <id>-revision-2, … per
@@ -170,6 +170,7 @@ import { resumenCommands } from './resumen.mjs';
 import { chooseReviewer, reviewCreatedText, reviewerPrecheck } from './reviewer.mjs';
 import { reviewCierreIssue } from './require-cierre.mjs';
 import { withTrace } from './trace.mjs';
+import { assertCoordinator } from './coordinator-authority.mjs';
 import { traceText } from './format.mjs';
 import { addToZip } from './zip.mjs';
 import { checkoutState, finishGitSafety, finishOps, lockLaneIssue } from './lane-session.mjs';
@@ -949,6 +950,7 @@ export async function run(argv, { dir = boardDir(), out = console.log, prState }
 			`comando desconocido: ${cmd ?? '(ninguno)'}. Use: ${Object.keys(commands).join(', ')}`,
 		);
 	const args = parseArgs(rest);
+	assertCoordinator(cmd, args.flags, () => getTask(dir, need(args.pos[0], 'falta <id>')));
 	const result = await fn(args, dir, out, prState ? { prState } : undefined);
 	beatCaller(dir, cmd, args.flags);
 	return result;

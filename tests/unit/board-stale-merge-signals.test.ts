@@ -98,7 +98,7 @@ describe('stale merge signals (T521)', () => {
 		);
 		const r = probe(
 			dir,
-			`const out = await exec(['merged', 'feature', '--coordinador']);
+			`const out = await exec(['merged', 'feature', '--coordinador', '--quien=claude']);
   const acks = loadBoard(dir).bitacora.filter((x) => x.atendido).map((x) => x.atendido);
   console.log(JSON.stringify({ out, unread: unread(), acks }));`,
 		);
@@ -117,7 +117,7 @@ describe('stale merge signals (T521)', () => {
 		);
 		const r = probe(
 			dir,
-			`const out = await exec(['merged', 'T5', '--coordinador']);
+			`const out = await exec(['merged', 'T5', '--coordinador', '--quien=claude']);
   const b = loadBoard(dir);
   console.log(JSON.stringify({ out, all: unread({ archived: true }), rev: b.archivo.find((t) => t.id === 'gone').rev }));`,
 		);
@@ -131,7 +131,7 @@ describe('stale merge signals (T521)', () => {
 		);
 		const r = probe(
 			dir,
-			`let err = ''; try { await exec(['merged', 'gone', '--coordinador'], 'CLOSED'); } catch (e) { err = e.message; }
+			`let err = ''; try { await exec(['merged', 'gone', '--coordinador', '--quien=claude'], 'CLOSED'); } catch (e) { err = e.message; }
   console.log(JSON.stringify({ err, all: unread({ archived: true }) }));`,
 		);
 		expect(r.err).toContain('no está unido en GitHub (CLOSED)');

@@ -184,7 +184,14 @@ describe('board reviewer (d209, d240)', () => {
 		const home = codexHome(quota(37, 38, Math.floor(Date.now() / 1000) + 3600));
 		const result = runCommand(
 			process.execPath,
-			[SCRIPT_PATH, 'review', 'de-claude', `--sha=${'a'.repeat(40)}`, '--coordinador'],
+			[
+				SCRIPT_PATH,
+				'review',
+				'de-claude',
+				`--sha=${'a'.repeat(40)}`,
+				'--coordinador',
+				'--quien=claude',
+			],
 			{
 				cwd: ROOT,
 				allowFailure: true,

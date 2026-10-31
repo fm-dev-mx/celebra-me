@@ -54,8 +54,8 @@ const REQ_TEXT = {
 	],
 	// T480: a task whose prompt is generated from its kind has none until it has a lane.
 	carril: (ref) => [
-		`Falta el carril: pnpm board plan ${ref} --carril=<carril> --coordinador --rev=<n>`,
-		`Espera su carril: pnpm board plan ${ref} --carril=<carril> --coordinador --rev=<n>`,
+		`Falta el carril: pnpm board plan ${ref} --carril=<carril> --coordinador --quien=claude --rev=<n>`,
+		`Espera su carril: pnpm board plan ${ref} --carril=<carril> --coordinador --quien=claude --rev=<n>`,
 	],
 	dueno: (ref) => [`Le toca a usted: ${ref}`, `Espera su respuesta: ${ref}`],
 };

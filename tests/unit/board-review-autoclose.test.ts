@@ -73,7 +73,15 @@ const patch = (dir: string, id: string, fields: Json) => patchBoardDoc(dir, id, 
 /** A board with round 1 of `codigo` under review, en curso and locked by a Gemini session. */
 function reviewing(latido = OLD) {
 	const dir = makeBoard([ORIGIN]);
-	const opened = cli(dir, 'review', 'codigo', `--sha=${SHA}`, '--agente=gemini', '--coordinador');
+	const opened = cli(
+		dir,
+		'review',
+		'codigo',
+		`--sha=${SHA}`,
+		'--agente=gemini',
+		'--coordinador',
+		'--quien=claude',
+	);
 	expect(opened.status).toBe(0);
 	patch(dir, 'codigo-revision', { estado: 'en curso', candado: lock(latido) });
 	return dir;
@@ -85,6 +93,7 @@ const closeReview = (dir: string, ...extra: string[]) =>
 		'close',
 		'codigo-revision',
 		'--coordinador',
+		'--quien=claude',
 		'--resumen=Revisado.',
 		...LISTS,
 		'--sha=3c35826',
@@ -115,7 +124,14 @@ describe('board review autoclose (d274): close', () => {
 	it('keeps a review without a verdict en curso with its lock', () => {
 		const dir = reviewing();
 		patch(dir, 'codigo-revision', { contrato: undefined });
-		const r = cli(dir, 'close', 'codigo-revision', '--coordinador', '--resumen=A medias.');
+		const r = cli(
+			dir,
+			'close',
+			'codigo-revision',
+			'--coordinador',
+			'--quien=claude',
+			'--resumen=A medias.',
+		);
 		expect(r.status).toBe(0);
 		const t = read(dir, 'codigo-revision');
 		expect(t.estado).toBe('en curso');
@@ -126,7 +142,14 @@ describe('board review autoclose (d274): close', () => {
 		const dir = makeBoard([
 			{ ...ORIGIN, estado: 'en curso', pr: undefined, cierre: undefined, candado: lock(OLD) },
 		]);
-		const r = cli(dir, 'close', 'codigo', '--coordinador', '--resumen=Hecho.');
+		const r = cli(
+			dir,
+			'close',
+			'codigo',
+			'--coordinador',
+			'--quien=claude',
+			'--resumen=Hecho.',
+		);
 		expect(r.status).toBe(0);
 		expect(read(dir, 'codigo')).toMatchObject({ estado: 'en curso', candado: lock(OLD) });
 	});
@@ -134,7 +157,7 @@ describe('board review autoclose (d274): close', () => {
 
 describe('board review autoclose (d274): release --coordinador', () => {
 	const release = (dir: string, id: string) =>
-		cli(dir, 'release', id, '--agente=gemini', '--coordinador');
+		cli(dir, 'release', id, '--agente=gemini', '--coordinador', '--quien=claude');
 
 	it('frees a lock silent for 2 h once the review has its verdict, and the review is hecha', () => {
 		const dir = reviewing();

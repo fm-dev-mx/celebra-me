@@ -546,7 +546,7 @@ DECISIONES
 			id,
 			msg: expect.stringMatching(
 				new RegExp(
-					`^${num} sin carril planeado: pnpm board plan ${id} --rev=1 --carril=<carril> --coordinador$`,
+					`^${num} sin carril planeado: pnpm board plan ${id} --rev=1 --carril=<carril> --coordinador --quien=claude$`,
 				),
 			),
 		});
@@ -620,11 +620,11 @@ DECISIONES
 			expect.arrayContaining([
 				{
 					id: 'sin-cierre',
-					msg: 'finalizada sin resumen de cierre: pnpm board close sin-cierre --resumen=… --coordinador',
+					msg: 'finalizada sin resumen de cierre: pnpm board close sin-cierre --resumen=… --coordinador --quien=claude',
 				},
 				{
 					id: 'huerfano',
-					msg: 'cierre incompleto (el pendiente «X» apunta a T99, que no está en el tablero): pnpm board close huerfano --resumen=… --coordinador',
+					msg: 'cierre incompleto (el pendiente «X» apunta a T99, que no está en el tablero): pnpm board close huerfano --resumen=… --coordinador --quien=claude',
 				},
 			]),
 		);

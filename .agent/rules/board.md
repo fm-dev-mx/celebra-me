@@ -45,9 +45,9 @@ routing and the internal modules work lives in
 - **Category (d191)**: `categoria` prefers a lane, never restricts: `plataforma` f05-plataforma,
   `landing` f06-landing, `invitaciones` f07-invitaciones, `demos` f08-demos, `docs` f09-docs,
   `herramientas` f10-libre, `preview` f11-preview, `release` f12-release.
-- **Planned lane (d177)**: the coordinator gives every open task a canonical lane (f05–f12) with
-  `pnpm board plan <id> --rev=<rev read> --carril=<lane> --coordinador`; `claim` then takes it.
-  Review rounds and `soloLectura: true` tasks are read-only and hold no lane.
+- **Planned lane (d177)**: `claim` takes the lane (f05–f12) the coordinator sets with
+  `pnpm board plan <id> --rev=<rev> --carril=<lane> --coordinador --quien=claude`; T478 allows
+  `claude`/`dueno` or a master on its own tasks. Review and `soloLectura` tasks hold no lane.
 - **PR number**: `pr` is always `#N` (the command normalizes `398` or a `fm-dev-mx/celebra-me` pull
   URL). Record it in the same write that opens the PR. Every mention of a task that has a PR writes
   it next to the id: `pasarela-pago-estudio (PR #475)`.

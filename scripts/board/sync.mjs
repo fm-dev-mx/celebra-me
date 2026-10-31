@@ -51,6 +51,8 @@ const HOUR_MS = 3_600_000;
 /** The task lanes the sync may realign; Integration is never touched. */
 const FREE_LANES = new Set(WORKTREE_LANES.map((l) => l.segment).filter(Boolean));
 const HYGIENE = 'pnpm board:sync';
+/** T478: board:sync is the Claude coordinator's job, so its writes carry that real writer. */
+const SYNC_WRITER = ['--coordinador', '--quien=claude'];
 
 const sh = (cmd, args, cwd) =>
 	execFileSync(cmd, args, {
@@ -333,7 +335,7 @@ function mergedRelease(t, p, texto) {
 export async function apply(cambios, dir, { prState } = {}) {
 	const out = [];
 	for (const c of cambios) {
-		const common = [`--rev=${c.rev}`, '--coordinador', '--corrio=pnpm board:sync'];
+		const common = [`--rev=${c.rev}`, ...SYNC_WRITER, '--corrio=pnpm board:sync'];
 		const args =
 			c.cmd === 'merged'
 				? ['merged', c.id, ...common, `--pr=${c.pr}`]
@@ -440,7 +442,7 @@ async function applyOne(c, dir) {
 		'set',
 		c.id,
 		`--rev=${c.rev}`,
-		'--coordinador',
+		...SYNC_WRITER,
 		`--corrio=${HYGIENE}`,
 		`--salio=${c.salio}`,
 		...Object.entries(c.set).map(([k, v]) => `${k}=${v}`),

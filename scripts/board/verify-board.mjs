@@ -527,7 +527,7 @@ function cierreWarnings(t, board) {
 	if (!isClosed(t) || t.archivada) return [];
 	const issues = cierreIssues(t, board);
 	if (!issues.length) return [];
-	const fix = `pnpm board close ${t.id} --resumen=… --coordinador`;
+	const fix = `pnpm board close ${t.id} --resumen=… --coordinador --quien=claude`;
 	return [
 		issues[0] === NO_CIERRE
 			? `finalizada sin resumen de cierre: ${fix}`
@@ -595,7 +595,7 @@ function laneWarnings(tareas, decisiones, archivo, now) {
 		if (isOpen(t, board, now) && !isReadOnly(t) && !t.carrilPlaneado && !t.candado?.carril)
 			avisos.push({
 				id: t.id,
-				msg: `${t.num ? `T${t.num} ` : ''}sin carril planeado: pnpm board plan ${t.id} --rev=${t.rev} --carril=<carril> --coordinador`,
+				msg: `${t.num ? `T${t.num} ` : ''}sin carril planeado: pnpm board plan ${t.id} --rev=${t.rev} --carril=<carril> --coordinador --quien=claude`,
 			});
 	for (const t of tareas.filter((x) => !isClosed(x) && !isReadOnly(x)))
 		for (const lane of promptLanes(t, WORKTREE_LANES))
