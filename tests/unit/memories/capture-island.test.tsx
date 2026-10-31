@@ -825,8 +825,16 @@ describe('MemoriesCapture island', () => {
 		// The page was reloaded while two files were uploading: the server still holds both slots.
 		guestApi.listItems.mockResolvedValue({
 			items: [
-				buildItem({ id: 'pending-1', status: 'uploading' }),
-				buildItem({ id: 'pending-2', status: 'uploading' }),
+				buildItem({
+					id: 'pending-1',
+					status: 'uploading',
+					createdAt: new Date().toISOString(),
+				}),
+				buildItem({
+					id: 'pending-2',
+					status: 'uploading',
+					createdAt: new Date().toISOString(),
+				}),
 			],
 			quota: { ...QUOTA, inFlight: { used: 2, remaining: 0, limit: 2 } },
 		});
