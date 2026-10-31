@@ -1,9 +1,10 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from '@jest/globals';
 import { runCommand, sanitizeEnv } from '../helpers/board-command';
+import { readBoardDoc } from '../helpers/board-doc';
 
 const ROOT = process.cwd();
 const SCRIPT_PATH = path.join(ROOT, 'scripts', 'board', 'board.mjs');
@@ -96,8 +97,7 @@ function cli(dir: string, ...args: string[]) {
 	return { status: result.status, out: String(result.stdout), err: String(result.stderr) };
 }
 
-const readTask = (dir: string, id: string) =>
-	JSON.parse(readFileSync(path.join(dir, 'tareas', `${id}.json`), 'utf8'));
+const readTask = (dir: string, id: string) => readBoardDoc(dir, id) as Record<string, any>;
 
 const EMPTY_LISTS = [
 	'--fallida=ninguna',
@@ -286,7 +286,7 @@ describe('board return contract (T129): CLI', () => {
 		);
 		expect(ok.status).toBe(0);
 		expect(ok.out.trim().split('\n').at(-1)).toBe(
-			'T3 · revision · aprobado · #530@3c35826 · 1 hallazgo · siguiente: unir',
+			'codigo-revision-2 · revision · aprobado · #530@3c35826 · 1 hallazgo · siguiente: unir',
 		);
 		expect(readTask(dir, 'codigo-revision-2').cierre.resultado.hallazgos).toEqual([
 			{ p: 'P3', archivo: 'view.html:1', texto: 'Texto largo' },

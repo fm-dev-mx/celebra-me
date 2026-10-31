@@ -223,7 +223,9 @@ describe('board findings to the author (d251): close', () => {
 		expect(first.out.trim().split('\n').at(-1)).toContain('siguiente: corregir');
 
 		const inbox = cli(dir, 'inbox', '--agente=claude');
-		expect(inbox.out).toContain('gemini → claude sobre T1: T2 (vuelta 1) pide cambios en T1');
+		expect(inbox.out).toContain(
+			'gemini → claude sobre T1: codigo-revision (vuelta 1) pide cambios en T1',
+		);
 		expect(inbox.out).toContain('P2 scripts/board/next.mjs:199 Falta la prueba');
 
 		// Closing again with the same findings writes no second message.

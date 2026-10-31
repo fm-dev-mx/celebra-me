@@ -139,7 +139,7 @@ export function claimCommands({ getTask, saveTask }) {
 				const location = claimLocation(before, flags, board);
 				const laneIssue = claimLaneIssue(checkout, before, location);
 				if (laneIssue) throw new UsageError(laneIssue);
-				const titleIssue = claimTitleIssue(before, flags.titulo, location.carril);
+				const titleIssue = claimTitleIssue(before, flags.titulo, location.carril, board);
 				if (titleIssue) throw new UsageError(titleIssue);
 				const t = saveTask(dir, before, claimed(before, who, location), {
 					quien: flags.quien,

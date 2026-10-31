@@ -1,17 +1,10 @@
-import {
-	existsSync,
-	mkdirSync,
-	mkdtempSync,
-	readFileSync,
-	readdirSync,
-	rmSync,
-	writeFileSync,
-} from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from '@jest/globals';
 import { runCommand, sanitizeEnv } from '../helpers/board-command';
+import { hasBoardDoc, readBoardDoc } from '../helpers/board-doc';
 
 const ROOT = process.cwd();
 const SHA = 'a'.repeat(40);
@@ -92,8 +85,7 @@ function review(dir: string, evidence: unknown = {}) {
 		},
 	);
 }
-const read = (dir: string, id: string) =>
-	JSON.parse(readFileSync(path.join(dir, 'tareas', `${id}.json`), 'utf8'));
+const read = (dir: string, id: string) => readBoardDoc(dir, id) as Record<string, any>;
 
 describe('board review merge preflight', () => {
 	it('extracts exact conflict paths from real merge-tree output without changing HEAD or index', () => {
@@ -149,7 +141,7 @@ describe('board review merge preflight', () => {
 		});
 		expect(result.status).toBe(2);
 		expect(result.stderr).toContain('conflictos de merge');
-		expect(existsSync(path.join(dir, 'tareas', 'codigo-revision-2.json'))).toBe(false);
+		expect(hasBoardDoc(dir, 'codigo-revision-2')).toBe(false);
 		expect(read(dir, 'codigo-revision')).toEqual(before);
 		const logs = readdirSync(path.join(dir, 'bitacora')).filter((f) => f.endsWith('.jsonl'));
 		const row = JSON.parse(readFileSync(path.join(dir, 'bitacora', logs[0]), 'utf8').trim());
@@ -170,7 +162,7 @@ describe('board review merge preflight', () => {
 	])('fails closed on unavailable, pending or stale GitHub evidence: %j', (evidence) => {
 		const dir = fixture();
 		expect(review(dir, evidence).status).toBe(2);
-		expect(existsSync(path.join(dir, 'tareas', 'codigo-revision.json'))).toBe(false);
+		expect(hasBoardDoc(dir, 'codigo-revision')).toBe(false);
 	});
 	it('still rejects confirmed conflicts when local objects are missing and marks the paths unverified', () => {
 		const dir = fixture();

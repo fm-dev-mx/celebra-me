@@ -585,13 +585,14 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   its `F<n>` tag. The sheet and `pnpm board show` list a mother's «Subtareas · X/Y (Z %)» and give a
   subtask «Parte de T<n> · <título> · X/Y listas». `pnpm board:verify` reports a bad `padre`. Groups
   are only for multi-step programs closed together (e.g. `servicio-medicion`).
-- **Follow-ups (T481)**: a task born from a review finding or from finished work is independent and
-  names its source with `deriva` (`deriva=T469` is stored as the id; `origen` would collide with
-  review rounds, which `reviewRounds` finds by `origen`). `pnpm board show` prints «Viene de T<n> ·
-  <título> (<estado>)», the sheet a «Viene de» field, and the Mapa a gray dotted link from the
-  source to the follow-up, placed to its right but never a wait: it changes neither readiness nor
-  «desbloquea». A missing source is refused on write and reported by `pnpm board:verify`. Review
-  rounds already name their source through `origen` and need no `deriva`.
+- **Structure (d384, d386, d387, d390)**: project > objective > phases > steps. The objective is the
+  mother task and carries «Terminado cuando:»; its phases are ordered, each with its own «Terminado
+  cuando:»; steps are checkboxes in the phase's `pasos`, never tasks. Work of one step is an
+  objective with one phase. A subtask (`padre`, `fase`) exists only when the lane or the PR changes,
+  never because the reviewing agent differs. Order between tasks is a `requisitos` entry, never a
+  sentence in the prompt. A follow-up — of a review finding or of finished work — is a phase or a
+  step of the same mother, never an independent task. Older tasks keep their `deriva` («Viene de
+  T<n>» in `show`, the sheet and the Mapa), which is still validated, but new work does not use it.
 - **Mapa · Clave (T482)**: the Mapa tab opens on «Clave», up to 7 open tasks ranked by
   `scripts/board/key-tasks.mjs` (pure, unit-tested): first a task waiting on an unmet dueño or
   decisión step (by how many tasks that step frees), then a task others wait on (by «desbloquea»),
@@ -809,15 +810,23 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
 ### Review routing
 
 - **Rounds**: `review` generates an English prompt and records `revisionSha` (from GitHub, or
-  explicit `--sha`). Every round is a new task with `vuelta`, the short SHA in the title and its own
-  prompt; from the second round on the prompt opens with «SEGUNDA VUELTA» («TERCERA»…), names the
-  previous round's SHA and the new one and starts from `git diff <previous>..<new>`. d291
-  (`rounds.mjs`): when the rounds since the last verdict have none (cancelled, or open and replaced
-  now), the prompt reviews the whole PR instead and lists their bitácora messages, any findings in
-  their cierre and the `.agent/tmp/reports/` paths they named. Earlier rounds are never rewritten,
-  except that a still-open one is cancelled with its cierre (T129); the same SHA again creates
-  nothing. `review` refuses an origin without a valid `cierre` and prints the
-  `pnpm board close <id> …` to run first; `--coordinador` gets no bypass.
+  explicit `--sha`). Every round is a record inside the reviewed task (T529), never a task of its
+  own: the task's file keeps it in `rondas` (reviewer, `revisionSha`, `vuelta`, the verdict and
+  findings in its `cierre`), it takes no number, and readers still see it as the task
+  `<id>-revision` (`-revision-2`, …, `ronda: true`) that `claim`, `close` and `show` name. `show`
+  and the sheet list the rounds in the parent's detail («VUELTAS DE REVISIÓN»). Rounds written
+  before T529 keep their own files and are read the same way. A round closed with `cambios` sends
+  the reviewed task from `en revision` back to `en curso` with its lock, and `pnpm board:sync`
+  leaves it there; the author's next close returns it to `en revision` and the next `review` is
+  round 2. Each round has the short SHA in the title and its own prompt; from the second round on
+  the prompt opens with «SEGUNDA VUELTA» («TERCERA»…), names the previous round's SHA and the new
+  one and starts from `git diff <previous>..<new>`. d291 (`rounds.mjs`): when the rounds since the
+  last verdict have none (cancelled, or open and replaced now), the prompt reviews the whole PR
+  instead and lists their bitácora messages, any findings in their cierre and the
+  `.agent/tmp/reports/` paths they named. Earlier rounds are never rewritten, except that a
+  still-open one is cancelled with its cierre (T129); the same SHA again creates nothing. `review`
+  refuses an origin without a valid `cierre` and prints the `pnpm board close <id> …` to run first;
+  `--coordinador` gets no bypass.
 - **CI first (d288)**: before the merge preflight, `review` reads the head's `statusCheckRollup`
   (`reviewCi`, `ciOf`). Green creates the round; red refuses and names the failed checks; running or
   not started yet (no checks listed) polls every 30 s (`CELEBRA_BOARD_CI_POLL_MS`) with the board

@@ -12,6 +12,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from '@jest/globals';
 import { runCommand, sanitizeEnv } from '../helpers/board-command';
+import { hasBoardDoc, patchBoardDoc, readBoardDoc } from '../helpers/board-doc';
 
 const ROOT = process.cwd();
 const SCRIPT_PATH = path.join(ROOT, 'scripts', 'board', 'board.mjs');
@@ -100,7 +101,11 @@ function boardEnv(dir: string, env: NodeJS.ProcessEnv, ...args: string[]) {
 
 /** `f10 · T3 · prueba` for a claim in f10-libre of task 3; a review runs in f05. */
 function claimTitle(dir: string, args: string[]) {
-	const file = path.join(dir, 'tareas', `${args[1]}.json`);
+	// T529: a round has no number of its own; its session carries its task's.
+	const id = /-revision(-\d+)?$/.test(args[1])
+		? String(args[1]).replace(/-revision(-\d+)?$/, '')
+		: args[1];
+	const file = path.join(dir, 'tareas', `${id}.json`);
 	const byNumber = /^T\d+$/.test(args[1]) ? args[1].slice(1) : undefined;
 	const num = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')).num : byNumber;
 	const given = args.find((a) => a.startsWith('--carril='))?.slice(9);
@@ -139,8 +144,7 @@ const readLog = (dir: string): Json[] =>
 				.map((line) => JSON.parse(line)),
 		);
 
-const readTask = (dir: string, id: string) =>
-	JSON.parse(readFileSync(path.join(dir, 'tareas', `${id}.json`), 'utf8'));
+const readTask = (dir: string, id: string) => readBoardDoc(dir, id) as Record<string, any>;
 
 /** Name → text of every entry of a monthly .zip, read with scripts/board/zip.mjs. */
 function zipEntries(file: string): Record<string, string> {
@@ -745,8 +749,9 @@ describe('pnpm board', () => {
 		});
 		const sha = 'a'.repeat(40);
 		expect(board(dir, 'review', 'origen', '--agente=codex', `--sha=${sha}`).status).toBe(0);
-		const reviewNum = readTask(dir, 'origen-revision').num;
-		expect(reviewNum).toBe(2);
+		// T529: the round lives inside origen, with no file or number of its own.
+		expect(existsSync(path.join(dir, 'tareas', 'origen-revision.json'))).toBe(false);
+		expect(readTask(dir, 'origen-revision').num).toBeUndefined();
 		expect(readTask(dir, 'origen-revision')).toMatchObject({
 			agente: 'codex',
 			origen: 'origen',
@@ -793,7 +798,6 @@ describe('pnpm board', () => {
 			vuelta: 2,
 		});
 		expect(readTask(dir, 'origen-revision')).toMatchObject({
-			num: reviewNum,
 			estado: 'hecha',
 			revisionSha: sha,
 		});
@@ -830,7 +834,7 @@ describe('pnpm board', () => {
 		expect(refused.status).toBe(2);
 		expect(refused.err).toContain('reabierta su resumen de cierre no vale');
 		expect(refused.err).toContain('falta cierre.resultado del código');
-		expect(existsSync(path.join(dir, 'tareas', 'reabierta-revision.json'))).toBe(false);
+		expect(hasBoardDoc(dir, 'reabierta-revision')).toBe(false);
 		// «Le toca al coordinador» asks for it too, although the task has a cierre.
 		expect(board(dir, 'sigue').out).toContain('Pedir el resumen de cierre de T1');
 	});
@@ -852,7 +856,7 @@ describe('pnpm board', () => {
 		expect(refused.status).toBe(2);
 		expect(refused.err).toContain('sin-cierre no tiene resumen de cierre (d255)');
 		expect(refused.err).toContain('pnpm board close sin-cierre --resumen=');
-		expect(existsSync(path.join(dir, 'tareas', 'sin-cierre-revision.json'))).toBe(false);
+		expect(hasBoardDoc(dir, 'sin-cierre-revision')).toBe(false);
 		// The coordinator gets no bypass either: it completes the summary with `close --coordinador`.
 		expect(
 			board(dir, 'review', 'sin-cierre', '--agente=codex', `--sha=${sha}`, '--coordinador')
@@ -872,7 +876,7 @@ describe('pnpm board', () => {
 		expect(board(dir, 'review', 'sin-cierre', '--agente=codex', `--sha=${sha}`).status).toBe(0);
 	});
 
-	it('opens a new task per review round with its own prompt and picks the reviewer by d183', () => {
+	it('opens a new round inside the task per review, with its own prompt, and picks the reviewer by d183', () => {
 		// A PR that touches supabase/ is not low risk (d282), so Claude's work still goes to Gemini or Codex.
 		const pr = JSON.stringify({ pr: { files: [{ path: 'supabase/x.sql' }] } });
 		const board = (dir: string, ...args: string[]) =>
@@ -915,15 +919,10 @@ describe('pnpm board', () => {
 			`de-claude-revision ya revisa ${a}`,
 		);
 		// The first round answers, so the second starts from the diff since its SHA.
-		const first = readTask(dir, 'de-claude-revision');
-		writeFileSync(
-			path.join(dir, 'tareas', 'de-claude-revision.json'),
-			JSON.stringify({
-				...first,
-				estado: 'hecha',
-				cierre: { ...CIERRE, resultado: { veredicto: 'cambios', sha: a, hallazgos: [] } },
-			}),
-		);
+		patchBoardDoc(dir, 'de-claude-revision', {
+			estado: 'hecha',
+			cierre: { ...CIERRE, resultado: { veredicto: 'cambios', sha: a, hallazgos: [] } },
+		});
 		expect(board(dir, 'review', 'de-claude', '--agente=codex', `--sha=${b}`).status).toBe(0);
 		expect(board(dir, 'review', 'de-claude', `--sha=${c}`).status).toBe(0);
 		const second = readTask(dir, 'de-claude-revision-2');
@@ -936,9 +935,7 @@ describe('pnpm board', () => {
 		expect(second.titulo).toContain('vuelta 2 (bbbbbbb)');
 		expect(second.prompt).toContain('SEGUNDA VUELTA');
 		expect(second.prompt).toContain(`La vuelta anterior (de-claude-revision) revisó ${a}`);
-		expect(second.prompt.split('\n')[0]).toBe(
-			`f05 · T${second.num} · PR #10 · Revisión vuelta 2`,
-		);
+		expect(second.prompt.split('\n')[0]).toBe('f05 · T1 · PR #10 · Revisión vuelta 2');
 		expect(second.prompt).toContain(`\nsha: ${b}\n`);
 		expect(second.prompt).toContain(`git diff ${a}..${b}`);
 		expect(second.prompt).toContain('\nDECISIONES\n');
@@ -947,7 +944,7 @@ describe('pnpm board', () => {
 		expect(third.prompt).toContain('TERCERA VUELTA');
 		// d291: the second round was replaced without a verdict, so the third reviews the whole PR.
 		expect(third.prompt).not.toContain(`git diff ${b}..${c}`);
-		expect(third.prompt).toContain(`T${second.num} terminó sin veredicto`);
+		expect(third.prompt).toContain(`${second.id} terminó sin veredicto`);
 		expect(third.prompt).toContain('2. Revise el diff completo del PR en ccccccc.');
 		expect(third.prompt).toContain('decisiones: d183, d291');
 		expect(readTask(dir, 'de-claude-revision')).toMatchObject({ revisionSha: a, vuelta: 1 });

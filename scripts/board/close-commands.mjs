@@ -84,13 +84,30 @@ function sendFindings(dir, t, board) {
 }
 
 /**
- * d274: an open review whose cierre carries a verdict is done, `cambios` included (the next round is another task),
- * and its lock goes. `after` is returned unchanged for any other task. The caller has already checked the cierre.
+ * d274: an open review whose cierre carries a verdict is done, `cambios` included (the next `review` opens the next
+ * round inside the same task, T529), and its lock goes. `after` is returned unchanged for any other task. The caller has already checked the cierre.
  */
 export function reviewDone(before, after, flags) {
 	if (!isReview(before) || isFinished(before)) return after;
 	if (!VEREDICTOS.includes(after.cierre?.resultado?.veredicto)) return after;
 	return { ...unlocked(after, flags), estado: 'hecha' };
+}
+
+/**
+ * T529: a round closed with `cambios` sends the reviewed task from «en revision» back to «en curso», its lock kept,
+ * so the author answers the findings in the same task; the author's next close returns it to «en revision».
+ */
+function reopenOrigin(dir, saveTask, before, t, flags) {
+	if (!isReview(before) || isFinished(before) || t.estado !== 'hecha') return null;
+	if (t.cierre?.resultado?.veredicto !== 'cambios' || !t.origen) return null;
+	const origin = readDoc(dir, 'tareas', t.origen);
+	if (origin?.estado !== 'en revision') return null;
+	return saveTask(
+		dir,
+		origin,
+		{ ...origin, estado: 'en curso' },
+		{ ...flags, seguimiento: true, corrio: 'pnpm board close' },
+	);
 }
 
 /**
@@ -216,6 +233,7 @@ export function closeCommands({
 					...flags,
 					seguimiento: true,
 				});
+				reopenOrigin(dir, saveTask, before, t, flags);
 				if (final.estado !== before.estado)
 					noteOverride(dir, before, override, 'pnpm board close');
 				// T129: the one-line signal the agent hands back, built only from the cierre.

@@ -1,8 +1,9 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from '@jest/globals';
 import { runCommand, sanitizeEnv } from '../helpers/board-command';
+import { patchBoardDoc, readBoardDoc } from '../helpers/board-doc';
 
 const ROOT = process.cwd();
 const SCRIPT_PATH = path.join(ROOT, 'scripts', 'board', 'board.mjs');
@@ -18,6 +19,7 @@ afterEach(() => {
 
 const ORIGIN: Json = {
 	id: 'codigo',
+	num: 1,
 	titulo: 'codigo',
 	estado: 'en revision',
 	urgencia: 'normal',
@@ -65,13 +67,8 @@ function cli(dir: string, ...args: string[]) {
 	return { status: result.status, out: String(result.stdout), err: String(result.stderr) };
 }
 
-const read = (dir: string, id: string): Json =>
-	JSON.parse(readFileSync(path.join(dir, 'tareas', `${id}.json`), 'utf8'));
-const patch = (dir: string, id: string, fields: Json) =>
-	writeFileSync(
-		path.join(dir, 'tareas', `${id}.json`),
-		JSON.stringify({ ...read(dir, id), ...fields }),
-	);
+const read = (dir: string, id: string): Json => readBoardDoc(dir, id);
+const patch = (dir: string, id: string, fields: Json) => patchBoardDoc(dir, id, fields);
 
 /** A board with round 1 of `codigo` under review, en curso and locked by a Gemini session. */
 function reviewing(latido = OLD) {
