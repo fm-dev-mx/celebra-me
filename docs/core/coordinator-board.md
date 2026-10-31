@@ -452,10 +452,13 @@ and never reach Telegram.
   `mensaje:<id>`). Sent keys live under `owner.alertadas` in `.agent/tmp/board-master-watch.json`; a
   key re-arms once its item leaves the list.
 - **Grouping**: every new item of one pass (one minute) goes in a single message: the count per
-  type, then one `T<n> <aviso>` line per task with a public `aviso` (at most 8), ending with
-  `Tablero: http://127.0.0.1:4320`, e.g. `Celebra-me: 1 decisión.` /
-  `- T418 Falta aprobar la portada`. A row's text never leaves the board; an `aviso` that names a
-  client or an amount is refused on write. An empty list sends nothing.
+  type, then one `T<n>` line per task (at most 8), ending with `Tablero: http://127.0.0.1:4320`,
+  e.g. `Celebra-me: 1 decisión.` / `- T418 Falta aprobar la portada` or
+  `- T419 espera su respuesta`. A task with a public `aviso` shows `T<n> <aviso>`; without one, it
+  falls back to a safe short text derived from the row type (`espera su respuesta` for questions and
+  asks, `espera su aprobación` for approvals, `por hacer` for owner tasks). A row's internal text
+  never leaves the board; an `aviso` that names a client or an amount is refused on write. An empty
+  list sends nothing.
 - **Failures**: every Telegram request aborts after 10 s, so a hung connection never stops master
   wakes. A 400/401/403/404 stops sending until the token or chat changes (one log line); a 429 waits
   `retry_after`; other failures back off 1, 2, 4… minutes, capped at 30.
@@ -521,6 +524,16 @@ clients are disconnected and reconnect to a full snapshot; backup events do not 
 Sub-second delivery is a measured target, not an availability guarantee. The «Sincronizar» button's
 POST needs the page's per-process token and its own `Origin`, and every request needs a local
 `Host`.
+
+«Despertar» (`scripts/board/wake-button.mjs`): «Clave» cards and open task cards whose agent (lock,
+then delivery, then `agente`) is Codex, Gemini or Claude show the button. It calls
+`POST /api/despertar {id}` with the same token, `Origin` and `Host` guard as «Sincronizar». Codex
+and Gemini get the fixed text «Revise su bandeja: T###» through the master watcher's own transport
+(codex queue or the Gemini relay, `pnpm board master`), never free text. A Claude desktop session
+cannot be woken from outside, so a Claude task leaves a message to the coordinator instead; nothing
+spawns `claude -p`. Every wake is a bitácora message row with an id starting `despertar-`, one task
+is woken at most once every 10 minutes (429 otherwise), and the master watcher does not wake an
+agent a second time for those rows.
 
 ### Fields
 

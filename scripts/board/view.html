@@ -156,6 +156,8 @@ details.grpd>summary .hint{font-weight:400;color:var(--faint)}
 .item .hov{grid-column:4;grid-row:1/span 2;align-self:center;opacity:0;transition:opacity .12s}
 .item:hover .hov,.item:focus-within .hov{opacity:1}
 @media (hover:none),(max-width:560px){.item .hov{display:none}}
+.item .acts{display:flex;gap:6px}
+.item .woke{grid-column:3;margin:2px 0 0}
 .num{font:500 .74rem var(--mono);color:var(--faint);font-variant-numeric:tabular-nums;white-space:nowrap}
 /* The task's fixed «T<n>» (same as its session name); the gray «#n» is only its place in the queue */
 .tn{font:600 .9em var(--mono);color:var(--muted)}
@@ -733,7 +735,7 @@ function itemHtml(t,{sub=false,toggle=null}={}){
   const c=color(t),n=NUM[t.id],u=urgOf(t);
   const run=['run','auto'].includes(c)||t.candado?runnerHtml(t):'';
   const why=c==='block'?firstBlock(t):deliveryLine(t)||String(t.ahora||'').split('\n')[0];
-  const subs=subtasksOf(t,S.board).length;
+  const subs=subtasksOf(t,S.board).length,wakeBtn=wakeHtml(t);
   // T151: the card is an article (its free text holds links); the whole card still opens the sheet, the title is its button.
   // T268: one compact row — title, then place · ID · state tag · lane in muted text; the rest lives in the sheet.
   // d284: the row also says who runs it and where, its PR with its state and how long ago it changed.
@@ -742,7 +744,7 @@ function itemHtml(t,{sub=false,toggle=null}={}){
     <h3 class="ttl"><button type="button" class="tbtn" data-sel="${esc(t.id)}">${tt(t.titulo)}</button></h3>
     <span class="line"><span class="num" title="Lugar en la cola">${n?'#'+n:'·'}</span>${t.num?`<span class="tn">T${esc(t.num)}</span>`:''}${pill(t)}${mergeChip(t)}${faseHtml(t)}${u==='urgente'||u==='alta'?urgHtml(t):''}${run||(taskLane(t)?`<span class="nm">${esc(taskLane(t))}</span>`:'')}${prHtml(t)}${t.hasta?`<span title="${esc(fmt(t.hasta))}">límite ${esc(fmtDay(t.hasta))}</span>`:''}${t.actualizado?`<span class="when" title="${esc(fmt(t.actualizado))}">${esc(ago(t.actualizado))}</span>`:''}</span>
     ${subs?progHtml(groupProgress(t,S.board)):''}
-    ${t.prompt?`<button type="button" class="btn sm hov" data-copy="${esc(t.id)}">Copiar prompt</button>`:''}
+    ${t.prompt||wakeBtn?`<span class="hov acts">${t.prompt?`<button type="button" class="btn sm" data-copy="${esc(t.id)}">Copiar prompt</button>`:''}${wakeBtn}</span>`:''}${wokeHtml(t)}
   </article>`;
 }
 // d174: a subtask stays under its mother even when it has subtasks of its own.
@@ -966,7 +968,7 @@ function renderClave(){
     const who=c.agente&&c.agente!=='cualquiera'?agChip(c.agente,AGENT[c.agente]||c.agente):'';
     const where=c.carril?`<span>${esc(c.carril)}</span>`:'';
     const age=c.desde?`<span title="${esc(c.desde)}">${esc(ago(c.desde))}</span>`:'';
-    return `<li class="kc kc-${c.nivel}"><button type="button" class="tbtn" data-sel="${esc(c.id)}" data-jump="1" data-all="1">${tN(c)}${tt(c.titulo)}</button><div class="line">${who}${where}${age}<span>${esc(c.estado)}</span></div><p class="kc-why">${esc(c.motivo)}</p><div class="kc-act" data-act="${esc(c.id)}"></div></li>`;
+    return `<li class="kc kc-${c.nivel}"><button type="button" class="tbtn" data-sel="${esc(c.id)}" data-jump="1" data-all="1">${tN(c)}${tt(c.titulo)}</button><div class="line">${who}${where}${age}<span>${esc(c.estado)}</span></div><p class="kc-why">${esc(c.motivo)}</p><div class="kc-act" data-act="${esc(c.id)}">${wakeHtml(byId(c.id))}</div>${wokeHtml(byId(c.id))}</li>`;
   };
   $('mapa').innerHTML=warn+`<p class="map-key">Hasta 7 tareas: primero lo que espera a usted, luego lo que frena a más tareas, lo urgente o con fecha cercana y lo atascado.</p><ol class="keys">${cards.map(card).join('')}</ol>`;
 }
@@ -1031,6 +1033,27 @@ async function deliver(t,m,lead='Prompt copiado',hint='Péguelo donde dice «DÓ
     if(!res.ok)throw new Error(body.error||'El servidor respondió '+res.status);
     m.textContent=`${lead} y marcado como entregado. ${hint}`;
   }catch(e){m.textContent=`${lead}, pero no se marcó como entregado: `+e.message}
+}
+// T483 «Despertar»: a fixed nudge to the task's Codex or Gemini master, or a note to the coordinator for Claude
+// (wake-button.mjs). The result stays in WOKE so the stream's re-render after the bitácora row keeps it on screen.
+const WOKE=new Map();
+const wakeAgent=t=>t&&!isFinished(t)?(t.candado?.agente??t.entregada?.agente??t.agente??null):null;
+function wakeHtml(t){
+  const a=wakeAgent(t);if(!['codex','gemini','claude'].includes(a))return '';
+  const tip=a==='claude'?'Deja un aviso al coordinador: una sesión Claude de escritorio no se despierta desde aquí':`Envía «Revise su bandeja» a ${AGENT[a]||a}; una vez cada 10 min`;
+  return `<button type="button" class="btn sm" data-wake="${esc(t.id)}" title="${esc(tip)}">Despertar</button>`;
+}
+const wokeHtml=t=>{const m=t&&WOKE.get(t.id);return m?`<p class="msg woke" role="status">${esc(m)}</p>`:''};
+async function wake(btn){
+  const id=btn.dataset.wake,t=byId(id),tag=t?taskTag(t):id;
+  btn.disabled=true;
+  try{
+    const res=await fetch('/api/despertar',{method:'POST',headers:{'content-type':'application/json','x-board-token':TOKEN},body:JSON.stringify({id})});
+    const body=await res.json().catch(()=>({}));
+    if(!res.ok)throw new Error(body.error||'El servidor respondió '+res.status);
+    WOKE.set(id,body.para==='coordinador'?`Aviso dejado al coordinador para ${tag}.`:`Aviso enviado a ${AGENT[body.agente]||body.agente}: ${body.texto}`);
+  }catch(e){WOKE.set(id,'No se pudo despertar: '+e.message)}
+  btn.disabled=false;renderCola();renderMapa();
 }
 async function archive(btn){
   const id=btn.dataset.arch,archivar=btn.dataset.to==='1',m=$('finmsg'),t=byId(id);
@@ -1247,6 +1270,7 @@ document.addEventListener('click',async ev=>{
     const id=S.sel;let t;try{t=await readTask(id)}catch(e){$('copymsg').textContent=e.message;return}if(S.sel!==id||!t.prompt)return;const m=$('copymsg');const text=promptWithLane(t,S.board);
     const fallback=()=>{const d=$('prdet');if(d)d.open=true;const pre=$('prtext');if(pre){const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r)}m.textContent='Su navegador no dejó copiar: el prompt quedó seleccionado, cópielo con Ctrl+C.'};
     try{navigator.clipboard.writeText(text).then(()=>{m.textContent='Prompt copiado. Péguelo donde dice «DÓNDE CORRE».';if(deliverable(t))deliver(t,m)},fallback)}catch(e){fallback()}return}
+  const wk=ev.target.closest('[data-wake]');if(wk){if(!wk.disabled)wake(wk);return}
   const sel=ev.target.closest('[data-sel]');if(sel){if(sel.tagName==='A')ev.preventDefault();if(sel.dataset.all&&S.ag!=='todas')setAgent('todas');if(sel.dataset.jump&&$('work').hidden)setTab('cola',true);openSheet(sel.dataset.sel);return}
   if(ev.target.closest('[data-close]')){closeSheet();return}
   const ar=ev.target.closest('[data-arch]');if(ar){archive(ar);return}

@@ -381,6 +381,7 @@ export function toVerify(board, run) {
  */
 /** A lane is held by any lock on it, or by an open task's `carril`. */
 const laneHeld = (tareas, lane) =>
+	lane !== 'externo' &&
 	tareas.some((t) => t.candado?.carril === lane || (!isFinished(t) && t.carril === lane));
 
 export function lanePlan(board, src) {

@@ -78,7 +78,7 @@ describe('board view layout (T268)', () => {
 
 	it('keeps rows compact, groups collapsible and Ctrl+K on the search', () => {
 		expect(SCRIPT).toContain(
-			'<button type="button" class="btn sm hov" data-copy="${esc(t.id)}">Copiar prompt</button>',
+			'<button type="button" class="btn sm" data-copy="${esc(t.id)}">Copiar prompt</button>',
 		);
 		expect(SCRIPT).not.toContain('class="why"');
 		expect(SCRIPT).toContain("foldHtml('q-revision','En revisión'");

@@ -7,6 +7,7 @@ import { UsageError, say } from './cli.mjs';
 import { undelivered } from './delivery.mjs';
 import { checkoutState, claimLaneIssue, lockLaneIssue, startGitSafety } from './lane-session.mjs';
 import {
+	EXTERNAL_LANE,
 	READONLY_LANE,
 	claimable,
 	isReadOnly,
@@ -54,7 +55,11 @@ function claimLocation(before, flags, board) {
 		throw new UsageError(
 			'falta --carril=<carril canónico f05-f12; integration solo para coordinador>',
 		);
-	if (carril && board.tareas.some((t) => t.id !== before.id && t.candado?.carril === carril))
+	if (
+		carril &&
+		carril !== EXTERNAL_LANE &&
+		board.tareas.some((t) => t.id !== before.id && t.candado?.carril === carril)
+	)
 		throw new UsageError(`el carril ${carril} tiene otra tarea con candado`);
 	return { rama, carril };
 }

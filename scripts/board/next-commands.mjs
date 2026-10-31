@@ -7,12 +7,18 @@ import { UsageError, say } from './cli.mjs';
 import { readLive } from './live.mjs';
 import {
 	ATENDIBLES,
+	blockedText,
 	buildMessageRow,
+	canFinish,
 	DESTINOS,
+	isFinished,
 	logRowError,
+	nextFor,
+	promptWithLane,
 	QUIEN,
 	quienOf,
 	sessionOf,
+	stage,
 	taskTag,
 } from './model.mjs';
 import { mergeSignal, messageExtras, ownerMessageIssues } from './owner-text.mjs';
@@ -78,9 +84,59 @@ export function beatCaller(dir, cmd, flags) {
 		heartbeat(dir, agente, sessionOf(agente, flags.sesion, process.env));
 }
 
+/** Blocked tasks for an agent with their reasons (d177/T476 case). */
+export function blockedFor(agente, board, now = Date.now()) {
+	return (board.tareas ?? [])
+		.filter((t) => {
+			if (isFinished(t)) return false;
+			if (t.candado) return false;
+			if (t.actor === 'coordinador' || t.actor === 'dueno') return false;
+			if (stage(t, board, now) !== 'bloqueada') return false;
+			const isMine = t.agente === agente || !t.agente || t.agente === 'cualquiera';
+			return isMine && canFinish(t, agente, board);
+		})
+		.map((t) => ({
+			id: t.id,
+			num: t.num,
+			titulo: t.titulo,
+			motivo:
+				blockedText(t, board) ||
+				(t.estado === 'bloqueada' ? 'marcada como bloqueada' : 'bloqueada'),
+		}))
+		.sort((a, b) => (a.num ?? 9999) - (b.num ?? 9999));
+}
+
 /** `getTask(dir, id)` comes from board.mjs, which resolves `T<n>` too. */
 export function nextCommands({ getTask }) {
 	return {
+		/** Return the next eligible task, or blocked tasks with reasons when none is eligible. */
+		next({ flags }, dir, out) {
+			const agente = need(flags.agente, 'falta --agente=claude|codex|gemini');
+			const board = loadBoard(dir);
+			const t = nextFor(agente, board);
+			const bloqueadas = blockedFor(agente, board);
+			if (flags.json) {
+				if (t) return out(JSON.stringify(t, null, 2));
+				if (!bloqueadas.length) return out(JSON.stringify(null, null, 2));
+				return out(JSON.stringify({ tarea: null, bloqueadas }, null, 2));
+			}
+			if (!t) {
+				if (!bloqueadas.length) return out(`Nada listo para ${agente}.`);
+				return out(
+					[
+						`Nada listo para ${agente}.`,
+						``,
+						`Tareas bloqueadas (${bloqueadas.length}):`,
+						...bloqueadas.map(
+							(b) => `  ${b.num ? `T${b.num} ` : ''}${b.id}: ${b.motivo}`,
+						),
+					].join('\n'),
+				);
+			}
+			out(
+				`${t.id} (rev ${t.rev}) — ${t.num ? `T${t.num} ` : ''}${t.titulo}\n\n${promptWithLane(t, board) ?? ''}`,
+			);
+		},
 		/**
 		 * A message about a task from one agent (or the owner, or the coordinator) to another. T322: to the owner it
 		 * is a one-line question, a decision adds `--opcion` (the recommended one first) and `--detalle` holds the
@@ -125,7 +181,8 @@ export function nextCommands({ getTask }) {
 				throw new UsageError(`--agente debe ser ${DESTINOS.join('|')}`);
 			return withLock(dir, () => {
 				const board = loadBoard(dir);
-				const unread = unreadFor(agente, board);
+				// d265: the inbox keeps messages of archived tasks too; only the queues and alerts drop them (T521).
+				const unread = unreadFor(agente, board, { archived: true });
 				const rows = flags.todos
 					? board.bitacora.filter((r) => r.mensaje?.para === agente)
 					: unread;

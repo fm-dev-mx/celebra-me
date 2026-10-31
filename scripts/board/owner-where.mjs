@@ -7,6 +7,7 @@
 import {
 	AGENT_REGISTRY,
 	agentPaused,
+	EXTERNAL_LANE,
 	findTask,
 	isReview,
 	normalizePr,
@@ -39,6 +40,7 @@ const TITLE = /^f\d{2} · T\d+ · \S/;
 /** «F4 · Integración (carpeta celebra-me)» or «proyecto f06-landing»; null without a lane. */
 export function placeText(lane) {
 	if (!lane) return null;
+	if (lane === EXTERNAL_LANE) return 'carril externo';
 	return lane === READONLY_LANE ? 'F4 · Integración (carpeta celebra-me)' : `proyecto ${lane}`;
 }
 

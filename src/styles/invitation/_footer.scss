@@ -10,6 +10,8 @@
 //                               text, default) on light footers, `oscuro` (ivory text) on dark
 //                               ones. Dark footers set `--footer-logo-claro: none` and
 //                               `--footer-logo-oscuro: block`.
+//   --footer-logo-width / -opacity  Brand signature size (default 120px) and opacity (default
+//                               70%); kept below the hosts' closing name.
 //   --footer-contact-border / -bg / -padding  Contact link outline, fill and padding
 //   --invitation-footer-reply   `on`: the reply at the end (see .footer-reply below)
 //   --footer-sky                Layers drawn over the footer's ground and under its content, for
@@ -324,6 +326,13 @@ $lantern-shape: 40% 40% 45% 45%;
 		@include mixins.respond-to(xs) {
 			display: block;
 		}
+	}
+
+	// The platform signs below the hosts' closing name, so it stays smaller than that name.
+	.footer-brand-logo {
+		width: var(--footer-logo-width, 120px);
+		height: auto;
+		opacity: var(--footer-logo-opacity, 70%);
 	}
 
 	.footer-brand-logo--claro {
