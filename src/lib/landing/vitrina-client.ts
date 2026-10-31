@@ -174,7 +174,7 @@ export function initLandingShowroom(root: Document = document): void {
 	const render = () => {
 		showOnly('.vitrina__eyebrow, .vitrina__styles-group', currentEvent);
 		showOnly(
-			'.vitrina__bar [data-vitrina-for], .vitrina__poster, .vitrina__detail [data-vitrina-for]',
+			'.vitrina__bar [data-vitrina-for], .vitrina__poster, .vitrina__detail [data-vitrina-for], .vitrina__actions [data-vitrina-for]',
 			currentDemo,
 		);
 		section.querySelectorAll<HTMLElement>('.vitrina__event').forEach((link) => {

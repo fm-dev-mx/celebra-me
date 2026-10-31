@@ -225,6 +225,44 @@ if (!initialQuote) throw new Error('The landing showroom needs an initial demo.'
 					))
 				}
 
+				{/* Right under the style picker; on phones it stays pinned while the showroom scrolls by. */}
+				<div class="vitrina__actions">
+					{
+						showrooms.flatMap(({ event, demos }) =>
+							demos.map(({ demo, isInitial }) => (
+								<a
+									class="vitrina__open"
+									href={demo.href}
+									target="_blank"
+									rel="noopener"
+									data-vitrina-for={demo.slug}
+									hidden={!isInitial}
+									data-track-event="cta_clicked"
+									data-track-cta={`demo_open_${demo.slug}`}
+									data-track-label="Ver demo completa"
+									data-track-intent="demo_showroom"
+									data-track-destination="demo"
+									data-demo-slug={demo.slug}
+									data-event-type={event.eventType}
+								>
+									Ver demo completa
+								</a>
+							)),
+						)
+					}
+					<WhatsAppButton
+						className="vitrina__quote"
+						label="Quiero una así"
+						ariaLabel={`Quiero una invitación como ${initialDemo.name} por WhatsApp`}
+						message={initialQuote.message}
+						trackSection="event_showroom"
+						trackCta="event_showroom_whatsapp"
+						campaignSection="DEMO"
+						eventType={initialEvent.eventType}
+						eventLabel={initialEvent.label}
+					/>
+				</div>
+
 				<article class="vitrina__detail" aria-live="polite">
 					{
 						showrooms.flatMap(({ event, demos }) =>
@@ -254,42 +292,6 @@ if (!initialQuote) throw new Error('The landing showroom needs an initial demo.'
 							)),
 						)
 					}
-					<div class="vitrina__detail-actions">
-						{
-							showrooms.flatMap(({ event, demos }) =>
-								demos.map(({ demo, isInitial }) => (
-									<a
-										class="vitrina__open"
-										href={demo.href}
-										target="_blank"
-										rel="noopener"
-										data-vitrina-for={demo.slug}
-										hidden={!isInitial}
-										data-track-event="cta_clicked"
-										data-track-cta={`demo_open_${demo.slug}`}
-										data-track-label="Ver demo completa"
-										data-track-intent="demo_showroom"
-										data-track-destination="demo"
-										data-demo-slug={demo.slug}
-										data-event-type={event.eventType}
-									>
-										Ver demo completa
-									</a>
-								)),
-							)
-						}
-						<WhatsAppButton
-							className="vitrina__quote"
-							label="Quiero una así"
-							ariaLabel={`Quiero una invitación como ${initialDemo.name} por WhatsApp`}
-							message={initialQuote.message}
-							trackSection="event_showroom"
-							trackCta="event_showroom_whatsapp"
-							campaignSection="DEMO"
-							eventType={initialEvent.eventType}
-							eventLabel={initialEvent.label}
-						/>
-					</div>
 					{
 						showrooms.flatMap(({ demos }) =>
 							demos.map(({ demo, ref, message, isInitial }) => (
