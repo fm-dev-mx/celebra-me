@@ -2,7 +2,7 @@
     "proyecto": "Celebra-me",
     "datos": ".agent/tmp/tablero",
     "puerto": 4320,
-    "nucleo": "a240cfeadc81c956312082aa31ee3157b952740c",
+    "nucleo": "46e9eea27080096f87a83e16184a08b0bac69e15",
     "wipMax": 3,
     "hechoDias": 7,
     "zonaHoraria": "America/Mexico_City",
