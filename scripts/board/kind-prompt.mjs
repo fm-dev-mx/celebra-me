@@ -207,7 +207,7 @@ export function kindPrompt(t, board, kind, { num = t.num, rev = t.rev, generado 
 				[
 					'ANTES DE EMPEZAR',
 					[
-						`Carril ${lane} (carpeta ${laneFolder(lane)})${branch}. Compruebe que la rev de esta tarea (pnpm board show ${t.id}) sigue en la de «tablero:» de METADATOS; si cambió, pare. Los cambios de otras tareas y los que hace esta misma sesión (claim, set, close, sus commits) no cuentan (d282).`,
+						`${lane === 'externo' ? `Carril externo (sin checkout)${branch}.` : `Carril ${lane} (carpeta ${laneFolder(lane)})${branch}.`} Compruebe que la rev de esta tarea (pnpm board show ${t.id}) sigue en la de «tablero:» de METADATOS; si cambió, pare. Los cambios de otras tareas y los que hace esta misma sesión (claim, set, close, sus commits) no cuentan (d282).`,
 						`Lea AGENTS.md, .agent/rules/board.md y lo que .agent/routing-matrix.yaml pide para: ${lee.join(', ')}.`,
 						...kind.pasos_inicio.map((c) => `  ${fill(c)}`),
 					],

@@ -30,6 +30,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import {
+	EXTERNAL_LANE,
 	isFinished as isClosed,
 	isOpen,
 	isReadOnly,
@@ -613,7 +614,7 @@ function laneWarnings(tareas, decisiones, archivo, now) {
 	);
 	for (const t of ready) (byLane[t.carrilPlaneado] ??= []).push(t.id);
 	for (const [lane, ids] of Object.entries(byLane))
-		if (ids.length > 1)
+		if (lane !== EXTERNAL_LANE && ids.length > 1)
 			for (const id of ids)
 				avisos.push({
 					id,

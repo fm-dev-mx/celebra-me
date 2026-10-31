@@ -33,7 +33,11 @@ const uncheckedRevision = {
 const lines = z.array(text).min(1);
 const safety = z.enum(['commit', 'history', 'commit,history']);
 const tools = {
-	next: { description: 'Return the next eligible task, including delivery guards.', fields: {} },
+	next: {
+		description:
+			'Return the next eligible task, or blocked tasks with reasons when none is eligible.',
+		fields: {},
+	},
 	show: { description: 'Read one task and its current revision.', fields: task },
 	list: { description: 'List the current agent queue.', fields: {} },
 	claim: {
