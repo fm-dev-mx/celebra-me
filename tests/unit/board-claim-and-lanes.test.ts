@@ -264,7 +264,7 @@ describe('T172 live lanes and replaced decisions', () => {
 		const lane = lanes.find((l: Json) => l.id === 'f05-plataforma');
 		expect(lane).toMatchObject({
 			id: 'f05-plataforma',
-			uso: 'F5 Plataforma',
+			uso: 'Plataforma (en retiro)',
 			puerto: 4325,
 			rama: 'feat/x',
 			limpio: false,

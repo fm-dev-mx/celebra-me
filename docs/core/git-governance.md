@@ -32,7 +32,7 @@ release versioning and changelog policy are owned by [`release-process.md`](rele
 - Annotated tags (`vX.Y.Z`) mark releases. The release session creates and pushes them within the
   release authorization once the promoted `main` SHA is verified.
 
-## Lane model (Win + F4–F12)
+## Lane model (Win + F5–F12)
 
 Nine persistent native Git lanes isolate tasks. The executable source for lane ids, paths, runtime
 defaults and ports is [worktree-lane.ts](../../scripts/shared/worktree-lane.ts). See the

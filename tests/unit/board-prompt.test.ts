@@ -259,11 +259,11 @@ describe('prompt-v1 (T160)', () => {
 			{ src, sha: SHA, prev },
 		);
 		expect(out.issues).toEqual([[], [], []]);
-		expect(out.first.split('\n')[0]).toBe('f04 · T9 · PR #522 · Revisión');
-		expect(out.second.split('\n')[0]).toBe('f04 · T10 · PR #522 · Revisión vuelta 2');
+		expect(out.first.split('\n')[0]).toBe('f05 · T9 · PR #522 · Revisión');
+		expect(out.second.split('\n')[0]).toBe('f05 · T10 · PR #522 · Revisión vuelta 2');
 		expect(out.first).not.toContain('Follow .agent/rules/board.md');
 		expect(out.first).toContain(
-			'pnpm board claim origen-revision --agente=codex --titulo="f04 · T9 · PR #522 · Revisión"',
+			'pnpm board claim origen-revision --agente=codex --titulo="f05 · T9 · PR #522 · Revisión"',
 		);
 		expect(out.first).toContain('--para=dueno');
 		expect(out.second).toContain('SEGUNDA VUELTA');

@@ -116,7 +116,7 @@ lock heartbeat; after two hours of silence a lock shows as «Detenida».
   work chat. A recipient replies with `pnpm board msg <id> --de=codex --para=claude "..."`, and
   Claude reads `pnpm board inbox --agente=claude` (or the equivalent MCP calls).
 - **Gemini/Antigravity:** the user-local `.gemini/config/celebra-gemini-relay.mjs` runs without AI
-  in a terminal opened inside **f04 · Gemini maestro** (formerly **Chat Maestro MCP
+  in a terminal opened inside **f05 · Gemini maestro** (formerly **Chat Maestro MCP
   Configuration**). It polls `inbox --agente=gemini` every five seconds, resolves the task's Gemini
   chat from the board's lock/session, and falls back to its configured master chat. It invokes the
   installed language server's `agentapi send-message` using the terminal's inherited context.
@@ -185,14 +185,14 @@ start/end inbox reminders and idempotence for generated and saved prompts.
 ## Coordination contract
 
 Three agents share the board: `claude`, `codex` and `gemini`. Under d351 each has one fixed master
-chat. Claude `f04 · Coordinador principal` assigns work; Codex `f04 · Codex maestro` and Gemini
-`f04 · Gemini maestro` dispatch only their own assigned tasks. A new chat requires a concrete task,
+chat. Claude `f05 · Coordinador principal` assigns work; Codex `f05 · Codex maestro` and Gemini
+`f05 · Gemini maestro` dispatch only their own assigned tasks. A new chat requires a concrete task,
 including a separate chat for each review. Follow-ups reuse that task's existing chat.
 
 | Role                  | Who                                                        | Does                                                                                   | Never                                                     |
 | --------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| Principal coordinator | Claude `f04 · Coordinador principal`                       | Assigns tasks, records owner decisions, merges reviewed PRs                            | Merges without exact-head review, green CI and a clean PR |
-| Agent master          | Codex `f04 · Codex maestro`; Gemini `f04 · Gemini maestro` | Opens concrete work/review chats; archives its agent's finished chats                  | Reassigns tasks or forwards owner authority               |
+| Principal coordinator | Claude `f05 · Coordinador principal`                       | Assigns tasks, records owner decisions, merges reviewed PRs                            | Merges without exact-head review, green CI and a clean PR |
+| Agent master          | Codex `f05 · Codex maestro`; Gemini `f05 · Gemini maestro` | Opens concrete work/review chats; archives its agent's finished chats                  | Reassigns tasks or forwards owner authority               |
 | Worker session        | Any agent, one per task                                    | Claims one task, works in its lane and branch, opens the PR, requests the cross review | Touches tasks, lanes or branches another agent holds      |
 
 The owner identifies and renames the existing masters; configuration never guesses the latest chat.
@@ -294,7 +294,7 @@ goes into it with its internal shorthand dropped.
 
 A task with a `tipo` (T130) does not get this template by hand: add it with its kind and its
 `QUÉ SE BUSCA`, for example
-`pnpm board add <id> titulo=… urgencia=alta actor=sesion agente=claude tipo=codigo rama=feat/<id> carrilPlaneado=f05-plataforma busca="…\nTerminado cuando: …" --coordinador`,
+`pnpm board add <id> titulo=… urgencia=alta actor=sesion agente=claude tipo=codigo rama=feat/<id> carrilPlaneado=f06-landing busca="…\nTerminado cuando: …" --coordinador`,
 and the board builds the rest from `.agent/kinds/codigo.yaml` and the board. Check it with
 `pnpm board prompt <id>`; see [Task kinds](#task-kinds).
 
@@ -643,7 +643,8 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   unlocked session task without a planned lane and about two ready tasks planned in the same lane.
   Claims use the explicit `--rama` or the task's declared branch; they never infer the caller's
   branch. Read-only work may remain without a branch. Only `actor: coordinador` with `--coordinador`
-  may claim the canonical `integration` lane; `f04-integracion` is not a canonical id.
+  may claim the canonical `integration` lane; `f04-integracion` and `f05-integracion` are not
+  canonical ids.
 - **Lane and git-safety from the lane (T297)**: `claim`, `close` and `release` run inside a lane
   folder (f05–f12) read that checkout (`lane-session.mjs`). `claim` refuses when the folder is
   another lane or its branch is not the claim's `rama` (detached included), and then opens

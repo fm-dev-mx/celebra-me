@@ -159,7 +159,7 @@ describe('risk-based review (d282)', () => {
 		);
 		expect(r.out).toContain('Revisor: subagente de claude (d288, riesgo bajo o medio)');
 		expect(r.out).toContain(
-			'pnpm board claim de-claude-revision --agente=claude --titulo="f04 · T2 · PR #10 · Revisión"',
+			'pnpm board claim de-claude-revision --agente=claude --titulo="f05 · T2 · PR #10 · Revisión"',
 		);
 		expect(r.out).toContain(
 			'Lance un subagente Agent con contexto limpio y dele solo el PR #10',
