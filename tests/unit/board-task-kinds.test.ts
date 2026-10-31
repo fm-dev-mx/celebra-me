@@ -340,31 +340,58 @@ describe('task kinds (T130): pnpm board', () => {
 			'agente=codex',
 		];
 		// Contrato 3: a new session task says what it does.
-		expect(cli(dir, ...base, '--coordinador').err).toContain('falta tipo=codigo|');
-		expect(cli(dir, ...base, 'tipo=codigo', '--coordinador').err).toContain('busca=');
+		expect(cli(dir, ...base, '--coordinador', '--quien=claude').err).toContain(
+			'falta tipo=codigo|',
+		);
+		expect(cli(dir, ...base, 'tipo=codigo', '--coordinador', '--quien=claude').err).toContain(
+			'busca=',
+		);
 		expect(
-			cli(dir, ...base, 'tipo=auditoria', `busca=${BUSCA}`, 'prompt=hola', '--coordinador')
-				.err,
+			cli(
+				dir,
+				...base,
+				'tipo=auditoria',
+				`busca=${BUSCA}`,
+				'prompt=hola',
+				'--coordinador',
+				'--quien=claude',
+			).err,
 		).toContain('su prompt se genera');
 		// A `\n` typed in the shell argument also breaks the line.
 		const typed = 'busca=Que funcione.\\nTerminado cuando: pasa.';
-		expect(cli(dir, ...base, 'tipo=auditoria', typed, '--coordinador').status).toBe(0);
+		expect(
+			cli(dir, ...base, 'tipo=auditoria', typed, '--coordinador', '--quien=claude').status,
+		).toBe(0);
 		// No lane yet: no prompt, so it waits for one.
 		expect(readTask(dir, 'nueva')).not.toHaveProperty('prompt');
 		expect(
-			cli(dir, 'plan', 'nueva', '--rev=1', '--carril=f09-docs', '--coordinador').status,
+			cli(
+				dir,
+				'plan',
+				'nueva',
+				'--rev=1',
+				'--carril=f09-docs',
+				'--coordinador',
+				'--quien=claude',
+			).status,
 		).toBe(0);
 		const planned = readTask(dir, 'nueva');
 		expect(planned.prompt.split('\n')[0]).toBe('f09 · T2 · Nueva');
 		expect(planned.prompt).toContain('tablero: rev 2');
 		expect(planned.prompt).toContain('\nTerminado cuando: pasa.\n');
-		expect(cli(dir, 'set', 'nueva', '--rev=2', 'corto=Corta', '--coordinador').status).toBe(0);
+		expect(
+			cli(dir, 'set', 'nueva', '--rev=2', 'corto=Corta', '--coordinador', '--quien=claude')
+				.status,
+		).toBe(0);
 		expect(readTask(dir, 'nueva').prompt.split('\n')[0]).toBe('f09 · T2 · Corta');
-		expect(cli(dir, 'set', 'nueva', '--rev=3', 'prompt=x', '--coordinador').err).toContain(
-			'su prompt se genera',
-		);
+		expect(
+			cli(dir, 'set', 'nueva', '--rev=3', 'prompt=x', '--coordinador', '--quien=claude').err,
+		).toContain('su prompt se genera');
 		// An open task from before the contract keeps working without tipo.
-		expect(cli(dir, 'set', 'vieja', '--rev=1', 'ahora=sigue', '--coordinador').status).toBe(0);
+		expect(
+			cli(dir, 'set', 'vieja', '--rev=1', 'ahora=sigue', '--coordinador', '--quien=claude')
+				.status,
+		).toBe(0);
 		expect(readTask(dir, 'vieja').prompt).toBe('T1 · Vieja\nDECISIONES\n- ninguna');
 		expect(cli(dir, 'prompt', 'vieja').out).toContain('T1 · Vieja\nDECISIONES\n- ninguna');
 		expect(cli(dir, 'prompt', 'vieja', '--guardar', '--rev=2').err).toContain(
@@ -388,15 +415,24 @@ describe('task kinds (T130): pnpm board', () => {
 			id: 'tipada',
 			msg: expect.stringContaining('el prompt guardado no es el que genera su tipo'),
 		});
-		expect(cli(dir, 'prompt', 'tipada', '--guardar', '--coordinador').err).toContain(
-			'falta --rev',
+		expect(
+			cli(dir, 'prompt', 'tipada', '--guardar', '--coordinador', '--quien=claude').err,
+		).toContain('falta --rev');
+		const saved = cli(
+			dir,
+			'prompt',
+			'tipada',
+			'--guardar',
+			'--rev=1',
+			'--coordinador',
+			'--quien=claude',
 		);
-		const saved = cli(dir, 'prompt', 'tipada', '--guardar', '--rev=1', '--coordinador');
 		expect(saved.out).toContain('tipada rev 2: prompt regenerado');
 		expect(readTask(dir, 'tipada').prompt).toContain('tablero: rev 2');
-		expect(cli(dir, 'prompt', 'tipada', '--guardar', '--rev=2', '--coordinador').out).toContain(
-			'ya tiene ese prompt',
-		);
+		expect(
+			cli(dir, 'prompt', 'tipada', '--guardar', '--rev=2', '--coordinador', '--quien=claude')
+				.out,
+		).toContain('ya tiene ese prompt');
 		expect(
 			verify().avisos.filter((a: Json) => String(a.msg).includes('genera su tipo')),
 		).toEqual([]);

@@ -91,25 +91,39 @@ describe('T382 paused agents', () => {
 			'requiere --coordinador',
 		);
 		expect(
-			cli(dir, ['agentes', 'codex=pausado', 'hasta=2001-01-01', '--rev=0', '--coordinador'])
-				.err,
+			cli(dir, [
+				'agentes',
+				'codex=pausado',
+				'hasta=2001-01-01',
+				'--rev=0',
+				'--coordinador',
+				'--quien=claude',
+			]).err,
 		).toContain('la pausa ya terminó: 2001-01-01');
-		expect(cli(dir, ['agentes', 'codex=dormido', '--rev=0', '--coordinador']).err).toContain(
-			'codex=pausado hasta=<fecha> o codex=activo',
-		);
+		expect(
+			cli(dir, ['agentes', 'codex=dormido', '--rev=0', '--coordinador', '--quien=claude'])
+				.err,
+		).toContain('codex=pausado hasta=<fecha> o codex=activo');
 		const paused = cli(dir, [
 			'agentes',
 			'codex=pausado',
 			'hasta=2099-01-01',
 			'--rev=0',
 			'--coordinador',
+			'--quien=claude',
 		]);
 		expect(paused.out).toContain('codex rev 1 · en pausa hasta 2099-01-01T00:00:00-07:00');
 		expect(agentDoc(dir, 'codex').pausa).toMatchObject({
 			hasta: '2099-01-01T00:00:00-07:00',
-			quien: 'coordinador',
+			quien: 'claude',
 		});
-		const active = cli(dir, ['agentes', 'codex=activo', '--rev=1', '--coordinador']);
+		const active = cli(dir, [
+			'agentes',
+			'codex=activo',
+			'--rev=1',
+			'--coordinador',
+			'--quien=claude',
+		]);
 		expect(active.out).toContain('codex rev 2 · activo');
 		expect(agentDoc(dir, 'codex').pausa).toBeUndefined();
 	});
@@ -177,7 +191,11 @@ describe('T382 plan checks the lane Git state', () => {
 		return { dir, env: { CELEBRA_BOARD_LIVE_FIXTURE: fixture } };
 	}
 	const plan = (dir: string, env: Json, id: string, carril: string) =>
-		cli(dir, ['plan', id, `--carril=${carril}`, '--rev=1', '--coordinador'], env as never);
+		cli(
+			dir,
+			['plan', id, `--carril=${carril}`, '--rev=1', '--coordinador', '--quien=claude'],
+			env as never,
+		);
 
 	it('refuses a lane on another branch and suggests the idle, unlocked ones', () => {
 		const { dir, env } = planBoard();

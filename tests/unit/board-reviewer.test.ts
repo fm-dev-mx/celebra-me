@@ -1,9 +1,10 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from '@jest/globals';
 import { runCommand, sanitizeEnv } from '../helpers/board-command';
+import { readBoardDoc } from '../helpers/board-doc';
 
 const ROOT = process.cwd();
 const SCRIPT_PATH = path.join(ROOT, 'scripts', 'board', 'board.mjs');
@@ -183,7 +184,14 @@ describe('board reviewer (d209, d240)', () => {
 		const home = codexHome(quota(37, 38, Math.floor(Date.now() / 1000) + 3600));
 		const result = runCommand(
 			process.execPath,
-			[SCRIPT_PATH, 'review', 'de-claude', `--sha=${'a'.repeat(40)}`, '--coordinador'],
+			[
+				SCRIPT_PATH,
+				'review',
+				'de-claude',
+				`--sha=${'a'.repeat(40)}`,
+				'--coordinador',
+				'--quien=claude',
+			],
 			{
 				cwd: ROOT,
 				allowFailure: true,
@@ -201,9 +209,7 @@ describe('board reviewer (d209, d240)', () => {
 		expect(String(result.stdout)).toContain(
 			'de-claude-revision creada para codex (vuelta 1) · riesgo alto · carga 7 d: gemini 1, codex 0 · cuota Codex 38 % 5 h, 37 % semana',
 		);
-		const saved = JSON.parse(
-			readFileSync(path.join(dir, 'tareas', 'de-claude-revision.json'), 'utf8'),
-		);
+		const saved = readBoardDoc(dir, 'de-claude-revision');
 		expect(saved.agente).toBe('codex');
 	});
 });

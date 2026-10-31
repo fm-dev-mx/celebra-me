@@ -121,6 +121,8 @@ export function reviewChild(
 		...(revisor ? { revisor } : {}),
 		tipo: 'revision',
 		contrato: CONTRATO,
+		// T529: the round is written into the reviewed task's `rondas`, not into a task of its own.
+		ronda: true,
 		origen: src.id,
 		revisionSha: sha,
 		...(files ? { revisionFiles: files } : {}),

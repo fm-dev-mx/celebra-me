@@ -84,3 +84,16 @@ describe('ceremonial invitation contracts', () => {
 		);
 	});
 });
+
+describe('hero scroll cue', () => {
+	it('accepts the constellation cue and rejects unknown cues', () => {
+		const hero = {
+			name: 'Camila',
+			date: '2027-09-12T19:00:00.000Z',
+			backgroundImage: '/portrait.webp',
+			variant: 'standard',
+		};
+		expect(heroSchema.safeParse({ ...hero, scrollCue: 'constellation' }).success).toBe(true);
+		expect(heroSchema.safeParse({ ...hero, scrollCue: 'comet' }).success).toBe(false);
+	});
+});

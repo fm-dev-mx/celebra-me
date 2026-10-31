@@ -1,9 +1,10 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from '@jest/globals';
 import { runCommand, sanitizeEnv } from '../helpers/board-command';
+import { readBoardDoc } from '../helpers/board-doc';
 
 const ROOT = process.cwd();
 const SCRIPT_PATH = path.join(ROOT, 'scripts', 'board', 'board.mjs');
@@ -74,8 +75,7 @@ function board(dir: string, files: string[] | null, ...args: string[]) {
 	return { status: r.status, out: String(r.stdout), err: String(r.stderr) };
 }
 
-const readTask = (dir: string, id: string) =>
-	JSON.parse(readFileSync(path.join(dir, 'tareas', `${id}.json`), 'utf8'));
+const readTask = (dir: string, id: string) => readBoardDoc(dir, id) as Record<string, any>;
 
 const CIERRE = {
 	resumen: 'Hecho.',
@@ -159,7 +159,7 @@ describe('risk-based review (d282)', () => {
 		);
 		expect(r.out).toContain('Revisor: subagente de claude (d288, riesgo bajo o medio)');
 		expect(r.out).toContain(
-			'pnpm board claim de-claude-revision --agente=claude --titulo="f04 · T2 · PR #10 · Revisión"',
+			'pnpm board claim de-claude-revision --agente=claude --titulo="f05 · T1 · PR #10 · Revisión"',
 		);
 		expect(r.out).toContain(
 			'Lance un subagente Agent con contexto limpio y dele solo el PR #10',

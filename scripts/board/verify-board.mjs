@@ -54,7 +54,7 @@ import { parentIssue, sourceIssue } from './subtasks.mjs';
 import { kindPrompt, promptDiff } from './kind-prompt.mjs';
 import { kindKey, loadKinds } from './kinds.mjs';
 import { promptIdentity } from './prompt.mjs';
-import { boardDir, readLog } from './store.mjs';
+import { boardDir, expandRounds, readLog } from './store.mjs';
 import { externalSessions, SOURCES as EXTERNAL } from './external-sessions.mjs';
 import { scopeWarnings } from './scope-warnings.mjs';
 
@@ -173,10 +173,10 @@ export function loadExport(dir, sesionesFile) {
 	const root = base === dir ? join(dir, '..') : dir;
 	const file = sesionesFile ?? join(root, 'sesiones.json');
 	return {
-		tareas: readJsonDir(base),
+		tareas: expandRounds(readJsonDir(base)),
 		bitacora: readLog(root),
 		decisiones: readJsonDir(join(root, 'decisiones')),
-		archivo: readJsonDir(join(root, 'archivo')),
+		archivo: expandRounds(readJsonDir(join(root, 'archivo'))),
 		sesiones: existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null,
 	};
 }
@@ -527,7 +527,7 @@ function cierreWarnings(t, board) {
 	if (!isClosed(t) || t.archivada) return [];
 	const issues = cierreIssues(t, board);
 	if (!issues.length) return [];
-	const fix = `pnpm board close ${t.id} --resumen=… --coordinador`;
+	const fix = `pnpm board close ${t.id} --resumen=… --coordinador --quien=claude`;
 	return [
 		issues[0] === NO_CIERRE
 			? `finalizada sin resumen de cierre: ${fix}`
@@ -535,11 +535,11 @@ function cierreWarnings(t, board) {
 	];
 }
 
-/** Numbers remain mandatory and unique even after a task is closed or archived. */
+/** Numbers remain mandatory and unique even after a task is closed or archived; a round inside its task has none (T529). */
 function numberIssues(tareas) {
 	const issues = [];
 	const numbers = new Map();
-	for (const t of tareas) {
+	for (const t of tareas.filter((x) => !x.ronda)) {
 		if (!Number.isSafeInteger(t.num) || t.num < 1) {
 			issues.push({
 				id: t.id,
@@ -595,7 +595,7 @@ function laneWarnings(tareas, decisiones, archivo, now) {
 		if (isOpen(t, board, now) && !isReadOnly(t) && !t.carrilPlaneado && !t.candado?.carril)
 			avisos.push({
 				id: t.id,
-				msg: `${t.num ? `T${t.num} ` : ''}sin carril planeado: pnpm board plan ${t.id} --rev=${t.rev} --carril=<carril> --coordinador`,
+				msg: `${t.num ? `T${t.num} ` : ''}sin carril planeado: pnpm board plan ${t.id} --rev=${t.rev} --carril=<carril> --coordinador --quien=claude`,
 			});
 	for (const t of tareas.filter((x) => !isClosed(x) && !isReadOnly(x)))
 		for (const lane of promptLanes(t, WORKTREE_LANES))

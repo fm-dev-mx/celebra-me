@@ -51,6 +51,7 @@ interface Props {
 	portrait?: ImageMetadata | ImageAsset;
 	variant: HeroVariant;
 	scrollLabel?: string;
+	scrollCue?: 'chevron' | 'constellation';
 	tagline?: string;
 	photoCredit?: string;
 	focalPoint?: string;
@@ -77,6 +78,7 @@ const {
 	portrait,
 	variant,
 	scrollLabel,
+	scrollCue = 'chevron',
 	focalPoint,
 	focalPointMobile,
 	focalPointTablet,
@@ -319,13 +321,23 @@ if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
 				</div>
 			</div>
 
-			<div class="invitation-hero__scroll-indicator">
+			<div class="invitation-hero__scroll-indicator" data-scroll-cue={scrollCue}>
 				<span class="invitation-hero__scroll-text">{scrollLabel || 'Desliza'}</span>
-				<div class="invitation-hero__scroll-chevron">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<path d="m6 9 6 6 6-6"/>
+				{scrollCue === 'constellation' ? (
+					// Three sparkles joined by a line that draws itself downward, star by star.
+					<svg class="invitation-hero__scroll-constellation" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 80" fill="none" aria-hidden="true">
+						<path class="invitation-hero__scroll-thread" d="M12 8 L7 40 L13 72" pathLength="1" stroke="currentColor" stroke-width="0.75" stroke-linecap="round" />
+						<path class="invitation-hero__scroll-star" d="M12 2.5 13 7 17.5 8 13 9 12 13.5 11 9 6.5 8 11 7Z" fill="currentColor" />
+						<path class="invitation-hero__scroll-star" d="M7 35 7.9 39.1 12 40 7.9 40.9 7 45 6.1 40.9 2 40 6.1 39.1Z" fill="currentColor" />
+						<path class="invitation-hero__scroll-star" d="M13 66.5 14 71 18.5 72 14 73 13 77.5 12 73 7.5 72 12 71Z" fill="currentColor" />
 					</svg>
-				</div>
+				) : (
+					<div class="invitation-hero__scroll-chevron">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="m6 9 6 6 6-6"/>
+						</svg>
+					</div>
+				)}
 			</div>
 		</section>
 	</CoverStage>

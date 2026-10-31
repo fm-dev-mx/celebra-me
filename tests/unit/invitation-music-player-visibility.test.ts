@@ -74,6 +74,22 @@ describe('invitation music player visibility', () => {
 		}
 	});
 
+	it('carries the track control with its title and artist to the player', () => {
+		const music = musicSchema.parse({
+			url: PLAYABLE_URL,
+			title: 'Nuvole Bianche',
+			artist: 'Ludovico Einaudi',
+			control: 'track',
+		});
+		const viewModel = adaptEvent(contentDocumentFromEntry(makeMinimalEvent(music)));
+		expect(buildPage(viewModel).musicPlayer).toMatchObject({
+			title: 'Nuvole Bianche',
+			artist: 'Ludovico Einaudi',
+			control: 'track',
+		});
+		expect(musicSchema.safeParse({ url: PLAYABLE_URL, control: 'ticker' }).success).toBe(false);
+	});
+
 	describe('adaptEvent', () => {
 		it('keeps playable music for the page resolver', () => {
 			const viewModel = adaptEvent(

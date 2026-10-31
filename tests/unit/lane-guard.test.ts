@@ -92,7 +92,7 @@ describe('lane guard', () => {
 		git(checkout, ['switch', '-c', 'feat/task']);
 		const result = runGuard(checkout);
 		expect(result.status).toBe(1);
-		expect(result.stderr).toContain('Integration (Win + F4) only takes commits on develop');
+		expect(result.stderr).toContain('Integration (Win + F5) only takes commits on develop');
 	});
 
 	it('accepts concluding a merge in Integration', () => {

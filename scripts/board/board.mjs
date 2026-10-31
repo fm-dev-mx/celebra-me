@@ -20,10 +20,11 @@
  *                                               carril defaults to the planned lane, another needs --coordinador;
  *                                               T172: a pendiente task becomes en curso; T297: run from a
  *                                               lane, the lane and branch must be the task's and it opens
- *                                               the git-safety session --session=<rama>)
+ *                                               the git-safety session --session=<rama>; T543: a lane task
+ *                                               is refused from Integration or an unknown folder)
  *   entregada <id> --agente=<a> [--quien=<a>]  d249: its prompt was pasted into <a>'s chat; it leaves «Le toca
  *                                               a usted» until 15 min pass without a claim (claim clears it)
- *   plan <id> --carril=<id> --coordinador --rev=<n>   d177: the lane a ready task runs in; --carril= clears it;
+ *   plan <id> --carril=<id> --coordinador --quien=<q> --rev=<n> d177: the lane a ready task runs in; --carril= clears it;
  *                                               T382: refused on a busy lane (other branch, uncommitted)
  *   release <id> --agente=<a> [--nombre=<s>] [--coordinador]   copies the lock's session into `sesion`;
  *                                               --coordinador frees a legacy lock without sesion, or
@@ -31,10 +32,12 @@
  *                                               a task still en curso goes back to pendiente (T172), a
  *                                               review with its verdict becomes hecha; T297: from the lane,
  *                                               --git-safety=commit[,history] also finishes git-safety
- *   merged [<id>] --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
+ *   merged [<id>] --coordinador --quien=<q> [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
- *   review <id> [--agente=<b>] [--sha=<sha>]    cross review: <id>-revision, then <id>-revision-2, … per new SHA;
+ *   review <id> [--agente=<b>] [--sha=<sha>]    cross review: round <id>-revision, then <id>-revision-2, … per
+ *                                               new SHA, kept inside <id> (T529), never a task of its own;
+ *                                               T543: rounds still in files of their own move in first;
  *                                               without --agente the reviewer follows d183; d282: a
  *                                               low-risk PR by Claude goes to a Claude subagent
  *   close <id> --resumen=… [--resumen=…] [--comprobacion=…] [--saltada=…] [--pendiente="texto→T58"]
@@ -66,6 +69,8 @@
  *   restore <id> [--dry-run]                    a compacted task back from its .zip
  *   prune-backups [--dry-run|--aplicar]        d185: lists the surplus backup copies; only --aplicar removes them
  *   migrate-log [--dry-run]                     old one-file-per-row bitácora → bitacora/<day>.jsonl, every row kept
+ *   migrate-rounds <id> [--aplicar]             T543: lists <id>'s review rounds still in files of their own;
+ *                                               --aplicar moves them into its rondas (backups kept)
  *   verify [--json] [--archivadas]              same as pnpm board:verify
  *   msg <id> --de=<a> --para=<b> "texto" [--opcion="…" …] [--detalle="…"]
  *                                               T126: a message about a task, kept in the bitácora; T322: --opcion
@@ -148,6 +153,7 @@ import { deliveryCommands } from './delivery-commands.mjs';
 import {
 	appendLog,
 	assertId,
+	embedLegacyRounds,
 	migrateLegacyLog,
 	migrateLogLines,
 	boardDir,
@@ -169,6 +175,7 @@ import { resumenCommands } from './resumen.mjs';
 import { chooseReviewer, reviewCreatedText, reviewerPrecheck } from './reviewer.mjs';
 import { reviewCierreIssue } from './require-cierre.mjs';
 import { withTrace } from './trace.mjs';
+import { assertCoordinator } from './coordinator-authority.mjs';
 import { traceText } from './format.mjs';
 import { addToZip } from './zip.mjs';
 import { checkoutState, finishGitSafety, finishOps, lockLaneIssue } from './lane-session.mjs';
@@ -298,9 +305,11 @@ function saveTask(dir, before, after, opts = {}) {
 	const t = { ...traced, rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
 	const questions = prepareQuestionRevision(dir, before, t, opts);
 	// Archive never deletes tasks; both collections reserve their numbers permanently. A task saved before
-	// numbering existed gets the next number on its first write, like a new one.
-	t.num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
-	if (t.num !== before?.num && !Number.isSafeInteger(t.num))
+	// numbering existed gets the next number on its first write, like a new one. A review round lives inside its
+	// task (T529) and takes no number of its own.
+	if (t.ronda) delete t.num;
+	else t.num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
+	if (!t.ronda && t.num !== before?.num && !Number.isSafeInteger(t.num))
 		throw new UsageError('se agotaron los números de tarea');
 	const pr = normalizePr(t.pr);
 	if (pr === undefined) delete t.pr;
@@ -448,8 +457,8 @@ function row(t, n, board, agente) {
 }
 
 /**
- * T79: one try of `review`: every round is a new child `<id>-revision`, `-revision-2`, … with its own prompt; d183
- * picks the reviewer. d288: `{espera}` (nothing written) while the head's CI is not green yet, unless --sin-ci.
+ * T79: one try of `review`: every round `<id>-revision`, `-revision-2`, … has its own prompt and lives inside the
+ * reviewed task (T529), with no number of its own; d183 picks the reviewer. d288: `{espera}` (nothing written) while the head's CI is not green yet, unless --sin-ci.
  */
 function reviewOnce({ pos, flags }, dir, out) {
 	return withLock(dir, () => {
@@ -486,16 +495,17 @@ function reviewOnce({ pos, flags }, dir, out) {
 		const pick = chooseReviewer(author, flags.agente, loadBoard(dir), preflight.files, src);
 		if (pick.issue) throw new UsageError(pick.issue);
 		const { agente, revisor } = pick;
+		// T543: rounds that still have a file of their own move into the task, so no round is left outside it.
+		embedLegacyRounds(dir, 'tareas', src.id);
 		const id = reviewChildId(src, prev);
 		const before = readDoc(dir, 'tareas', id);
-		// The prompt-v1 session name (T160) needs the number saveTask is about to give the child.
-		const num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
+		// T529: the round lives inside the reviewed task, so its prompt-v1 session name (T160) carries that number.
 		const t = reviewChild(src, {
 			agente,
 			revisor,
 			sha,
 			prev,
-			num,
+			num: src.num,
 			files: preflight.files,
 			// d291: rounds since the last verdict answered nothing, so this one reviews the whole PR.
 			previas: leftByUnanswered(src.id, loadBoard(dir)) ?? undefined,
@@ -947,6 +957,7 @@ export async function run(argv, { dir = boardDir(), out = console.log, prState }
 			`comando desconocido: ${cmd ?? '(ninguno)'}. Use: ${Object.keys(commands).join(', ')}`,
 		);
 	const args = parseArgs(rest);
+	assertCoordinator(cmd, args.flags, () => getTask(dir, need(args.pos[0], 'falta <id>')));
 	const result = await fn(args, dir, out, prState ? { prState } : undefined);
 	beatCaller(dir, cmd, args.flags);
 	return result;

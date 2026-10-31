@@ -36,6 +36,7 @@ import {
 	isReview,
 	isStaleLock,
 	normalizePr,
+	reviewRounds,
 	STALE_LOCK_HOURS,
 	taskIdFromBranch,
 	taskLabel as label,
@@ -50,6 +51,8 @@ const HOUR_MS = 3_600_000;
 /** The task lanes the sync may realign; Integration is never touched. */
 const FREE_LANES = new Set(WORKTREE_LANES.map((l) => l.segment).filter(Boolean));
 const HYGIENE = 'pnpm board:sync';
+/** T478: board:sync is the Claude coordinator's job, so its writes carry that real writer. */
+const SYNC_WRITER = ['--coordinador', '--quien=claude'];
 
 const sh = (cmd, args, cwd) =>
 	execFileSync(cmd, args, {
@@ -241,8 +244,11 @@ export function staleLocks(board, src, { now = Date.now(), hours = STALE_LOCK_HO
 	return out;
 }
 
-/** The write a task's PR calls for (`set` may be empty), or `{ aviso }` for a PR closed without merge. */
-function prChange(t, p) {
+/**
+ * The write a task's PR calls for (`set` may be empty), or `{ aviso }` for a PR closed without merge. T529: a task
+ * a review sent back «en curso» with `cambios` stays there until its author closes it again.
+ */
+function prChange(t, p, board) {
 	const pr = `#${p.number}`;
 	if (p.state === 'CLOSED') return { aviso: `${label(t)}: PR ${pr} cerrado sin unir` };
 	const set = {};
@@ -253,7 +259,10 @@ function prChange(t, p) {
 		set.estado = 'unida';
 		texto = `${label(t)} → PR ${pr} unido: pasa a unida`;
 	} else if (p.isDraft) texto = `${label(t)} → PR ${pr} en borrador`;
-	else if (TO_REVIEW.has(t.estado ?? 'pendiente')) {
+	else if (
+		TO_REVIEW.has(t.estado ?? 'pendiente') &&
+		!(t.estado === 'en curso' && reviewRounds(t.id, board).length)
+	) {
 		set.estado = 'en revision';
 		texto = `${label(t)} → PR ${pr} abierto: pasa a en revision`;
 	}
@@ -286,7 +295,7 @@ export function plan(board, src, opts = {}) {
 			else if (t.rama) avisos.push({ id: t.id, texto: `${label(t)}: ${branchNote(t, src)}` });
 			continue;
 		}
-		const change = prChange(t, p);
+		const change = prChange(t, p, board);
 		if (change.aviso) {
 			avisos.push({ id: t.id, texto: change.aviso });
 			continue;
@@ -326,7 +335,7 @@ function mergedRelease(t, p, texto) {
 export async function apply(cambios, dir, { prState } = {}) {
 	const out = [];
 	for (const c of cambios) {
-		const common = [`--rev=${c.rev}`, '--coordinador', '--corrio=pnpm board:sync'];
+		const common = [`--rev=${c.rev}`, ...SYNC_WRITER, '--corrio=pnpm board:sync'];
 		const args =
 			c.cmd === 'merged'
 				? ['merged', c.id, ...common, `--pr=${c.pr}`]
@@ -433,7 +442,7 @@ async function applyOne(c, dir) {
 		'set',
 		c.id,
 		`--rev=${c.rev}`,
-		'--coordinador',
+		...SYNC_WRITER,
 		`--corrio=${HYGIENE}`,
 		`--salio=${c.salio}`,
 		...Object.entries(c.set).map(([k, v]) => `${k}=${v}`),

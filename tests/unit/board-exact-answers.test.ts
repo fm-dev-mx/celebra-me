@@ -151,7 +151,7 @@ describe('exact board answers', () => {
 			`await ask();
    await exec(['set','sample','--rev=1','--agente=codex','--sesion=s','ahora=Trabajo de sesión']);
    const before=ownerMessages(loadBoard(dir)).length;
-   await exec(['set','sample','--rev=2','--coordinador','--sesion-archivada','prompt=PROMPT NUEVO']);
+   await exec(['set','sample','--rev=2','--coordinador', '--quien=claude','--sesion-archivada','prompt=PROMPT NUEVO']);
    const b=loadBoard(dir);
    console.log(JSON.stringify({before,after:ownerMessages(b).length,receipt:b.bitacora.find(r=>r.atendido),agent:unreadFor('codex',b)[0].mensaje.texto,prompt:promptWithLane(b.tareas[0],b)}));`,
 		);
@@ -165,7 +165,7 @@ describe('exact board answers', () => {
 		const r = probe(
 			fixture(),
 			`await ask(); await exec(['decide','tareas=sample','decision=Primera']);
-   await exec(['set','sample','--rev=1','--coordinador','prompt=PROMPT NUEVO']);
+   await exec(['set','sample','--rev=1','--coordinador', '--quien=claude','prompt=PROMPT NUEVO']);
    const b=loadBoard(dir); console.log(JSON.stringify(promptWithLane(b.tareas[0],b)));`,
 		);
 		expect(r).not.toContain('RESPUESTA');
@@ -178,9 +178,9 @@ describe('exact board answers', () => {
    await exec(['msg','sample','--de=codex','--para=coordinador','T1 sample · siguiente: unir']);
    await exec(['inbox','--agente=coordinador']); let error, refused;
    try {await exec(['atendido','sample','--para=coordinador']);} catch(e){error=e.message;}
-   try {await exec(['merged','sample','--coordinador'],'OPEN');}catch(e){refused=e.message;}
+   try {await exec(['merged','sample','--coordinador', '--quien=claude'],'OPEN');}catch(e){refused=e.message;}
    const before=unreadFor('coordinador',loadBoard(dir)).length;
-   await exec(['merged','sample','--coordinador']);
+   await exec(['merged','sample','--coordinador', '--quien=claude']);
    console.log(JSON.stringify({error,refused,before,after:unreadFor('coordinador',loadBoard(dir)).length}));`,
 		);
 		expect(r.error).toContain('solo con pnpm board merged');

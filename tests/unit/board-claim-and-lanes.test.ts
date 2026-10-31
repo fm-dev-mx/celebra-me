@@ -130,7 +130,7 @@ describe('T172 claim lifecycle', () => {
 });
 
 describe('T172 who added and followed up a task', () => {
-	it('stamps agregadaPor on add, preferring the real agent over --coordinador', () => {
+	it('stamps agregadaPor on add, naming the real writer given with --coordinador', () => {
 		const dir = makeBoard({ tareas: [] });
 		const add = cli(dir, [
 			'add',
@@ -140,24 +140,39 @@ describe('T172 who added and followed up a task', () => {
 			'actor=coordinador',
 			'--agente=gemini',
 			'--coordinador',
+			'--quien=claude',
 		]);
 		expect(add.status).toBe(0);
-		expect(readJson(dir, 'tareas', 'nueva')).toMatchObject({ agregadaPor: 'gemini' });
+		expect(readJson(dir, 'tareas', 'nueva')).toMatchObject({ agregadaPor: 'claude' });
 		expect(readJson(dir, 'tareas', 'nueva').seguimientoPor).toBeUndefined();
 	});
 
 	it('stamps seguimientoPor on follow-up writes and refuses it through set', () => {
 		const dir = makeBoard({ tareas: [task('sigue', { agregadaPor: 'gemini' })] });
 		expect(
-			cli(dir, ['set', 'sigue', '--rev=1', 'ahora=Revisada', '--coordinador']).status,
+			cli(dir, [
+				'set',
+				'sigue',
+				'--rev=1',
+				'ahora=Revisada',
+				'--coordinador',
+				'--quien=claude',
+			]).status,
 		).toBe(0);
 		expect(readJson(dir, 'tareas', 'sigue')).toMatchObject({
 			agregadaPor: 'gemini',
-			seguimientoPor: 'coordinador',
+			seguimientoPor: 'claude',
 		});
 		expect(cli(dir, ['move', 'sigue', '--agente=codex', '--quien=claude']).status).toBe(0);
 		expect(readJson(dir, 'tareas', 'sigue')).toMatchObject({ seguimientoPor: 'claude' });
-		const forged = cli(dir, ['set', 'sigue', '--rev=3', 'agregadaPor=codex', '--coordinador']);
+		const forged = cli(dir, [
+			'set',
+			'sigue',
+			'--rev=3',
+			'agregadaPor=codex',
+			'--coordinador',
+			'--quien=claude',
+		]);
 		expect(forged.status).toBe(2);
 		expect(forged.err).toContain('agregadaPor requiere su comando');
 	});
@@ -264,7 +279,7 @@ describe('T172 live lanes and replaced decisions', () => {
 		const lane = lanes.find((l: Json) => l.id === 'f05-plataforma');
 		expect(lane).toMatchObject({
 			id: 'f05-plataforma',
-			uso: 'F5 Plataforma',
+			uso: 'Plataforma (en retiro)',
 			puerto: 4325,
 			rama: 'feat/x',
 			limpio: false,

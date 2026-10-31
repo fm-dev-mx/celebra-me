@@ -1,8 +1,9 @@
 /**
  * T297 (U-03): `claim`, `close` and `release` run from the task's lane also check that lane and drive its
  * git-safety session, so a code task no longer starts and ends that session by hand
- * (docs/core/git-safety-session.md). Run from Integration (the coordinator) or from an unknown folder they check
- * nothing. A test board (CELEBRA_BOARD_DIR) inspects no checkout unless CELEBRA_BOARD_CHECKOUT names one.
+ * (docs/core/git-safety-session.md). `claim` of a lane task refuses Integration and unknown folders (T543);
+ * `close` and `release` run from them check nothing. A test board (CELEBRA_BOARD_DIR) inspects no checkout
+ * unless CELEBRA_BOARD_CHECKOUT names one.
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -40,12 +41,17 @@ const inTaskLane = (state) =>
 	Boolean(state) && state.carril !== READONLY_LANE && state.carril !== 'unknown';
 
 /**
- * Why `claim` must not take `task` from this checkout, or null: the folder is another lane, or its branch is not
- * the task's. Read-only and external tasks hold no checkout, so they are never checked.
+ * Why `claim` must not take `task` from this checkout, or null: the folder is Integration, unknown or another lane,
+ * or its branch is not the task's. Read-only and external tasks hold no checkout, so they are never checked.
  */
-export function claimLaneIssue(state, task, { carril, rama }) {
-	if (!inTaskLane(state) || isReadOnly(task) || carril === EXTERNAL_LANE || isExternal(task))
-		return null;
+export function claimLaneIssue(state, task, { carril, rama }, { viaMcp = false } = {}) {
+	if (!state || isReadOnly(task) || carril === EXTERNAL_LANE || isExternal(task)) return null;
+	// T543: a lane task is claimed only from its lane folder. The MCP server runs in its own folder, not the
+	// agent's, so an MCP claim from Integration or an unknown folder is not refused.
+	if (!inTaskLane(state))
+		return carril === READONLY_LANE || viaMcp
+			? null
+			: `esta carpeta es ${state.carril}, no un carril de tarea: haga claim de ${task.id} desde celebra-me-worktrees/${carril}`;
 	if (carril && state.carril !== carril)
 		return `esta carpeta es ${state.carril}, pero ${task.id} corre en ${carril}: haga claim desde celebra-me-worktrees/${carril}`;
 	if (rama && state.rama !== rama)

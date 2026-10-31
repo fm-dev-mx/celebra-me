@@ -73,8 +73,10 @@ const isSeaside = revealVariant === 'seaside-lineart';
 const isStorybook = revealVariant === 'storybook-lanterns' || revealVariant === 'storybook-butterflies';
 const skyMotif = revealVariant === 'storybook-butterflies' ? 'butterflies' : 'lanterns';
 const isNight = revealVariant === 'night-envelope';
-// Storybook and night letters sit inside the envelope, behind the pocket front, and rise out of it.
-const letterInPocket = isStorybook || isNight;
+const isCelestialLetter = revealVariant === 'celestial-letter';
+// Storybook, night and celestial letters sit inside the envelope, behind the pocket front, and rise
+// out of it.
+const letterInPocket = isStorybook || isNight || isCelestialLetter;
 const isWaxRenderer = ['wax-organic', 'wax-medallion'].includes(sealPresentation.renderer);
 // Discrete seal-zone open cue (editorial, not a SaaS tooltip bubble).
 const sealHintText = tooltipText?.trim() || 'Toque el sello';

@@ -6,8 +6,10 @@ import { shouldBufferMusicAfterPaint } from '@/lib/invitation/music-preload';
 interface Props {
 	url?: string;
 	autoPlay?: boolean;
-	/** Song title; shown as the control's tooltip, never as its accessible name. */
+	/** Song title; the control's tooltip, or the visible line of the `track` control. */
 	title?: string;
+	/** Performer, printed after the title by the `track` control. */
+	artist?: string;
 	/** Same-site credit page; the footer prints the attribution line, not the player. */
 	creditsUrl?: string;
 	revealMode?: 'envelope' | 'immediate';
@@ -16,8 +18,10 @@ interface Props {
 	 * `button` (default): round play/pause button with a pulse while paused and a hint pill.
 	 * `equalizer`: one quiet 44 px control whose bars move while the song plays; it dims after a
 	 * few seconds without interaction and wakes on scroll, touch, hover or focus.
+	 * `track`: a «title · artist» line with the bars, set in the hero's bottom corner; it fades
+	 * out while the hero is out of view and returns with it.
 	 */
-	control?: 'button' | 'equalizer';
+	control?: 'button' | 'equalizer' | 'track';
 	/** Second at which playback starts and loops back to (skips an intro). */
 	startAt?: number;
 	/** Seconds of volume ramp when playback starts or loops back (default 1.2). */
@@ -28,6 +32,7 @@ const {
 	url = '',
 	autoPlay = false,
 	title,
+	artist,
 	revealMode = 'envelope',
 	variant,
 	control = 'button',
@@ -36,6 +41,10 @@ const {
 } = Astro.props;
 
 const isEqualizer = control === 'equalizer';
+const isTrack = control === 'track';
+const hasBars = isEqualizer || isTrack;
+// The track line is read as part of the control's name, so the visible words are in its label.
+const trackLabel = isTrack ? [title, artist].filter(Boolean).join(' · ') : '';
 const hasAudio = Boolean(url.trim());
 const startSeconds = Number.isFinite(startAt) && startAt > 0 ? startAt : 0;
 const fadeInMs =
@@ -66,6 +75,7 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 	data-control={control}
 	data-has-audio={hasAudio ? 'true' : 'false'}
 	data-pending-label={promptText}
+	data-track-label={trackLabel || undefined}
 	data-start-at={startSeconds > 0 ? String(startSeconds) : undefined}
 	data-fade-in-ms={fadeInMs !== undefined ? String(fadeInMs) : undefined}
 >
@@ -79,8 +89,8 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 		></audio>
 	) : null}
 
-	{/* The equalizer speaks through its bars; the pill only returns when autoplay is refused. */}
-	<span class="music-player__prompt" data-music-prompt hidden={isEqualizer}>{promptText}</span>
+	{/* Bars speak for themselves; the pill only returns when autoplay is refused. */}
+	<span class="music-player__prompt" data-music-prompt hidden={hasBars}>{promptText}</span>
 
 	<div class="music-player__controls">
 		<button
@@ -88,16 +98,24 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 			class:list={[
 				'music-player__button',
 				'music-player__button--play',
-				{ 'music-player__button--pulsing': !isEqualizer },
+				{ 'music-player__button--pulsing': !hasBars, 'music-player__track': isTrack },
 			]}
 			data-music-toggle
-			aria-label={promptText}
-			title={title || undefined}
+			aria-label={trackLabel ? `${promptText}: ${trackLabel}` : promptText}
+			title={isTrack ? undefined : title || undefined}
 		>
-			{isEqualizer ? (
-				<span class="music-player__bars" aria-hidden="true">
-					<span></span><span></span><span></span>
-				</span>
+			{hasBars ? (
+				<Fragment>
+					<span class="music-player__bars" aria-hidden="true">
+						<span></span><span></span><span></span>
+					</span>
+					{isTrack && trackLabel && (
+						<span class="music-player__track-text" aria-hidden="true">
+							{title && <span class="music-player__track-title">{title}</span>}
+							{artist && <span class="music-player__track-artist">{artist}</span>}
+						</span>
+					)}
+				</Fragment>
 			) : (
 				<Fragment>
 					<span data-icon-play><Icon name="Play" size={24} /></span>
@@ -119,6 +137,16 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 		return Number.isFinite(value) && value >= 0 ? value : 1200;
 	};
 
+	// Track: the line belongs to the hero; once the hero is mostly out of view it fades away.
+	const keepTrackWithHero = (player: HTMLElement) => {
+		const hero = document.querySelector('.invitation-hero');
+		if (!hero || !('IntersectionObserver' in window)) return;
+		new IntersectionObserver(
+			([entry]) => player.classList.toggle('is-away', entry.intersectionRatio < 0.5),
+			{ threshold: [0, 0.5, 1] },
+		).observe(hero);
+	};
+
 	players.forEach((player) => {
 		if (!(player instanceof HTMLElement)) {
 			return;
@@ -134,6 +162,8 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 		const revealMode = player.dataset.revealMode || 'envelope';
 		const hasAudio = player.dataset.hasAudio === 'true';
 		const isEqualizer = player.dataset.control === 'equalizer';
+		const isTrack = player.dataset.control === 'track';
+		const trackLabel = player.dataset.trackLabel || '';
 		const startAt = Number(player.dataset.startAt || 0);
 		const bufferMusicNow = scheduleMusicBufferAfterPaint(audio);
 
@@ -166,13 +196,12 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 			player.classList.toggle('is-playing', isPlaying);
 			toggle.classList.toggle(
 				'music-player__button--pulsing',
-				!isEqualizer && hasAudio && !isPlaying,
+				!isEqualizer && !isTrack && hasAudio && !isPlaying,
 			);
-			// The accessible name says what the tap does; the song title stays in the tooltip.
-			toggle.setAttribute(
-				'aria-label',
-				isPlaying ? 'Pausar música' : hasAudio ? promptText : pendingTitle,
-			);
+			// The accessible name says what the tap does; the song title stays in the tooltip,
+			// except on the track line, whose visible words join the name.
+			const action = isPlaying ? 'Pausar música' : hasAudio ? promptText : pendingTitle;
+			toggle.setAttribute('aria-label', trackLabel ? `${action}: ${trackLabel}` : action);
 		};
 
 		// Equalizer: the control fades to a low opacity after a few seconds without interaction
@@ -192,6 +221,8 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 			player.addEventListener('pointerenter', wake);
 			wake();
 		}
+
+		if (isTrack) keepTrackWithHero(player);
 
 		const fadeOutPrompt = () => {
 			if (!(prompt instanceof HTMLElement)) {

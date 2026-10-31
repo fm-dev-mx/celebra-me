@@ -49,7 +49,7 @@ function claimLocation(before, flags, board) {
 		throw new UsageError(`${readOnlyLaneError(before, 'carril propio')}; omita --carril`);
 	if (isReadOnly(before) && planned)
 		throw new UsageError(
-			`${readOnlyLaneError(before, 'carril planeado')}; el coordinador lo quita con plan --carril= --coordinador`,
+			`${readOnlyLaneError(before, 'carril planeado')}; el coordinador lo quita con plan --carril= --coordinador --quien=claude`,
 		);
 	if (!isReadOnly(before) && !laneAllowed(carril, before))
 		throw new UsageError(
@@ -137,9 +137,11 @@ export function claimCommands({ getTask, saveTask }) {
 					);
 				}
 				const location = claimLocation(before, flags, board);
-				const laneIssue = claimLaneIssue(checkout, before, location);
+				const laneIssue = claimLaneIssue(checkout, before, location, {
+					viaMcp: process.env.CELEBRA_BOARD_VIA === 'mcp',
+				});
 				if (laneIssue) throw new UsageError(laneIssue);
-				const titleIssue = claimTitleIssue(before, flags.titulo, location.carril);
+				const titleIssue = claimTitleIssue(before, flags.titulo, location.carril, board);
 				if (titleIssue) throw new UsageError(titleIssue);
 				const t = saveTask(dir, before, claimed(before, who, location), {
 					quien: flags.quien,

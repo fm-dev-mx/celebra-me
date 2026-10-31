@@ -319,7 +319,11 @@ function makeLocationIncompatible(data: Record<string, unknown>, variant: string
 				isVisible: true,
 			},
 		];
-	} else if (variant === 'stacked-venue-plates' || variant === 'night-route') {
+	} else if (
+		variant === 'stacked-venue-plates' ||
+		variant === 'night-route' ||
+		variant === 'star-route'
+	) {
 		const location = data.location as Record<string, unknown>;
 		location.venues = [(location.venues as Array<unknown>)[0]];
 	} else if (variant === 'program-sheet') {

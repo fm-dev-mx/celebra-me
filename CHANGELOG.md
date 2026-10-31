@@ -10,6 +10,39 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.58.0-beta.1] - 2026-10-31
+
+Leads now carry a record of their origin and sales stage, and the qualified and order-confirmed
+stages reach Meta as conversion events. The Celestial XV demo is redesigned. Two database migrations
+are included.
+
+### Added
+
+- Dashboard: lead records at `/dashboard/fichas` with sales stages, dated stage changes, lost
+  reasons and package value, TikTok click ID capture on the landing and a per-ad code catalog for
+  chat leads (#705).
+- Tracking: Meta Conversions API `Lead` and `Purchase` events for the qualified and order-confirmed
+  CRM lead stages (#709).
+- Tooling: board claim lane guard, review rounds kept inside the reviewed task, coordinator actions
+  that name the real actor, and a mother-task rule with phases and steps (#707, #708, #711, #713).
+
+### Changed
+
+- Demos: redesign the Celestial XV demo with a night-arch hero, an early countdown and bridge
+  sections before the closing (#684).
+- Tooling: Integration takes hotkey 5 and the f05-plataforma lane retires; the board rule and
+  coordinator guide define the session lifecycle (#706, #712).
+- Tooling: every board script runs through the pinned board core (#714).
+
+### Database
+
+- `20261030180000_lead_record_origin` (expand): adds lead route, ad code, `utm_content`, `ttclid`,
+  `ctwa_clid`, sales stage with per-stage timestamps, lost reason and package value, plus the
+  service-only `lead_ad_codes` catalog.
+- `20261031120000_meta_crm_lead_sales_stages` (contract): widens the `meta_conversion_events` checks
+  to admit lead-linked CRM `Lead` and `Purchase` rows. Both are applied to Production before this
+  release.
+
 ## [0.57.0-beta.1] - 2026-10-30
 
 Yireh Ana's XV invitation is published with its refined reveal letter, seal and closing medallion.

@@ -166,6 +166,8 @@ export const musicSchema = z
 		url: z.string(),
 		autoPlay: z.boolean().default(false),
 		title: z.string().optional(),
+		/** Performer shown next to the title by the `track` control. */
+		artist: z.string().optional(),
 		/** Optional same-site credit page for licensed demonstration tracks. */
 		creditsUrl: z
 			.string()
@@ -176,10 +178,12 @@ export const musicSchema = z
 		/** Seconds of volume ramp when playback starts or loops back (default 1.2). */
 		fadeInSeconds: z.number().min(0).max(10).optional(),
 		/**
-		 * Floating control: the round play/pause button (default) or a quieter equalizer that
-		 * moves while the song plays and dims after a few seconds without interaction.
+		 * Floating control: the round play/pause button (default), a quieter equalizer that
+		 * moves while the song plays and dims after a few seconds without interaction, or a
+		 * `track` line («title · artist») that sits in the hero and fades out while the hero is out
+		 * of view.
 		 */
-		control: z.enum(['button', 'equalizer']).optional(),
+		control: z.enum(['button', 'equalizer', 'track']).optional(),
 	})
 	.optional();
 
