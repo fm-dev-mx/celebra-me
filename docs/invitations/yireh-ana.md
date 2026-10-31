@@ -13,9 +13,9 @@
 | **Slug**               | `yireh-ana` (verified celebrant name)             |
 | **Host Login Alias**   | `yireh_ana` (ASCII lowercase, celebrant identity) |
 | **Event Type**         | `xv`                                              |
-| **Preparation Status** | `READY_WITH_PLACEHOLDERS`                         |
+| **Preparation Status** | `READY_FOR_IMPLEMENTATION`                        |
 
-**Preparation Readiness (prepReadiness):** `READY_WITH_PLACEHOLDERS`
+**Preparation Readiness (prepReadiness):** `READY_FOR_IMPLEMENTATION`
 
 Technical Local/Preview/Production readiness (**envReadiness**) is **out of scope** for this
 document and remains owned by `pnpm invitation:release -- --status` / `invitation-readiness.ts`.
@@ -265,8 +265,9 @@ and weights above describe the delivered derivatives; source filenames are logic
 
 ## Preparation Readiness History
 
-| date       | readiness                 | helper basis                   | notes                                                     |
-| ---------- | ------------------------- | ------------------------------ | --------------------------------------------------------- |
-| 2026-10-27 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` | Full intake and production watercolor assets ready (T417) |
-| 2026-10-28 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` | v2 Level-América craft, synthetic data removed (T423)     |
-| 2026-10-29 | `READY_WITH_PLACEHOLDERS` | `evaluatePreparationReadiness` | v3 stationery, client program, two scenes (T455)          |
+| date       | readiness                  | helper basis                   | notes                                                           |
+| ---------- | -------------------------- | ------------------------------ | --------------------------------------------------------------- |
+| 2026-10-27 | `READY_WITH_PLACEHOLDERS`  | `evaluatePreparationReadiness` | Full intake and production watercolor assets ready (T417)       |
+| 2026-10-28 | `READY_WITH_PLACEHOLDERS`  | `evaluatePreparationReadiness` | v2 Level-América craft, synthetic data removed (T423)           |
+| 2026-10-29 | `READY_WITH_PLACEHOLDERS`  | `evaluatePreparationReadiness` | v3 stationery, client program, two scenes (T455)                |
+| 2026-10-30 | `READY_FOR_IMPLEMENTATION` | `evaluatePreparationReadiness` | Owner accepted v3 cover and flower seal; no placeholders remain |
