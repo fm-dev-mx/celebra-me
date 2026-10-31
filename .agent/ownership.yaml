@@ -260,6 +260,13 @@ ownership:
       non_owners:
           - 'Prose docs overriding board code'
           - '.agent/tmp/board/ data as policy'
+          - '.agent/tmp/tablero/ data as policy'
+
+    - aspect: 'Board core pin, projects, lanes and migration'
+      owner: 'tablero.config.json'
+      non_owners:
+          - 'scripts/board/ defaults'
+          - 'The board core checkout beside the Integration checkout'
 
     - aspect: 'Board task kinds'
       owner: '.agent/kinds/'
