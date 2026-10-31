@@ -2,6 +2,8 @@ import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { MetaAttribution } from '@/lib/tracking/meta-attribution';
 
 export type LeadChannel = 'contact_form' | 'whatsapp' | 'manual';
+/** landing: the website created the lead; chat: the owner captured it from a WhatsApp chat. */
+export type LeadRoute = 'landing' | 'chat';
 type LeadStatus =
 	| 'new'
 	| 'contacted'
@@ -17,6 +19,9 @@ export interface LeadInput {
 	sessionId?: string;
 	sourceEventId?: string;
 	channel: LeadChannel;
+	route?: LeadRoute;
+	/** Per-ad code from the lead_ad_codes catalog (chat route). */
+	adCode?: string;
 	status?: LeadStatus;
 	name?: string;
 	email?: string;
@@ -34,6 +39,8 @@ export interface LeadInput {
 	utmSource?: string;
 	utmMedium?: string;
 	utmCampaign?: string;
+	utmContent?: string;
+	ttclid?: string;
 	metaAttribution?: MetaAttribution;
 	consentContact: boolean;
 	consentMarketing: boolean;
@@ -81,6 +88,8 @@ export async function upsertLead(input: LeadInput): Promise<StoredLead> {
 			session_id: emptyToUndefined(input.sessionId),
 			source_event_id: emptyToUndefined(input.sourceEventId),
 			channel: input.channel,
+			route: input.route,
+			ad_code: emptyToUndefined(input.adCode),
 			status: input.status ?? 'new',
 			name: emptyToUndefined(input.name),
 			email: emptyToUndefined(input.email),
@@ -97,6 +106,8 @@ export async function upsertLead(input: LeadInput): Promise<StoredLead> {
 			utm_source: emptyToUndefined(input.utmSource),
 			utm_medium: emptyToUndefined(input.utmMedium),
 			utm_campaign: emptyToUndefined(input.utmCampaign),
+			utm_content: emptyToUndefined(input.utmContent),
+			ttclid: emptyToUndefined(input.ttclid),
 			fbp: emptyToUndefined(input.metaAttribution?.fbp),
 			fbc: emptyToUndefined(input.metaAttribution?.fbc),
 			fbclid: emptyToUndefined(input.metaAttribution?.fbclid),
@@ -127,6 +138,9 @@ export async function upsertLead(input: LeadInput): Promise<StoredLead> {
 			['utm_source', emptyToUndefined(input.utmSource)],
 			['utm_medium', emptyToUndefined(input.utmMedium)],
 			['utm_campaign', emptyToUndefined(input.utmCampaign)],
+			['utm_content', emptyToUndefined(input.utmContent)],
+			['ttclid', emptyToUndefined(input.ttclid)],
+			['route', input.route],
 			['fbp', emptyToUndefined(input.metaAttribution?.fbp)],
 			['fbc', emptyToUndefined(input.metaAttribution?.fbc)],
 			['fbclid', emptyToUndefined(input.metaAttribution?.fbclid)],

@@ -14,6 +14,7 @@ import {
 	type ClientOnlyTrackingEventName,
 	type PublicTrackingEventName,
 } from '@/lib/tracking/event-contract';
+import { readTtclidFromUrl, sanitizeTtclid } from '@/lib/tracking/tiktok-attribution';
 
 type BrowserTrackingEventName = PublicTrackingEventName | ClientOnlyTrackingEventName;
 
@@ -34,12 +35,14 @@ type TrackingPayload = {
 	// Never populated from HTTP request headers, which reflect the API call itself.
 	referrer?: string;
 	metaAttribution?: MetaAttribution;
+	ttclid?: string;
 	eventProperties: Record<string, string | number | boolean>;
 	consentSnapshot: ConsentSnapshot;
 };
 
 const SESSION_KEY = 'cm_session_id';
 const UTM_KEY = 'cm_utm_snapshot';
+const TTCLID_KEY = 'cm_ttclid';
 const IGNORE_COOKIE = 'cm_ignore_tracking=true';
 const SCROLL_BUCKETS = [25, 50, 75, 90, 100] as const;
 
@@ -129,6 +132,20 @@ function getMetaAttributionSnapshot(): MetaAttribution {
 		url: new URL(window.location.href),
 		cookie: document.cookie,
 	});
+}
+
+/** The TikTok click ID of the landing URL, kept for the session. Call it only with marketing consent. */
+function getTtclidSnapshot(): string | undefined {
+	const fromUrl = readTtclidFromUrl(window.location.href);
+	try {
+		if (fromUrl) {
+			sessionStorage.setItem(TTCLID_KEY, fromUrl);
+			return fromUrl;
+		}
+		return sanitizeTtclid(sessionStorage.getItem(TTCLID_KEY));
+	} catch {
+		return fromUrl;
+	}
 }
 
 function shouldIgnoreTracking(): boolean {
@@ -237,6 +254,7 @@ function trackEvent(
 		utmTerm: utm.term || undefined,
 		referrer: firstTouchReferrer,
 		metaAttribution,
+		ttclid: consent.marketing ? getTtclidSnapshot() : undefined,
 		eventProperties,
 		consentSnapshot: consent,
 	};
@@ -485,6 +503,7 @@ export interface LeadCaptureContext {
 	utmTerm?: string;
 	referrer?: string;
 	metaAttribution?: MetaAttribution;
+	ttclid?: string;
 	consentSnapshot: ConsentSnapshot;
 }
 
@@ -523,6 +542,7 @@ export function getLeadCaptureContext(): LeadCaptureContext {
 		metaAttribution: consent.marketing
 			? metaAttributionOrUndefined(getMetaAttributionSnapshot())
 			: undefined,
+		ttclid: consent.marketing ? getTtclidSnapshot() : undefined,
 		consentSnapshot: consent,
 	};
 }

@@ -155,6 +155,29 @@ music in a step-by-step mobile form; photos still arrive by WhatsApp.
 - **Privacy:** the page is `noindex`, `no-store`, sends no referrer and loads no analytics (its
   route classifies as `unknown`); `mi-invitacion` is a reserved invitation slug.
 
+### Lead record and origin
+
+Every lead row is also the owner's lead record («ficha»), shown at `/dashboard/fichas` (search by
+CM- code, phone or name and change the stage in one form). Owner:
+`src/lib/commercial/lead-record.ts` and `lead-record.service.ts`; API
+`/api/dashboard/commercial/lead-records` and `lead-ad-codes`.
+
+- **Origin fields:** `route` (`landing` or `chat`), `utm_campaign` (campaign), `utm_content` (ad),
+  `ad_code`, `fbc`, `fbp`, `fbclid`, `ttclid` and `ctwa_clid`. `ctwa_clid` stays empty until it is
+  read from the WhatsApp API.
+- **Landing route:** the lead form keeps creating the CM- code and now also stores `utm_content`
+  and, with marketing consent only, the TikTok `ttclid` (read from the landing URL like `fbclid`).
+- **Chat route:** the owner keeps a catalog of per-ad codes in `lead_ad_codes` (e.g. `A07`, written
+  in the ad's prefilled WhatsApp message). Capturing a known, active code from the first message
+  creates the lead with `route = chat`, a new CM- code, the code's campaign and ad, contact consent
+  and no marketing consent. Unknown or inactive codes are rejected.
+- **Stages:** `new`, `qualified`, `order_confirmed`, `order_cancelled`, `paid_delivered`, `lost`.
+  `lost` requires `lost_reason` (`price`, `date`, `other_option`, `no_reply`); leaving `lost` clears
+  it. Entering a stage stamps `stage_changed_at` and that stage's own `<stage>_at` column, so each
+  column keeps the last time the stage was entered. `package_value` is the quoted package in MXN.
+- **Independence:** `stage` is separate from the legacy `leads.status`. Stage changes do not queue
+  CAPI events yet; the CRM lead-stage events below still follow the existing order actions.
+
 ## `lead_created` Event Rule
 
 `lead_created` is a first-party tracking event fired server-side after lead persistence. It follows
