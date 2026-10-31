@@ -11,6 +11,12 @@
 	}
 }
 
+// The meadow sits under the scroll cue; the cover reads as a page to turn without it. Removed from
+// layout (not just made transparent) so it cannot collide with the music prompt on small screens.
+.event--yireh-ana .invitation-hero__scroll-indicator {
+	display: none;
+}
+
 .event--yireh-ana .thank-you-section {
 	.thank-you-message .drop-cap {
 		color: inherit;
