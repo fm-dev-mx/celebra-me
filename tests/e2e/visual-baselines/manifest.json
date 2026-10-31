@@ -2411,8 +2411,8 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
-            "sha256": "90d8024ad3fae178cd05b48e9dbc9a6b5a3e22e70e8a91893cbdd01c168d8c0b",
-            "contentHash": "9ff9194a4aa40253937fea878b3d90600afcdb36b7ec2a2978400492101e386d",
+            "sha256": "4b6575572f94510282576e6df515d9979b5581f0f32e2b9c19096f0ccc99f3f5",
+            "contentHash": "c83777586b3831b8b26ad77bb0e5626f6f9eaa13db6ed35e604008b802c5d49e",
             "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
             "comparisonResult": "ACCEPTED"
         },
@@ -2423,8 +2423,8 @@
             "preset": "celestial-blue",
             "viewport": "desktop",
             "file": "pages/demo-xv-demo-xv-celestial-blue-desktop.png",
-            "sha256": "2b35ea8b3931725239f0ab70699dba07a20071db3d91915a0aa2a43c0fc615a4",
-            "contentHash": "9ff9194a4aa40253937fea878b3d90600afcdb36b7ec2a2978400492101e386d",
+            "sha256": "dd923430047dd1b48af1cfc0d20ef2892af95cbba5619c402a666cbcd5237109",
+            "contentHash": "c83777586b3831b8b26ad77bb0e5626f6f9eaa13db6ed35e604008b802c5d49e",
             "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
             "comparisonResult": "ACCEPTED"
         },
