@@ -19,6 +19,7 @@ import {
 	ownerAsks,
 	ownerWhere,
 	queue,
+	INTEGRATION_SHORT,
 	READONLY_LANE,
 	reviewRounds,
 	SELF_STARTING,
@@ -122,20 +123,20 @@ export function coordinatorAlert(board, now = Date.now()) {
 	if (old.length)
 		return {
 			clave: 'coordinador:mensajes',
-			texto: `El coordinador tiene ${old.length} ${old.length === 1 ? 'mensaje' : 'mensajes'} sin leer hace más de 10 min: abra la sesión del coordinador (f04) y escriba «sigue».`,
+			texto: `El coordinador tiene ${old.length} ${old.length === 1 ? 'mensaje' : 'mensajes'} sin leer hace más de 10 min: abra la sesión del coordinador (${INTEGRATION_SHORT}) y escriba «sigue».`,
 		};
 	const beat = Date.parse(board.coordinador?.at ?? '');
 	if (!board.coordinador?.sesion || !Number.isFinite(beat))
 		return unread.length
 			? {
 					clave: 'coordinador:registro',
-					texto: 'Ninguna sesión de coordinador está registrada: en la sesión del coordinador (f04) pida «registre esta sesión como coordinador del tablero».',
+					texto: `Ninguna sesión de coordinador está registrada: en la sesión del coordinador (${INTEGRATION_SHORT}) pida «registre esta sesión como coordinador del tablero».`,
 				}
 			: null;
 	return now - beat > COORDINATOR_SILENT_MS
 		? {
 				clave: 'coordinador:silencio',
-				texto: `La sesión del coordinador no ha tenido un turno ${agoText(now - beat)}: ábrala (f04) y escriba «sigue».`,
+				texto: `La sesión del coordinador no ha tenido un turno ${agoText(now - beat)}: ábrala (${INTEGRATION_SHORT}) y escriba «sigue».`,
 			}
 		: null;
 }
@@ -151,9 +152,9 @@ export function messageLine(r, board) {
 	return `${r.quien ?? '¿?'} → ${r.mensaje.para} sobre ${t ? taskTag(t) : r.tarea}: ${texto}${extra}`;
 }
 
-/** Short lane name of a session title: `f05` for f05-plataforma, `f04` for Integration. */
+/** Short lane name of a session title: `f06` for f06-landing, `f05` for Integration. */
 const laneShort = (id) =>
-	id === 'integration' ? 'f04' : String(id ?? READONLY_LANE).split('-')[0];
+	id === READONLY_LANE ? INTEGRATION_SHORT : String(id ?? READONLY_LANE).split('-')[0];
 
 /**
  * Why `titulo` cannot name the session that claims `t` in `carril`, or null: it must read `<carril> · T<n> · …`,

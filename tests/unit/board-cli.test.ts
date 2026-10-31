@@ -98,14 +98,14 @@ function boardEnv(dir: string, env: NodeJS.ProcessEnv, ...args: string[]) {
 	return exec(dir, env, args);
 }
 
-/** `f10 · T3 · prueba` for a claim in f10-libre of task 3; a review runs in f04. */
+/** `f10 · T3 · prueba` for a claim in f10-libre of task 3; a review runs in f05. */
 function claimTitle(dir: string, args: string[]) {
 	const file = path.join(dir, 'tareas', `${args[1]}.json`);
 	const byNumber = /^T\d+$/.test(args[1]) ? args[1].slice(1) : undefined;
 	const num = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')).num : byNumber;
 	const given = args.find((a) => a.startsWith('--carril='))?.slice(9);
-	const lane = given === 'integration' ? 'f04' : given;
-	return `${/-revision(-\d+)?$/.test(args[1]) || !lane ? 'f04' : lane.split('-')[0]} · T${num} · prueba`;
+	const lane = given === 'integration' ? 'f05' : given;
+	return `${/-revision(-\d+)?$/.test(args[1]) || !lane ? 'f05' : lane.split('-')[0]} · T${num} · prueba`;
 }
 
 /** Runs the CLI exactly as given, without the test defaults of `board`. */
@@ -937,7 +937,7 @@ describe('pnpm board', () => {
 		expect(second.prompt).toContain('SEGUNDA VUELTA');
 		expect(second.prompt).toContain(`La vuelta anterior (de-claude-revision) revisó ${a}`);
 		expect(second.prompt.split('\n')[0]).toBe(
-			`f04 · T${second.num} · PR #10 · Revisión vuelta 2`,
+			`f05 · T${second.num} · PR #10 · Revisión vuelta 2`,
 		);
 		expect(second.prompt).toContain(`\nsha: ${b}\n`);
 		expect(second.prompt).toContain(`git diff ${a}..${b}`);

@@ -528,7 +528,7 @@ describe('git-safety start lane guard', () => {
 			const start = runGitSafety(loose, ['start']);
 			expect(start.status).toBe(1);
 			expect(start.stderr).toContain('lane: unknown');
-			expect(start.stderr).toContain('f05-plataforma (Win + F5)');
+			expect(start.stderr).toContain('f06-landing (Win + F6)');
 			expect(existsSync(baselinePath(loose))).toBe(false);
 		} finally {
 			cleanupFixture(repoRoot);
@@ -541,7 +541,7 @@ describe('git-safety start lane guard', () => {
 		runCommand('git', ['switch', '-c', 'feature/task'], { cwd: repoRoot, env: sanitizeEnv() });
 		const onFeature = runGitSafety(repoRoot, ['start']);
 		expect(onFeature.status).toBe(1);
-		expect(onFeature.stderr).toContain('Integration (Win + F4) only takes commits on develop');
+		expect(onFeature.stderr).toContain('Integration (Win + F5) only takes commits on develop');
 		expect(existsSync(baselinePath(repoRoot))).toBe(false);
 
 		runCommand('git', ['switch', 'develop'], { cwd: repoRoot, env: sanitizeEnv() });

@@ -59,6 +59,10 @@ export const HANDOFF_LISTS = [
 ];
 
 export const READONLY_LANE = 'integration';
+/** Session-title prefix of Integration (Win + F5); Win + F4 is the separate board project. */
+export const INTEGRATION_SHORT = 'f05';
+/** Coordinator, master and review sessions titled before the move from F4 to F5. */
+export const LEGACY_INTEGRATION_SHORT = 'f04';
 export const EXTERNAL_LANE = 'externo';
 
 export const CATEGORIA_CARRIL = {

@@ -44,7 +44,7 @@ export const LANES: LaneConfig[] = listExpectedLanePaths(REPO_ROOT).map((lane) =
 	name: lane.displayName,
 	path: lane.path,
 	runtimeDefault: lane.runtimeDefault,
-	key: lane.key,
+	key: lane.key ?? undefined,
 	port: lane.port,
 }));
 
@@ -181,7 +181,7 @@ export function inspectLane(lane: LaneConfig, runner: GitRunner = runGit): LaneS
 
 function printHuman(statuses: LaneStatus[]): void {
 	console.log('\n=============================================================');
-	console.log(' Celebra-me Lane Status (Win + F4–F12, Read-Only)');
+	console.log(' Celebra-me Lane Status (Win + F5–F12, Read-Only)');
 	console.log('=============================================================\n');
 
 	for (const info of statuses) {

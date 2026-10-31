@@ -327,7 +327,7 @@ export interface ScreenshotLaneContext {
  * Resolve the default screenshot base URL for the current worktree lane.
  *
  * Ports match Astro `server.port` / `getWorktreeDevServerPort`:
- * - Integration (`develop` trunk, Win + F4) → 4321
+ * - Integration (`develop` trunk, Win + F5) → 4321
  * - every other lane → 4320 + its F-key (`f05-plataforma` → 4325 … `f12-release` → 4332)
  * - unknown checkout → 4399
  *

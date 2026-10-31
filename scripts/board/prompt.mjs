@@ -4,6 +4,7 @@
  * without `formato: prompt-v1` is legacy and keeps its old rules, so saved prompts keep working.
  * No Node APIs: the view imports this module through model.mjs.
  */
+import { INTEGRATION_SHORT } from './board-constants.mjs';
 import { ownerTextIssues } from './owner-text.mjs';
 
 export const PROMPT_FORMAT = 'prompt-v1';
@@ -419,7 +420,7 @@ export function reviewText(
 	const tag = (t, ref) => (t.num ? `T${t.num} ${ref}` : ref);
 	const pr = `#${String(src.pr).replace(/^#/, '')}`;
 	const round = n < 2 ? '' : ` vuelta ${n}`;
-	const name = `f04 · T${num} · PR ${pr} · Revisión${round}`;
+	const name = `${INTEGRATION_SHORT} · T${num} · PR ${pr} · Revisión${round}`;
 	const later = n >= 2;
 	// d291: after a round without a verdict, nothing reviewed the earlier diff, so the whole PR is in scope.
 	const left = later ? previas : undefined;

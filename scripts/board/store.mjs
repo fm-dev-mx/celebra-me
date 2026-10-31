@@ -32,16 +32,16 @@ import {
 } from 'node:fs';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { isFinished, legacyLogRow, logRowIssues } from './model.mjs';
-import { WORKTREE_LANES, getLanePortForKey } from '../shared/worktree-lane.ts';
+import { WORKTREE_LANES } from '../shared/worktree-lane.ts';
 import { readZip } from './zip.mjs';
 
 /** Lane metadata is code-owned; task locks and Git supply its live state. */
 export const canonicalLanes = () =>
 	WORKTREE_LANES.map((lane) => ({
 		id: lane.id,
-		orden: lane.key,
-		tecla: `Win + F${lane.key}`,
-		puerto: getLanePortForKey(lane.key),
+		orden: lane.key ?? lane.port - 4320,
+		tecla: lane.key === null ? 'sin tecla' : `Win + F${lane.key}`,
+		puerto: lane.port,
 		uso: lane.displayName,
 	}));
 
