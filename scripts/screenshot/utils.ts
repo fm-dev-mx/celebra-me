@@ -328,7 +328,7 @@ export interface ScreenshotLaneContext {
  *
  * Ports match Astro `server.port` / `getWorktreeDevServerPort`:
  * - Integration (`develop` trunk, Win + F5) → 4321
- * - every other lane → 4320 + its F-key (`f05-plataforma` → 4325 … `f12-release` → 4332)
+ * - every other lane → 4320 + its F-key (`f06-landing` → 4326 … `f12-release` → 4332)
  * - unknown checkout → 4399
  *
  * `ASTRO_PORT` overrides the lane table (same contract as `astro.config.mjs`).

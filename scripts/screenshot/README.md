@@ -33,7 +33,7 @@ pnpm screenshot --url=/
 `pnpm screenshot` detects the current worktree lane and targets the same Astro port as `pnpm dev`:
 
 The [lane guide](../../docs/core/worktrees/README.md) lists all lanes. Integration uses port 4321;
-F5–F12 use ports 4325–4332 respectively. The executable lane table owns these defaults.
+F6–F12 use ports 4326–4332 respectively. The executable lane table owns these defaults.
 
 Overrides (in order): `--base-url=…` / config `baseUrl`, then `ASTRO_PORT`, then the lane table.
 Absolute `--url=http://…` values are left unchanged.

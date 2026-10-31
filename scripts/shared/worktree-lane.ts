@@ -6,13 +6,13 @@
  *   <parent>/
  *   ├── <repo>/                   (repo root / Integration lane, Win + F5)
  *   └── <repo>-worktrees/         (external worktree root)
- *       ├── f05-plataforma/       (retiring, no hotkey)
  *       ├── f06-landing/          (Win + F6)
  *       ├── …
  *       └── f12-release/          (Win + F12)
  *
  * WORKTREE_LANES is the single source of truth for lane ids, keys, folders,
- * runtimes and ports. Win + F4 opens the separate board project, not a lane.
+ * runtimes and ports. Win + F4 opens the separate board project (`tablero`),
+ * not a lane; F5 is Integration. The former `f05-plataforma` lane is retired.
  * A lane's role is a default, not a restriction; folders under
  * `<repo>-worktrees/` are never created ad hoc — change this table in a pull
  * request instead.
@@ -26,8 +26,8 @@ export type WorktreeRuntimeDefault = 'local' | 'preview';
 
 interface WorktreeLaneEntry {
 	readonly id: string;
-	/** Function key that opens the lane (Win + F<key>); null for a retiring lane. */
-	readonly key: number | null;
+	/** Function key that opens the lane (Win + F<key>). */
+	readonly key: number;
 	/** Stable Astro/Vite dev server port. */
 	readonly port: number;
 	/** Segment name under the external worktree root (null for Integration). */
@@ -43,15 +43,6 @@ export const WORKTREE_LANES = Object.freeze([
 		port: 4321,
 		segment: null,
 		displayName: 'Integration',
-		runtimeDefault: 'local',
-	},
-	{
-		// Retiring: its hotkey moved to Integration; removed once its last task merges.
-		id: 'f05-plataforma',
-		key: null,
-		port: 4325,
-		segment: 'f05-plataforma',
-		displayName: 'Plataforma (en retiro)',
 		runtimeDefault: 'local',
 	},
 	{
@@ -125,7 +116,7 @@ export interface WorktreeLaneDefinition {
 	segment: string | null;
 }
 
-// 4399: never collides with a canonical lane (4321, 4325–4332) or the typical
+// 4399: never collides with a canonical lane (4321, 4326–4332) or the typical
 // 4324 fallback; surface the non-canonical cwd via detectWorktreeLane callers.
 const UNKNOWN_LANE_PORT = 4399;
 
@@ -317,7 +308,7 @@ export function checkLaneWorkPolicy(input: {
 	merging?: boolean;
 	operation?: 'session' | 'commit';
 }): string | null {
-	const freeLanes = WORKTREE_LANES.filter((lane) => lane.segment && lane.key !== null)
+	const freeLanes = WORKTREE_LANES.filter((lane) => lane.segment)
 		.map((lane) => `${lane.segment} (Win + F${lane.key})`)
 		.join(', ');
 	const hint = `Request an explicit task assignment to a lane under <repo>-worktrees/: ${freeLanes}. Do not switch checkouts automatically.`;

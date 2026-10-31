@@ -88,7 +88,7 @@ relative to the user's home directory; do not commit copies of these files:
 
 | Host        | User file                        | Launch context                                                                                      |
 | ----------- | -------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Claude Code | `.claude.json`                   | Local-scope `celebra-board` entries under each of the nine checkout paths (Integration and f05–f12) |
+| Claude Code | `.claude.json`                   | Local-scope `celebra-board` entries under each of the nine checkout paths (Integration and f06–f12) |
 | Codex       | `.codex/config.toml`             | `[mcp_servers.celebra-board]`; the relative server argument uses the chat checkout                  |
 | Gemini CLI  | `.gemini/settings.json`          | `mcpServers.celebra-board`; start the CLI in its assigned checkout                                  |
 | Antigravity | `.gemini/config/mcp_config.json` | `mcpServers.celebra-board` launches the user-local `.gemini/config/celebra-board-launch.mjs`        |
@@ -699,7 +699,7 @@ prompt» (d249), `cierre` only by `close`, `prsPrevios` only by `close` of a per
   may claim the canonical `integration` lane; `f04-integracion` and `f05-integracion` are not
   canonical ids.
 - **Lane and git-safety from the lane (T297)**: `claim`, `close` and `release` run inside a lane
-  folder (f05–f12) read that checkout (`lane-session.mjs`). `claim` refuses when the folder is
+  folder (f06–f12) read that checkout (`lane-session.mjs`). `claim` refuses when the folder is
   another lane or its branch is not the claim's `rama` (detached included), and then opens
   `git-safety start --session=<rama>` there unless that session is already open; a repeated claim
   reopens a session closed in between. `close` and `release` refuse from a lane other than the
@@ -950,7 +950,7 @@ authority does).
 `unida`/`hecha` task whose check passes (the verifier's `checkTask`; a PR state comes from the list
 it already read) to `comprobada` with that `evidencia`, runs `compact --antes=7d` (it only
 summarizes tasks the owner already archived) and `prune-backups --aplicar`, and detaches each free,
-clean lane f05–f12 at `origin/develop` (`git switch --detach`), then deletes the branch it left with
+clean lane f06–f12 at `origin/develop` (`git switch --detach`), then deletes the branch it left with
 `git branch -d` when `origin/develop` already contains it (a branch not merged there, or still
 checked out elsewhere, stays and is reported). A lane is free when no lock and no open task's
 `carril` holds it and it is detached or on a branch whose newest PR merged; a free lane with

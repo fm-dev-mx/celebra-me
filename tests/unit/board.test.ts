@@ -107,25 +107,25 @@ const CLAIM = ['--agente=codex', '--sesion=codex-test', `--rama=${BRANCH}`];
 
 describe('pnpm board claim from a lane (T297)', () => {
 	it('refuses a claim from another lane or another branch and writes nothing', () => {
-		const dir = makeBoard([{ id: 'tarea', carrilPlaneado: 'f05-plataforma' }]);
+		const dir = makeBoard([{ id: 'tarea', carrilPlaneado: 'f08-demos' }]);
 
 		const otherLane = cli(dir, makeLane('f06-landing'), 'claim', 'tarea', ...CLAIM);
 		expect(otherLane.status).toBe(2);
 		expect(otherLane.err).toContain(
-			'esta carpeta es f06-landing, pero tarea corre en f05-plataforma',
+			'esta carpeta es f06-landing, pero tarea corre en f08-demos',
 		);
 
-		const detached = cli(dir, makeLane('f05-plataforma', null), 'claim', 'tarea', ...CLAIM);
+		const detached = cli(dir, makeLane('f08-demos', null), 'claim', 'tarea', ...CLAIM);
 		expect(detached.status).toBe(2);
 		expect(detached.err).toContain(
-			`f05-plataforma está en HEAD separado, no en ${BRANCH}: primero git switch -c ${BRANCH} origin/develop`,
+			`f08-demos está en HEAD separado, no en ${BRANCH}: primero git switch -c ${BRANCH} origin/develop`,
 		);
 		expect(readTask(dir, 'tarea').candado).toBeUndefined();
 	});
 
 	it('opens the git-safety session on claim, keeps it on a repeated claim and finishes it on release', () => {
-		const dir = makeBoard([{ id: 'tarea', carrilPlaneado: 'f05-plataforma' }]);
-		const lane = makeLane('f05-plataforma');
+		const dir = makeBoard([{ id: 'tarea', carrilPlaneado: 'f08-demos' }]);
+		const lane = makeLane('f08-demos');
 		const baseline = path.join(lane, '.agent', 'tmp', BASELINE);
 
 		const claim = cli(dir, lane, 'claim', 'tarea', ...CLAIM);
@@ -134,7 +134,7 @@ describe('pnpm board claim from a lane (T297)', () => {
 		expect(existsSync(baseline)).toBe(true);
 		expect(readTask(dir, 'tarea')).toMatchObject({
 			estado: 'en curso',
-			candado: { carril: 'f05-plataforma', rama: BRANCH },
+			candado: { carril: 'f08-demos', rama: BRANCH },
 		});
 
 		const again = cli(dir, lane, 'claim', 'tarea', ...CLAIM);
@@ -142,7 +142,7 @@ describe('pnpm board claim from a lane (T297)', () => {
 		expect(again.out).toContain(`git-safety: la sesión ${BRANCH} ya estaba abierta`);
 		const elsewhere = cli(dir, makeLane('f06-landing'), 'claim', 'tarea', ...CLAIM);
 		expect(elsewhere.status).toBe(2);
-		expect(elsewhere.err).toContain('el candado de tarea está en f05-plataforma');
+		expect(elsewhere.err).toContain('el candado de tarea está en f08-demos');
 
 		const badOp = cli(
 			dir,
@@ -174,8 +174,8 @@ describe('pnpm board claim from a lane (T297)', () => {
 	});
 
 	it('reports a git-safety session that does not close, keeping the board write and the evidence', () => {
-		const dir = makeBoard([{ id: 'tarea', carrilPlaneado: 'f05-plataforma' }]);
-		const lane = makeLane('f05-plataforma');
+		const dir = makeBoard([{ id: 'tarea', carrilPlaneado: 'f08-demos' }]);
+		const lane = makeLane('f08-demos');
 		expect(cli(dir, lane, 'claim', 'tarea', ...CLAIM).status).toBe(0);
 
 		// No commit was made, so declaring one is drift git-safety refuses.
@@ -196,7 +196,7 @@ describe('pnpm board claim from a lane (T297)', () => {
 
 	it('refuses a lane task from Integration or an unknown folder and checks nothing for a review round (T543)', () => {
 		const dir = makeBoard([
-			{ id: 'tarea', carrilPlaneado: 'f05-plataforma' },
+			{ id: 'tarea', carrilPlaneado: 'f08-demos' },
 			{
 				id: 'tarea-revision',
 				origen: 'tarea',
@@ -207,7 +207,7 @@ describe('pnpm board claim from a lane (T297)', () => {
 		const fromIntegration = cli(dir, makeIntegration(), 'claim', 'tarea', ...CLAIM);
 		expect(fromIntegration.status).toBe(2);
 		expect(fromIntegration.err).toContain(
-			'esta carpeta es integration, no un carril de tarea: haga claim de tarea desde celebra-me-worktrees/f05-plataforma',
+			'esta carpeta es integration, no un carril de tarea: haga claim de tarea desde celebra-me-worktrees/f08-demos',
 		);
 		const unknown = cli(dir, makeLane('otra-carpeta'), 'claim', 'tarea', ...CLAIM);
 		expect(unknown.status).toBe(2);

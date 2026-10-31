@@ -39,7 +39,7 @@ function probe(failList: boolean) {
 describe('canonical live board lanes', () => {
 	it('reads integration and registered lanes without stored lane records', () => {
 		const { rows, calls } = probe(false);
-		expect(rows).toHaveLength(9);
+		expect(rows).toHaveLength(8);
 		expect(rows[0]).toEqual({ id: 'integration', rama: 'develop', limpio: true });
 		expect(rows.find((row) => row.id === 'f10-libre')).toEqual({
 			id: 'f10-libre',
@@ -54,7 +54,7 @@ describe('canonical live board lanes', () => {
 	it('reports unreadable Git inventory instead of calling lanes free', () => {
 		const { rows, calls } = probe(true);
 		expect(calls).toHaveLength(1);
-		expect(rows).toHaveLength(9);
+		expect(rows).toHaveLength(8);
 		expect(rows.every((row) => row.error && row.limpio === undefined)).toBe(true);
 	});
 });

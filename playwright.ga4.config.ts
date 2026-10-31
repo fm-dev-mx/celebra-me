@@ -6,7 +6,7 @@ import baseConfig from './playwright.config';
  * Extends `playwright.config.ts` but owns its web server: it never reuses an existing one.
  *
  * Dedicated port for the GA4 production-build regression server. It must not collide with a
- * worktree lane's dev server (4321 Integration, 4325–4332 for lanes F5–F12,
+ * worktree lane's dev server (4321 Integration, 4326–4332 for lanes F6–F12,
  * 4399 unknown; see `scripts/shared/worktree-lane.ts`) or the 4324 fallback Astro picks when a
  * lane port is busy, because the server below never reuses an existing one.
  */

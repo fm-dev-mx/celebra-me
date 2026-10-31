@@ -9,11 +9,6 @@
     "ordenan": ["coordinador", "dueno"],
     "carriles": [
         {
-            "id": "f05-plataforma",
-            "carpeta": "../celebra-me-worktrees/f05-plataforma",
-            "puerto": 4325
-        },
-        {
             "id": "f06-landing",
             "carpeta": "../celebra-me-worktrees/f06-landing",
             "puerto": 4326

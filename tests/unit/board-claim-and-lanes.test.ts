@@ -249,15 +249,15 @@ describe('T172 live lanes and replaced decisions', () => {
 						agente: 'claude',
 						desde: NOW,
 						sesion: 'local_x',
-						carril: 'f05-plataforma',
+						carril: 'f06-landing',
 					},
 				}),
 			],
 			carriles: [
 				{
-					id: 'f05-plataforma',
+					id: 'f06-landing',
 					orden: 2,
-					puerto: '4325',
+					puerto: '4326',
 					uso: 'Plataforma',
 					estado: 'libre',
 					nota: 'vieja',
@@ -269,18 +269,18 @@ describe('T172 live lanes and replaced decisions', () => {
 		const fixture = path.join(dir, 'vivo.json');
 		writeFileSync(
 			fixture,
-			JSON.stringify({ carriles: [{ id: 'f05-plataforma', rama: 'feat/x', limpio: false }] }),
+			JSON.stringify({ carriles: [{ id: 'f06-landing', rama: 'feat/x', limpio: false }] }),
 		);
 		const r = cli(dir, ['carril', '--json'], { CELEBRA_BOARD_LIVE_FIXTURE: fixture });
 		expect(r.status).toBe(0);
 		const lanes = JSON.parse(r.out);
-		expect(lanes).toHaveLength(9);
+		expect(lanes).toHaveLength(8);
 		expect(lanes[0].id).toBe('integration');
-		const lane = lanes.find((l: Json) => l.id === 'f05-plataforma');
+		const lane = lanes.find((l: Json) => l.id === 'f06-landing');
 		expect(lane).toMatchObject({
-			id: 'f05-plataforma',
-			uso: 'Plataforma (en retiro)',
-			puerto: 4325,
+			id: 'f06-landing',
+			uso: 'F6 Landing',
+			puerto: 4326,
 			rama: 'feat/x',
 			limpio: false,
 			tarea: 'ocupa',
@@ -289,7 +289,7 @@ describe('T172 live lanes and replaced decisions', () => {
 		expect(lane).not.toHaveProperty('nota');
 		expect(lane).not.toHaveProperty('estado');
 		const text = cli(dir, ['carril'], { CELEBRA_BOARD_LIVE_FIXTURE: fixture }).out;
-		expect(text).toContain('f05-plataforma · feat/x · con cambios · T1 de claude');
+		expect(text).toContain('f06-landing · feat/x · con cambios · T1 de claude');
 	});
 
 	it('ignores malformed static lane files and refuses writes to the code-owned catalog', () => {
@@ -300,8 +300,8 @@ describe('T172 live lanes and replaced decisions', () => {
 		writeFileSync(fixture, JSON.stringify({ carriles: [] }));
 		const result = cli(dir, ['carril', '--json'], { CELEBRA_BOARD_LIVE_FIXTURE: fixture });
 		expect(result.status).toBe(0);
-		expect(JSON.parse(result.out)).toHaveLength(9);
-		const write = cli(dir, ['carril', 'f05-plataforma', '--rev=0', 'puerto=9000']);
+		expect(JSON.parse(result.out)).toHaveLength(8);
+		const write = cli(dir, ['carril', 'f06-landing', '--rev=0', 'puerto=9000']);
 		expect(write.status).not.toBe(0);
 		expect(write.err).toContain('WORKTREE_LANES');
 		expect(readdirSync(path.join(dir, 'carriles'))).toEqual(['integration.json']);

@@ -88,7 +88,7 @@ describe('board:sync hygiene (d268)', () => {
 					agente: 'claude',
 					desde: NOW,
 					sesion: 'local_x',
-					carril: 'f05-plataforma',
+					carril: 'f06-landing',
 				},
 			}),
 			task('pr-abierto', { num: 4, pr: '#13', estado: 'hecha' }),
@@ -182,7 +182,6 @@ describe('board:sync hygiene (d268)', () => {
 			prs: [pr(20, 'feat/unida'), pr(21, 'feat/abierta', 'OPEN')],
 			worktrees: [
 				lane('celebra-me', { rama: 'develop' }),
-				lane('f05-plataforma'),
 				lane('f06-landing'),
 				lane('f07-invitaciones'),
 				lane('f08-demos', { head: DEVELOP }),
@@ -195,7 +194,7 @@ describe('board:sync hygiene (d268)', () => {
 		const out = probe(
 			`console.log(JSON.stringify(m.lanePlan(${JSON.stringify(board)}, ${JSON.stringify(src)})));`,
 		);
-		expect(out.alinear.map((l: Json) => l.lane)).toEqual(['f05-plataforma', 'f09-docs']);
+		expect(out.alinear.map((l: Json) => l.lane)).toEqual(['f09-docs']);
 		expect(out.avisos.map((a: Json) => a.texto)).toEqual([
 			'carril f10-libre libre en la rama feat/abierta sin PR unido: no se alinea',
 			'carril f11-preview libre con cambios sin confirmar en aaaaaaa: no se alinea',
@@ -208,7 +207,7 @@ describe('board:sync hygiene (d268)', () => {
 
 	it('rechecks each lane inside the store lock before switching and fails closed on drift', () => {
 		const dir = makeBoard([]);
-		const names = ['f05-plataforma', 'f09-docs', 'f10-libre', 'f11-preview', 'f12-release'];
+		const names = ['f06-landing', 'f09-docs', 'f10-libre', 'f11-preview', 'f12-release'];
 		const src = { develop: DEVELOP, prs: [], worktrees: names.map((n) => lane(n)) };
 		// Each lane as Git answers right before the switch: f10's HEAD moved, f11 got changes, f12 refuses.
 		const state = {
@@ -237,8 +236,8 @@ describe('board:sync hygiene (d268)', () => {
 				if (args[0] === 'rev-parse') return lane.head;
 				if (args[0] === 'status') return lane.status;
 				calls.push([cwd, ...args]);
-				// A session claims f09-docs while f05 is being switched: the plan already listed f09 as free.
-				if (cwd.endsWith('f05-plataforma'))
+				// A session claims f09-docs while f06 is being switched: the plan already listed f09 as free.
+				if (cwd.endsWith('f06-landing'))
 					fs.writeFileSync(path.join(dir, 'tareas', 'otra.json'), JSON.stringify(${JSON.stringify(claim)}));
 				if (cwd.endsWith('f12-release')) throw new Error('bloqueado');
 				return '';
@@ -250,11 +249,11 @@ describe('board:sync hygiene (d268)', () => {
 		expect(dry.carriles.map((c: Json) => c.ok)).toEqual([null, null, null, null, null]);
 		const real = probe(code.replace('DRY', 'false'), { CELEBRA_BOARD_DIR: dir });
 		expect(real.calls).toEqual([
-			['w/f05-plataforma', 'switch', '--detach', '--quiet', DEVELOP],
+			['w/f06-landing', 'switch', '--detach', '--quiet', DEVELOP],
 			['w/f12-release', 'switch', '--detach', '--quiet', DEVELOP],
 		]);
 		expect(real.carriles.map((c: Json) => [c.lane, c.ok, c.resultado])).toEqual([
-			['f05-plataforma', true, undefined],
+			['f06-landing', true, undefined],
 			['f09-docs', false, 'carril f09-docs tomado después del plan: no se alinea'],
 			['f10-libre', false, 'carril f10-libre cambió de HEAD desde el plan: no se alinea'],
 			['f11-preview', false, 'carril f11-preview tiene cambios sin confirmar: no se alinea'],
