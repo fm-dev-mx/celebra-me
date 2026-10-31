@@ -159,14 +159,17 @@ const laneShort = (id) =>
 /**
  * Why `titulo` cannot name the session that claims `t` in `carril`, or null: it must read `<carril> · T<n> · …`,
  * for example `f05 · T126 · Qué sigue y mensajes`. Required only for tasks created under the contract.
+ * T529: a review round has no number of its own, so its session carries its task's (`f05 · T126 · … · Revisión`).
  */
-export function claimTitleIssue(t, titulo, carril) {
+export function claimTitleIssue(t, titulo, carril, board) {
 	const lane = laneShort(isReadOnly(t) ? READONLY_LANE : carril);
-	const want = `${lane} · ${taskTag(t)} · …`;
+	const origin = t.ronda && board ? findTask(t.origen, board) : null;
+	const tag = taskTag(origin ?? t);
+	const want = `${lane} · ${tag} · …`;
 	if (typeof titulo !== 'string' || !titulo.trim())
 		return t.contrato >= 1 ? `falta --titulo="${want}" (nombre de la sesión)` : null;
 	const parts = titulo.split(' · ');
-	if (parts.length < 3 || parts[0] !== lane || parts[1] !== taskTag(t) || !parts[2].trim())
+	if (parts.length < 3 || parts[0] !== lane || parts[1] !== tag || !parts[2].trim())
 		return `--titulo debe ser «${want}», no «${titulo}»`;
 	return null;
 }

@@ -4,6 +4,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from '@jest/globals';
 import { runCommand, sanitizeEnv } from '../helpers/board-command';
+import { readBoardDoc } from '../helpers/board-doc';
 
 const ROOT = process.cwd();
 const BOARD = path.join(ROOT, 'scripts', 'board', 'board.mjs');
@@ -56,8 +57,7 @@ function board(dir: string, ...args: string[]) {
 	return { status: r.status, out: String(r.stdout), err: String(r.stderr) };
 }
 
-const read = (dir: string, id: string) =>
-	JSON.parse(readFileSync(path.join(dir, 'tareas', `${id}.json`), 'utf8'));
+const read = (dir: string, id: string) => readBoardDoc(dir, id) as Record<string, any>;
 
 const logRows = (dir: string) =>
 	readdirSync(path.join(dir, 'bitacora'))

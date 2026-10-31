@@ -34,7 +34,8 @@
  *   merged [<id>] --coordinador [--rev=<n>] [--pr=#N]   d170: its PR is MERGED on GitHub → unida and the
  *                                               lock goes, whoever holds it (pnpm board:sync uses it)
  *   move <id> --agente=<b> [--quien=<a>]        hand over (only without a lock), with a bitácora row
- *   review <id> [--agente=<b>] [--sha=<sha>]    cross review: <id>-revision, then <id>-revision-2, … per new SHA;
+ *   review <id> [--agente=<b>] [--sha=<sha>]    cross review: round <id>-revision, then <id>-revision-2, … per
+ *                                               new SHA, kept inside <id> (T529), never a task of its own;
  *                                               without --agente the reviewer follows d183; d282: a
  *                                               low-risk PR by Claude goes to a Claude subagent
  *   close <id> --resumen=… [--resumen=…] [--comprobacion=…] [--saltada=…] [--pendiente="texto→T58"]
@@ -298,9 +299,11 @@ function saveTask(dir, before, after, opts = {}) {
 	const t = { ...traced, rev: (before?.rev ?? 0) + 1, actualizado: nowIso() };
 	const questions = prepareQuestionRevision(dir, before, t, opts);
 	// Archive never deletes tasks; both collections reserve their numbers permanently. A task saved before
-	// numbering existed gets the next number on its first write, like a new one.
-	t.num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
-	if (t.num !== before?.num && !Number.isSafeInteger(t.num))
+	// numbering existed gets the next number on its first write, like a new one. A review round lives inside its
+	// task (T529) and takes no number of its own.
+	if (t.ronda) delete t.num;
+	else t.num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
+	if (!t.ronda && t.num !== before?.num && !Number.isSafeInteger(t.num))
 		throw new UsageError('se agotaron los números de tarea');
 	const pr = normalizePr(t.pr);
 	if (pr === undefined) delete t.pr;
@@ -448,8 +451,8 @@ function row(t, n, board, agente) {
 }
 
 /**
- * T79: one try of `review`: every round is a new child `<id>-revision`, `-revision-2`, … with its own prompt; d183
- * picks the reviewer. d288: `{espera}` (nothing written) while the head's CI is not green yet, unless --sin-ci.
+ * T79: one try of `review`: every round `<id>-revision`, `-revision-2`, … has its own prompt and lives inside the
+ * reviewed task (T529), with no number of its own; d183 picks the reviewer. d288: `{espera}` (nothing written) while the head's CI is not green yet, unless --sin-ci.
  */
 function reviewOnce({ pos, flags }, dir, out) {
 	return withLock(dir, () => {
@@ -488,14 +491,13 @@ function reviewOnce({ pos, flags }, dir, out) {
 		const { agente, revisor } = pick;
 		const id = reviewChildId(src, prev);
 		const before = readDoc(dir, 'tareas', id);
-		// The prompt-v1 session name (T160) needs the number saveTask is about to give the child.
-		const num = Number.isSafeInteger(before?.num) ? before.num : nextNum(dir);
+		// T529: the round lives inside the reviewed task, so its prompt-v1 session name (T160) carries that number.
 		const t = reviewChild(src, {
 			agente,
 			revisor,
 			sha,
 			prev,
-			num,
+			num: src.num,
 			files: preflight.files,
 			// d291: rounds since the last verdict answered nothing, so this one reviews the whole PR.
 			previas: leftByUnanswered(src.id, loadBoard(dir)) ?? undefined,

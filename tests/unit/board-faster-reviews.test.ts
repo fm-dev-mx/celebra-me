@@ -4,6 +4,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from '@jest/globals';
 import { runCommand, sanitizeEnv } from '../helpers/board-command';
+import { hasBoardDoc, readBoardDoc } from '../helpers/board-doc';
 
 const ROOT = process.cwd();
 const SCRIPT_PATH = path.join(ROOT, 'scripts', 'board', 'board.mjs');
@@ -83,10 +84,8 @@ function board(dir: string, args: string[], { pr, env = {} }: { pr?: Json; env?:
 	return { status: r.status, out: String(r.stdout), err: String(r.stderr) };
 }
 
-const readTask = (dir: string, id: string) =>
-	JSON.parse(readFileSync(path.join(dir, 'tareas', `${id}.json`), 'utf8'));
-const exists = (dir: string, id: string) =>
-	readdirSync(path.join(dir, 'tareas')).includes(`${id}.json`);
+const readTask = (dir: string, id: string) => readBoardDoc(dir, id) as Record<string, any>;
+const exists = (dir: string, id: string) => hasBoardDoc(dir, id);
 /** Every bitácora row written in `dir`. */
 const logRows = (dir: string) => {
 	const log = path.join(dir, 'bitacora');
