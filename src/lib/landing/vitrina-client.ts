@@ -65,6 +65,42 @@ export function initLandingShowroom(root: Document = document): void {
 		if (openHint) openHint.hidden = !visible;
 	};
 
+	// The framed demo never starts its song by itself (see music-session.ts). This button, outside
+	// the scaled frame where the demo's own control is tiny, plays or pauses it.
+	const soundButton = section.querySelector<HTMLButtonElement>('[data-vitrina-sound]');
+	const framedMusic = () => {
+		try {
+			const player = live?.contentDocument?.querySelector<HTMLElement>(
+				'[data-music-player][data-has-audio="true"]',
+			);
+			const audio = player?.querySelector<HTMLAudioElement>('[data-music-audio]');
+			const toggle = player?.querySelector<HTMLButtonElement>('[data-music-toggle]');
+			return audio && toggle ? { audio, toggle } : null;
+		} catch {
+			return null;
+		}
+	};
+	const syncSound = (playing: boolean) => {
+		if (!soundButton) return;
+		soundButton.setAttribute('aria-pressed', String(playing));
+		const label = soundButton.querySelector('[data-sound-label]');
+		if (label) label.textContent = playing ? 'Pausar música' : 'Escuchar música';
+	};
+	const pauseFramedMusic = () => framedMusic()?.audio.pause();
+	const wireSound = () => {
+		const music = framedMusic();
+		if (soundButton) soundButton.hidden = !music;
+		syncSound(false);
+		if (!music) return;
+		music.audio.addEventListener('playing', () => syncSound(true));
+		music.audio.addEventListener('pause', () => syncSound(false));
+	};
+
+	soundButton?.addEventListener('click', () => {
+		// The demo's own control keeps its fade-in and start offset.
+		framedMusic()?.toggle.click();
+	});
+
 	// The iframe renders at the device's real width and is scaled to the frame, so the demo shows
 	// its phone, tablet or desktop layout.
 	const fitLive = () => {
@@ -87,6 +123,8 @@ export function initLandingShowroom(root: Document = document): void {
 		live.dataset.src = href;
 		delete screen.dataset.live;
 		showOpenHint(false);
+		if (soundButton) soundButton.hidden = true;
+		syncSound(false);
 		fitLive();
 		live.src = href;
 	};
@@ -100,6 +138,7 @@ export function initLandingShowroom(root: Document = document): void {
 			// Cross-origin frame: leave its scrollbar alone.
 		}
 		if (screen && live.dataset.src) screen.dataset.live = 'ready';
+		wireSound();
 		// A visitor may not know the seal opens the demo: point at it outside the frame until it
 		// opens, from the seal or from this button.
 		showOpenHint(Boolean(closedEnvelope()));
@@ -236,6 +275,11 @@ export function initLandingShowroom(root: Document = document): void {
 			updateHeaderCta();
 			return;
 		}
+		// The full demo opens in a new tab with its own song: the preview goes quiet first.
+		if (target?.closest('a.vitrina__open') && section.contains(target)) {
+			pauseFramedMusic();
+			return;
+		}
 		const deviceButton = target?.closest<HTMLElement>('[data-vitrina-device]');
 		if (deviceButton && section.contains(deviceButton)) {
 			setDevice(deviceButton.dataset.vitrinaDevice ?? 'phone');
@@ -268,6 +312,10 @@ export function initLandingShowroom(root: Document = document): void {
 				{ rootMargin: '300px 0px' },
 			);
 			liveObserver.observe(device);
+			// A song asked for in the showroom stops once the frame scrolls out of view.
+			new IntersectionObserver((entries) => {
+				if (entries.every((entry) => !entry.isIntersecting)) pauseFramedMusic();
+			}).observe(device);
 		}
 	}
 

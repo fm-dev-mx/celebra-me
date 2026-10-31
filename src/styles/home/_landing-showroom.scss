@@ -296,6 +296,65 @@
 		}
 	}
 
+	&__frame-actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.5rem;
+
+		&:not(:has(> :not([hidden]))) {
+			display: none;
+		}
+	}
+
+	// Plays or pauses the framed demo's song; the speaker shows a cross until it plays.
+	&__sound {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+
+		@include mixins.touch-target;
+
+		padding: 0 1.25rem;
+		border: 1px solid var(--vitrina-line);
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-ivory-rgb) / 8%);
+		color: var(--color-ivory);
+		font: inherit;
+		font-size: var(--vitrina-fs-small);
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		cursor: pointer;
+
+		&[hidden] {
+			display: none;
+		}
+
+		&:hover {
+			background: rgb(var(--color-ivory-rgb) / 16%);
+		}
+
+		&[aria-pressed='true'] {
+			border-color: rgb(var(--color-champagne-rgb) / 55%);
+			color: var(--color-champagne);
+		}
+
+		svg {
+			width: 18px;
+			height: 18px;
+			fill: none;
+			stroke: currentcolor;
+			stroke-width: 1.6;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+		}
+
+		&[aria-pressed='true'] [data-sound-off],
+		&[aria-pressed='false'] [data-sound-on] {
+			display: none;
+		}
+	}
+
 	&__bar {
 		display: none;
 	}
