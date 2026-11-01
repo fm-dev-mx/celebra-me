@@ -25,13 +25,15 @@ at a time, and Yireh Ana's share image becomes a square-safe card. The Astro pla
   ESLint, `eslint-plugin-boundaries`, `prettier-plugin-astro` and `sass-embedded` (#651).
 - Tooling: pre-push requires a body on multi-file commits (#724), the old board implementation is
   removed (#720), f05-plataforma leaves the lane map (#717) and the board core pin advances (#721,
-  #722, #723).
+  #722, #723) with board writes over MCP (#731).
 
 ### Fixed
 
 - Invitations: demos play one song at a time and the showroom stays silent (#727).
 - Yireh Ana: the share image is a square-safe oak card that survives square crops (#728).
 - Intake: order identifiers stay out of draft routes (#730).
+- Dashboard: quote reminders use a daily server-side idempotency key, so retries and concurrent tabs
+  no longer log duplicate reminders (#732).
 
 ## [0.58.0-beta.1] - 2026-10-31
 
