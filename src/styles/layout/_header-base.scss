@@ -406,24 +406,6 @@
 		flex-direction: column;
 		justify-content: flex-end;
 
-		&__logo {
-			margin-bottom: 1.5rem;
-			height: 2.2rem;
-			display: flex;
-			align-items: center;
-
-			.logo {
-				height: 100%;
-				width: auto;
-				object-fit: contain;
-			}
-
-			img {
-				height: 100%;
-				width: auto;
-			}
-		}
-
 		&__initials {
 			display: block;
 			font-family: var(--font-display);

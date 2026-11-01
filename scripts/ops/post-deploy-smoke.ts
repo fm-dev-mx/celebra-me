@@ -83,7 +83,11 @@ const PRODUCTION_HOSTS = new Set(['celebra-me.com', 'www.celebra-me.com']);
 
 // Migration 20261026173000 retired this Preview copy only. The real Production invitation
 // remains published. Keep environment-specific smoke policy outside publication definitions.
-const PREVIEW_ARCHIVED_INVITATIONS = new Set(['boda:daniela-y-martin']);
+export const PREVIEW_ARCHIVED_INVITATIONS = new Set(['boda:daniela-y-martin']);
+
+export function isPreviewArchivedInvitation(eventType: string, slug?: string): boolean {
+	return slug ? PREVIEW_ARCHIVED_INVITATIONS.has(`${eventType}:${slug}`) : false;
+}
 
 /**
  * Pages come from the repository catalog: published, non-expired invitation definitions and
@@ -98,7 +102,7 @@ export function listSmokePageRoutes(
 			.filter(
 				(definition) =>
 					environment !== 'preview' ||
-					!PREVIEW_ARCHIVED_INVITATIONS.has(`${definition.eventType}:${definition.slug}`),
+					!isPreviewArchivedInvitation(definition.eventType, definition.slug),
 			)
 			.map((definition) => ({
 				kind: 'invitation' as const,

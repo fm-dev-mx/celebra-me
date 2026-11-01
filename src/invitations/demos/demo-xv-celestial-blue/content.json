@@ -5,18 +5,19 @@
     "_assetSlug": "demo-xv-celestial-blue",
     "visualProfileId": "demo-xv-celestial-blue",
     "title": "XV Años — Camila Torres Rivas",
-    "description": "Una invitación sofisticada para una noche de celebración en Cuernavaca. Elegancia, luz y momentos inolvidables.",
+    "description": "Una noche bajo las estrellas en Cuernavaca para celebrar los XV años de Camila.",
     "theme": {
         "fontFamily": "serif",
-        "preset": "celestial-blue"
+        "preset": "celestial-blue",
+        "motion": "editorial"
     },
     "sectionOrder": [
         "quote",
-        "family",
-        "gallery",
         "countdown",
+        "family",
         "location",
         "itinerary",
+        "gallery",
         "gifts",
         "personalizedAccess",
         "rsvp",
@@ -24,19 +25,20 @@
     ],
     "hero": {
         "presentation": {
-            "venueIndex": 1
+            "venueIndex": 1,
+            "nameLeadWords": 1
         },
         "name": "Camila Torres Rivas",
         "label": "Mis XV Años",
         "date": "2027-09-12T19:00:00.000Z",
         "backgroundImage": "hero",
         "backgroundImageDesktop": "heroDesktop",
-        "portrait": "portrait",
         "focalPoint": "50% 32%",
         "focalPointMobile": "50% 30%",
         "focalPointDesktop": "62% 38%",
         "variant": "standard",
-        "scrollLabel": "Deslice"
+        "scrollLabel": "Descubra mi noche",
+        "scrollCue": "constellation"
     },
     "location": {
         "accessPolicy": {
@@ -54,12 +56,15 @@
                 "text": "Confirme su asistencia <strong>antes del 29 de agosto de 2027</strong>."
             }
         ],
-        "variant": "standard",
+        "variant": "star-route",
+        "introEyebrow": "12 de septiembre de 2027",
+        "introHeading": "Ruta de la noche",
         "venues": [
             {
                 "venueEvent": "Misa de Acción de Gracias",
                 "venueName": "Catedral de la Asunción",
                 "address": "Av. Morelos 105, Centro, 62000 Cuernavaca, Mor.",
+                "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Catedral+de+la+Asuncion+Cuernavaca",
                 "city": "Cuernavaca",
                 "date": "12 de septiembre de 2027",
                 "time": "5:00 PM",
@@ -71,6 +76,7 @@
                 "venueEvent": "Recepción",
                 "venueName": "Hacienda Los Claustros",
                 "address": "Carretera Federal Cuernavaca-Tepoztlán Km 4.5, 62574 Cuernavaca, Mor.",
+                "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=Hacienda+Los+Claustros+Cuernavaca",
                 "city": "Cuernavaca",
                 "date": "12 de septiembre de 2027",
                 "time": "7:00 PM",
@@ -80,7 +86,8 @@
             }
         ],
         "mapStyle": "dark",
-        "introLede": "Ubicación ilustrativa de la demo"
+        "introLede": "Ubicación ilustrativa de la demo",
+        "indicationsHeading": "Antes de llegar"
     },
     "family": {
         "featuredImage": {
@@ -100,9 +107,9 @@
         "labels": {
             "sectionTitle": "Mi familia",
             "sectionSubtitle": "Con amor y gratitud",
-            "parentsTitle": "Con la bendición de",
-            "godparentsTitle": "Padrinos",
-            "sectionMessage": "El cariño que me acompaña en cada paso."
+            "parentsTitle": "Con la bendición de mis padres",
+            "godparentsTitle": "Y el cariño de mis padrinos",
+            "sectionMessage": "Gracias a ellos llego a esta noche con el corazón lleno."
         },
         "godparents": [
             {
@@ -112,10 +119,6 @@
             {
                 "name": "Daniela Rivas Hernández",
                 "role": "Madrina"
-            },
-            {
-                "name": "Fernando Castillo López",
-                "role": "Padrino"
             }
         ],
         "variant": "standard"
@@ -143,18 +146,18 @@
             {
                 "image": "gallery06",
                 "alt": "Camila sentada en un banco de madera con vestido azul.",
-                "caption": "Detalles que cuentan una historia."
+                "caption": "Los detalles que me acompañan"
             }
         ]
     },
     "gifts": {
-        "title": "Lluvia de Sobres",
-        "subtitle": "Su presencia es el mejor regalo. Si desea tener un detalle adicional, contaremos con un buzón durante la recepción.",
+        "title": "Lluvia de sobres",
+        "subtitle": "Su presencia es el mejor regalo que puedo recibir.",
         "items": [
             {
                 "type": "cash",
-                "title": "Lluvia de Sobres",
-                "text": "Contaremos con un buzón durante la recepción."
+                "title": "Lluvia de sobres",
+                "text": "Si desea tener un detalle conmigo, habrá un buzón durante la recepción."
             }
         ],
         "variant": "standard"
@@ -163,16 +166,24 @@
         "title": "Confirme su asistencia",
         "guestCap": 4,
         "accessMode": "hybrid",
-        "confirmationMessage": "Gracias por confirmar. Le esperamos con alegría en esta noche tan especial.",
+        "confirmationMessage": "Gracias por confirmar. Le espero con mucha alegría en esta noche tan especial.",
         "confirmationMode": "api",
         "personalizedAccess": {
-            "title": "Su lugar en la celebración",
-            "subtitle": "Reservado especialmente para usted",
-            "footerText": "Confirme a continuación para reservar sus lugares",
-            "variant": "ornamented"
+            "variant": "formal-pass",
+            "ticket": {
+                "signature": "Camila",
+                "monogram": "XV · 2027"
+            },
+            "title": "Pase de entrada",
+            "subtitle": "Será un honor recibirle en mi noche.",
+            "noteText": "Su pase incluye a {count} {personWord}.",
+            "footerText": "Confirme a continuación para apartar sus lugares",
+            "presentationOptions": {
+                "checkInQr": true
+            }
         },
         "variant": "standard",
-        "subcopy": "Su respuesta nos ayuda a preparar cada detalle de esta celebración especial.",
+        "subcopy": "Me encantaría contar con usted. Su respuesta me ayuda a preparar cada detalle.",
         "labels": {
             "name": "Su nombre",
             "notesPlaceholder": "Escriba un mensaje para Camila…",
@@ -181,7 +192,7 @@
         "responseMessages": {
             "confirmed": {
                 "title": "¡Gracias por confirmar, {guestName}!",
-                "subtitle": "Su confirmación ha sido registrada."
+                "subtitle": "Su confirmación quedó registrada. ¡Nos vemos bajo las estrellas!"
             },
             "declined": {
                 "title": "Lamentamos que no pueda acompañarnos, {guestName}.",
@@ -190,15 +201,16 @@
         }
     },
     "quote": {
-        "text": "La posibilidad de realizar un sueño es lo que hace que la vida sea interesante.",
-        "author": "Paulo Coelho"
+        "text": "Hay noches que se esperan toda la vida. La mía llega con quince años, un vestido del color del cielo y las personas que más quiero.",
+        "closingLine": "Me haría muy feliz que usted estuviera ahí."
     },
     "thankYou": {
         "message": "Gracias por compartir esta noche conmigo. Su amor y compañía hacen de mis XV años un recuerdo que atesoraré para siempre.",
         "closingName": "Camila Torres Rivas",
         "image": "thankYouPortrait",
         "focalPoint": "50% 30%",
-        "variant": "portrait-keepsake"
+        "variant": "portrait-keepsake",
+        "closingNameLeadWords": 1
     },
     "itinerary": {
         "title": "Programa",
@@ -207,39 +219,43 @@
                 "iconName": "Church",
                 "label": "Misa",
                 "time": "17:00",
-                "description": "Ceremonia de Acción de Gracias en la Catedral."
+                "description": "Damos gracias en la Catedral de la Asunción."
             },
             {
                 "iconName": "Reception",
                 "label": "Recepción",
                 "time": "19:00",
-                "description": "Bienvenida en Hacienda Los Claustros."
+                "description": "Le recibimos en Hacienda Los Claustros."
             },
             {
                 "iconName": "Waltz",
                 "label": "Vals",
                 "time": "20:30",
-                "description": "Un momento de ensueño."
+                "description": "Mi vals, el momento que he soñado desde niña."
             },
             {
                 "iconName": "Dinner",
                 "label": "Cena",
                 "time": "21:30",
-                "description": "Cena de gala en familia."
+                "description": "Cena de gala con quienes más quiero."
             },
             {
                 "iconName": "Party",
                 "label": "Cierre",
                 "time": "00:00",
-                "description": "Gracias por celebrar con nosotros."
+                "description": "Bailamos juntos hasta la medianoche."
             }
         ],
         "variant": "timeline-paper"
     },
     "countdown": {
-        "variant": "standard",
-        "title": "La celebración comienza en",
-        "footerText": "Cuernavaca, Morelos"
+        "variant": "clock-face",
+        "title": "Faltan",
+        "footerText": "para nuestra noche bajo las estrellas",
+        "presentationOptions": {
+            "dayUnit": "nights",
+            "visibleUnits": ["days", "hours", "minutes"]
+        }
     },
     "interludes": [
         {
@@ -262,9 +278,16 @@
         }
     ],
     "envelope": {
+        "revealVariant": "celestial-letter",
         "sealStyle": "wax",
         "sealIcon": "wax-monogram",
         "sealInitials": "C·T",
+        "cardLabel": "Mis XV años",
+        "cardTagline": "Una noche bajo las estrellas",
+        "documentLabel": "Mis XV años",
+        "stampText": "12 de septiembre",
+        "stampYear": "2027",
+        "teaserDetails": "Hacienda Los Claustros · Cuernavaca",
         "microcopy": "Abra su invitación",
         "closedPalette": {
             "primary": "surfacePrimary",
@@ -281,30 +304,24 @@
     },
     "music": {
         "url": "https://media.celebra-me.com/shared/music/nuvole-bianche-24611cb040e2779c681d7b14bc9423d8e058d477f2c4368c216a1373cf2b3f59.mp3",
-        "autoPlay": false,
-        "title": "Música de fondo"
+        "autoPlay": true,
+        "title": "Nuvole Bianche",
+        "artist": "Ludovico Einaudi",
+        "control": "track"
     },
     "composition": {
         "intersections": {
-            "quote": {
-                "family": "atmospheric-blend",
-                "source": "hero"
-            },
             "family": {
-                "family": "arch",
-                "source": "quote"
-            },
-            "interlude-after-family": {
-                "family": "overlap",
-                "source": "family"
-            },
-            "gallery": {
-                "family": "atmospheric-blend",
-                "source": "interlude-after-family"
+                "family": "folio",
+                "source": "countdown"
             },
             "gifts": {
-                "family": "atmospheric-blend",
-                "source": "itinerary"
+                "family": "folio",
+                "source": "gallery"
+            },
+            "personalized-access": {
+                "family": "stack",
+                "source": "gifts"
             }
         }
     },

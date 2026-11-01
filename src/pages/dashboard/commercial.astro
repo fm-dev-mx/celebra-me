@@ -17,6 +17,8 @@ import {
 import SalesWorkspace from '@/components/dashboard/commercial/SalesWorkspace';
 import DemoConversionReport from '@/components/dashboard/commercial/DemoConversionReport.astro';
 import MetaInsightsReport from '@/components/dashboard/commercial/MetaInsightsReport.astro';
+import MetaWeeklyReview from '@/components/dashboard/commercial/MetaWeeklyReview.astro';
+import { loadMetaWeeklyReview } from '@/lib/meta/weekly-review.server';
 import type { MetaInsightsTable } from '@/lib/meta/insights-dashboard';
 import { loadDemoConversionReport } from '@/lib/tracking/demo-conversion-report.server';
 import DemoCatalog from '@/components/dashboard/commercial/DemoCatalog';
@@ -27,12 +29,15 @@ import type { ConversionEvent } from '@/components/dashboard/commercial/OutboxLo
 import { getEnv } from '@/lib/server/env';
 import type { LeadCandidate } from '@/components/dashboard/commercial/LeadCandidatesList';
 import { safeErr } from '@/lib/server/safe-error';
+import LeadOriginCard from '@/components/dashboard/commercial/LeadOriginCard.astro';
+import type { LeadOriginResult } from '@/lib/tracking/lead-origin.server';
 
 if (!Astro.locals.session?.isSuperAdmin) {
 	return Astro.redirect('/dashboard/invitados');
 }
 
 const demoLinks = await loadDemoLinks();
+const weeklyReview = await loadMetaWeeklyReview().catch(() => null);
 let dashboardData: CommercialDashboardSummary | null = null;
 let demoReport: Awaited<ReturnType<typeof loadDemoConversionReport>> | null = null;
 try { demoReport = await loadDemoConversionReport(Astro.url.searchParams.get('days') === '60' ? 60 : 30); } catch {
@@ -43,6 +48,17 @@ try {
 	metaInsights = await (await import('@/lib/meta/insights-dashboard.server')).loadMetaInsightsTable();
 } catch (error) {
 	console.error('[commercial-dashboard] Unable to load Meta insights.', safeErr(error));
+}
+const folioQuery = (Astro.url.searchParams.get('folio') ?? '').trim().slice(0, 40);
+let leadOrigin: LeadOriginResult | null = null;
+let leadOriginFailed = false;
+if (folioQuery) {
+	try {
+		leadOrigin = await (await import('@/lib/tracking/lead-origin.server')).loadLeadOrigin(folioQuery);
+	} catch (error) {
+		console.error('[commercial-dashboard] Unable to load lead origin.', safeErr(error));
+		leadOriginFailed = true;
+	}
 }
 let loadError = false;
 let initialConversions: ConversionEvent[] = [];
@@ -139,6 +155,7 @@ const revenueAttribution = dashboardData
 		<DemoCatalog client:load demos={demoLinks} shareOrigin={resolvePublicSiteOrigin()} />
 		<DemoConversionReport report={demoReport} />
 		<MetaInsightsReport table={metaInsights} />
+		<MetaWeeklyReview report={weeklyReview} />
 		{dashboardData && viewModel && (
 			<>
 				<div class="commercial-tabs" role="tablist" aria-label="Secciones del espacio comercial">
@@ -237,6 +254,7 @@ const revenueAttribution = dashboardData
 				</div>
 
 				<div class="tab-content active" id="tab-ventas" role="tabpanel" aria-labelledby="commercial-tab-ventas" tabindex="0">
+					<LeadOriginCard query={folioQuery} result={leadOrigin} failed={leadOriginFailed} />
 					<SalesWorkspace client:load initialLeads={initialSalesLeads} demoInventory={demoReport?.followupsAvailable ? demoReport.inventory : []} />
 				</div>
 

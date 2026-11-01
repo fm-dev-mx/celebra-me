@@ -655,6 +655,7 @@ describe('registry-driven canonical variant portability', () => {
 			'src/styles/themes/sections/location/_stacked-venue-plates.scss',
 		);
 		const nightRoute = readSource('src/styles/themes/sections/location/_night-route.scss');
+		const starRoute = readSource('src/styles/themes/sections/location/_star-route.scss');
 		// Plate geometry lives in one mixin that both plate variants include.
 		const venuePlates = readSource('src/styles/invitation/_venue-plates.scss');
 		const pinnedTrack = readSource('src/styles/themes/sections/gallery/_pinned-track.scss');
@@ -687,6 +688,7 @@ describe('registry-driven canonical variant portability', () => {
 			splitMap,
 			stackedPlates,
 			nightRoute,
+			starRoute,
 			venuePlates,
 			pinnedTrack,
 			splitGroups,
@@ -705,6 +707,7 @@ describe('registry-driven canonical variant portability', () => {
 		expect(combined).toContain(".event-location[data-variant='split-map']");
 		expect(combined).toContain(".event-location[data-variant='stacked-venue-plates']");
 		expect(combined).toContain(".event-location[data-variant='night-route']");
+		expect(combined).toContain(".event-location[data-variant='star-route']");
 		expect(stackedPlates).toContain('@include plates.venue-plates');
 		expect(nightRoute).toContain('@include plates.venue-plates');
 		expect(venuePlates).toContain('.event-location__intro');

@@ -435,8 +435,7 @@ Shared changes (minimal, backward compatible, defaults identical):
   sizing tokens for multi-word marks, defaults equal to the previous literals; the marks no longer
   wrap.
 - `--footer-editorial-*` tokens on the editorial footer skin (ground, rule, padding, gaps, brand
-  credit colour/logo filter, contact button rest/hover, replay link); every default equals the
-  previous literal.
+  credit colour, contact button rest/hover, replay link); every default equals the previous literal.
 - `envelope.coverOrnament` and `envelope.spreadOrnaments` (new, optional, collector only): cutouts
   on the printed face and the first inner page in token-anchored contained boxes
   (`--ec-face-ornament-*`, `--ec-page-ornament-{1,2}-*`). The editorial-cover hero now renders the
@@ -537,10 +536,9 @@ Profile-token pass with no redesign (2026-10-07):
   keeps only the start time. The remaining «sábado 24» mentions (location heading, venue line, pass
   note, RSVP messages) each sit in a different section.
 - Footer in the race livery (profile tokens only): asphalt ground under a 4 px red rule with a 2 px
-  yellow pinstripe, paper brand credit («Powered by» + Celebra-me logo inverted to paper, the
-  mandatory site credit), paper contact button that fills red on hover, paper replay link with a
-  yellow hover. Contrast: contact label 3.9:1 (red on asphalt) → 17:1; «Powered by» and the replay
-  link 8.6:1.
+  yellow pinstripe, paper brand credit («Powered by» + the ivory Celebra-me signature, the mandatory
+  site credit), paper contact button that fills red on hover, paper replay link with a yellow hover.
+  Contrast: contact label 3.9:1 (red on asphalt) → 17:1; «Powered by» and the replay link 8.6:1.
 
 ### Creative acceptance record
 

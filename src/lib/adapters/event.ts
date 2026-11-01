@@ -27,7 +27,10 @@ import {
 } from '@/lib/invitation/countdown-presentation';
 import { buildEventCalendarMonth, type EventCalendarMonth } from '@/lib/invitation/event-calendar';
 import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
-import { resolvePersonalizedAccessPassStyle } from '@/lib/invitation/personalized-access-presentation';
+import {
+	resolvePersonalizedAccessCheckInQr,
+	resolvePersonalizedAccessPassStyle,
+} from '@/lib/invitation/personalized-access-presentation';
 import { resolvePortraitEnabled } from '@/lib/invitation/hero-presentation';
 import { hasPlayableMusicUrl } from '@/lib/invitation/local-preview-config';
 import {
@@ -175,6 +178,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		coverMark: data.hero.presentation?.coverMark,
 		coverPage: data.hero.presentation?.coverPage,
 		designCredit: data.hero.presentation?.designCredit,
+		scene: data.hero.presentation?.scene,
 		secondaryName: data.hero.secondaryName,
 		label: data.hero.label || 'Invitación Especial',
 		nickname: data.hero.nickname,
@@ -198,6 +202,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		focalPointTablet: data.hero.focalPointTablet,
 		focalPointDesktop: data.hero.focalPointDesktop,
 		scrollLabel: data.hero.scrollLabel,
+		scrollCue: data.hero.scrollCue,
 		tagline: data.hero.tagline,
 		photoCredit: data.hero.photoCredit,
 	};
@@ -278,6 +283,7 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			coverVolume: data.envelope.coverVolume,
 			coverIssue: data.envelope.coverIssue,
 			coverLines: data.envelope.coverLines,
+			coverNote: data.envelope.coverNote,
 			coverExperience: data.envelope.coverExperience,
 			coverOrnament: data.envelope.coverOrnament
 				? resolveAsset(eventSlug, data.envelope.coverOrnament, data.title)
@@ -531,6 +537,9 @@ function buildRsvpSectionData(context: AdaptationContext, entrySlug: string) {
 			passStyle: resolvePersonalizedAccessPassStyle(
 				data.rsvp.personalizedAccess.presentationOptions,
 			),
+			checkInQr: resolvePersonalizedAccessCheckInQr(
+				data.rsvp.personalizedAccess.presentationOptions,
+			),
 		},
 		eventSlug: entrySlug,
 		eventType: data.eventType,
@@ -554,6 +563,7 @@ function buildMusic(
 		url: playableMusicUrl,
 		autoPlay: music?.autoPlay ?? false,
 		title: music?.title,
+		artist: music?.artist,
 		creditsUrl: music?.creditsUrl,
 		startAt: music?.startAt,
 		fadeInSeconds: music?.fadeInSeconds,

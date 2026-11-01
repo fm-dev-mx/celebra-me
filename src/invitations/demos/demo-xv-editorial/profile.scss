@@ -1,0 +1,241 @@
+// Editorial: the editorial preset as a sober noir art issue. Black pages carry the story; one
+// champagne spread holds the save-the-date and the back cover closes on the same paper. Two joins
+// out of the boundaries, a bridge and a climax: the tiara print hangs from the black into the
+// champagne spread, and the back cover rises into the reply under an asymmetric arch. Champagne is a hairline, never a fill. Tokens
+// only; layout stays with the variants.
+.event--demo-xv-editorial.theme-preset--editorial {
+	// Depth of the print join, reserved as the print's own top padding.
+	--editorial-print-overlap: clamp(5rem, 22vw, 9rem);
+	--editorial-gutter: clamp(1.5rem, 6vw, 4rem);
+
+	// The champagne paper and its inks.
+	--editorial-paper: rgb(239 231 218);
+	--editorial-paper-rgb: 239 231 218;
+	--editorial-paper-ink: rgb(26 23 20);
+	--editorial-paper-ink-rgb: 26 23 20;
+	--editorial-paper-gold: rgb(122 92 40);
+	--editorial-paper-rule: rgb(26 23 20 / 16%);
+	--editorial-noir: var(--color-surface-primary);
+
+	// Sober accent: a matte champagne instead of bright gold, and no metallic shine anywhere.
+	--color-action-accent: rgb(196 178 146);
+	--color-action-accent-rgb: 196 178 146;
+	--gold-metallic: linear-gradient(var(--color-action-accent), var(--color-action-accent));
+
+	// Music: the quiet equalizer control as a black disc with a champagne hairline and bars.
+	--music-player-button-bg: rgb(12 11 10 / 88%);
+	--music-player-button-color: var(--color-action-accent);
+	--music-player-button-border: 1px solid rgb(var(--color-action-accent-rgb) / 45%);
+	--music-player-ring-color: rgb(var(--color-action-accent-rgb) / 35%);
+	--music-player-prompt-accent: var(--color-action-accent);
+
+	// Collector magazine: an ivory print with graphite furniture and a black ribbon, so the
+	// object reads as a noir art issue rather than a gilded one.
+	.editorial-cover-wrapper[data-cover-experience='collector'] {
+		--ec-paper: rgb(244 240 233);
+		--ec-paper-edge: rgb(206 199 188);
+		--ec-gold: rgb(38 35 32);
+		--ec-gold-light: rgb(92 86 78);
+		--ec-gold-dark: rgb(26 23 20);
+		--ec-light-rgb: 210 204 194;
+
+		// The cover photograph is a low-key portrait, so its type prints in ivory.
+		--ec-face-ink: rgb(244 240 233);
+		--ec-face-ink-soft: rgb(244 240 233 / 82%);
+		--ec-face-rule: rgb(244 240 233 / 40%);
+		--ec-face-kicker-ink: rgb(244 240 233 / 82%);
+		--ec-teaser-ink: rgb(26 23 20);
+		--ec-inside-ink: rgb(26 23 20);
+		--ec-inside-ink-soft: rgb(26 23 20 / 62%);
+		--ec-inside-rule: rgb(26 23 20 / 24%);
+
+		// Her face fills the upper third, so the contents sticker sits on the dress instead.
+		--ec-face-teasers-top: 64%;
+
+		// The table under the magazine: a brighter pool of light and a softer vignette, so the
+		// ivory print reads lit instead of dim.
+		--ec-table-light-opacity: 40%;
+		--ec-table-vignette-opacity: 22%;
+	}
+
+	// The portfolio title is set in the page ink; the accent stays for small furniture.
+	// The portfolio is read slowly: each photograph holds for close to half a screen of scroll.
+	.gallery-section {
+		--gallery-title-color: var(--color-text-primary);
+		--gallery-track-pace: 0.45;
+	}
+
+	// The family reads as one page: the arched portrait and the names on the black, without
+	// a boxed panel around them.
+	.family {
+		--family-panel-border: 0;
+		--family-panel-bg: transparent;
+		--family-panel-shadow: none;
+		--family-panel-spacing: 0;
+	}
+
+	.gifts-section {
+		--gifts-title-color: var(--color-text-primary);
+	}
+
+	// Cover: her portrait in an asymmetric arch over a black page, with a faint graphite quarter
+	// behind it and the name set left like a masthead.
+	.invitation-hero[data-variant='framed-portrait'] {
+		--color-surface-secondary: rgb(255 255 255 / 5%);
+		--hero-arc-opacity: 100%;
+		--hero-portrait-outline: 1px solid rgb(var(--color-action-accent-rgb) / 55%);
+		--hero-portrait-outline-offset: 0.5rem;
+
+		// The source photograph is square, so the frame is square too and the arch clips the photo
+		// itself instead of a letterbox. The height follows the width, so a narrow column shrinks
+		// both sides.
+		--hero-portrait-max-width: 80vw;
+		--hero-portrait-margin: 0 auto;
+		--hero-portrait-width-mobile: min(80vw, 46svh);
+		--hero-portrait-height-mobile: auto;
+		--hero-portrait-width-desktop: min(60svh, 29rem);
+		--hero-portrait-height-desktop: auto;
+
+		// Hierarchy: a small tracked kicker, the name as the masthead, the date as a quiet line.
+		--hero-occasion-letter-spacing: 0.32em;
+		--hero-occasion-text-transform: uppercase;
+		--hero-occasion-font: 500 0.75rem / 1.4 var(--font-body);
+		--hero-name-font-weight: 400;
+		--hero-name-line-height: 0.9;
+		--hero-name-letter-spacing: -0.03em;
+		--hero-title-size: clamp(4rem, 18vw, 7.5rem);
+		--hero-title-max-width: 8ch;
+		--hero-details-font: 400 0.8125rem / 1.7 var(--font-body);
+		--hero-details-letter-spacing: 0.18em;
+		--hero-details-text-transform: uppercase;
+		--hero-scroll-align: center;
+
+		// The scroll cue: a tracked caption over a hairline that runs down, instead of an arrow.
+		--hero-scroll-display: grid;
+		--hero-scroll-font: 500 0.6875rem / 1.4 var(--font-body);
+		--hero-scroll-letter-spacing: 0.32em;
+		--hero-scroll-text-transform: uppercase;
+		--hero-scroll-cue-distance: 10px;
+		--hero-scroll-cue-width: 1px;
+		--hero-scroll-cue-height: 2.75rem;
+		--hero-scroll-cue-margin: 0;
+		--hero-scroll-cue-overflow: hidden;
+		--hero-scroll-cue-font-size: 0;
+		--hero-scroll-cue-bg: linear-gradient(var(--color-action-accent), transparent);
+	}
+
+	// The phrase is set as editorial prose, not script.
+	// The block padding clears the hanging print so the closing line stays readable.
+	.quote-section {
+		--quote-padding-block: clamp(4rem, 10vw, 7rem);
+		--quote-content-font: var(--font-display);
+		--quote-content-style: italic;
+		--quote-content-size: clamp(1.5rem, 5.4vw, 2.25rem);
+		--quote-content-line-height: 1.3;
+		--quote-content-weight: 400;
+		--quote-closing-line-color: var(--color-action-accent);
+	}
+
+	// Join 1, the first bridge: the tiara print hangs from the black into the champagne spread.
+	// The print's top lies on the black, so its paper starts below the overlap.
+	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='quote'] {
+		--intersection-depth: min(var(--editorial-print-overlap), 6rem);
+	}
+
+	.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
+		--section-band-paper: none;
+		--interlude-framed-bg: linear-gradient(transparent 0 55%, var(--editorial-paper) 55%);
+		--interlude-framed-padding: 0 var(--editorial-gutter) clamp(2rem, 6vw, 3.5rem);
+		--interlude-framed-max-width: 20rem;
+		--interlude-framed-mat: 0.75rem 0.75rem 2.5rem;
+		--interlude-framed-mat-bg: rgb(250 247 241);
+		--interlude-framed-border: 0;
+		--interlude-framed-outline: 0;
+		--interlude-framed-shadow: 0 22px 44px -26px rgb(0 0 0 / 70%);
+	}
+
+	// The spread: the countdown on champagne, the nights in large black numerals and the month
+	// with the day ringed in gold.
+	.invitation-section-wrapper[data-section-kind='countdown'] {
+		--section-band-paper: var(--editorial-paper);
+	}
+
+	.countdown-section {
+		--countdown-written-bg: var(--editorial-paper);
+		--countdown-written-ink: var(--editorial-paper-ink);
+		--countdown-written-muted: rgb(var(--editorial-paper-ink-rgb) / 68%);
+		--countdown-written-rule: var(--editorial-paper-rule);
+		--countdown-written-padding-block: clamp(2.5rem, 7vw, 4rem) clamp(3rem, 8vw, 5rem);
+		--countdown-written-title-color: var(--editorial-paper-gold);
+		--countdown-written-title-size: 0.9375rem;
+		--countdown-written-title-align: end;
+		--countdown-written-title-tracking: 0.24em;
+		--countdown-written-title-transform: uppercase;
+		--countdown-written-numeral: clamp(5.5rem, 22vw, 8rem);
+		--countdown-written-numeral-weight: 400;
+		--countdown-written-numeral-color: var(--editorial-paper-ink);
+		--countdown-written-numeral-shadow: none;
+		--event-calendar-ink: var(--editorial-paper-ink);
+		--event-calendar-mark-ink: var(--editorial-paper-gold);
+		--color-text-primary: var(--editorial-paper-ink);
+		--color-text-primary-rgb: var(--editorial-paper-ink-rgb);
+		--color-text-secondary: var(--editorial-paper-ink);
+	}
+
+	// Location: the calendar link and the map buttons each get their own row, and the notes for
+	// the night print as a ruled band in the issue's ink.
+	.event-location {
+		--location-calendar-margin-top: 1.5rem;
+		--location-nav-buttons-margin-top: 1rem;
+		--location-nav-buttons-gap: 0.75rem;
+		--location-band-heading-color: var(--color-action-accent);
+		--location-band-icon-color: var(--color-action-accent);
+		--location-band-text-color: rgb(var(--color-text-primary-rgb) / 78%);
+
+		// The notes are read, not scanned: book serif in sentence case instead of tracked caps.
+		--location-band-text-font: 400 1.0625rem / 1.6 var(--font-display);
+		--location-band-text-letter-spacing: 0;
+		--location-band-text-max-width: 30ch;
+	}
+
+	// The program reads on the black page in ivory and gold, like the rest of the issue.
+	.itinerary {
+		--editorial-program-paper: var(--editorial-noir);
+		--editorial-program-ink: var(--color-text-primary);
+		--editorial-program-ink-rgb: var(--color-text-primary-rgb);
+		--editorial-program-accent: var(--color-action-accent);
+	}
+
+	// Join 2, the climax: the back cover rises into the reply on champagne under the shared arch.
+	.invitation-section-wrapper[data-intersection='arch'][data-intersection-source='rsvp'] {
+		--intersection-surface: var(--editorial-paper);
+		--intersection-surface-fill: var(--editorial-paper);
+		--intersection-arch-height: clamp(3rem, 9vw, 6rem);
+	}
+
+	// On this preset the back cover prints on the primary text color in the on-dark ink, so the
+	// closing swaps them: champagne paper, black ink.
+	.thank-you-section {
+		--thank-you-ambient-display: none;
+		--color-text-primary: var(--editorial-paper);
+		--color-text-primary-rgb: var(--editorial-paper-rgb);
+		--color-text-on-dark: var(--editorial-paper-ink);
+		--color-text-on-dark-rgb: var(--editorial-paper-ink-rgb);
+		--color-text-secondary: rgb(var(--editorial-paper-ink-rgb) / 72%);
+		--color-text-muted: rgb(var(--editorial-paper-ink-rgb) / 68%);
+		--thank-you-message-color: var(--editorial-paper-ink);
+		--thank-you-closing-color: var(--editorial-paper-ink);
+		--thank-you-drop-cap-color: var(--editorial-paper-gold);
+	}
+
+	@media (width >= 64rem) {
+		// On the wide cover the portrait sits against the masthead instead of centered.
+		.invitation-hero[data-variant='framed-portrait'] {
+			--hero-portrait-margin: 0 0 0 auto;
+		}
+
+		.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
+			--interlude-framed-max-width: 26rem;
+		}
+	}
+}

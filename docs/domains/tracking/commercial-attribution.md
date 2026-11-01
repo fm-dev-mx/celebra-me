@@ -155,6 +155,30 @@ music in a step-by-step mobile form; photos still arrive by WhatsApp.
 - **Privacy:** the page is `noindex`, `no-store`, sends no referrer and loads no analytics (its
   route classifies as `unknown`); `mi-invitacion` is a reserved invitation slug.
 
+### Lead record and origin
+
+Every lead row is also the owner's lead record («ficha»), shown at `/dashboard/fichas` (search by
+CM- code, phone or name and change the stage in one form). Owner:
+`src/lib/commercial/lead-record.ts` and `lead-record.service.ts`; API
+`/api/dashboard/commercial/lead-records` and `lead-ad-codes`.
+
+- **Origin fields:** `route` (`landing` or `chat`), `utm_campaign` (campaign), `utm_content` (ad),
+  `ad_code`, `fbc`, `fbp`, `fbclid`, `ttclid` and `ctwa_clid`. `ctwa_clid` stays empty until it is
+  read from the WhatsApp API.
+- **Landing route:** the lead form keeps creating the CM- code and now also stores `utm_content`
+  and, with marketing consent only, the TikTok `ttclid` (read from the landing URL like `fbclid`).
+- **Chat route:** the owner keeps a catalog of per-ad codes in `lead_ad_codes` (e.g. `A07`, written
+  in the ad's prefilled WhatsApp message). Capturing a known, active code from the first message
+  creates the lead with `route = chat`, a new CM- code, the code's campaign and ad, contact consent
+  and no marketing consent. Unknown or inactive codes are rejected.
+- **Stages:** `new`, `qualified`, `order_confirmed`, `order_cancelled`, `paid_delivered`, `lost`.
+  `lost` requires `lost_reason` (`price`, `date`, `other_option`, `no_reply`); leaving `lost` clears
+  it. Entering a stage stamps `stage_changed_at` and that stage's own `<stage>_at` column, so each
+  column keeps the last time the stage was entered. `package_value` is the quoted package in MXN.
+- **Independence:** `stage` is separate from the legacy `leads.status`. Only `qualified` and
+  `order_confirmed` on a landing lead queue CAPI events (see CRM sales-stage events below); the
+  other CRM lead-stage events still follow the existing order actions.
+
 ## `lead_created` Event Rule
 
 `lead_created` is a first-party tracking event fired server-side after lead persistence. It follows
@@ -348,6 +372,28 @@ no email, raw phone, IP address or user agent is included. CRM stage rows use th
 time as `event_time`, do not include `event_source_url`, and follow the same retry lifecycle and
 30-day terminal-row retention as browser events. In the current workspace, `paid` is emitted when
 the deposit is registered; there is no separate full-payment transition API.
+
+### CRM sales-stage events
+
+Saving a landing lead's stage on the lead card queues two more CRM stages with the same consent,
+stable `event_id` and user-data rules:
+
+- `qualified` queues a standard `Lead` with `trigger_status = crm_lead_qualified` and no value.
+- `order_confirmed` also queues the qualified `Lead` (an order confirmed directly still counts as
+  qualified), then a `Purchase` with `trigger_status = crm_lead_order_confirmed` and the lead's
+  `package_value` as `value` in MXN. No Purchase is queued while `package_value` is empty or zero.
+
+Chat-route leads are left out: they are captured without marketing consent. Both stages go out with
+`action_source = chat`, and their `custom_data` adds `value` and `currency` when the row has a
+value. Meta rejects chat events older than seven days, so delivery skips a row created more than
+seven days earlier with `EVENT_TOO_OLD`.
+
+Meta does not deduplicate two server Purchases with different event IDs, so a lead has one Purchase:
+delivery skips the deposit Purchase (`PURCHASE_SENT_AT_ORDER_CONFIRMED`) while the lead's
+confirmed-order Purchase exists in any status other than `skipped`, and skips the confirmed-order
+Purchase (`PURCHASE_SENT_AT_DEPOSIT`) when the lead's deposit Purchase is `sending`, `sent` or
+`ambiguous` (it may already have reached Meta). A confirmed-order row that is later skipped for
+another reason leaves that lead without a Purchase.
 
 ### Environment Variables
 
@@ -714,6 +760,61 @@ Existing order and Purchase transitions remain owned by the Sales Workspace.
 - Media quality/rights confirmation; no new assets or licenses have been acquired.
 - Exact Preview artifact approval, separately authorized Production publication, and measurement
   cutover timestamp. Local source and tests do not prove deployed behavior.
+
+## Automated weekly Meta review
+
+The daily analytics cron (`43 10 * * *`) creates one persisted report for the last completed
+Monday–Sunday commercial week (America/Chihuahua). It runs after the existing Insights collector, on
+Production only, and catches up on the next daily run if Monday was missed. No additional cron
+trigger or migration is needed. The dashboard is super-admin only and reads the stored report;
+viewing it never calls Meta or sends a notice.
+
+Reports reuse the aggregate snapshot convention of the monthly lead-value calculation:
+`meta_ads_insights_daily`, account `meta_commercial`, level `campaign`, object
+`weekly_review_1348260657445453`, attribution window `weekly_review_v1`, date = week end. Normal
+Insights reads select `unified`, so report rows do not affect ad totals. Each row holds validated
+aggregates only, with no commercial identity fields, provider envelopes or credentials. Report
+retention follows the existing Insights table (no automatic purge is introduced).
+
+Weekly spend/clicks use the persisted collector's daily rows. Missing days are not zero; incomplete
+totals are not displayed. Dataset quality and commercial/CAPI health are observations taken when the
+report is generated, explicitly distinguished from that week's ad totals. Dataset quality reads
+Graph v26 `dataset_quality` for pixel `1348260657445453`: per-event EMQ, event coverage and the
+browser/server/overall `event_id` deduplication feedback. Missing metrics and source errors stay
+unknown. The report is a weekly snapshot; it is not recomputed when retrying a notice.
+
+Attention means a missing source/metric, incomplete daily coverage, non-correct dashboard CAPI
+health, EMQ below 6/10, event coverage below 75%, or deduplication coverage below 75%. These are
+local review thresholds, not a promise of ad performance or proof that Meta matched a user.
+
+### Owner setup and activation
+
+`META_DATASET_QUALITY_ACCESS_TOKEN` is a separate, server-only system-user dataset read token; do
+not replace `META_GRAPH_ACCESS_TOKEN` (Insights) or `META_CAPI_ACCESS_TOKEN` (delivery). The owner
+must verify actual dataset access and permissions in Meta. A token's existence or `ads_read` scope
+alone does not establish successful access to the Dataset Quality API.
+
+`META_WEEKLY_REVIEW_WEBHOOK_URL` is an optional server-only HTTPS target selected by the owner. The
+receiver must accept JSON and honor `Idempotency-Key`; the URL can contain a provider-issued
+credential and must be treated as a secret. The payload contains only `event`, `week`, a Spanish
+notice, `needsAttention` and the relative dashboard `path`, never the report or commercial data. A
+2xx response means the receiver accepted the notice, not that a human read it. Redirects are
+refused. A failed/unconfigured notice retries on the next daily run using the stored report and the
+same key. Delivery is at least once: concurrent triggers or a crash after acceptance but before the
+status write can repeat it, so receiver-side idempotency is required.
+
+After approval of the exact destination **Production Worker `celebra-me`**, the owner can run these
+commands from the repository checkout and enter values only at Wrangler's interactive prompt:
+
+```sh
+pnpm exec wrangler secret put META_DATASET_QUALITY_ACCESS_TOKEN --env production --name celebra-me
+pnpm exec wrangler secret put META_WEEKLY_REVIEW_WEBHOOK_URL --env production --name celebra-me
+```
+
+These commands affect the active Worker deployment; coordinate them with the authorized release.
+They are preparation instructions, not authorization to execute them. Never paste the values into
+chat, command arguments or tracked files. No secrets, permissions or deployments are changed by the
+implementation PR. Activation and a real dataset/webhook smoke require separate approval.
 
 ## Future Work
 

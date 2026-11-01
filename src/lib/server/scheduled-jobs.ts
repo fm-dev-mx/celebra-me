@@ -21,6 +21,7 @@ import {
 } from '@/lib/commercial/meta-capi/service';
 import { readBuildIdentity } from '@/lib/environment';
 import { runMetaInsightsCollector } from '@/lib/meta/insights-collector';
+import { runMetaWeeklyReview } from '@/lib/meta/weekly-review.server';
 import {
 	MEMORIES_CLEANUP_EVENT_NAME,
 	createMemoriesCleanupCompletedEvidence,
@@ -192,6 +193,7 @@ async function runDailyAnalyticsMaintenanceJob(): Promise<ScheduledJobOutcome['s
 		await runEngagementMaintenanceJob(),
 		await runCommercialRetentionJob(),
 		await runMetaInsightsJob(),
+		await runMetaWeeklyReview(),
 		await runMetaEstimatedLeadValueJob(),
 	];
 	return steps.includes('failed') ? 'failed' : 'completed';

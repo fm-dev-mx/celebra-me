@@ -4,11 +4,21 @@ import path from 'node:path';
 const read = (file: string) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
 const demo = JSON.parse(read('src/invitations/demos/demo-xv-celestial-blue/content.json'));
 
-it('uses the selected Paulo Coelho quote in Celestial Blue', () => {
-	expect(demo.quote).toEqual({
-		text: 'La posibilidad de realizar un sueño es lo que hace que la vida sea interesante.',
-		author: 'Paulo Coelho',
+it('opens on the full-bleed portrait with the split name repeated in the closing', () => {
+	expect(demo.hero).toMatchObject({
+		variant: 'standard',
+		backgroundImage: 'hero',
+		backgroundImageDesktop: 'heroDesktop',
+		presentation: { nameLeadWords: 1 },
 	});
+	expect(demo.thankYou.closingNameLeadWords).toBe(1);
+	expect(demo.theme.motion).toBe('editorial');
+});
+
+it('speaks in her own warm voice instead of a borrowed quote', () => {
+	expect(demo.quote.author).toBeUndefined();
+	expect(demo.quote.closingLine).toMatch(/usted/);
+	expect(JSON.stringify(demo)).not.toMatch(/Paulo Coelho/);
 });
 
 it('keeps the family portrait complete and the approved open composition scoped to this demo', () => {
@@ -21,10 +31,7 @@ it('keeps the family portrait complete and the approved open composition scoped 
 	expect(demo.family.featuredImageAlt).toBe(
 		'Retrato ilustrativo de Camila con vestido azul, acompañada de su madre y su padre.',
 	);
-	expect(demo.family.labels).toMatchObject({
-		sectionTitle: 'Mi familia',
-		sectionMessage: 'El cariño que me acompaña en cada paso.',
-	});
+	expect(demo.family.labels).toMatchObject({ sectionTitle: 'Mi familia' });
 	expect(demo.family.parents).toEqual({
 		father: 'Alejandro Torres Mendoza',
 		mother: 'Mariana Fernanda Rivas',
@@ -32,13 +39,7 @@ it('keeps the family portrait complete and the approved open composition scoped 
 	expect(demo.family.godparents).toEqual([
 		{ name: 'Ricardo Torres Mendoza', role: 'Padrino' },
 		{ name: 'Daniela Rivas Hernández', role: 'Madrina' },
-		{ name: 'Fernando Castillo López', role: 'Padrino' },
 	]);
-	expect(demo.composition.intersections.family).toEqual({ family: 'arch', source: 'quote' });
-	expect(demo.composition.intersections.quote).toEqual({
-		family: 'atmospheric-blend',
-		source: 'hero',
-	});
 	expect(read('src/invitations/demos/demo-xv-celestial-blue/assets.ts')).toContain(
 		"import family from './assets/family-group.webp'",
 	);
@@ -52,6 +53,22 @@ it('keeps the family portrait complete and the approved open composition scoped 
 	).toBe(true);
 });
 
+it('joins sections in a bridge, bridge, climax cadence and leaves every other boundary neutral', () => {
+	expect(demo.composition.intersections).toEqual({
+		family: { family: 'folio', source: 'countdown' },
+		gifts: { family: 'folio', source: 'gallery' },
+		'personalized-access': { family: 'stack', source: 'gifts' },
+	});
+	const order = demo.sectionOrder;
+	expect(order[order.indexOf('family') - 1]).toBe('countdown');
+	expect(order[order.indexOf('gifts') - 1]).toBe('gallery');
+	expect(order[order.indexOf('personalizedAccess') - 1]).toBe('gifts');
+});
+
+it('counts down right after the opening quote', () => {
+	expect(demo.sectionOrder.slice(0, 2)).toEqual(['quote', 'countdown']);
+});
+
 it('keeps the configured date, coherent identity and only the family interlude', () => {
 	expect(demo.title).toContain('Camila Torres Rivas');
 	expect(demo.envelope.sealInitials).toBe('C·T');
@@ -62,22 +79,20 @@ it('keeps the configured date, coherent identity and only the family interlude',
 	});
 	expect(demo.interludes).toHaveLength(1);
 	expect(demo.interludes[0]).toMatchObject({
-		image: {
-			type: 'internal',
-			key: 'gallery05',
-			delivery: { mode: 'original', width: 1080, height: 1350 },
-		},
+		image: { type: 'internal', key: 'gallery05' },
 		afterSection: 'family',
-		alt: 'Camila con vestido azul en un balcón al anochecer.',
 		height: 'medium',
-		focalPoint: '50% 30%',
-		focalPointDesktop: '50% 12%',
 	});
 	expect(read('src/components/invitation/CountdownTimer.astro')).not.toContain('Math.random');
 });
 it('places the access pass next to RSVP and marks unverified maps as illustrative', () => {
 	const order = demo.sectionOrder;
 	expect(order[order.indexOf('rsvp') - 1]).toBe('personalizedAccess');
+	expect(demo.rsvp.personalizedAccess).toMatchObject({
+		variant: 'formal-pass',
+		ticket: { signature: 'Camila' },
+		presentationOptions: { checkInQr: true },
+	});
 	expect(demo.location.introLede).toBe('Ubicación ilustrativa de la demo');
 	expect(JSON.stringify(demo)).not.toMatch(/maps\.app\.goo\.gl\/example/);
 });

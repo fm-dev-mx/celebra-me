@@ -135,6 +135,14 @@ const defaultLead = {
 
 describe('SalesWorkspace', () => {
 	let savedScrollIntoView: typeof HTMLElement.prototype.scrollIntoView;
+	beforeEach(() => {
+		jest.spyOn(dashboardApi, 'get').mockResolvedValue({
+			ok: true,
+			status: 200,
+			data: { data: [] },
+		} as never);
+	});
+	afterEach(() => jest.restoreAllMocks());
 
 	beforeAll(() => {
 		savedScrollIntoView = HTMLElement.prototype.scrollIntoView;
@@ -145,7 +153,7 @@ describe('SalesWorkspace', () => {
 		HTMLElement.prototype.scrollIntoView = savedScrollIntoView;
 	});
 
-	it('starts with a commercial work queue instead of an open form', () => {
+	it('starts with a commercial work queue instead of an open form', async () => {
 		render(
 			<SalesWorkspace
 				initialLeads={[
@@ -161,6 +169,7 @@ describe('SalesWorkspace', () => {
 				]}
 			/>,
 		);
+		await act(async () => {});
 
 		expect(screen.getByRole('heading', { name: 'Seguimientos recientes' })).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: /María Ejemplo/ })).toHaveTextContent(
@@ -171,7 +180,7 @@ describe('SalesWorkspace', () => {
 		expect(screen.queryByLabelText('Código de lead')).not.toBeVisible();
 	});
 
-	it('moves focus to identity resolution when the operator chooses the next action', () => {
+	it('moves focus to identity resolution when the operator chooses the next action', async () => {
 		render(
 			<SalesWorkspace
 				initialLeads={[
@@ -185,19 +194,22 @@ describe('SalesWorkspace', () => {
 				]}
 			/>,
 		);
+		await act(async () => {});
 
 		fireEvent.click(screen.getByRole('button', { name: /Persona Enfoque/ }));
+		await act(async () => {});
 		const nextAction = screen
 			.getAllByRole('button', { name: 'Vincular o crear cliente' })
 			.find((button) => button.getAttribute('type') === 'button');
 		expect(nextAction).toBeDefined();
 		fireEvent.click(nextAction!);
+		await act(async () => {});
 
 		expect(screen.getByLabelText('Nombre completo *')).toHaveFocus();
 		expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalled();
 	});
 
-	it('presents an incomplete prospect as an intentional commercial record', () => {
+	it('presents an incomplete prospect as an intentional commercial record', async () => {
 		render(
 			<SalesWorkspace
 				initialLeads={[
@@ -210,8 +222,10 @@ describe('SalesWorkspace', () => {
 				]}
 			/>,
 		);
+		await act(async () => {});
 
 		fireEvent.click(screen.getByRole('button', { name: /Prospecto sin nombre/ }));
+		await act(async () => {});
 
 		expect(screen.getByRole('heading', { name: 'Prospecto sin nombre' })).toBeInTheDocument();
 		expect(screen.getAllByText('CM-INCOMPLETE')).toHaveLength(3);
@@ -221,7 +235,7 @@ describe('SalesWorkspace', () => {
 		).toBeInTheDocument();
 	});
 
-	it('shows WhatsApp CTA for a prospect with a valid E.164 phoneE164', () => {
+	it('shows WhatsApp CTA for a prospect with a valid E.164 phoneE164', async () => {
 		render(
 			<SalesWorkspace
 				initialLeads={[
@@ -237,8 +251,10 @@ describe('SalesWorkspace', () => {
 				]}
 			/>,
 		);
+		await act(async () => {});
 
 		fireEvent.click(screen.getByRole('button', { name: /Ana Ejemplo/ }));
+		await act(async () => {});
 
 		expect(screen.getByRole('link', { name: 'Abrir WhatsApp' })).toHaveAttribute(
 			'href',
@@ -246,7 +262,7 @@ describe('SalesWorkspace', () => {
 		);
 	});
 
-	it('hides WhatsApp CTA for a prospect with a local / incomplete phone (no country code)', () => {
+	it('hides WhatsApp CTA for a prospect with a local / incomplete phone (no country code)', async () => {
 		render(
 			<SalesWorkspace
 				initialLeads={[
@@ -261,12 +277,14 @@ describe('SalesWorkspace', () => {
 				]}
 			/>,
 		);
+		await act(async () => {});
 
 		fireEvent.click(screen.getByRole('button', { name: /Luis Incompleto/ }));
+		await act(async () => {});
 		expect(screen.queryByRole('link', { name: 'Abrir WhatsApp' })).not.toBeInTheDocument();
 	});
 
-	it('hides WhatsApp CTA for a prospect with a masked phoneE164', () => {
+	it('hides WhatsApp CTA for a prospect with a masked phoneE164', async () => {
 		render(
 			<SalesWorkspace
 				initialLeads={[
@@ -282,12 +300,14 @@ describe('SalesWorkspace', () => {
 				]}
 			/>,
 		);
+		await act(async () => {});
 
 		fireEvent.click(screen.getByRole('button', { name: /Sofía Masked/ }));
+		await act(async () => {});
 		expect(screen.queryByRole('link', { name: 'Abrir WhatsApp' })).not.toBeInTheDocument();
 	});
 
-	it('hides WhatsApp CTA for a prospect with no phone data', () => {
+	it('hides WhatsApp CTA for a prospect with no phone data', async () => {
 		render(
 			<SalesWorkspace
 				initialLeads={[
@@ -302,8 +322,10 @@ describe('SalesWorkspace', () => {
 				]}
 			/>,
 		);
+		await act(async () => {});
 
 		fireEvent.click(screen.getByRole('button', { name: /Claudia SinTeléfono/ }));
+		await act(async () => {});
 		expect(screen.queryByRole('link', { name: 'Abrir WhatsApp' })).not.toBeInTheDocument();
 	});
 });

@@ -151,6 +151,9 @@
 		flex-direction: column;
 		align-items: var(--hero-details-align, normal);
 		gap: 0.5rem;
+
+		// Optional family for the time and venue lines (the date has its own token).
+		font-family: var(--hero-details-family, inherit);
 		opacity: 0%;
 		animation: motion-fade-in-up var(--motion-hero-details-duration) var(--ease-out)
 			var(--motion-hero-details-delay) forwards;
@@ -218,6 +221,115 @@
 			width: 100%;
 			height: 100%;
 		}
+	}
+}
+
+// Constellation cue (`scrollCue: 'constellation'`): it stands at the hero's right edge as the
+// counterweight of the content, its label set vertically beside three sparkles; a thread draws
+// itself downward from star to star and fades, then the next pass begins.
+.invitation-hero[data-variant] .invitation-hero__scroll-indicator[data-scroll-cue='constellation'] {
+	right: var(--hero-scroll-right, clamp(1.25rem, 4vw, 3rem));
+	bottom: var(--hero-scroll-bottom, clamp(1.5rem, 5svh, 3rem));
+	left: auto;
+	flex-direction: row;
+	align-items: flex-end;
+	gap: 0.6rem;
+	margin-inline: 0;
+
+	.invitation-hero__scroll-text {
+		margin: 0;
+		font-size: var(--hero-scroll-text-size, 0.68rem);
+		letter-spacing: 0.32em;
+		writing-mode: vertical-rl;
+	}
+
+	// The label drifts down with the thread and brightens as it lands, then settles back.
+	@include mixins.motion-safe {
+		.invitation-hero__scroll-text {
+			animation: invitation-constellation-label 3.2s var(--ease-standard, ease-in-out)
+				infinite;
+		}
+	}
+}
+
+.invitation-hero__scroll-constellation {
+	width: 1.5rem;
+	height: 5rem;
+	overflow: visible;
+
+	.invitation-hero__scroll-thread {
+		opacity: 55%;
+	}
+
+	@include mixins.motion-safe {
+		.invitation-hero__scroll-thread {
+			stroke-dasharray: 1;
+			animation: invitation-constellation-thread 3.2s var(--ease-standard, ease-in-out)
+				infinite;
+		}
+
+		.invitation-hero__scroll-star {
+			transform-box: fill-box;
+			transform-origin: center;
+			animation: invitation-constellation-star 3.2s ease-out infinite;
+
+			&:nth-of-type(3) {
+				animation-delay: 0.7s;
+			}
+
+			&:nth-of-type(4) {
+				animation-delay: 1.4s;
+			}
+		}
+	}
+}
+
+@keyframes invitation-constellation-thread {
+	0% {
+		stroke-dashoffset: 1;
+		opacity: 55%;
+	}
+
+	55% {
+		stroke-dashoffset: 0;
+		opacity: 55%;
+	}
+
+	85%,
+	100% {
+		stroke-dashoffset: 0;
+		opacity: 0%;
+	}
+}
+
+@keyframes invitation-constellation-label {
+	0%,
+	100% {
+		opacity: 60%;
+		translate: 0 0;
+	}
+
+	55% {
+		opacity: 100%;
+		translate: 0 0.3rem;
+	}
+}
+
+@keyframes invitation-constellation-star {
+	0%,
+	100% {
+		opacity: 45%;
+		scale: 0.7;
+	}
+
+	12% {
+		opacity: 100%;
+		scale: 1.15;
+	}
+
+	40% {
+		opacity: 85%;
+		scale: 1;
 	}
 }
 

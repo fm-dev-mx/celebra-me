@@ -5,8 +5,7 @@ External paths use the sibling `<repo-dir>-worktrees/` directory.
 
 | Key | Lane                          | Runtime | Port |
 | --- | ----------------------------- | ------- | ---- |
-| F4  | Integration (repository root) | Local   | 4321 |
-| F5  | `f05-plataforma`              | Local   | 4325 |
+| F5  | Integration (repository root) | Local   | 4321 |
 | F6  | `f06-landing`                 | Local   | 4326 |
 | F7  | `f07-invitaciones`            | Local   | 4327 |
 | F8  | `f08-demos`                   | Local   | 4328 |
@@ -14,6 +13,9 @@ External paths use the sibling `<repo-dir>-worktrees/` directory.
 | F10 | `f10-libre`                   | Local   | 4330 |
 | F11 | `f11-preview`                 | Preview | 4331 |
 | F12 | `f12-release`                 | Preview | 4332 |
+
+Win + F4 opens the separate board project (`tablero`), not a lane. The former `f05-plataforma` lane
+is retired: its checkout is unknown to the guards and the owner removes the folder.
 
 Roles are defaults, not permissions or domain restrictions. Explicit assignment and scoped
 authorization are required before inspecting or changing a second checkout. Clean or detached does

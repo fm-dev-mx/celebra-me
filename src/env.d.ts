@@ -46,6 +46,10 @@ interface ImportMetaEnv {
 	readonly META_CAPI_ACCESS_TOKEN: string;
 	/** Server-only read token, separate from CAPI delivery credentials. */
 	readonly META_GRAPH_ACCESS_TOKEN: string;
+	/** Server-only HTTPS notification target; its URL may contain a webhook credential. */
+	readonly META_WEEKLY_REVIEW_WEBHOOK_URL: string;
+	/** Server-only system-user dataset read token, independent of Insights and CAPI. */
+	readonly META_DATASET_QUALITY_ACCESS_TOKEN: string;
 	/** Server-only asset identifiers for aggregate insight reads. */
 	readonly META_AD_ACCOUNT_ID: string;
 	readonly META_PAGE_ID: string;

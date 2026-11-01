@@ -184,6 +184,8 @@ export async function ingestTrackingEvent(
 					utmSource: payload.source,
 					utmMedium: payload.medium,
 					utmCampaign: payload.campaign,
+					utmContent: payload.utmContent,
+					ttclid: consentSnapshot.marketing ? payload.ttclid : undefined,
 					metaAttribution: consentSnapshot.marketing
 						? payload.metaAttribution
 						: undefined,

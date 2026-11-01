@@ -255,14 +255,14 @@
 	}
 
 	.access-card__header {
-		padding: 2.5rem 2rem 0;
-		gap: 1rem;
+		padding: var(--pa-ticket-header-padding, 2.5rem 2rem 0);
+		gap: var(--pa-ticket-header-gap, 1rem);
 	}
 
 	.access-card__signature {
 		margin: 0;
 		font:
-			400 clamp(1.9rem, 5vw, 2.7rem) / 1.25 'Pinyon Script',
+			400 var(--pa-ticket-signature-size, clamp(1.9rem, 5vw, 2.7rem)) / 1.25 'Pinyon Script',
 			cursive;
 		color: var(--formal-chapter-meta);
 	}
@@ -283,23 +283,23 @@
 	}
 
 	.access-card__body {
-		padding: 2.75rem 2rem 0;
-		gap: 1.25rem;
+		padding: var(--pa-ticket-body-padding, 2.75rem 2rem 0);
+		gap: var(--pa-ticket-body-gap, 1.25rem);
 	}
 
 	.access-card__field {
-		min-height: 6.5rem;
+		min-height: var(--pa-ticket-field-min-height, 6.5rem);
 		align-content: start;
 	}
 
 	.access-card__guest {
-		font-size: clamp(3.25rem, 7vw, 4.5rem);
+		font-size: var(--pa-ticket-guest-size, clamp(3.25rem, 7vw, 4.5rem));
 		line-height: 1;
 		font-weight: 400;
 	}
 
 	.access-card__welcome {
-		margin: 0 0 1.75rem;
+		margin: var(--pa-ticket-welcome-margin, 0 0 1.75rem);
 		font: 400 var(--pa-welcome-size, 1.375rem) / 1.4 var(--formal-chapter-display);
 		color: var(--formal-chapter-muted);
 		text-align: var(--pa-welcome-align, inherit);
@@ -314,7 +314,7 @@
 		grid-template-columns: auto minmax(0, 1fr) auto;
 		gap: 1rem;
 		margin: 0 -2rem;
-		padding: 1.5rem 2rem 1.75rem;
+		padding: var(--pa-ticket-quota-padding, 1.5rem 2rem 1.75rem);
 		background: transparent;
 		border-top: 0;
 		background-image: repeating-linear-gradient(
@@ -343,7 +343,7 @@
 	}
 
 	.access-card__count {
-		font-size: 5.5rem;
+		font-size: var(--pa-ticket-count-size, 5.5rem);
 		font-weight: 400;
 	}
 

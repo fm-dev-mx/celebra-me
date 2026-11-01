@@ -3,6 +3,10 @@ import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.sche
 import { HERO_TIME_FORMATS } from '@/lib/invitation/hero-presentation';
 import { HERO_VARIANTS } from '@/lib/invitation/section-variants';
 
+/** Pinned scroll scenes the standard cover can play (docs/domains/theme/motion.md). */
+export const HERO_SCENES = ['cover-approach'] as const;
+export type HeroScene = (typeof HERO_SCENES)[number];
+
 export const heroSchema = z
 	.object({
 		name: z.string(),
@@ -10,6 +14,8 @@ export const heroSchema = z
 		label: z.string().optional(),
 		nickname: z.string().optional(),
 		scrollLabel: z.string().max(80).optional(),
+		/** Scroll cue drawn under the label: the bouncing chevron (default) or a constellation. */
+		scrollCue: z.enum(['chevron', 'constellation']).optional(),
 		// Editorial-cover copy; each renders only when provided.
 		tagline: z.string().max(160).optional(),
 		photoCredit: z.string().max(80).optional(),
@@ -36,6 +42,8 @@ export const heroSchema = z
 				designCredit: z.boolean().optional(),
 				// Clock shown under the cover date: `24h` (default, as written) or `12h` (`7:00 p. m.`).
 				timeFormat: z.enum(HERO_TIME_FORMATS).optional(),
+				// Standard cover only: the cover stays pinned while the picture closes in on its focus.
+				scene: z.enum(HERO_SCENES).optional(),
 			})
 			.strict()
 			.optional(),
@@ -45,4 +53,13 @@ export const heroSchema = z
 		focalPointTablet: focalPointSchema.optional(),
 		focalPointDesktop: focalPointSchema.optional(),
 	})
-	.strict();
+	.strict()
+	.superRefine((hero, context) => {
+		const scene = hero.presentation?.scene;
+		if (!scene || hero.variant === 'standard') return;
+		context.addIssue({
+			code: 'custom',
+			path: ['presentation', 'scene'],
+			message: `hero.presentation.scene=${scene} requires the standard variant`,
+		});
+	});

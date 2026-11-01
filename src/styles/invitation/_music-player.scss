@@ -202,6 +202,82 @@
 	}
 }
 
+// Track control: the song's «title · artist» line with the bars, set in the hero's bottom corner
+// like a caption. It belongs to the hero only: once the hero scrolls away (`is-away`, set by the
+// script) it fades out, and it returns with the hero.
+.music-player[data-control='track'] {
+	right: auto;
+	bottom: var(--music-track-bottom, 1.5rem);
+	left: var(--music-track-left, clamp(1.25rem, 4vw, 2rem));
+	animation: musicTrackLineIn var(--duration-slower, 600ms) var(--ease-standard, ease-out) both;
+
+	.music-player__track {
+		gap: 0.75rem;
+		width: auto;
+		height: auto;
+		min-height: 2.75rem;
+		padding: 0.25rem 0;
+		color: var(--music-track-color, var(--color-text-on-dark));
+		background: none;
+		border: 0;
+		border-radius: var(--music-track-radius, 0);
+		box-shadow: none;
+
+		&::after {
+			content: none;
+		}
+	}
+
+	.music-player__bars {
+		flex: none;
+		color: var(--music-track-accent, currentcolor);
+	}
+
+	.music-player__track-text {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0 0.6em;
+		max-width: var(--music-track-max-width, 70vw);
+		text-align: left;
+		text-shadow: 0 1px 8px rgb(var(--color-surface-dark-rgb, 0 0 0) / 60%);
+		transition:
+			opacity var(--duration-standard, 240ms) var(--ease-standard, ease-out),
+			max-width var(--duration-slower, 600ms) var(--ease-standard, ease-out);
+	}
+
+	.music-player__track-title {
+		font-family: var(--music-track-title-font, var(--font-display));
+		font-size: var(--music-track-title-size, 1rem);
+		font-style: italic;
+	}
+
+	.music-player__track-artist {
+		font-family: var(--music-track-meta-font, var(--font-body));
+		font-size: var(--music-track-meta-size, 0.68rem);
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		opacity: 72%;
+	}
+
+	// Out of the hero the line fades away; the song keeps playing.
+	&.is-away {
+		visibility: hidden;
+		opacity: 0%;
+		pointer-events: none;
+		transition:
+			opacity var(--duration-standard, 240ms) var(--ease-standard, ease-out),
+			visibility 0s linear var(--duration-standard, 240ms);
+	}
+}
+
+@keyframes musicTrackLineIn {
+	from {
+		opacity: 0%;
+		transform: translateY(0.5rem);
+	}
+}
+
 @include mixins.respond-below(md) {
 	.music-player {
 		bottom: 1rem;
@@ -253,6 +329,10 @@
 
 		&[data-control='equalizer'] {
 			transition: none;
+		}
+
+		&[data-control='track'] {
+			animation: none;
 		}
 	}
 }

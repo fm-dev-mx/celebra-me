@@ -32,7 +32,7 @@ release versioning and changelog policy are owned by [`release-process.md`](rele
 - Annotated tags (`vX.Y.Z`) mark releases. The release session creates and pushes them within the
   release authorization once the promoted `main` SHA is verified.
 
-## Lane model (Win + F4–F12)
+## Lane model (Win + F5–F12)
 
 Nine persistent native Git lanes isolate tasks. The executable source for lane ids, paths, runtime
 defaults and ports is [worktree-lane.ts](../../scripts/shared/worktree-lane.ts). See the
@@ -204,7 +204,8 @@ Every commit in this repository must follow these rules:
 2. Keep the commit within the [size limits](#commit-size).
 3. Use a conventional-commit header with a required scope from the [scope list](#scopes).
 4. Make the subject describe the most relevant change in concrete terms.
-5. Explain what changes and why in the body when the change spans multiple files or modules.
+5. Explain what changes and why in the body when the commit changes more than one reviewable file
+   (`pre-push` blocks a multi-file commit whose body holds only footers).
 6. Avoid generic or process-oriented language such as `wip`, `misc`, `tmp`, `fix stuff`, or similar
    phrasing.
 
@@ -391,6 +392,7 @@ Use one scope from this list. `commitlint` warns on any other scope.
 | `provisioning`           | Definition-to-database publishing: release, apply, hash baselines |
 | `release`                | Version, CHANGELOG and release checks                             |
 | `ops`                    | Operations CLI, runbooks under `docs/operations/`, cutovers       |
+| `board`                  | Task board wrapper, configuration and the pinned board core       |
 | `git`                    | Hooks, `commitlint`, lane sync and git-safety tooling             |
 | `ci`                     | Workflows and their contract tests                                |
 | `validation`             | Static validators (`scripts/validate-*`)                          |
@@ -415,8 +417,9 @@ The body explains what changes and why, compared with the parent commit, not how
 Prose paragraphs and bullets are both fine; wrap lines at 72 characters (`commitlint` blocks lines
 above 100) and leave one blank line after the header.
 
-- `1-2` changed files: body is optional unless the intent is not obvious from the header.
-- `3+` changed files: body is required.
+- One reviewable file: body is optional unless the intent is not obvious from the header.
+- Two or more reviewable files: body is required; `pre-push` refuses the commit without one.
+  Lockfiles, binaries, visual snapshots and exact renames are not counted.
 
 Include these when they apply:
 
@@ -525,15 +528,14 @@ reason.
 Subjective quality checks remain advisory. `scripts/validate-commits.mjs` warns, but does not block,
 when a commit:
 
-- touches `3+` files and has no body other than footers,
 - spans three or more primary areas such as `src/`, `scripts/`, `supabase/`, `.agent/` or root
   config files (`tests/` and `docs/` accompany a change and are not counted),
 - goes above the warning [size limit](#commit-size).
 
-The hard size limit is the only shape rule that blocks, and only in `pre-push`, while the commits
-can still be split. Repository CI reports it as a warning because pushed history is never rewritten.
-Warnings are prompts to review the commit shape before pushing. They do not replace engineering
-judgment.
+Two shape rules block, and only in `pre-push`, while the commits can still be rewritten: the hard
+size limit, and a commit that changes two or more reviewable files with no body other than footers.
+Repository CI reports both as warnings because pushed history is never rewritten. Warnings are
+prompts to review the commit shape before pushing. They do not replace engineering judgment.
 
 ## Ownership
 
@@ -543,9 +545,9 @@ judgment.
 | `.agent/rules/gatekeeper.md`              | Validation tiers and review/remediation gates                                       |
 | `.agent/rules/git-safety.md`              | Git-write authorization and `path ≠ privilege`                                      |
 | `commitlint.config.cjs`                   | Commit message validation and quality rules                                         |
-| `scripts/validate-commits.mjs`            | Commit-range commitlint replay, size limits and advisory hygiene warnings           |
+| `scripts/validate-commits.mjs`            | Commit-range commitlint replay, body and size limits, advisory hygiene warnings     |
 | `.husky/pre-commit`                       | Detached-HEAD and `main` guard, staged-file checks                                  |
-| `.husky/pre-push`                         | Commit-range validation with the hard size limit and Git LFS handoff                |
+| `.husky/pre-push`                         | Commit-range validation with the blocking shape rules and Git LFS handoff           |
 | `.github/workflows/commit-validation.yml` | Policy, static/build, unit, database and browser jobs, aggregate result and metrics |
 
 ## Active Hooks and CI Sequence
@@ -555,10 +557,11 @@ judgment.
    It then runs `pnpm lint-staged` and `pnpm test:changed`.
 2. `commit-msg` runs `commitlint` against the pending commit message on all branches.
 3. `pre-push` replays commitlint over the pushed range in one process with
-   `scripts/validate-commits.mjs --strict-size` (the hard size limit blocks; other hygiene warnings
-   stay advisory), then hands the ref updates to Git LFS. New task branches use the common ancestor
-   with `origin/develop` as the range base. Exact-SHA visual certification belongs to Repository CI
-   on the `develop` push; `pnpm validate:prepush` is an optional local preview.
+   `scripts/validate-commits.mjs --strict` (the hard size limit and a missing body on a multi-file
+   commit block; other hygiene warnings stay advisory), then hands the ref updates to Git LFS. New
+   task branches use the common ancestor with `origin/develop` as the range base. Exact-SHA visual
+   certification belongs to Repository CI on the `develop` push; `pnpm validate:prepush` is an
+   optional local preview.
 4. `Repository CI` (`.github/workflows/commit-validation.yml`) runs on pushes to `develop`, on pull
    requests targeting `develop` or `main`, and by manual dispatch. See the
    [validation procedure](validation-procedures.md#remote-ci-coverage-and-efficiency) for scope and

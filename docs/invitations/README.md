@@ -52,6 +52,7 @@ Gates: `pnpm validate:invitation-preparation` (prepReadiness alignment and hygie
 | [alba-rosa-quinonez](alba-rosa-quinonez.md)                 | `/cumple/alba-rosa-quinonez`     | delivered |
 | [allison-scarlett](allison-scarlett.md)                     | `/xv/allison-scarlett`           | active    |
 | [america](america.md)                                       | `/xv/america`                    | active    |
+| [andrea](andrea.md)                                         | `/xv/andrea`                     | active    |
 | [daniela-y-martin](daniela-y-martin.md)                     | `/boda/daniela-y-martin`         | active    |
 | [destenid-sofia](destenid-sofia.md)                         | `/xv/destenid-sofia`             | active    |
 | [leslie-perez](leslie-perez.md)                             | `/xv/leslie-perez`               | delivered |
@@ -63,3 +64,4 @@ Gates: `pnpm validate:invitation-preparation` (prepReadiness alignment and hygie
 | [romina-rios-chaparro](romina-rios-chaparro.md)             | `/xv/romina-rios-chaparro`       | delivered |
 | [valentina-hernandez](valentina-hernandez.md)               | `/xv/valentina-hernandez`        | delivered |
 | [victoria-y-roberto](victoria-y-roberto.md)                 | `/boda/victoria-y-roberto`       | active    |
+| [yireh-ana](yireh-ana.md)                                   | `/xv/yireh-ana`                  | active    |

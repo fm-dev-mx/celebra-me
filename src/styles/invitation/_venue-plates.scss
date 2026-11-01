@@ -443,7 +443,9 @@
 			--location-plates-notes-border-inline,
 			var(--location-plates-notes-border, 1px solid rgb(var(--color-action-accent-rgb) / 20%))
 		);
+		border-radius: var(--location-plates-notes-radius, 0);
 		background: var(--location-plates-notes-bg, var(--color-surface-soft));
+		box-shadow: var(--location-plates-notes-shadow, none);
 	}
 
 	.event-location__indications {

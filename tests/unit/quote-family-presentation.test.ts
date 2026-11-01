@@ -78,45 +78,37 @@ describe('Quote and family presentation controls', () => {
 		expect(rule!.style.getPropertyValue('--intersection-arch-mask')).toContain('32 7C44 3');
 	});
 
-	it('keeps the first fold hero-only and starts an asymmetrical blend with the quote', () => {
-		const profileRule = profileRules.find(
+	it('keeps the first fold hero-only and carries its night into the quote and countdown', () => {
+		const nightBandRule = profileRules.find(
 			(candidate) =>
 				candidate.selectorText.includes('[data-section-kind=quote]') &&
-				candidate.selectorText.includes('[data-intersection=atmospheric-blend]'),
-		);
-		const heroPaintRule = profileRules.find(
-			(candidate) =>
-				candidate.selectorText.includes('[data-intersection-source=hero]') &&
-				candidate.selectorText.includes('.quote-section'),
+				candidate.selectorText.includes('[data-section-kind=countdown]'),
 		);
 		const heroHeightRule = celestialHeroRules.find(
 			(candidate) =>
 				candidate.selectorText.includes('.invitation-hero') &&
 				candidate.style.getPropertyValue('min-height') === '100svh',
 		);
-		expect(profileRule).toBeDefined();
-		expect(profileRule!.style.getPropertyValue('--intersection-depth')).toBe(
-			'clamp(3.25rem, 6.5vw, 4.5rem)',
-		);
-		expect(profileRule!.style.getPropertyValue('--intersection-blend')).toContain('68% 0%');
 		expect(heroHeightRule).toBeDefined();
-		expect(heroHeightRule!.style.getPropertyValue('min-height')).toBe('100svh');
-		// The profile only retokenizes the incoming quote surface; the quote base paints it.
+		expect(nightBandRule).toBeDefined();
+		expect(nightBandRule!.style.getPropertyValue('--section-band-paper')).toContain(
+			'var(--color-deep-blue-graphite)',
+		);
+		// The quote base still paints its own surface; the profile only clears it over the band.
 		const quoteSurfaceRule = quoteRules.find(
 			(candidate) => candidate.selectorText === '.quote-section',
 		);
 		expect(quoteSurfaceRule!.style.getPropertyValue('background')).toBe(
 			'var(--quote-bg, var(--quote-bg-fallback))',
 		);
-		expect(heroPaintRule).toBeDefined();
-		const paintDeclarations = Array.from(heroPaintRule!.style);
-		expect(paintDeclarations).toEqual(['--quote-bg']);
-		const paint = heroPaintRule!.style.getPropertyValue('--quote-bg');
-		expect(paint).toContain('var(--intersection-blend) top / 100% var(--intersection-depth)');
-		expect(paint).toMatch(/top \/ 100% var\(--intersection-depth\) no-repeat,\s*var\(/u);
+		expect(
+			profileRules.some((candidate) =>
+				candidate.selectorText.includes('[data-intersection=atmospheric-blend]'),
+			),
+		).toBe(false);
 	});
 
-	it('scopes the editorial overrides to Celestial Blue without a blur or compositing workaround', () => {
+	it('scopes the editorial quote and centered family overrides to Celestial Blue without a blur or compositing workaround', () => {
 		const quote = profileRules.find(
 			(rule) => rule.selectorText === `${profileSelector} .quote-section`,
 		)!;
@@ -129,8 +121,8 @@ describe('Quote and family presentation controls', () => {
 		expect(quote.style.getPropertyValue('--quote-content-shadow')).toBe('none');
 		expect(quote.style.getPropertyValue('--quote-continuation-indent')).toBe('1.5em');
 		expect(quote.style.getPropertyValue('--quote-line-margin-start')).toBe('0');
-		expect(family.style.getPropertyValue('--family-item-align')).toBe('flex-start');
-		expect(family.style.getPropertyValue('--family-group-text-align')).toBe('start');
+		expect(family.style.getPropertyValue('--family-item-align')).toBe('center');
+		expect(family.style.getPropertyValue('--family-group-text-align')).toBe('center');
 		expect(family.style.getPropertyValue('--family-divider')).toBe('transparent');
 		for (const property of [
 			'filter',

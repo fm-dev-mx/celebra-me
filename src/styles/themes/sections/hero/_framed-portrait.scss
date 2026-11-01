@@ -124,15 +124,26 @@
 		margin: 0 auto;
 		text-align: var(--hero-scroll-align, right);
 		align-self: end;
-		font: 400 1.125rem / 1.5 var(--font-body);
+		display: var(--hero-scroll-display, block);
+		justify-items: center;
+		gap: 0.75rem;
+		font: var(--hero-scroll-font, 400 1.125rem / 1.5 var(--font-body));
+		letter-spacing: var(--hero-scroll-letter-spacing, normal);
+		text-transform: var(--hero-scroll-text-transform, none);
 		color: var(--color-action-accent);
 	}
 
+	// The cue mark: an inline arrow by default; a profile can draw it as a hairline instead.
 	.framed-portrait-hero__invitation span {
-		--hero-scroll-distance: 4px;
+		--hero-scroll-distance: var(--hero-scroll-cue-distance, 4px);
 
 		display: inline-block;
-		margin-left: 0.35rem;
+		width: var(--hero-scroll-cue-width, auto);
+		height: var(--hero-scroll-cue-height, auto);
+		margin: var(--hero-scroll-cue-margin, 0 0 0 0.35rem);
+		overflow: var(--hero-scroll-cue-overflow, visible);
+		font-size: var(--hero-scroll-cue-font-size, inherit);
+		background: var(--hero-scroll-cue-bg, none);
 	}
 
 	@include mixins.motion-safe {

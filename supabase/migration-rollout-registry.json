@@ -1,6 +1,16 @@
 {
     "$schemaComment": "Migration / deployment compatibility registry. SSOT for expand|neutral|contract phases. Docs: docs/database-workflow.md",
     "migrations": {
+        "20261030180000": {
+            "phase": "expand",
+            "provides": ["leads_record_origin", "lead_ad_codes"],
+            "notes": "Adds leads route, ad_code, utm_content, ttclid, ctwa_clid, sales stage with per-stage timestamps, lost_reason and package_value, plus the service-only lead_ad_codes catalog. Additive: existing rows get stage new and null elsewhere, and the deployed application never names the columns. Must be applied before the application that writes route and ttclid on the lead upsert is deployed, because PostgREST rejects unknown columns."
+        },
+        "20261030160000": {
+            "phase": "expand",
+            "provides": ["order_invitation_drafts"],
+            "notes": "Adds a unique order invitation link and service-only invoker RPC for atomic draft creation. Apply before enabling the order draft UI."
+        },
         "20260730113000": {
             "phase": "expand",
             "provides": ["public_guest_rsvp_rpc"],
@@ -328,6 +338,12 @@
             "provides": ["meta_conversion_events_crm_lead_stages"],
             "requiresDeployedAppCapabilities": ["meta_capi_view_events_client"],
             "notes": "Widens meta_conversion_events checks to admit lead-linked CRM LeadQuoted, LeadPaid and LeadLost rows without order, customer, value or event_source_path while preserving invitation-data CompleteRegistration rows; retains terminal CRM stage rows under the existing 30-day rule and adds their partial retention index. Registered as contract only because the CHECK swaps use DROP CONSTRAINT. Every change widens accepted rows and leaves existing records and deployed clients working. Must be applied before the app that enqueues CRM stage rows is deployed."
+        },
+        "20261031120000": {
+            "phase": "contract",
+            "provides": ["meta_conversion_events_crm_lead_sales_stages"],
+            "requiresDeployedAppCapabilities": ["meta_capi_view_events_client"],
+            "notes": "Widens meta_conversion_events checks to admit lead-linked CRM rows for a qualified lead (Lead, no value) and a confirmed order (Purchase with the package value, no order or customer), and adds a partial index for the one-Purchase-per-lead check. Registered as contract only because the CHECK swaps use DROP CONSTRAINT. Every change widens accepted rows and leaves existing records and deployed clients working. Must be applied before the app that enqueues these rows is deployed."
         }
     },
     "appCapabilities": {
@@ -372,6 +388,9 @@
         },
         "lead_capture_form_client": {
             "requiresDbCapabilities": ["leads_capture_form_fields"]
+        },
+        "order_invitation_drafts_client": {
+            "requiresDbCapabilities": ["order_invitation_drafts"]
         },
         "invitation_data_link_client": {
             "requiresDbCapabilities": [

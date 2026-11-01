@@ -1484,10 +1484,17 @@
 	}
 
 	.event-location__indication-text {
-		margin: 0;
+		max-width: var(--location-band-text-max-width, none);
+		margin: 0 auto;
 		text-align: center;
-		font-size: 1rem;
-		line-height: 1.6;
+		font: var(
+			--location-band-text-font,
+			400 1rem / 1.6 var(--location-indication-text-font-family)
+		);
+		letter-spacing: var(
+			--location-band-text-letter-spacing,
+			var(--location-indication-text-letter-spacing)
+		);
 		color: var(--location-band-text-color, var(--color-text-primary));
 	}
 

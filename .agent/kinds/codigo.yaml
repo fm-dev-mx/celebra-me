@@ -31,4 +31,4 @@ devuelve:
 listo_si: 'type-check'
 al_terminar: []
 tras_cierre:
-    - 'pnpm board review {id} --sha=<sha del PR> (revisión cruzada; close ya dejó la tarea en revisión con su PR, d290, y review espera a que el CI de ese SHA esté verde, d288); si imprime «Revisor: subagente» (d288, riesgo bajo o medio), siga sus pasos: tome la vuelta, lance un subagente Agent con contexto limpio y ciérrela con su veredicto.'
+    - 'pnpm board review {id} --sha=<sha del PR> (revisión cruzada; close ya dejó la tarea en revisión con su PR, d290, y review espera a que el CI de ese SHA esté verde, d288); si imprime «Revisor: subagente» (d288, riesgo bajo o medio), siga sus pasos: tome la vuelta, lance un subagente Agent con contexto limpio y ciérrela con su veredicto. Con veredicto «cambios» la tarea vuelve a en curso: corrija, cierre otra vez y pida la vuelta 2 con review. No cree tareas de seguimiento ni de revisión: un seguimiento es una fase o un paso de esta misma tarea.'

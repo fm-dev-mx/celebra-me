@@ -1,3 +1,8 @@
+import {
+	isPreviewArchivedInvitation,
+	type PostDeployEnvironment,
+} from '../../../scripts/ops/post-deploy-smoke';
+
 /**
  * Which public content cases `invitation-public-content.spec.ts` visits.
  *
@@ -6,10 +11,12 @@
  *   every Preview deploy. A real published invitation wins over a demo of the same event type.
  */
 export type ContentProbeScope = 'all' | 'event-types';
+export type ContentProbeEnvironment = PostDeployEnvironment;
 
 export interface ContentProbeCase {
 	kind: 'invitation' | 'demo';
 	eventType: string;
+	slug?: string;
 }
 
 export function resolveContentProbeScope(value: string | undefined): ContentProbeScope {
@@ -24,11 +31,20 @@ export function selectContentProbeCases<Case extends ContentProbeCase, Viewport>
 	cases: readonly Case[],
 	viewports: readonly Viewport[],
 	scope: ContentProbeScope,
+	environment: ContentProbeEnvironment = 'preview',
 ): { entry: Case; viewports: Viewport[] }[] {
-	if (scope === 'all') return cases.map((entry) => ({ entry, viewports: [...viewports] }));
+	const filteredCases = cases.filter(
+		(entry) =>
+			environment !== 'preview' ||
+			entry.kind !== 'invitation' ||
+			!isPreviewArchivedInvitation(entry.eventType, entry.slug),
+	);
+
+	if (scope === 'all')
+		return filteredCases.map((entry) => ({ entry, viewports: [...viewports] }));
 
 	const byEventType = new Map<string, Case>();
-	for (const entry of cases) {
+	for (const entry of filteredCases) {
 		const current = byEventType.get(entry.eventType);
 		if (!current || (current.kind === 'demo' && entry.kind === 'invitation')) {
 			byEventType.set(entry.eventType, entry);

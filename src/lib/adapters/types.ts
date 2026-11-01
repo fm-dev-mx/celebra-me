@@ -8,6 +8,8 @@ import type {
 	ThemePreset,
 } from '@/lib/theme/theme-contract';
 import type { ParentsOrder } from '@/lib/invitation/family-contract';
+import type { ItineraryScene } from '@/lib/schemas/content/itinerary.schema';
+import type { HeroScene } from '@/lib/schemas/content/hero.schema';
 import type { IconName } from '@/lib/icons/icon-catalog';
 import type { EnvelopeSealIcon, RevealCardData } from '@/lib/invitation/reveal-card';
 import type { RsvpResponseMessages } from '@/lib/invitation/rsvp-messages';
@@ -79,6 +81,8 @@ export interface HeroViewModel {
 	coverPage?: string;
 	/** Editorial-cover design credit; shown when omitted. */
 	designCredit?: boolean;
+	/** Standard-cover scroll scene. */
+	scene?: HeroScene;
 	name: string;
 	secondaryName?: string;
 	label: string;
@@ -98,6 +102,7 @@ export interface HeroViewModel {
 	focalPointTablet?: string;
 	focalPointDesktop?: string;
 	scrollLabel?: string;
+	scrollCue?: 'chevron' | 'constellation';
 	tagline?: string;
 	photoCredit?: string;
 }
@@ -226,6 +231,8 @@ export interface EnvelopeViewModel {
 		coverIssue?: string;
 		/** Editorial cover reveal: one or two cover lines; defaults are the XV edition lines. */
 		coverLines?: string[];
+		/** Collector edition: handwritten note on the inside front cover, addressed to the guest. */
+		coverNote?: string;
 		/** Editorial cover reveal: 'collector' enables the drag-to-open bending magazine. */
 		coverExperience?: 'standard' | 'collector';
 		/** Collector edition: decorative cutout on the printed cover face. */
@@ -373,6 +380,7 @@ export interface InvitationViewModel {
 			items: ItineraryItem[];
 			variant: ItineraryVariant;
 			closingNote?: string;
+			scene?: ItineraryScene;
 		};
 		rsvp?: {
 			eventSlug: string;
@@ -418,6 +426,7 @@ export interface InvitationViewModel {
 				footerText?: string;
 				noteText?: string;
 				passStyle: PersonalizedAccessPassStyle;
+				checkInQr: boolean;
 			};
 		};
 		gifts?: {
@@ -472,8 +481,9 @@ export interface InvitationViewModel {
 		/** Seconds of volume ramp when playback starts or loops back. */
 		fadeInSeconds?: number;
 		revealMode: 'envelope' | 'immediate';
-		/** Floating control style; the round button unless the content asks for the equalizer. */
-		control?: 'button' | 'equalizer';
+		artist?: string;
+		/** Floating control style; the round button unless the content asks for another. */
+		control?: 'button' | 'equalizer' | 'track';
 	};
 	interludes?: Interlude[];
 	navigation?: Array<{ label: string; href: string }>;

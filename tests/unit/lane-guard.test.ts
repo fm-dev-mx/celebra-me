@@ -58,6 +58,13 @@ describe('lane guard', () => {
 		expect(result.stderr).toContain('lane: unknown');
 	});
 
+	it('refuses the retired f05-plataforma checkout', () => {
+		const result = runGuard(createCheckout('f05-plataforma'));
+		expect(result.status).toBe(1);
+		expect(result.stderr).toContain('lane: unknown');
+		expect(result.stderr).not.toContain('f05-plataforma (');
+	});
+
 	it('accepts a canonical lane on a task branch', () => {
 		const checkout = createCheckout('f06-landing');
 		expect(runGuard(checkout).status).toBe(0);
@@ -92,7 +99,7 @@ describe('lane guard', () => {
 		git(checkout, ['switch', '-c', 'feat/task']);
 		const result = runGuard(checkout);
 		expect(result.status).toBe(1);
-		expect(result.stderr).toContain('Integration (Win + F4) only takes commits on develop');
+		expect(result.stderr).toContain('Integration (Win + F5) only takes commits on develop');
 	});
 
 	it('accepts concluding a merge in Integration', () => {

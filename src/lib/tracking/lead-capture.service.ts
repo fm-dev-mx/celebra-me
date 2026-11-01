@@ -45,6 +45,7 @@ export const LeadCaptureSchema = TrackingEventSchema.pick({
 	utmContent: true,
 	utmTerm: true,
 	metaAttribution: true,
+	ttclid: true,
 	consentSnapshot: true,
 }).extend({
 	/** Shared with the browser Pixel Lead as `eventID`, so Meta deduplicates both copies. */
@@ -139,6 +140,9 @@ async function storeCaptureLead(
 			utmSource: input.source,
 			utmMedium: input.medium,
 			utmCampaign: input.campaign,
+			utmContent: input.utmContent,
+			ttclid: context.marketing ? input.ttclid : undefined,
+			route: 'landing',
 			metaAttribution: context.marketing ? input.metaAttribution : undefined,
 			consentContact: true,
 			consentMarketing: context.marketing,

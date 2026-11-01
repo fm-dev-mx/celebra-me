@@ -16,12 +16,13 @@ export type InvitationMusicPlayerProps = {
 	url: string;
 	autoPlay: boolean;
 	title?: string;
+	artist?: string;
 	creditsUrl?: string;
 	startAt?: number;
 	fadeInSeconds?: number;
 	revealMode: 'envelope' | 'immediate';
 	variant?: string;
-	control?: 'button' | 'equalizer';
+	control?: 'button' | 'equalizer' | 'track';
 };
 
 function canUseLocalInvitationPreview(): boolean {
@@ -49,11 +50,12 @@ export function resolveInvitationMusicPlayer(input: {
 		url?: string;
 		autoPlay?: boolean;
 		title?: string;
+		artist?: string;
 		creditsUrl?: string;
 		startAt?: number;
 		fadeInSeconds?: number;
 		revealMode?: 'envelope' | 'immediate';
-		control?: 'button' | 'equalizer';
+		control?: 'button' | 'equalizer' | 'track';
 	};
 	envelopeEnabled: boolean;
 }): InvitationMusicPlayerProps | undefined {
@@ -63,6 +65,7 @@ export function resolveInvitationMusicPlayer(input: {
 		url: url?.trim() ?? '',
 		autoPlay: input.music?.autoPlay ?? false,
 		title: input.music?.title,
+		artist: input.music?.artist,
 		creditsUrl: input.music?.creditsUrl,
 		startAt: input.music?.startAt,
 		fadeInSeconds: input.music?.fadeInSeconds,

@@ -13,7 +13,7 @@ describe('CI browser scope', () => {
 	it.each([
 		'src/styles/landing.scss',
 		'src/lib/platform/contract/limits.ts',
-		'public/favicon.svg',
+		'public/site.webmanifest',
 		'scripts/shared/worktree-lane.ts',
 		'scripts/playwright/canonical-fixture-server.ts',
 		'tests/e2e/visual-baselines/manifest.json',

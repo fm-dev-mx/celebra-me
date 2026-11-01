@@ -20,6 +20,9 @@ jest.mock('@/lib/commercial/meta-capi/service', () => ({
 jest.mock('@/lib/meta/insights-collector', () => ({
 	runMetaInsightsCollector: jest.fn(),
 }));
+jest.mock('@/lib/meta/weekly-review.server', () => ({
+	runMetaWeeklyReview: jest.fn(async () => 'skipped'),
+}));
 jest.mock('@/lib/commercial/meta-capi/estimated-lead-value', () => ({
 	runMetaEstimatedLeadValueRecalculation: jest.fn(),
 }));
@@ -35,6 +38,7 @@ import {
 } from '@/lib/commercial/meta-capi/service';
 import { runMemoriesCleanup } from '@/lib/memories/server/cleanup.service';
 import { runMetaInsightsCollector } from '@/lib/meta/insights-collector';
+import { runMetaWeeklyReview } from '@/lib/meta/weekly-review.server';
 import { runPlatformUsageCollector } from '@/lib/platform/server/collector/run-collector';
 import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 import { runEngagementMaintenance } from '@/lib/rsvp/engagement/engagement-maintenance.service';
@@ -186,6 +190,17 @@ describe('runScheduledJob', () => {
 			'[engagement][maintenance] completed',
 			expect.objectContaining({ snapshotsWritten: 3 }),
 		);
+	});
+
+	it('surfaces a weekly review failure while still running the other daily steps', async () => {
+		maintenance.mockResolvedValue(maintenanceResult);
+		jest.mocked(runMetaWeeklyReview).mockResolvedValueOnce('failed');
+		await expect(
+			runScheduledJob(SCHEDULED_JOB_CRONS.engagement_maintenance),
+		).resolves.toMatchObject({ status: 'failed' });
+		expect(runMetaWeeklyReview).toHaveBeenCalledTimes(1);
+		expect(metaLeadValue).toHaveBeenCalledTimes(1);
+		expect(retention).toHaveBeenCalledTimes(1);
 	});
 
 	it('runs the commercial retention purge on the engagement maintenance cron', async () => {

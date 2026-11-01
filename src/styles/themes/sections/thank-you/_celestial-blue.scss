@@ -44,9 +44,10 @@
 	.thank-you-editorial__ambient {
 		display: var(--thank-you-ambient-display, block);
 		position: absolute;
-		inset: -8% -8% -10%;
+		inset: var(--thank-you-ambient-inset, -8% -8% -10%);
 		z-index: -1;
-		background:
+		background: var(
+			--thank-you-ambient-bg,
 			radial-gradient(
 				ellipse at 70% 20%,
 				rgb(var(--color-diamond-white-rgb) / 70%) 0%,
@@ -57,8 +58,13 @@
 				transparent 0%,
 				rgb(var(--color-diamond-white-rgb) / 34%) 46%,
 				transparent 56%
-			);
+			)
+		);
 		filter: blur(1px);
+
+		// Optional fade (`--thank-you-ambient-mask`) so the light dissolves instead of ending on the
+		// layer's straight top and bottom edges.
+		mask-image: var(--thank-you-ambient-mask, none);
 		pointer-events: none;
 	}
 

@@ -11,8 +11,7 @@ import type { ImageDelivery } from '@/lib/assets/image-delivery';
 import type { ImageMetadata } from 'astro';
 import { EVENT_KEYS, type EventAssetKey, type CommonAssetKey } from '@/lib/assets/asset-keys';
 
-// Common Assets
-import headerLogo from '@images/header/horizontal-logo150x56.png';
+import { BRAND_ICONS } from '@/lib/brand/brand-logo';
 
 /**
  * Represents a processed image asset.
@@ -87,10 +86,9 @@ const ImageRegistry: Registry = {
 	events: EVENT_REGISTRY,
 	common: {
 		logo: {
-			src: '/icons/favicon.svg',
+			src: BRAND_ICONS.faviconSvg,
 			alt: 'Logotipo de Celebra-me',
 		},
-		headerLogo: { src: headerLogo, alt: 'Celebra-me Logo' },
 		heroBgDesktop: {
 			src: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=2069',
 			alt: 'Fondo Hero',

@@ -1,10 +1,13 @@
 import React from 'react';
+import CrmTimeline from '@/components/dashboard/commercial/CrmTimeline';
+import type { CrmTimelineEntry } from '@/lib/commercial/crm-timeline.service';
 
 import type { SalesOrder } from '@/components/dashboard/commercial/CustomerOrdersBox';
 import type { Customer, LeadCandidate } from '@/components/dashboard/commercial/LeadCandidatesList';
 import { getUsableWhatsAppE164 } from '@/lib/commercial/phone';
 import { labelLeadChannel, labelLeadStatus } from '@/lib/tracking/commercial-dashboard';
 import { labelCommercialEventType } from '@/lib/tracking/commercial-presentation';
+import { LEAD_CODE_PATTERN } from '@/lib/tracking/lead-origin';
 
 function formatMoney(amount: number): string {
 	return new Intl.NumberFormat('es-MX', {
@@ -109,12 +112,16 @@ interface ProspectCommercialDetailProps {
 	lead: LeadCandidate;
 	suggestedAction: string;
 	onOpenCustomerTool: () => void;
+	timelineEntries?: CrmTimelineEntry[];
+	loadingTimeline?: boolean;
 }
 
 export const ProspectCommercialDetail: React.FC<ProspectCommercialDetailProps> = ({
 	lead,
 	suggestedAction,
 	onOpenCustomerTool,
+	timelineEntries = [],
+	loadingTimeline = false,
 }) => {
 	const contact = lead.phone || lead.email;
 	const whatsappDigits = getUsableWhatsAppE164(lead.phoneE164, lead.phone);
@@ -126,6 +133,14 @@ export const ProspectCommercialDetail: React.FC<ProspectCommercialDetailProps> =
 					<p className="sales-workspace__eyebrow">Ficha de prospecto</p>
 					<h3>{lead.name || 'Prospecto sin nombre'}</h3>
 					<span>{lead.leadCode}</span>
+					{LEAD_CODE_PATTERN.test(lead.leadCode) && (
+						<a
+							className="crm-prospect-origin-link"
+							href={`?folio=${encodeURIComponent(lead.leadCode)}#origen-folio`}
+						>
+							Ver origen del folio
+						</a>
+					)}
 				</div>
 				<span className="crm-prospect-status">{labelLeadStatus(lead.status)}</span>
 			</header>
@@ -171,6 +186,10 @@ export const ProspectCommercialDetail: React.FC<ProspectCommercialDetailProps> =
 				</button>
 				<small>La ficha habilita órdenes, cobros e historial comercial.</small>
 			</div>
+			<section className="crm-detail__section" aria-label="Actividad comercial del prospecto">
+				<h4>Actividad comercial</h4>
+				<CrmTimeline entries={timelineEntries} loading={loadingTimeline} />
+			</section>
 		</div>
 	);
 };

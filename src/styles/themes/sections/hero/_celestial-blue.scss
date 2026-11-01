@@ -94,9 +94,9 @@
 
 	.invitation-hero__content {
 		display: grid;
-		grid-template-rows: auto 1fr auto auto;
+		grid-template-rows: var(--hero-content-rows, auto 1fr auto auto);
 		align-content: end;
-		justify-items: start;
+		justify-items: var(--hero-content-justify, start);
 		width: min(100%, var(--container-max-width-lg));
 		max-width: none;
 		min-height: 100svh;
@@ -124,20 +124,20 @@
 		color: var(--hero-label-color);
 		text-shadow: 0 1px 10px rgb(var(--color-surface-dark-rgb) / 35%);
 		text-transform: uppercase;
-		margin-bottom: 1.5rem;
+		margin-bottom: var(--hero-label-margin-bottom, 1.5rem);
 	}
 
 	.invitation-hero__title {
 		max-width: var(--hero-title-max-width, 12ch);
 		margin: 0;
 		margin-top: clamp(0.5rem, 1.5vw, 1rem);
-		margin-bottom: 2rem;
-		font-family: var(--font-display);
-		font-size: clamp(3rem, 9.5vw, 7rem);
+		margin-bottom: var(--hero-title-margin-bottom, 2rem);
+		font-family: var(--hero-title-font-family, var(--font-display));
+		font-size: var(--hero-title-font-size, clamp(3rem, 9.5vw, 7rem));
 		font-weight: 400;
-		line-height: 0.86;
+		line-height: var(--hero-title-line-height, 0.86);
 		letter-spacing: 0.01em;
-		text-align: left;
+		text-align: var(--hero-title-align, left);
 		text-transform: none;
 		color: var(
 			--hero-title-color-mid,
@@ -149,6 +149,21 @@
 		);
 		-webkit-text-stroke: 0;
 		text-shadow: 0 10px 28px rgb(var(--color-surface-dark-rgb) / 50%);
+	}
+
+	// Optional surname line (`--hero-surname-*`, defaults inherit the title): a profile can set the
+	// surnames apart from the first name, for example as a tracked serif line under a script name.
+	.invitation-hero__title-line--surname {
+		display: var(--hero-surname-display, inline);
+		margin-top: var(--hero-surname-margin-top, 0);
+		font-family: var(--hero-surname-font-family, inherit);
+		font-size: var(--hero-surname-font-size, inherit);
+		font-weight: var(--hero-surname-font-weight, inherit);
+		line-height: var(--hero-surname-line-height, inherit);
+		letter-spacing: var(--hero-surname-letter-spacing, inherit);
+		text-transform: var(--hero-surname-text-transform, inherit);
+		color: var(--hero-surname-color, inherit);
+		-webkit-text-fill-color: var(--hero-surname-color, currentcolor);
 	}
 
 	// Optional thread under the name (`--hero-title-thread-display: block`).
@@ -202,14 +217,22 @@
 	.invitation-hero__time,
 	.invitation-hero__venue {
 		margin: 0;
+
+		--hero-meta-size: var(--hero-meta-font-size, clamp(0.72rem, 1.8vw, 1.3rem));
+
 		font-family: var(--font-ui);
-		font-size: clamp(0.72rem, 1.8vw, 1.3rem);
+		font-size: var(--hero-meta-size);
 		font-style: normal;
 		font-weight: 500;
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
 		color: rgb(var(--color-diamond-white-rgb) / 88%);
 		text-shadow: 0 2px 12px rgb(var(--color-surface-dark-rgb) / 68%);
+	}
+
+	// Optional lead: the date may step up a size over the time and the venue.
+	.invitation-hero__date {
+		font-size: var(--hero-date-font-size, var(--hero-meta-size));
 	}
 
 	.calligraphy-accent {
@@ -256,20 +279,24 @@
 		}
 
 		.invitation-hero__title {
-			font-size: clamp(2.6rem, 13vw, 4.5rem);
+			font-size: var(--hero-title-font-size-mobile, clamp(2.6rem, 13vw, 4.5rem));
 			max-width: 16ch;
 			margin-top: clamp(0.4rem, 1vw, 0.8rem);
-			line-height: 0.84;
+			line-height: var(--hero-title-line-height, 0.84);
 			text-shadow: 0 8px 22px rgb(var(--color-surface-dark-rgb) / 72%);
 		}
 
 		.invitation-hero__details {
-			align-items: center;
-			text-align: center;
+			align-items: var(--hero-details-align-mobile, center);
+			text-align: var(--hero-details-text-align-mobile, center);
 		}
 
+		// Tokens let a profile lift the cue above the fixed music prompt; fallbacks keep the left corner.
 		.invitation-hero__scroll-indicator {
-			bottom: 1.5rem;
+			bottom: var(--hero-scroll-bottom-mobile, 1.5rem);
+			left: var(--hero-scroll-left-mobile, 1rem);
+			right: var(--hero-scroll-right-mobile, auto);
+			margin-inline: var(--hero-scroll-margin-inline-mobile, 0);
 		}
 	}
 

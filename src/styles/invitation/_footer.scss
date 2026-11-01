@@ -6,7 +6,12 @@
 //                               it; see the pull cue below). Unset, the footer is always shown.
 //   --footer-border-color       Top rule
 //   --footer-divider-line       Divider line color
-//   --footer-logo-filter        Filter on the brand logo
+//   --footer-logo-claro / -oscuro  Which brand signature shows (display values): `claro` (cafe
+//                               text, default) on light footers, `oscuro` (ivory text) on dark
+//                               ones. Dark footers set `--footer-logo-claro: none` and
+//                               `--footer-logo-oscuro: block`.
+//   --footer-logo-width / -opacity  Brand signature size (default 120px) and opacity (default
+//                               70%); kept below the hosts' closing name.
 //   --footer-contact-border / -bg / -padding  Contact link outline, fill and padding
 //   --invitation-footer-reply   `on`: the reply at the end (see .footer-reply below)
 //   --footer-sky                Layers drawn over the footer's ground and under its content, for
@@ -323,11 +328,19 @@ $lantern-shape: 40% 40% 45% 45%;
 		}
 	}
 
-	// Opt-in recolor of the brand mark for dark footers (`--footer-logo-filter`).
-	.footer-brand-logo.logo {
-		transform: scale(0.7);
-		transform-origin: center;
-		filter: var(--footer-logo-filter, none);
+	// The platform signs below the hosts' closing name, so it stays smaller than that name.
+	.footer-brand-logo {
+		width: var(--footer-logo-width, 120px);
+		height: auto;
+		opacity: var(--footer-logo-opacity, 70%);
+	}
+
+	.footer-brand-logo--claro {
+		display: var(--footer-logo-claro, block);
+	}
+
+	.footer-brand-logo--oscuro {
+		display: var(--footer-logo-oscuro, none);
 	}
 }
 

@@ -148,10 +148,10 @@ without an ornament renders nothing new.
 
 The editorial footer skin (`editorial` and `editorial-magazine`) resolves its ground, rule, brand
 credit, contact button and replay link through `--footer-editorial-*` tokens (`bg`, `bg-image`,
-`border-top`, `shadow`, `padding`, `content-gap`, `content-gap-md`, `powered-color`, `logo-width`,
-`logo-filter`, `cta-border`, `cta-bg`, `cta-color`, `cta-icon-filter`, `cta-hover-border`,
-`cta-hover-bg`, `cta-hover-color`, `cta-hover-shadow`, `replay-color`, `replay-hover-color`). Every
-default equals the previous literal, so profiles only restate what they change.
+`border-top`, `shadow`, `padding`, `content-gap`, `content-gap-md`, `powered-color`, `cta-border`,
+`cta-bg`, `cta-color`, `cta-icon-filter`, `cta-hover-border`, `cta-hover-bg`, `cta-hover-color`,
+`cta-hover-shadow`, `replay-color`, `replay-hover-color`). Every default equals the previous
+literal, so profiles only restate what they change.
 
 Collector cutouts are typed content too: `envelope.coverOrnament` (one image on the printed cover
 face) and `envelope.spreadOrnaments` (one or two on the first inner page) render as contained,
@@ -211,6 +211,23 @@ existing sizing and alignment. The lightbox is a sibling of the gallery section:
 consumers provide local fallbacks without shadowing inherited theme tokens. Atmospheric
 intersections exclude direct dialog children from section stacking so viewport-fixed overlays retain
 their positioning and stacking order.
+
+The `clock-face` countdown exposes opt-in tokens whose defaults keep its current look:
+`--countdown-clock-{padding,bg,color,ring-display}` for the section and its centered ring,
+`--countdown-clock-title-{weight,size,font,margin}`, `--countdown-clock-timer-{gap,width}`,
+`--countdown-clock-segment-padding`, `--countdown-clock-value-{font,size,color}`,
+`--countdown-clock-label-{size,color}`, `--countdown-clock-date-margin` and
+`--countdown-clock-footer-color`. A dial anchored to the timer is off by default
+(`--countdown-clock-dial-content: none`); a profile turns it on with `''` and paints it with
+`--countdown-clock-dial-{size,padding,ticks,ticks-mask,face,shadow}`. The `admission-ticket` formal
+pass sizes its header, body and quota through `--pa-ticket-header-{padding,gap}`,
+`--pa-ticket-signature-size`, `--pa-ticket-body-{padding,gap}`, `--pa-ticket-field-min-height`,
+`--pa-ticket-guest-size`, `--pa-ticket-welcome-margin`, `--pa-ticket-quota-padding` and
+`--pa-ticket-count-size`, each defaulting to the previous literal, so a profile can fit the pass in
+one phone viewport. Family godparent names take `--family-godparent-name-size` (fallback: the shared
+`--family-name-size`), so parents and godparents can carry different weights. The
+`stacked-venue-plates` notes panel takes `--location-plates-notes-{radius,shadow}` (defaults `0`,
+`none`).
 
 ### Gifts flatten
 
@@ -479,6 +496,18 @@ Bounded controls retain their canonical section owner:
   `--hero-section-padding-desktop`, `--hero-title-size`, `--hero-title-max-width`, and
   `--hero-label-size`. Defaults retain the original arch, dimensions, spacing, and typography;
   profiles may preserve a complete rectangular photograph without adding layout selectors.
+- The celestial-blue `standard` hero consumes `--hero-content-justify`, `--hero-content-rows`,
+  `--hero-label-margin-bottom`, `--hero-title-font-family`, `--hero-title-font-size` (and
+  `-mobile`), `--hero-title-line-height`, `--hero-title-align`, `--hero-title-margin-bottom` and,
+  for a split name (`nameLeadWords`, which moves the standard hero's line break), the
+  `--hero-surname-*` line tokens. Fallbacks keep the original left-aligned display title.
+- The celestial-blue thank-you light consumes `--thank-you-ambient-bg`, `--thank-you-ambient-inset`
+  and `--thank-you-ambient-mask` (default none) so a profile can dissolve its edges.
+- The QR check-in preview (`presentationOptions.checkInQr`) consumes the `--pa-check-in-*` tokens
+  for its border, ground, code inks, badge and copy.
+- The thank-you signature consumes `--thank-you-closing-lead-display` and the
+  `--thank-you-closing-rest-*` line tokens for a split closing name (`closingNameLeadWords`), with
+  the same inline, inheriting fallbacks.
 - `paired-feature-band` consumes the existing `--gallery-grid-columns-mobile`,
   `--gallery-item-aspect-ratio`, and `--gallery-item-aspect-ratio-feature` tokens. Unconfigured
   consumers retain one mobile column, 4:5 portraits, and an 8:5 feature band; the variant owns the

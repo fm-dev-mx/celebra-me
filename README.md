@@ -1,6 +1,9 @@
 # Celebra-me
 
-![Celebra-me Logo](public/icons/favicon.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="public/brand/celebra-me_compacto_color-oscuro.svg" />
+  <img src="public/brand/celebra-me_compacto_color-claro.svg" alt="Celebra-me" width="240" />
+</picture>
 
 Celebra-me is an Astro-based web platform for premium digital invitations. The repository contains
 the public marketing site, invitation rendering engine, host dashboard, and the RSVP/admin APIs that

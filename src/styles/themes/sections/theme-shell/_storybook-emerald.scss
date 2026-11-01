@@ -83,6 +83,8 @@
 	.invitation-interlude[data-presentation='framed'],
 	.invitation-footer {
 		--section-band-paper: var(--storybook-night);
+		--footer-logo-claro: none;
+		--footer-logo-oscuro: block;
 		--intersection-surface: var(--color-emerald-night);
 		--intersection-surface-fill: var(--storybook-night);
 		--intersection-blend-fallback: radial-gradient(

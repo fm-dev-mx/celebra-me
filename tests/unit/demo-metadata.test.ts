@@ -5,7 +5,11 @@ import sharp from 'sharp';
 import { DEMO_INVITATIONS } from '@/invitations/demos';
 import { getDemoMetadata } from '@/lib/seo/demo-metadata';
 import { buildDemoSitemapPages } from '@/lib/seo/demo-sitemap-pages';
-import { renderDemoPreview, resolveDemoPreviewSource } from '../../scripts/seo/demo-preview';
+import {
+	getDemoPreviewComposition,
+	renderDemoPreview,
+	resolveDemoPreviewSource,
+} from '../../scripts/seo/demo-preview';
 import { buildSocialImageMetadata } from '@/lib/invitation/social-metadata';
 
 const origin = 'https://www.celebra-me.com';
@@ -93,12 +97,12 @@ describe('demo preview composition', () => {
 		}
 	});
 
-	it('keeps every shipped preview equal to the complete current source photograph', async () => {
+	it('keeps every shipped preview equal to its reviewed source and crop', async () => {
 		for (const demo of DEMO_INVITATIONS) {
 			const metadata = getDemoMetadata(demo.slug);
 			if (!metadata?.image) continue;
 			const source = await resolveDemoPreviewSource(demo.slug);
-			const expected = await renderDemoPreview(source);
+			const expected = await renderDemoPreview(source, getDemoPreviewComposition(demo.slug));
 			expect(fs.readFileSync(path.join('public', metadata.image))).toEqual(expected);
 		}
 	});
@@ -107,8 +111,9 @@ describe('demo preview composition', () => {
 		[400, 800],
 		[640, 640],
 		[1600, 900],
+		[1600, 400],
 	])(
-		'keeps the complete %ix%i photograph without enlargement or cropping',
+		'fills the card from a %ix%i source without padding, including small sources',
 		async (width, height) => {
 			const source = await sharp({
 				create: { width, height, channels: 3, background: '#e02020' },
@@ -122,26 +127,64 @@ describe('demo preview composition', () => {
 				format: 'jpeg',
 			});
 			const { data, info } = await sharp(jpeg).raw().toBuffer({ resolveWithObject: true });
-			const redPixels = Array.from(
-				{ length: info.width * info.height },
-				(_, index) => index,
-			).filter(
-				(index) =>
-					data[index * info.channels] > 180 && data[index * info.channels + 1] < 70,
-			);
-			const xs = redPixels.map((index) => index % info.width);
-			const ys = redPixels.map((index) => Math.floor(index / info.width));
-			const renderedWidth =
-				xs.reduce((max, x) => Math.max(max, x), 0) -
-				xs.reduce((min, x) => Math.min(min, x), info.width) +
-				1;
-			const renderedHeight =
-				ys.reduce((max, y) => Math.max(max, y), 0) -
-				ys.reduce((min, y) => Math.min(min, y), info.height) +
-				1;
-			const scale = Math.min(1200 / width, 630 / height, 1);
-			expect(Math.abs(renderedWidth - width * scale)).toBeLessThan(4);
-			expect(Math.abs(renderedHeight - height * scale)).toBeLessThan(4);
+			for (let index = 0; index < data.length; index += info.channels) {
+				if (data[index] < 180 || data[index + 1] > 70) {
+					throw new Error(
+						`Source does not fill the card at pixel ${index / info.channels}`,
+					);
+				}
+			}
 		},
 	);
+
+	it('ships textured edges on all four sides instead of flat padding', async () => {
+		for (const file of fs.readdirSync('public/images/demo-previews')) {
+			const source = fs.readFileSync(path.join('public/images/demo-previews', file));
+			for (const region of [
+				{ left: 0, top: 0, width: 8, height: 630 },
+				{ left: 1192, top: 0, width: 8, height: 630 },
+				{ left: 0, top: 0, width: 1200, height: 8 },
+				{ left: 0, top: 622, width: 1200, height: 8 },
+			]) {
+				// Materialize the crop: sharp.stats() alone measures the uncropped input.
+				const edge = await sharp(source).extract(region).toBuffer();
+				const { channels } = await sharp(edge).stats();
+				expect({
+					file,
+					region,
+					textured: channels.some(({ stdev }) => stdev > 1),
+				}).toMatchObject({ textured: true });
+			}
+		}
+	});
+
+	it.each([0, 1])('uses the selected vertical position %s', async (verticalPosition) => {
+		const source = await sharp({
+			create: { width: 1200, height: 1260, channels: 3, background: '#e02020' },
+		})
+			.composite([
+				{
+					input: await sharp({
+						create: { width: 1200, height: 630, channels: 3, background: '#2020e0' },
+					})
+						.png()
+						.toBuffer(),
+					left: 0,
+					top: 630,
+				},
+			])
+			.png()
+			.toBuffer();
+		const { channels } = await sharp(
+			await renderDemoPreview(source, { verticalPosition }),
+		).stats();
+		expect(channels[verticalPosition === 0 ? 0 : 2].mean).toBeGreaterThan(180);
+		expect(channels[verticalPosition === 0 ? 2 : 0].mean).toBeLessThan(70);
+	});
+
+	it.each([-0.1, 1.1, NaN])('rejects invalid crop position %s', async (verticalPosition) => {
+		await expect(renderDemoPreview(Buffer.alloc(0), { verticalPosition })).rejects.toThrow(
+			'between 0 and 1',
+		);
+	});
 });

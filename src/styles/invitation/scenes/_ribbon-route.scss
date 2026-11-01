@@ -1,0 +1,339 @@
+@use 'sass:math';
+@use '../../global/mixins' as m;
+@use '../scroll-scene-mixins' as scene;
+
+// ==========================================================================
+// ITINERARY SCENE — ribbon-route (standard variant, two or more moments)
+// While the scene is pinned a ribbon draws itself down the program; each moment comes forward as
+// the ribbon reaches it and the ribbon ends in a bow. Unpinned, the program reads as a list along
+// a finished ribbon with the bow at its foot. Markup: ItineraryRibbonRoute.astro.
+// Tokens (all optional):
+//   --itinerary-ribbon-band / -sheen       Ribbon fill and its highlight line
+//   --itinerary-ribbon-ink / -muted        Moment label and description ink
+//   --itinerary-ribbon-time                Hour ink
+//   --itinerary-ribbon-knot                Knot where a moment ties to the ribbon
+//   --itinerary-ribbon-bow-art             Image for the bow; pair it with
+//   --itinerary-ribbon-bow-drawing: none   to hide the drawn bow
+//   --itinerary-ribbon-{time,label,desc}-size, --itinerary-ribbon-label-font
+//   --itinerary-ribbon-title-{font,size,color}
+//   --itinerary-ribbon-max-width / -max-width-wide / -gap / -padding-block
+// ==========================================================================
+
+// The ribbon draws over this slice of the pinned span; the bow ties at its end.
+$draw-start: 8%;
+$draw-span: 77%;
+$bow-start: 86%;
+$bow-end: 96%;
+
+.itinerary[data-itinerary-scene='ribbon-route'] {
+	// `clip`, not `hidden`: a scroll container here would break the sticky stage.
+	overflow: clip;
+	padding: var(--itinerary-ribbon-padding-block, clamp(3rem, 7vw, 5rem)) clamp(1.25rem, 4vw, 3rem);
+
+	.ribbon-route__sheet {
+		box-sizing: border-box;
+		max-width: var(--itinerary-ribbon-max-width, 34rem);
+		margin-inline: auto;
+
+		// Wide screens: the title and the note on the left, the program on the right.
+		@include m.respond-to(lg) {
+			display: grid;
+			grid-template-areas:
+				'header program'
+				'note program';
+			grid-template-columns: minmax(0, 1fr) auto;
+			column-gap: clamp(3rem, 6vw, 6rem);
+			align-content: center;
+			max-width: var(--itinerary-ribbon-max-width-wide, 62rem);
+		}
+
+		// Pinned: the sheet fills the stage below the header bar and centers the program.
+		@include scene.pinned {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			height: 100%;
+			padding-top: calc(var(--invitation-header-offset, calc(70px + 1.5rem)) * 0.75);
+			padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+
+			@include m.respond-to(lg) {
+				display: grid;
+			}
+		}
+
+		@include scene.scripted {
+			--ribbon-t: clamp(0, (var(--scene-progress, 0) - 0.08) / 0.77, 1);
+			--ribbon-bow: clamp(0, (var(--scene-progress, 0) - 0.86) / 0.1, 1);
+		}
+	}
+
+	.ribbon-route__header {
+		margin-bottom: clamp(1.5rem, 4svh, 2.5rem);
+
+		@include m.respond-to(lg) {
+			grid-area: header;
+			align-self: end;
+			margin-bottom: 0;
+			text-align: start;
+		}
+	}
+
+	.itinerary__title {
+		font-family: var(--itinerary-ribbon-title-font, var(--font-display));
+		font-size: var(--itinerary-ribbon-title-size, clamp(2rem, 7vw, 2.75rem));
+		font-weight: 400;
+		line-height: 1.1;
+		color: var(--itinerary-ribbon-title-color, var(--color-text-primary));
+	}
+
+	// The program block is centered; the ribbon runs down the left of the moments, as tall as
+	// the list, and the bow sits on its foot.
+	.ribbon-route__program {
+		width: fit-content;
+		max-width: 100%;
+		margin-inline: auto;
+
+		@include m.respond-to(lg) {
+			grid-area: program;
+		}
+	}
+
+	.ribbon-route__track {
+		position: relative;
+		padding-inline-start: 3.5rem;
+	}
+
+	.ribbon-route__ribbon {
+		position: absolute;
+		inset-block: 0;
+		inset-inline-start: 0;
+		width: 2.5rem;
+		height: 100%;
+		overflow: visible;
+
+		@include scene.timeline {
+			animation: ribbon-route-draw linear both;
+			animation-timeline: --scroll-scene;
+			animation-range: contain $draw-start contain ($draw-start + $draw-span);
+		}
+
+		@include scene.scripted {
+			clip-path: inset(0 0 calc((1 - var(--ribbon-t)) * 100%) 0);
+		}
+	}
+
+	.ribbon-route__band,
+	.ribbon-route__sheen {
+		fill: none;
+		stroke-linecap: round;
+		vector-effect: non-scaling-stroke;
+	}
+
+	.ribbon-route__band {
+		stroke: var(--itinerary-ribbon-band, rgb(232 196 92));
+		stroke-width: 9;
+	}
+
+	.ribbon-route__sheen {
+		stroke: var(--itinerary-ribbon-sheen, rgb(255 244 204 / 80%));
+		stroke-width: 2;
+	}
+
+	.ribbon-route__moments {
+		display: grid;
+		gap: var(--itinerary-ribbon-gap, clamp(0.875rem, 2.4svh, 1.5rem));
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		text-align: start;
+	}
+
+	// Each moment comes forward when the ribbon reaches its row.
+	.ribbon-route__moment {
+		// Unitless fractions of the pinned span, so the scripted engine needs no unit division.
+		--ribbon-reach: calc(
+			#{math.div($draw-start, 100%)} + #{math.div($draw-span, 100%)} *
+				var(--ribbon-index, 0) / var(--ribbon-count, 1)
+		);
+		--ribbon-settle: calc(#{math.div($draw-span, 100%)} * 0.6 / var(--ribbon-count, 1));
+
+		position: relative;
+
+		@include scene.timeline {
+			animation: ribbon-route-arrive linear both;
+			animation-timeline: --scroll-scene;
+			animation-range: contain calc(var(--ribbon-reach) * 100%) contain
+				calc((var(--ribbon-reach) + var(--ribbon-settle)) * 100%);
+		}
+
+		@include scene.scripted {
+			--ribbon-lit: clamp(
+				0,
+				(var(--scene-progress, 0) - var(--ribbon-reach)) / var(--ribbon-settle),
+				1
+			);
+
+			opacity: calc(30% + 70% * var(--ribbon-lit));
+			translate: calc((1 - var(--ribbon-lit)) * 0.75rem) 0;
+		}
+
+		// A moment with focus inside always reads in full.
+		&:focus-within {
+			@include scene.pinned {
+				opacity: 100%;
+				translate: 0 0;
+			}
+		}
+	}
+
+	// The knot sits on the ribbon, level with the hour.
+	.ribbon-route__knot {
+		position: absolute;
+		top: 0.55em;
+		left: -2.625rem;
+		width: 0.75rem;
+		height: 0.75rem;
+		border-radius: 50%;
+		background: var(--itinerary-ribbon-knot, var(--itinerary-ribbon-band, rgb(232 196 92)));
+		box-shadow: 0 0 0 3px color-mix(in srgb, white 70%, transparent);
+
+		@include scene.timeline {
+			animation: ribbon-route-tie linear both;
+			animation-timeline: --scroll-scene;
+			animation-range: contain calc(var(--ribbon-reach) * 100%) contain
+				calc((var(--ribbon-reach) + var(--ribbon-settle)) * 100%);
+		}
+
+		@include scene.scripted {
+			scale: calc(0.4 + 0.6 * var(--ribbon-lit));
+		}
+	}
+
+	.ribbon-route__time {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: var(--itinerary-ribbon-time-size, 0.95rem);
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		color: var(--itinerary-ribbon-time, var(--color-text-emphasis));
+	}
+
+	.ribbon-route__label {
+		margin: 0.125rem 0 0;
+		font-family: var(--itinerary-ribbon-label-font, var(--font-display));
+		font-size: var(--itinerary-ribbon-label-size, 1.5rem);
+		font-weight: 400;
+		line-height: 1.15;
+		color: var(--itinerary-ribbon-ink, var(--color-text-primary));
+
+		@include m.respond-to(lg) {
+			font-size: var(--itinerary-ribbon-label-size, 1.65rem);
+		}
+	}
+
+	.ribbon-route__description {
+		margin: 0.125rem 0 0;
+		font-size: var(--itinerary-ribbon-desc-size, 0.95rem);
+		line-height: 1.35;
+		color: var(
+			--itinerary-ribbon-muted,
+			var(--itinerary-ribbon-ink, var(--color-text-primary))
+		);
+	}
+
+	// The bow ties the ribbon off under the last moment.
+	.ribbon-route__bow {
+		display: block;
+		width: 4.5rem;
+		aspect-ratio: 120 / 84;
+		margin: -0.5rem 0 0 -1rem;
+		background: var(--itinerary-ribbon-bow-art, none) center / contain no-repeat;
+		transform-origin: 50% 40%;
+
+		@include scene.timeline {
+			animation: ribbon-route-bow linear both;
+			animation-timeline: --scroll-scene;
+			animation-range: contain $bow-start contain $bow-end;
+		}
+
+		@include scene.scripted {
+			opacity: var(--ribbon-bow);
+			scale: calc(0.3 + 0.7 * var(--ribbon-bow));
+			rotate: calc((1 - var(--ribbon-bow)) * -20deg);
+		}
+	}
+
+	.ribbon-route__bow-drawing {
+		display: var(--itinerary-ribbon-bow-drawing, block);
+		width: 100%;
+		height: 100%;
+	}
+
+	.ribbon-route__bow-loop,
+	.ribbon-route__bow-tail {
+		fill: var(--itinerary-ribbon-band, rgb(232 196 92));
+		stroke: color-mix(in srgb, var(--itinerary-ribbon-band, rgb(232 196 92)) 70%, black);
+		stroke-width: 1.5;
+		stroke-linejoin: round;
+	}
+
+	.ribbon-route__bow-knot {
+		fill: color-mix(in srgb, var(--itinerary-ribbon-band, rgb(232 196 92)) 85%, black);
+	}
+
+	.ribbon-route__note {
+		margin-top: clamp(1rem, 3svh, 2rem);
+
+		@include m.respond-to(lg) {
+			grid-area: note;
+			align-self: start;
+			text-align: start;
+		}
+	}
+}
+
+@keyframes ribbon-route-draw {
+	from {
+		clip-path: inset(0 0 100% 0);
+	}
+
+	to {
+		clip-path: inset(0 0 0 0);
+	}
+}
+
+@keyframes ribbon-route-arrive {
+	from {
+		opacity: 30%;
+		translate: 0.75rem 0;
+	}
+
+	to {
+		opacity: 100%;
+		translate: 0 0;
+	}
+}
+
+@keyframes ribbon-route-tie {
+	from {
+		scale: 0.4;
+	}
+
+	to {
+		scale: 1;
+	}
+}
+
+@keyframes ribbon-route-bow {
+	from {
+		opacity: 0%;
+		scale: 0.3;
+		rotate: -20deg;
+	}
+
+	to {
+		opacity: 100%;
+		scale: 1;
+		rotate: 0deg;
+	}
+}

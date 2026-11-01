@@ -1456,12 +1456,9 @@
 			display: none;
 		}
 
-		.footer__info .footer-brand-logo.logo {
-			width: 7rem;
-			max-width: 100%;
-			height: auto;
-			transform: none;
-			filter: brightness(0) invert(1);
+		.footer__info .footer-brand-logo {
+			--footer-logo-claro: none;
+			--footer-logo-oscuro: block;
 		}
 
 		.whatsapp-button,

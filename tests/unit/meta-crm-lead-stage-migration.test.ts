@@ -79,3 +79,64 @@ describe('Meta CRM lead-stage migration', () => {
 		});
 	});
 });
+
+describe('Meta CRM lead sales-stage migration', () => {
+	const salesVersion = '20261031120000';
+	const salesMigrationPath = resolve(
+		`supabase/migrations/${salesVersion}_meta_crm_lead_sales_stages.sql`,
+	);
+	const salesMigration = readFileSync(salesMigrationPath, 'utf8');
+	const checkOf = (constraint: string) => {
+		const start = salesMigration.indexOf(`add constraint ${constraint}`);
+		const end = salesMigration.indexOf(';', start);
+		expect(start).toBeGreaterThanOrEqual(0);
+		return salesMigration.slice(start, end);
+	};
+
+	it('keeps every earlier trigger and shape while adding the two sales stages', () => {
+		const triggers = checkOf('meta_conversion_events_trigger_status_check');
+		for (const trigger of [
+			'deposit_paid',
+			'invitation_data_submitted',
+			'crm_lead_quoted',
+			'crm_lead_paid',
+			'crm_lead_lost',
+			'crm_lead_qualified',
+			'crm_lead_order_confirmed',
+		]) {
+			expect(triggers).toContain(`'${trigger}'`);
+		}
+		const shapes = checkOf('meta_conversion_events_source_shape_check');
+		for (const preserved of ['CompleteRegistration', 'LeadQuoted', 'LeadPaid', 'LeadLost']) {
+			expect(shapes).toContain(preserved);
+		}
+		expect(shapes).toContain("trigger_status = 'crm_lead_qualified'");
+		expect(shapes).toContain("trigger_status = 'crm_lead_order_confirmed'");
+		expect(shapes).toContain('value is not null');
+	});
+
+	it('includes the sales-stage insert proof in the compatibility pgTAP file', () => {
+		const pgTap = readFileSync(
+			resolve('supabase/tests/meta_conversion_event_compatibility.test.sql'),
+			'utf8',
+		);
+		expect(pgTap).toContain("'crm_lead_qualified'");
+		expect(pgTap).toContain("'crm_lead_order_confirmed'");
+		expect(pgTap).toContain('plan(5)');
+	});
+
+	it('registers the constraint widening as a contract migration', () => {
+		const result = evaluateMigrationSqlRisk({
+			version: salesVersion,
+			registry,
+			sqlPath: salesMigrationPath,
+		});
+		expect(result.risk.isDestructive).toBe(true);
+		expect(result.blocked).toBe(false);
+		expect(registry.migrations[salesVersion]).toMatchObject({
+			phase: 'contract',
+			provides: ['meta_conversion_events_crm_lead_sales_stages'],
+			requiresDeployedAppCapabilities: ['meta_capi_view_events_client'],
+		});
+	});
+});

@@ -57,8 +57,13 @@ const RATE_LIMITS = {
 	'intake:delete': { maxHits: 10, windowSec: 60 }, // 10 req/min
 
 	// Commercial / Sales Workspace
+	'commercial:quote-reminders:read': { maxHits: 30, windowSec: 60 },
+	'commercial:quote-reminders:write': { maxHits: 20, windowSec: 60 },
 	'commercial:customers:create': { maxHits: 20, windowSec: 60 }, // 20 req/min
 	'commercial:demo-followups:write': { maxHits: 20, windowSec: 60 },
+	'commercial:lead-records:read': { maxHits: 60, windowSec: 60 },
+	'commercial:lead-records:write': { maxHits: 30, windowSec: 60 },
+	'commercial:lead-ad-codes:write': { maxHits: 20, windowSec: 60 },
 	'commercial:customers:search': { maxHits: 60, windowSec: 60 }, // 60 req/min
 	'commercial:reconciliation:search': { maxHits: 60, windowSec: 60 }, // 60 req/min
 	'commercial:orders:create': { maxHits: 20, windowSec: 60 }, // 20 req/min

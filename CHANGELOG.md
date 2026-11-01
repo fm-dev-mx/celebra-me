@@ -10,6 +10,134 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.58.0-beta.1] - 2026-10-31
+
+Leads now carry a record of their origin and sales stage, and the qualified and order-confirmed
+stages reach Meta as conversion events. The Celestial XV demo is redesigned. Two database migrations
+are included.
+
+### Added
+
+- Dashboard: lead records at `/dashboard/fichas` with sales stages, dated stage changes, lost
+  reasons and package value, TikTok click ID capture on the landing and a per-ad code catalog for
+  chat leads (#705).
+- Tracking: Meta Conversions API `Lead` and `Purchase` events for the qualified and order-confirmed
+  CRM lead stages (#709).
+- Tooling: board claim lane guard, review rounds kept inside the reviewed task, coordinator actions
+  that name the real actor, and a mother-task rule with phases and steps (#707, #708, #711, #713).
+
+### Changed
+
+- Demos: redesign the Celestial XV demo with a night-arch hero, an early countdown and bridge
+  sections before the closing (#684).
+- Tooling: Integration takes hotkey 5 and the f05-plataforma lane retires; the board rule and
+  coordinator guide define the session lifecycle (#706, #712).
+- Tooling: every board script runs through the pinned board core (#714).
+
+### Database
+
+- `20261030180000_lead_record_origin` (expand): adds lead route, ad code, `utm_content`, `ttclid`,
+  `ctwa_clid`, sales stage with per-stage timestamps, lost reason and package value, plus the
+  service-only `lead_ad_codes` catalog.
+- `20261031120000_meta_crm_lead_sales_stages` (contract): widens the `meta_conversion_events` checks
+  to admit lead-linked CRM `Lead` and `Purchase` rows. Both are applied to Production before this
+  release.
+
+## [0.57.0-beta.1] - 2026-10-30
+
+Yireh Ana's XV invitation is published with its refined reveal letter, seal and closing medallion.
+Paid orders can create invitation drafts atomically, quotes get manual reminders and folio leads
+show their source. One additive database migration is included.
+
+### Added
+
+- Dashboard: create one invitation draft per paid order through a service-only database function
+  (#681).
+- Commercial: manual quote reminders (#683) and the lead source of each folio (#687).
+- Tooling: a project-agnostic board package run from a local checkout, a project strip in the
+  General view, real-time coordinator notices, a no-AI session hook and a wake button for task
+  agents (#685, #690, #693, #694, #695).
+- Docs: measurement service and project plan proposals (#673).
+
+### Changed
+
+- Invitation: refine Yireh Ana's reveal letter, flower seal, closing medallion and copy, and publish
+  the invitation (#692).
+- Tooling: the owner inbox lists only decide, approve and do-outside rows (#682).
+
+### Fixed
+
+- Tooling: find the Codex CLI outside PATH, alert on stuck master deliveries, drop closing reports
+  of finished tasks from the coordinator queue and clear stale merge signals (#686, #691, #696).
+- Database: create the order draft function before the additive changes so migration preflight
+  classifies its initial revoke correctly (#698).
+
+### Database
+
+- `20261030160000_order_invitation_drafts` (expand): adds the unique `sales_orders.invitation_id`
+  link, column insert grants for `service_role` and `public.create_order_invitation_draft`. Apply it
+  to Preview and Production before enabling the order draft UI.
+
+## [0.56.0-beta.1] - 2026-10-29
+
+The official 2026 logo appears on every ground, Yireh Ana's v3 invitation and the Celestial and
+Editorial demos are refined, and Meta Page Insights resolve their token again. No database
+migrations are included.
+
+### Added
+
+- Brand: official `logo_2026_v2` artwork through `Logo.astro`, enforced in CI, with favicons, site
+  icons and invitation footer signatures (#671).
+- Analytics: automated weekly Meta review report (#664).
+- Tooling: watcher escalation alerts, board MCP telemetry, dependency map, Telegram owner
+  notifications, owner location lines, lane routing validation and Gemini relay monitoring (#657,
+  #663, #669, #672, #674, #675, #676).
+
+### Changed
+
+- Invitation: Yireh Ana XV watercolor v3 with collector inside cover and stationery (#648, #670).
+- Demos: Celestial XV and Editorial design and copy improvements (#666, #667, #668).
+
+### Fixed
+
+- Analytics: resolve the Meta Page Insights token in the daily scheduled job (#665).
+- Tests: relative timestamps in the memories end-to-end fixture and permission adapters (#661, #662,
+  #677).
+
+## [0.55.0-beta.1] - 2026-10-28
+
+Clients can upload photos through their private invitation data form, Andrea's invitation includes
+the reviewed content and photo adjustments, and public demo sharing previews fill their frames. Meta
+Graph requests use the correct fetch receiver on Workers. No database migrations are included.
+
+### Added
+
+- Commercial: private invitation data forms support client photo uploads, previews, removal and host
+  dashboard review (#637).
+- Tooling: local stdio MCP access to worker board commands, onboarding documentation, inbox
+  reminders and a read-only startup diagnostic (#650, #654).
+
+### Changed
+
+- Invitation: update Andrea's program, attire hierarchy, golden earrings, manicure, photos and
+  four-unit countdown, with reviewed visual references (#647).
+- Dependencies: upgrade the Astro React integration to version 7 and require Node 22.23.4 or newer
+  within the supported Node range (#644).
+
+### Fixed
+
+- Commercial: preserve invitation photo membership during text autosaves, retry concurrent writes,
+  show partial upload successes and retain stored objects when metadata deletion is uncertain
+  (#637).
+- Tracking: bind the Meta Graph default fetch receiver to prevent insight collector failures in
+  Workers (#649).
+- Demos: remove cream padding from all seven public sharing previews (#653).
+- Testing: wait for Astro island hydration before browser actions and exclude retired invitations
+  from Preview smoke and authenticated content probes (#640, #641, #645).
+- Tooling: hide stale coordinator merge signals and align board MCP schemas with CLI closing
+  semantics, model enums and bounded child execution (#643, #652).
+- Dependencies: apply bounded overrides for development dependencies (#635).
+
 ## [0.54.0-beta.1] - 2026-10-27
 
 Meta campaign optimization gains value-based signals: browser `Contact` and `Lead` events now carry

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { dashboardApi } from '@/lib/dashboard/api-client';
+import OrderDraftButton from '@/components/dashboard/commercial/OrderDraftButton';
 import {
 	INVITATION_DATA_STEPS,
 	type InvitationDataAnswers,
@@ -289,6 +290,9 @@ const InvitationDataPanel: React.FC<InvitationDataPanelProps> = ({
 			<PanelStatus summary={summary} loading={loading} answerCount={answerCount} />
 
 			{link && <IssuedLinkBlock link={link} />}
+			{summary?.status === 'submitted' && (
+				<OrderDraftButton key={orderId} orderId={orderId} />
+			)}
 
 			{error && (
 				<p className="crm-inline-error" role="alert">
