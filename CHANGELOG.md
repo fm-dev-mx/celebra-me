@@ -25,7 +25,7 @@ at a time, and Yireh Ana's share image becomes a square-safe card. The Astro pla
   ESLint, `eslint-plugin-boundaries`, `prettier-plugin-astro` and `sass-embedded` (#651).
 - Tooling: pre-push requires a body on multi-file commits (#724), the old board implementation is
   removed (#720), f05-plataforma leaves the lane map (#717) and the board core pin advances (#721,
-  #722, #723).
+  #722, #723) with board writes over MCP (#731).
 
 ### Fixed
 
