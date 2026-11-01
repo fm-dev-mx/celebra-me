@@ -12,6 +12,7 @@
 	--vitrina-fs-tiny: 0.66rem;
 	--vitrina-fs-micro: 0.56rem;
 	--vitrina-muted: rgb(var(--color-ivory-rgb) / 72%);
+	--vitrina-fade: 480ms;
 	--vitrina-line: rgb(var(--color-ivory-rgb) / 14%);
 	--device-radius: 36px;
 	--device-screen-radius: 27px;
@@ -26,6 +27,14 @@
 	// The id outranks every class rule below that sets `display`, so toggled parts stay hidden.
 	&#tipo-evento [hidden] {
 		display: none;
+	}
+
+	// The open hint keeps its place while hidden, so the device never shifts when it shows.
+	&#tipo-evento .vitrina__open-hint[hidden] {
+		display: inline-flex;
+		visibility: hidden;
+		opacity: 0%;
+		animation: none;
 	}
 
 	&__anchor {
@@ -231,9 +240,40 @@
 		background: var(--color-ivory);
 
 		// The real demo, drawn at the device's width and scaled into the frame; the cover below is
-		// its poster until it loads.
+		// its poster until it loads, and goes once the first demo has faded in over it.
 		&[data-live='ready'] .vitrina__poster {
 			visibility: hidden;
+			transition: visibility 0s linear var(--vitrina-fade);
+		}
+
+		// While the next demo loads, the current one dims under a small spinner.
+		&::after {
+			content: '';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			z-index: 4;
+			width: 28px;
+			height: 28px;
+			margin: -14px 0 0 -14px;
+			border: 2px solid rgb(var(--color-champagne-rgb) / 30%);
+			border-top-color: var(--color-champagne);
+			border-radius: 50%;
+			opacity: 0%;
+			pointer-events: none;
+			transition: opacity 200ms var(--ease-standard, ease);
+			animation: vitrina-spin 0.9s linear infinite;
+		}
+
+		&[data-loading='true']::after {
+			opacity: 100%;
+			transition-delay: 350ms;
+		}
+
+		@include mixins.reduced-motion {
+			&::after {
+				animation: none;
+			}
 		}
 	}
 
@@ -247,10 +287,35 @@
 		transform: scale(var(--live-scale, 1));
 		transform-origin: 0 0;
 		visibility: hidden;
+		opacity: 0%;
 		background: var(--color-ivory);
+		transition:
+			opacity var(--vitrina-fade) var(--ease-premium, ease),
+			visibility 0s linear var(--vitrina-fade),
+			filter 300ms var(--ease-standard, ease);
 
-		.vitrina__screen[data-live='ready'] & {
+		// The demo on screen sits over the one loading behind it and fades in when it arrives.
+		&[data-state='shown'] {
+			z-index: 2;
 			visibility: visible;
+			opacity: 100%;
+			transition:
+				opacity var(--vitrina-fade) var(--ease-premium, ease),
+				visibility 0s,
+				filter 300ms var(--ease-standard, ease);
+		}
+
+		.vitrina__screen[data-loading='true'] &[data-state='shown'] {
+			filter: saturate(0.6) brightness(0.82);
+			pointer-events: none;
+		}
+
+		@include mixins.reduced-motion {
+			transition: none;
+
+			&[data-state='shown'] {
+				transition: none;
+			}
 		}
 	}
 
@@ -272,11 +337,10 @@
 		font-weight: 600;
 		letter-spacing: 0.04em;
 		cursor: pointer;
+		transition:
+			opacity 360ms var(--ease-premium, ease),
+			visibility 0s;
 		animation: vitrina-open-hint 2.4s var(--ease-standard, ease-in-out) infinite;
-
-		&[hidden] {
-			display: none;
-		}
 
 		&:hover {
 			background: rgb(var(--color-champagne-rgb) / 24%);
@@ -604,6 +668,12 @@
 		height: 100%;
 		object-fit: cover;
 		object-position: var(--demo-focal, 50% 50%);
+	}
+}
+
+@keyframes vitrina-spin {
+	to {
+		rotate: 1turn;
 	}
 }
 
