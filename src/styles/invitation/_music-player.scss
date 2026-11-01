@@ -107,7 +107,7 @@
 		transition: opacity var(--duration-slower, 600ms) ease;
 
 		&.is-idle {
-			opacity: var(--music-player-idle-opacity, 40%);
+			opacity: var(--music-player-idle-opacity, 65%);
 		}
 
 		&:hover,
@@ -203,8 +203,8 @@
 }
 
 // Track control: the song's «title · artist» line with the bars, set in the hero's bottom corner
-// like a caption. It belongs to the hero only: once the hero scrolls away (`is-away`, set by the
-// script) it fades out, and it returns with the hero.
+// like a caption. Once the hero scrolls away (`is-away`, set by the script) it folds into a
+// bars-only chip, and the words return with the hero.
 .music-player[data-control='track'] {
 	right: auto;
 	bottom: var(--music-track-bottom, 1.5rem);
@@ -260,14 +260,24 @@
 		opacity: 72%;
 	}
 
-	// Out of the hero the line fades away; the song keeps playing.
+	// Out of the hero the words fold away and the bars stay as a small dark chip, so the song can
+	// be paused from anywhere in the invitation.
 	&.is-away {
-		visibility: hidden;
-		opacity: 0%;
-		pointer-events: none;
-		transition:
-			opacity var(--duration-standard, 240ms) var(--ease-standard, ease-out),
-			visibility 0s linear var(--duration-standard, 240ms);
+		.music-player__track {
+			justify-content: center;
+			gap: 0;
+			width: 2.75rem;
+			padding: 0;
+			background: var(--music-track-away-bg, rgb(var(--color-surface-dark-rgb, 0 0 0) / 55%));
+			backdrop-filter: blur(8px);
+			border-radius: 50%;
+		}
+
+		.music-player__track-text {
+			max-width: 0;
+			overflow: hidden;
+			opacity: 0%;
+		}
 	}
 }
 

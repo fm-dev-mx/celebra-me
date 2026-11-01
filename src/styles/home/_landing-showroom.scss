@@ -360,6 +360,65 @@
 		}
 	}
 
+	&__frame-actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.5rem;
+
+		&:not(:has(> :not([hidden]))) {
+			display: none;
+		}
+	}
+
+	// Plays or pauses the framed demo's song; the speaker shows a cross until it plays.
+	&__sound {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+
+		@include mixins.touch-target;
+
+		padding: 0 1.25rem;
+		border: 1px solid var(--vitrina-line);
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-ivory-rgb) / 8%);
+		color: var(--color-ivory);
+		font: inherit;
+		font-size: var(--vitrina-fs-small);
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		cursor: pointer;
+
+		&[hidden] {
+			display: none;
+		}
+
+		&:hover {
+			background: rgb(var(--color-ivory-rgb) / 16%);
+		}
+
+		&[aria-pressed='true'] {
+			border-color: rgb(var(--color-champagne-rgb) / 55%);
+			color: var(--color-champagne);
+		}
+
+		svg {
+			width: 18px;
+			height: 18px;
+			fill: none;
+			stroke: currentcolor;
+			stroke-width: 1.6;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+		}
+
+		&[aria-pressed='true'] [data-sound-off],
+		&[aria-pressed='false'] [data-sound-on] {
+			display: none;
+		}
+	}
+
 	&__bar {
 		display: none;
 	}
@@ -438,6 +497,11 @@
 		display: grid;
 		gap: 1rem;
 		min-width: 0;
+
+		// Its parts join the stage's column, so the actions bar can pin across the whole showroom.
+		@media (width < 900px) {
+			display: contents;
+		}
 	}
 
 	&__styles-group {
@@ -588,18 +652,34 @@
 		font-size: var(--vitrina-fs-body);
 	}
 
-	&__detail-actions {
+	// «Ver demo completa» and «Quiero una así», right under the style picker. On phones the panel
+	// dissolves into the stage so this bar can stay pinned to the bottom while the frame, the styles
+	// and the detail scroll by; it settles in place before the detail card.
+	&__actions {
 		display: grid;
-		gap: 0.625rem;
-
-		@media (width >= 480px) {
-			grid-template-columns: 1fr 1fr;
-		}
+		grid-template-columns: 1fr 1fr;
+		gap: 0.5rem;
 
 		.whatsapp-button {
 			min-width: 0;
 			min-height: 48px;
-			padding-inline: 1rem;
+			padding-inline: 0.75rem;
+		}
+
+		@media (width < 900px) {
+			position: sticky;
+			bottom: 0;
+			z-index: 5;
+			margin-inline: -1rem;
+			padding: 0.625rem 1rem calc(0.625rem + env(safe-area-inset-bottom));
+			border-top: 1px solid var(--vitrina-line);
+			background: color-mix(in srgb, var(--color-ink) 92%, transparent);
+			backdrop-filter: blur(10px);
+
+			.vitrina__open,
+			.whatsapp-button {
+				font-size: var(--vitrina-fs-small);
+			}
 		}
 	}
 
