@@ -1,5 +1,4 @@
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { deterministicEventId } from '@/lib/rsvp/engagement/engagement.service';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { loadCommercialRows } from '@/lib/tracking/commercial-pagination.server';
 import { resolvePublicSiteOrigin } from '@/lib/invitation/social-metadata';
@@ -116,10 +115,19 @@ export function buildQuoteReminderIdempotencyKey(leadId: string, now = Date.now(
 	return `quote-reminder:${leadId}:${day}`;
 }
 
+export async function buildQuoteReminderAuditId(idempotencyKey: string) {
+	const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(idempotencyKey));
+	const hex = Array.from(new Uint8Array(digest), (byte) =>
+		byte.toString(16).padStart(2, '0'),
+	).join('');
+	const variant = ((parseInt(hex[16], 16) & 0x3) | 0x8).toString(16);
+	return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-5${hex.slice(13, 16)}-${variant}${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+}
+
 export async function prepareQuoteReminder(input: { leadId: string }, actorId: string) {
 	const now = Date.now();
 	const idempotencyKey = buildQuoteReminderIdempotencyKey(input.leadId, now);
-	const auditId = deterministicEventId(idempotencyKey);
+	const auditId = await buildQuoteReminderAuditId(idempotencyKey);
 	const existing = await supabaseRestRequest<ReminderAudit[]>({
 		pathWithQuery: `audit_logs?id=eq.${encodeURIComponent(auditId)}&select=id,target_id,created_at&limit=1`,
 		method: 'GET',

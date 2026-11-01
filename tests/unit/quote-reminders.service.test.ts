@@ -4,13 +4,13 @@ jest.mock('@/lib/rsvp/repositories/supabase', () => ({ supabaseRestRequest: jest
 import { loadCommercialRows } from '@/lib/tracking/commercial-pagination.server';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import {
+	buildQuoteReminderAuditId,
 	buildQuoteReminderIdempotencyKey,
 	loadQuoteReminders,
 	prepareQuoteReminder,
 	loadQuoteReminderTimeline,
 } from '@/lib/commercial/quote-reminders.service';
 import { loadCrmTimeline } from '@/lib/commercial/crm-timeline.service';
-import { deterministicEventId } from '@/lib/rsvp/engagement/engagement.service';
 
 const now = Date.parse('2026-10-30T12:00:00Z');
 const lead = {
@@ -159,7 +159,7 @@ it('persists a deterministic audit key before returning the manual draft and can
 			method: 'POST',
 			useServiceRole: true,
 			body: expect.objectContaining({
-				id: deterministicEventId(expectedKey),
+				id: await buildQuoteReminderAuditId(expectedKey),
 				actor_id: 'admin',
 				target_id: lead.id,
 				action: 'quote_reminder_prepared',
