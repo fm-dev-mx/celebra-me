@@ -490,6 +490,12 @@ Every managed digital invitation must define:
   the content-addressed object key `invitations/<eventType>/<slug>/<key>-<sha256>.<ext>`
   (`src/lib/intake/services/storage-provider.ts`, `r2-invitation-media.ts`). In both cases
   `invitation_assets` rows record the provider, path and delivery URL.
+- **Backup Scope by Provider (T357, final)**: the critical-backup Storage inventory
+  (`scripts/db/critical-backup-storage.ts`) and the disposable restore drill
+  (`scripts/db/disposable-restore-verify.ts`) read only live rows with `provider = 'supabase'`. The
+  filter is intentional and permanent: R2 originals are copied by the daily media originals job
+  (`docs/database-workflow.md`, Media originals copy), so including `r2` rows would download bytes
+  Supabase Storage does not hold.
 
 When a new invitation uses custom section-to-section composition, select and verify it against the
 canonical [Invitation Section Intersection System](../domains/theme/section-intersections.md). That
