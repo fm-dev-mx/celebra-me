@@ -110,11 +110,36 @@ export async function loadQuoteReminders(now = Date.now()): Promise<QuoteReminde
 	}));
 }
 
-export async function prepareQuoteReminder(
-	input: { leadId: string; idempotencyKey: string },
-	actorId: string,
-) {
-	const candidate = (await loadReminderCandidates(Date.now())).find(
+export function buildQuoteReminderIdempotencyKey(leadId: string, now = Date.now()) {
+	const day = new Date(now).toISOString().slice(0, 10);
+	return `quote-reminder:${leadId}:${day}`;
+}
+
+export async function buildQuoteReminderAuditId(idempotencyKey: string) {
+	const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(idempotencyKey));
+	const hex = Array.from(new Uint8Array(digest), (byte) =>
+		byte.toString(16).padStart(2, '0'),
+	).join('');
+	const variant = ((parseInt(hex[16], 16) & 0x3) | 0x8).toString(16);
+	return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-5${hex.slice(13, 16)}-${variant}${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+}
+
+export async function prepareQuoteReminder(input: { leadId: string }, actorId: string) {
+	const now = Date.now();
+	const idempotencyKey = buildQuoteReminderIdempotencyKey(input.leadId, now);
+	const auditId = await buildQuoteReminderAuditId(idempotencyKey);
+	const existing = await supabaseRestRequest<ReminderAudit[]>({
+		pathWithQuery: `audit_logs?id=eq.${encodeURIComponent(auditId)}&select=id,target_id,created_at&limit=1`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	if (existing[0])
+		throw new ApiError(
+			409,
+			'conflict',
+			'El recordatorio ya fue preparado. Actualice el historial.',
+		);
+	const candidate = (await loadReminderCandidates(now)).find(
 		({ lead }) => lead.id === input.leadId,
 	);
 	if (!candidate)
@@ -145,12 +170,12 @@ export async function prepareQuoteReminder(
 		useServiceRole: true,
 		prefer: 'resolution=ignore-duplicates,return=representation',
 		body: {
-			id: input.idempotencyKey,
+			id: auditId,
 			actor_id: actorId,
 			action: QUOTE_REMINDER_ACTION,
 			target_table: 'leads',
 			target_id: lead.id,
-			new_data: { lead_code: lead.lead_code },
+			new_data: { lead_code: lead.lead_code, idempotency_key: idempotencyKey },
 		},
 	});
 	if (!rows[0])
