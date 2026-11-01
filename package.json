@@ -197,7 +197,7 @@
         "@fontsource/the-nautigal": "^5.3.0",
         "@noble/hashes": "2.4.0",
         "@supabase/supabase-js": "^2.117.3",
-        "@zip.js/zip.js": "^2.23.0",
+        "@zip.js/zip.js": "^2.24.0",
         "date-fns": "4.4.0",
         "date-fns-tz": "3.2.0",
         "framer-motion": "^14.6.0",
