@@ -36,7 +36,6 @@
         "pnpm lint",
         "pnpm build",
         "pnpm exec prettier",
-        "node scripts/board/board.mjs",
         "node scripts/board/tablero-core.mjs"
     ],
     "ask": ["gh pr merge", "gh * pr merge*"],

@@ -5,7 +5,8 @@ import { spawnSync } from 'child_process';
 import { resolve } from 'path';
 import process from 'process';
 
-const MULTI_FILE_BODY_THRESHOLD = 3;
+// A commit with more than one reviewable file must explain what changes and why.
+const MULTI_FILE_BODY_THRESHOLD = 2;
 // Size limits count reviewable files and lines only (see isMechanicalChange). Measured on the
 // v0.23.1-beta.1..v0.24.0-beta.1 range: median 6 files / 123 lines, p75 14 / ~570, p90 42 / ~2000.
 const SIZE_WARN_FILES = 15;
@@ -136,15 +137,6 @@ function collectAuditWarnings(commit) {
 	const warnings = [];
 	const errors = [];
 
-	const explanation = body
-		.split(/\r?\n/)
-		.filter((line) => line.trim() && !TRAILER_LINE_PATTERN.test(line));
-	if (changedFiles.length >= MULTI_FILE_BODY_THRESHOLD && explanation.length === 0) {
-		warnings.push(
-			`commit touches ${changedFiles.length} files but has no body; explain what changes and why`,
-		);
-	}
-
 	if (primaryAreas.length >= 3) {
 		warnings.push(
 			`commit spans multiple repository areas (${primaryAreas.join(', ')}); check that it is still atomic`,
@@ -153,6 +145,14 @@ function collectAuditWarnings(commit) {
 
 	if (changedFiles.length > 0) {
 		const size = getReviewableSize(commit.hash);
+		const explanation = body
+			.split(/\r?\n/)
+			.filter((line) => line.trim() && !TRAILER_LINE_PATTERN.test(line));
+		if (size.files >= MULTI_FILE_BODY_THRESHOLD && explanation.length === 0) {
+			errors.push(
+				`commit changes ${size.files} reviewable files but has no body; explain what changes and why`,
+			);
+		}
 		const exception = commit.full.match(LARGE_CHANGE_TRAILER)?.[1];
 		if (size.files > SIZE_HARD_FILES && !exception) {
 			errors.push(
@@ -168,7 +168,7 @@ function collectAuditWarnings(commit) {
 	return { changedFiles, warnings, errors };
 }
 
-function validateCommit(commitHash, { strictSize }) {
+function validateCommit(commitHash, { strict }) {
 	console.log(`\nChecking commit: ${commitHash}`);
 	const commit = getCommitMessage(commitHash);
 	if (!commit) {
@@ -177,14 +177,14 @@ function validateCommit(commitHash, { strictSize }) {
 	}
 
 	const audit = collectAuditWarnings({ ...commit, hash: commitHash });
-	// History that already reached origin cannot be split, so CI reports size errors as warnings;
-	// pre-push passes --strict-size while the commits can still be rewritten.
-	const sizeErrors = strictSize ? audit.errors : [];
-	audit.warnings.push(...(strictSize ? [] : audit.errors));
+	// History that already reached origin cannot be rewritten, so CI reports the missing body and
+	// the hard size limit as warnings; pre-push passes --strict while the commits can still change.
+	const shapeErrors = strict ? audit.errors : [];
+	audit.warnings.push(...(strict ? [] : audit.errors));
 
 	console.log(`  Subject: ${commit.subject}`);
-	if (sizeErrors.length > 0) {
-		for (const error of sizeErrors) {
+	if (shapeErrors.length > 0) {
+		for (const error of shapeErrors) {
 			console.error(`  ❌ ${error}`);
 		}
 		return false;
@@ -202,12 +202,10 @@ function validateCommit(commitHash, { strictSize }) {
 
 function main() {
 	const args = process.argv.slice(2);
-	const strictSize = args.includes('--strict-size');
+	const strict = args.includes('--strict');
 	const [baseSha, headSha] = args.filter((arg) => !arg.startsWith('--'));
 	if (!baseSha || !headSha) {
-		console.error(
-			'Usage: node scripts/validate-commits.mjs <base-sha> <head-sha> [--strict-size]',
-		);
+		console.error('Usage: node scripts/validate-commits.mjs <base-sha> <head-sha> [--strict]');
 		process.exit(1);
 	}
 
@@ -236,7 +234,7 @@ function main() {
 
 	let allValid = true;
 	for (const hash of hashes) {
-		if (!validateCommit(hash, { strictSize })) {
+		if (!validateCommit(hash, { strict })) {
 			allValid = false;
 		}
 	}

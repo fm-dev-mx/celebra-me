@@ -3,6 +3,11 @@ import { eventFromHash, withWhatsAppText } from '@/lib/landing/vitrina';
 /** CSS viewport width each device frame renders the live demo at, before scaling it down. */
 const LIVE_VIEWPORT_WIDTH: Record<string, number> = { phone: 390, tablet: 820, pc: 1280 };
 
+/** Crossfade between two live demos; matches `--vitrina-fade` in `_landing-showroom.scss`. */
+const LIVE_FADE_MS = 480;
+const SWAP_MS = 420;
+const SWAP_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
+
 /**
  * Landing showroom behavior. The markup is complete without it (first event and demo visible);
  * this switches events, demos and the device frame by toggling `hidden`, follows `#<event>`
@@ -47,13 +52,26 @@ export function initLandingShowroom(root: Document = document): void {
 	let liveWanted = false;
 
 	const screen = section.querySelector<HTMLElement>('.vitrina__screen');
+	const panel = section.querySelector<HTMLElement>('.vitrina__panel');
 	const live = section.querySelector<HTMLIFrameElement>('[data-vitrina-live]');
 	const openHint = section.querySelector<HTMLButtonElement>('[data-vitrina-open-envelope]');
+
+	// Two frames: the next demo loads in the hidden one while the current one stays on screen, then
+	// fades in over it, so a switch never flashes the poster (the demo's cover) or a half-drawn page.
+	const frames: HTMLIFrameElement[] = [];
+	if (live) {
+		const spare = live.cloneNode() as HTMLIFrameElement;
+		spare.removeAttribute('data-vitrina-live');
+		live.after(spare);
+		frames.push(live, spare);
+	}
+	let shown: HTMLIFrameElement | null = null;
+	let loading: HTMLIFrameElement | null = null;
 
 	// The demo's closed envelope or cover, when it is still waiting to be opened.
 	const closedEnvelope = () => {
 		try {
-			const cover = live?.contentDocument?.querySelector<HTMLElement>(
+			const cover = shown?.contentDocument?.querySelector<HTMLElement>(
 				'ds-envelope-reveal, ds-editorial-cover',
 			);
 			return cover && !cover.hidden ? cover : null;
@@ -70,7 +88,7 @@ export function initLandingShowroom(root: Document = document): void {
 	const soundButton = section.querySelector<HTMLButtonElement>('[data-vitrina-sound]');
 	const framedMusic = () => {
 		try {
-			const player = live?.contentDocument?.querySelector<HTMLElement>(
+			const player = shown?.contentDocument?.querySelector<HTMLElement>(
 				'[data-music-player][data-has-audio="true"]',
 			);
 			const audio = player?.querySelector<HTMLAudioElement>('[data-music-audio]');
@@ -104,7 +122,7 @@ export function initLandingShowroom(root: Document = document): void {
 	// The iframe renders at the device's real width and is scaled to the frame, so the demo shows
 	// its phone, tablet or desktop layout.
 	const fitLive = () => {
-		if (!screen || !live || screen.clientWidth === 0) return;
+		if (!screen || frames.length === 0 || screen.clientWidth === 0) return;
 		const width = LIVE_VIEWPORT_WIDTH[section.dataset.device ?? 'phone'] ?? 390;
 		const scale = screen.clientWidth / width;
 		screen.style.setProperty('--live-width', `${width}px`);
@@ -113,39 +131,70 @@ export function initLandingShowroom(root: Document = document): void {
 	};
 
 	const updateLive = () => {
-		if (!liveWanted || !screen || !live) return;
+		if (!liveWanted || !screen || frames.length === 0) return;
 		const href = section
 			.querySelector<HTMLAnchorElement>(`a.vitrina__open[data-vitrina-for="${currentDemo}"]`)
 			?.getAttribute('href');
-		if (!href || live.dataset.src === href) return;
+		if (!href) return;
+		if (shown?.dataset.src === href) {
+			// Back to the demo on screen before the next one loaded: drop the pending load.
+			if (loading) {
+				delete loading.dataset.src;
+				loading.src = 'about:blank';
+				loading = null;
+				delete screen.dataset.loading;
+				if (soundButton) soundButton.hidden = !framedMusic();
+			}
+			return;
+		}
+		if (loading?.dataset.src === href) return;
+		const target = frames.find((frame) => frame !== shown) ?? frames[0];
 		const name = detailFor(currentDemo)?.dataset.quoteName;
-		live.title = name ? `Invitación demo ${name} en vivo` : 'Invitación demo en vivo';
-		live.dataset.src = href;
-		delete screen.dataset.live;
+		target.title = name ? `Invitación demo ${name} en vivo` : 'Invitación demo en vivo';
+		target.dataset.src = href;
+		loading = target;
+		screen.dataset.loading = 'true';
 		showOpenHint(false);
+		// The demo on screen stays during the crossfade: silence it before the next one loads.
+		pauseFramedMusic();
 		if (soundButton) soundButton.hidden = true;
 		syncSound(false);
 		fitLive();
-		live.src = href;
+		target.src = href;
 	};
 
-	live?.addEventListener('load', () => {
+	const onFrameLoad = (frame: HTMLIFrameElement) => {
+		if (frame !== loading || !frame.dataset.src || !screen) return;
 		// The demo is same-origin; a desktop scrollbar would show as a light strip down the
 		// frame's right edge, so the framed page scrolls without one.
 		try {
-			live.contentDocument?.documentElement.style.setProperty('scrollbar-width', 'none');
+			frame.contentDocument?.documentElement.style.setProperty('scrollbar-width', 'none');
 		} catch {
 			// Cross-origin frame: leave its scrollbar alone.
 		}
-		if (screen && live.dataset.src) screen.dataset.live = 'ready';
+		const previous = shown;
+		shown = frame;
+		loading = null;
+		frame.dataset.state = 'shown';
+		if (previous) {
+			delete previous.dataset.state;
+			delete previous.dataset.src;
+			// Once it has faded out, unload the old demo so it stops running under the new one.
+			window.setTimeout(() => {
+				if (previous !== shown && previous !== loading) previous.src = 'about:blank';
+			}, LIVE_FADE_MS + 50);
+		}
+		screen.dataset.live = 'ready';
+		delete screen.dataset.loading;
 		wireSound();
 		// A visitor may not know the seal opens the demo: point at it outside the frame until it
 		// opens, from the seal or from this button.
 		showOpenHint(Boolean(closedEnvelope()));
-		live.contentWindow?.addEventListener('envelope:opened', () => showOpenHint(false), {
+		frame.contentWindow?.addEventListener('envelope:opened', () => showOpenHint(false), {
 			once: true,
 		});
-	});
+	};
+	frames.forEach((frame) => frame.addEventListener('load', () => onFrameLoad(frame)));
 
 	openHint?.addEventListener('click', () => {
 		const trigger = closedEnvelope()?.querySelector<HTMLButtonElement>(
@@ -155,10 +204,49 @@ export function initLandingShowroom(root: Document = document): void {
 		trigger?.click();
 	});
 
+	let animateSwaps = false;
+
+	// Returns the parts that were hidden and are shown now, so they can fade in.
 	const showOnly = (selector: string, active: string) => {
+		const entering: HTMLElement[] = [];
 		section.querySelectorAll<HTMLElement>(selector).forEach((element) => {
-			element.hidden = element.dataset.vitrinaFor !== active;
+			const hide = element.dataset.vitrinaFor !== active;
+			if (!hide && element.hidden) entering.push(element);
+			element.hidden = hide;
 		});
+		return entering;
+	};
+
+	// The panel grows or shrinks to the new event's styles over a short ease instead of jumping,
+	// and what just appeared fades in.
+	const swapSmoothly = (update: () => HTMLElement[]) => {
+		if (!animateSwaps || prefersReducedMotion() || !panel || !('animate' in panel)) {
+			update();
+			return;
+		}
+		const before = panel.offsetHeight;
+		const entering = update();
+		const after = panel.offsetHeight;
+		if (before !== after) {
+			panel.getAnimations().forEach((animation) => animation.cancel());
+			panel.style.overflow = 'clip';
+			const resize = panel.animate([{ height: `${before}px` }, { height: `${after}px` }], {
+				duration: SWAP_MS,
+				easing: SWAP_EASING,
+			});
+			const release = () => panel.style.removeProperty('overflow');
+			resize.onfinish = release;
+			resize.oncancel = release;
+		}
+		entering.forEach((element) =>
+			element.animate(
+				[
+					{ opacity: 0, transform: 'translateY(6px)' },
+					{ opacity: 1, transform: 'none' },
+				],
+				{ duration: SWAP_MS, easing: SWAP_EASING },
+			),
+		);
 	};
 
 	const updateHeaderCta = () => {
@@ -211,11 +299,17 @@ export function initLandingShowroom(root: Document = document): void {
 	};
 
 	const render = () => {
-		showOnly('.vitrina__eyebrow, .vitrina__styles-group', currentEvent);
-		showOnly(
-			'.vitrina__bar [data-vitrina-for], .vitrina__poster, .vitrina__detail [data-vitrina-for]',
-			currentDemo,
-		);
+		swapSmoothly(() => {
+			// Posters sit under the live demo, so they switch without a fade.
+			showOnly('.vitrina__poster', currentDemo);
+			return [
+				...showOnly('.vitrina__eyebrow, .vitrina__styles-group', currentEvent),
+				...showOnly(
+					'.vitrina__bar [data-vitrina-for], .vitrina__detail [data-vitrina-for]',
+					currentDemo,
+				),
+			];
+		});
 		section.querySelectorAll<HTMLElement>('.vitrina__event').forEach((link) => {
 			if (link.dataset.vitrinaEvent === currentEvent)
 				link.setAttribute('aria-current', 'true');
@@ -320,4 +414,5 @@ export function initLandingShowroom(root: Document = document): void {
 	}
 
 	if (!fromHash()) render();
+	animateSwaps = true;
 }

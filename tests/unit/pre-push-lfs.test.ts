@@ -118,7 +118,7 @@ shift
 	it('enforces the hard commit size limit while the pushed commits can still be split', () => {
 		const result = run(newBranch);
 		expect(result.stdout).toContain(
-			`POLICY:scripts/validate-commits.mjs origin/develop ${'a'.repeat(40)} --strict-size`,
+			`POLICY:scripts/validate-commits.mjs origin/develop ${'a'.repeat(40)} --strict`,
 		);
 	});
 	it('keeps the existing remote SHA as the base for branch updates', () => {
