@@ -540,6 +540,7 @@ const PGTAP_FILES = [
 	'invitation_data_requests.test.sql',
 	'order_invitation_drafts.test.sql',
 	'meta_conversion_event_compatibility.test.sql',
+	'visitor_session_consent_withdrawal.test.sql',
 ];
 
 function cmdRunTests(): void {

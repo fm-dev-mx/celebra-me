@@ -50,6 +50,11 @@ are wired lives in [the coordinator guide](../../docs/core/coordinator-board.md#
   from inside the lane folder (f06–f12) on that branch. It takes the lock (`candado`), refuses a
   lane another task holds and respects the WIP limit (3). It does **not** start git-safety: run
   `pnpm agent:git-safety:start --session=<branch>` right after.
+- **Claim by category (T297)**: `invitacion` and `release` tasks follow the same git-safety rule as
+  code tasks; the core has no per-category hook. An `invitacion` task claims a free generic lane and
+  a `release` task claims f12-release; both run `start --session=<branch>` right after the claim and
+  `finish --session=<branch>` after `close` or `release`. A release session declares every operation
+  it was authorized for when it finishes (`docs/core/release-execution.md`, step 3).
 - **Write**: `pnpm board move <id> --a=<estado> --quien=<a> [--pr=] [--rama=] [--rev=<rev read>]`;
   the coordinator sets the queue with `pnpm board order <id> --posicion=<n> --quien=<a>` and records
   a merge with `pnpm board fact <id> --hecho=merged --quien=<a>` (`pnpm board:sync` also records
