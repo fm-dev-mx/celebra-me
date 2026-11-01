@@ -10,6 +10,29 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.59.0-beta.1] - 2026-10-31
+
+The landing showroom switches demos smoothly and keeps its actions within reach, demos play one song
+at a time, and Yireh Ana's share image becomes a square-safe card. The Astro platform moves to Astro
+7.4.2 on Cloudflare. No database migrations are included.
+
+### Changed
+
+- Landing: smooth transitions when the showroom switches demos (#725) and showroom actions that stay
+  within reach (#726).
+- Platform: Astro 7.4.2 with `@astrojs/cloudflare` 14.4.2 and `@astrojs/react` 7.1.2 (#729),
+  Wrangler 4.151.3 (#614), `@zip.js/zip.js` 2.24.0 (#615) and tooling updates for commitlint,
+  ESLint, `eslint-plugin-boundaries`, `prettier-plugin-astro` and `sass-embedded` (#651).
+- Tooling: pre-push requires a body on multi-file commits (#724), the old board implementation is
+  removed (#720), f05-plataforma leaves the lane map (#717) and the board core pin advances (#721,
+  #722, #723).
+
+### Fixed
+
+- Invitations: demos play one song at a time and the showroom stays silent (#727).
+- Yireh Ana: the share image is a square-safe oak card that survives square crops (#728).
+- Intake: order identifiers stay out of draft routes (#730).
+
 ## [0.58.0-beta.1] - 2026-10-31
 
 Leads now carry a record of their origin and sales stage, and the qualified and order-confirmed
