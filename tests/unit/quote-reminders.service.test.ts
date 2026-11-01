@@ -4,11 +4,13 @@ jest.mock('@/lib/rsvp/repositories/supabase', () => ({ supabaseRestRequest: jest
 import { loadCommercialRows } from '@/lib/tracking/commercial-pagination.server';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import {
+	buildQuoteReminderIdempotencyKey,
 	loadQuoteReminders,
 	prepareQuoteReminder,
 	loadQuoteReminderTimeline,
 } from '@/lib/commercial/quote-reminders.service';
 import { loadCrmTimeline } from '@/lib/commercial/crm-timeline.service';
+import { deterministicEventId } from '@/lib/rsvp/engagement/engagement.service';
 
 const now = Date.parse('2026-10-30T12:00:00Z');
 const lead = {
@@ -32,9 +34,30 @@ beforeEach(() => {
 	jest.mocked(loadCommercialRows).mockImplementation(
 		async (query) => (tables[query.split('?')[0]] ?? []) as { id: string }[],
 	);
-	jest.mocked(supabaseRestRequest).mockResolvedValue([
-		{ id: 'audit', target_id: lead.id, created_at: new Date(now).toISOString() },
-	]);
+	jest.mocked(supabaseRestRequest).mockImplementation(async (options) => {
+		const audits = (tables.audit_logs ?? []) as Array<{
+			id: string;
+			target_id: string;
+			created_at: string;
+		}>;
+		if (options.method === 'GET' && options.pathWithQuery.startsWith('audit_logs?')) {
+			const idMatch = options.pathWithQuery.match(/id=eq\.([^&]+)/);
+			const id = idMatch ? decodeURIComponent(idMatch[1]) : '';
+			return audits.filter((row) => row.id === id) as never;
+		}
+		if (options.method === 'POST' && options.pathWithQuery.startsWith('audit_logs?')) {
+			const body = options.body as { id: string; target_id: string };
+			if (audits.some((row) => row.id === body.id)) return [] as never;
+			const created = {
+				id: body.id,
+				target_id: body.target_id,
+				created_at: new Date(now).toISOString(),
+			};
+			tables.audit_logs = [...audits, created];
+			return [created] as never;
+		}
+		return [] as never;
+	});
 });
 afterEach(() => jest.useRealTimers());
 
@@ -73,10 +96,12 @@ it.each([
 ])('suppresses a reminder after activity in %s', async (table, activity) => {
 	tables[table] = [activity];
 	expect(await loadQuoteReminders(now)).toEqual([]);
-	await expect(
-		prepareQuoteReminder({ leadId: lead.id, idempotencyKey: 'key' }, 'admin'),
-	).rejects.toMatchObject({ status: 409 });
-	expect(supabaseRestRequest).not.toHaveBeenCalled();
+	await expect(prepareQuoteReminder({ leadId: lead.id }, 'admin')).rejects.toMatchObject({
+		status: 409,
+	});
+	expect(supabaseRestRequest).not.toHaveBeenCalledWith(
+		expect.objectContaining({ method: 'POST' }),
+	);
 });
 
 it.each(['lead', 'customer'])('excludes classified QA %s records', async (recordType) => {
@@ -93,9 +118,9 @@ it.each(['deposit_paid', 'paid'])(
 			{ id: 'order', lead_id: lead.id, status, updated_at: lead.created_at },
 		];
 		expect(await loadQuoteReminders(now)).toEqual([]);
-		await expect(
-			prepareQuoteReminder({ leadId: lead.id, idempotencyKey: 'key' }, 'admin'),
-		).rejects.toMatchObject({ status: 409 });
+		await expect(prepareQuoteReminder({ leadId: lead.id }, 'admin')).rejects.toMatchObject({
+			status: 409,
+		});
 	},
 );
 
@@ -106,15 +131,19 @@ it.each([{ consent_contact: false }, { phone_e164: null, phone: '6681234567' }])
 		expect(await loadQuoteReminders(now)).toEqual([
 			expect.objectContaining({ canRemind: false }),
 		]);
-		await expect(
-			prepareQuoteReminder({ leadId: lead.id, idempotencyKey: 'key' }, 'admin'),
-		).rejects.toMatchObject({ status: 400 });
-		expect(supabaseRestRequest).not.toHaveBeenCalled();
+		await expect(prepareQuoteReminder({ leadId: lead.id }, 'admin')).rejects.toMatchObject({
+			status: 400,
+		});
+		expect(supabaseRestRequest).not.toHaveBeenCalledWith(
+			expect.objectContaining({ method: 'POST' }),
+		);
 	},
 );
 
-it('persists an audit before returning the manual draft and canonical tracked link', async () => {
-	const result = await prepareQuoteReminder({ leadId: lead.id, idempotencyKey: 'key' }, 'admin');
+it('persists a deterministic audit key before returning the manual draft and canonical tracked link', async () => {
+	const expectedKey = `quote-reminder:${lead.id}:2026-10-30`;
+	expect(buildQuoteReminderIdempotencyKey(lead.id, now)).toBe(expectedKey);
+	const result = await prepareQuoteReminder({ leadId: lead.id }, 'admin');
 	const url = new URL(result.whatsappUrl);
 	expect(url.origin + url.pathname).toBe('https://wa.me/526681234567');
 	const text = url.searchParams.get('text')!;
@@ -130,24 +159,41 @@ it('persists an audit before returning the manual draft and canonical tracked li
 			method: 'POST',
 			useServiceRole: true,
 			body: expect.objectContaining({
-				id: 'key',
+				id: deterministicEventId(expectedKey),
 				actor_id: 'admin',
 				target_id: lead.id,
 				action: 'quote_reminder_prepared',
+				new_data: {
+					lead_code: lead.lead_code,
+					idempotency_key: expectedKey,
+				},
 			}),
 		}),
 	);
 });
 
-it('does not offer a draft when the audit fails or the operation ID already exists', async () => {
-	jest.mocked(supabaseRestRequest).mockRejectedValueOnce(new Error('unavailable'));
-	await expect(
-		prepareQuoteReminder({ leadId: lead.id, idempotencyKey: 'key' }, 'admin'),
-	).rejects.toThrow('unavailable');
-	jest.mocked(supabaseRestRequest).mockResolvedValueOnce([]);
-	await expect(
-		prepareQuoteReminder({ leadId: lead.id, idempotencyKey: 'key' }, 'admin'),
-	).rejects.toMatchObject({ status: 409 });
+it('leaves a single audit_logs record and reports already prepared on double submission the same day', async () => {
+	await prepareQuoteReminder({ leadId: lead.id }, 'admin');
+	expect(tables.audit_logs).toHaveLength(1);
+	await expect(prepareQuoteReminder({ leadId: lead.id }, 'admin')).rejects.toMatchObject({
+		status: 409,
+		message: 'El recordatorio ya fue preparado. Actualice el historial.',
+	});
+	expect(tables.audit_logs).toHaveLength(1);
+});
+
+it('does not offer a draft when the audit fails or the operation ID already exists on insert', async () => {
+	jest.mocked(supabaseRestRequest)
+		.mockResolvedValueOnce([] as never)
+		.mockRejectedValueOnce(new Error('unavailable'));
+	await expect(prepareQuoteReminder({ leadId: lead.id }, 'admin')).rejects.toThrow('unavailable');
+	jest.mocked(supabaseRestRequest)
+		.mockResolvedValueOnce([] as never)
+		.mockResolvedValueOnce([] as never);
+	await expect(prepareQuoteReminder({ leadId: lead.id }, 'admin')).rejects.toMatchObject({
+		status: 409,
+		message: 'El recordatorio ya fue preparado. Actualice el historial.',
+	});
 });
 
 it('shows only matching reminders for an unlinked lead or customer timeline', async () => {

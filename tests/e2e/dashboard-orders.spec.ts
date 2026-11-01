@@ -117,7 +117,7 @@ test.describe('quote reminders', () => {
 					.getByRole('region', { name: 'Cotizaciones sin respuesta' })
 					.screenshot({ path: testInfo.outputPath('quote-reminders-mobile.png') });
 			}
-			expect(writes).toEqual([{ leadId, idempotencyKey: expect.any(String) }]);
+			expect(writes).toEqual([{ leadId }]);
 			expect(
 				await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
 			).toBe(true);
