@@ -6,7 +6,7 @@
  * Handles:
  * - Scroll detection (Shrink effect, Glassmorphism transparency)
  * - Mobile Menu state & animations
- * - Auto-Hide on landscape mobile
+ * - Auto-hide while scrolling down, with direction hysteresis
  */
 
 import '@styles/layout/_header-base.scss';
@@ -50,65 +50,13 @@ const {
 
 <script>
 	/**
-	 * Shared header behavior:
-	 * - shrink on scroll
-	 * - hero transparency toggle
-	 * - auto-hide while scrolling down
-	 * - exposes --nav-current-height on :root for page-level consumers (e.g. scrollPaddingTop)
-	 *
-	 * Thresholds are read from data-threshold-shrink / data-threshold-hide
-	 * per header instance, allowing per-page customization.
+	 * Shared header behavior (shrink, hero transparency, auto-hide with hysteresis,
+	 * --nav-current-height on :root). Thresholds come from the data-threshold-*
+	 * attributes; see src/lib/dom/header-scroll.ts.
 	 */
-	const headers = Array.from(document.querySelectorAll('.header-base'));
-	const root = document.documentElement;
+	import { bindHeaderScroll } from '@/lib/dom/header-scroll';
 
-	let lastScrollY = window.scrollY;
-
-	const updateHeaderState = () => {
-		const currentScrollY = window.scrollY;
-
-		headers.forEach((header) => {
-			if (!(header instanceof HTMLElement)) {
-				return;
-			}
-
-			const shrinkAt = Number(header.dataset.thresholdShrink ?? 50);
-			const hideAt = Number(header.dataset.thresholdHide ?? 100);
-			const hasScrolled = currentScrollY > shrinkAt;
-
-			const isTransparentConfigured = header.dataset.transparent === 'true';
-			const isMenuOpen = header.classList.contains('header-base--menu-open');
-
-			header.classList.toggle('header-base--scrolled', hasScrolled || !isTransparentConfigured);
-
-			if (isTransparentConfigured && !isMenuOpen) {
-				header.classList.toggle('header-base--transparent', !hasScrolled);
-			} else {
-				header.classList.remove('header-base--transparent');
-			}
-
-			if (isMenuOpen) {
-				header.classList.remove('header-base--hidden');
-			} else {
-				const isScrollingDown = currentScrollY > lastScrollY;
-				header.classList.toggle(
-					'header-base--hidden',
-					currentScrollY > hideAt && isScrollingDown,
-				);
-			}
-
-			if (header.classList.contains('header-base--hidden')) {
-				root.style.setProperty('--nav-current-height', '0px');
-			} else if (header.classList.contains('header-base--scrolled')) {
-				root.style.setProperty('--nav-current-height', 'var(--nav-height-scrolled)');
-			} else {
-				root.style.setProperty('--nav-current-height', 'var(--nav-height)');
-			}
-		});
-
-		lastScrollY = currentScrollY;
-	};
-
-	updateHeaderState();
-	window.addEventListener('scroll', updateHeaderState, { passive: true });
+	document.querySelectorAll('.header-base').forEach((header) => {
+		if (header instanceof HTMLElement) bindHeaderScroll(header);
+	});
 </script>
