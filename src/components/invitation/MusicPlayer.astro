@@ -18,8 +18,8 @@ interface Props {
 	 * `button` (default): round play/pause button with a pulse while paused and a hint pill.
 	 * `equalizer`: one quiet 44 px control whose bars move while the song plays; it dims after a
 	 * few seconds without interaction and wakes on scroll, touch, hover or focus.
-	 * `track`: a «title · artist» line with the bars, set in the hero's bottom corner; it fades
-	 * out while the hero is out of view and returns with it.
+	 * `track`: a «title · artist» line with the bars, set in the hero's bottom corner; out of the
+	 * hero it folds into a bars-only chip that still pauses the song.
 	 */
 	control?: 'button' | 'equalizer' | 'track';
 	/** Second at which playback starts and loops back to (skips an intro). */
@@ -128,7 +128,9 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 
 <script>
 	import { scheduleMusicBufferAfterPaint } from '@/lib/invitation/music-preload';
+	import { isFramedPreview, joinMusicChannel } from '@/lib/invitation/music-session';
 
+	const isFramed = isFramedPreview();
 	const players = Array.from(document.querySelectorAll('[data-music-player]'));
 
 	// Volume ramp length; 1.2 s unless the content sets `music.fadeInSeconds`.
@@ -137,7 +139,7 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 		return Number.isFinite(value) && value >= 0 ? value : 1200;
 	};
 
-	// Track: the line belongs to the hero; once the hero is mostly out of view it fades away.
+	// Track: the line belongs to the hero; once the hero is mostly out of view it folds to the bars.
 	const keepTrackWithHero = (player: HTMLElement) => {
 		const hero = document.querySelector('.invitation-hero');
 		if (!hero || !('IntersectionObserver' in window)) return;
@@ -145,6 +147,35 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 			([entry]) => player.classList.toggle('is-away', entry.intersectionRatio < 0.5),
 			{ threshold: [0, 0.5, 1] },
 		).observe(hero);
+	};
+
+	// One song at a time across tabs and frames: another player starting pauses this one. Leaving
+	// the tab pauses it too, and coming back resumes it only if the tab was what paused it.
+	const keepOneSongPlaying = (audio: HTMLAudioElement, resume: () => void) => {
+		const announcePlaying = joinMusicChannel(() => audio.pause());
+		audio.addEventListener('playing', announcePlaying);
+		let pausedByHiddenTab = false;
+		document.addEventListener('visibilitychange', () => {
+			if (document.hidden && !audio.paused) {
+				pausedByHiddenTab = true;
+				audio.pause();
+			} else if (!document.hidden && pausedByHiddenTab) {
+				pausedByHiddenTab = false;
+				resume();
+			}
+		});
+	};
+
+	// Offset playback: make sure the first play starts at `startAt` and every loop returns there.
+	const startFromOffset = (audio: Element | null, startAt: number) => {
+		if (!(audio instanceof HTMLAudioElement) || startAt <= 0) return;
+		audio.addEventListener(
+			'loadedmetadata',
+			() => {
+				if (audio.currentTime < startAt - 0.5) audio.currentTime = startAt;
+			},
+			{ once: true },
+		);
 	};
 
 	players.forEach((player) => {
@@ -158,7 +189,8 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 		const toggle = player.querySelector('[data-music-toggle]');
 		const playIcon = player.querySelector('[data-icon-play]');
 		const pauseIcon = player.querySelector('[data-icon-pause]');
-		const autoPlay = player.dataset.autoPlay === 'true';
+		// A framed preview (landing showroom, dashboard) plays only when asked.
+		const autoPlay = player.dataset.autoPlay === 'true' && !isFramed;
 		const revealMode = player.dataset.revealMode || 'envelope';
 		const hasAudio = player.dataset.hasAudio === 'true';
 		const isEqualizer = player.dataset.control === 'equalizer';
@@ -167,16 +199,7 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 		const startAt = Number(player.dataset.startAt || 0);
 		const bufferMusicNow = scheduleMusicBufferAfterPaint(audio);
 
-		// Offset playback: make sure the first play starts at `startAt` and every loop returns there.
-		if (audio instanceof HTMLAudioElement && startAt > 0) {
-			audio.addEventListener(
-				'loadedmetadata',
-				() => {
-					if (audio.currentTime < startAt - 0.5) audio.currentTime = startAt;
-				},
-				{ once: true },
-			);
-		}
+		startFromOffset(audio, startAt);
 		const pendingTitle = player.dataset.pendingLabel || 'La canción se anunciará pronto';
 
 		if (!(toggle instanceof HTMLButtonElement)) {
@@ -314,6 +337,7 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 		// The button mirrors the element, whatever paused or resumed it (toggle, OS media controls,
 		// an interrupted stream).
 		if (audio instanceof HTMLAudioElement) {
+			keepOneSongPlaying(audio, () => play(true, false));
 			audio.addEventListener('playing', () => {
 				isPlaying = true;
 				syncState();
