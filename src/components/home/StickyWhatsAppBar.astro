@@ -66,7 +66,12 @@ const campaign = getRenderCampaign();
 	const bar = document.querySelector<HTMLElement>('[data-sticky-cta]');
 	const hero = document.getElementById('inicio');
 	const consentBar = document.getElementById('consent-banner-bar');
-	const hideZones = [document.getElementById('contacto'), document.querySelector('.footer-section')];
+	// The showroom pins its own «Quiero una así» bar on phones; this one steps aside meanwhile.
+	const hideZones = [
+		document.getElementById('contacto'),
+		document.querySelector('.footer-section'),
+		document.querySelector('.vitrina__actions'),
+	];
 
 	if (bar) {
 		document.addEventListener(VITRINA_CHANGE_EVENT, (event) => {
