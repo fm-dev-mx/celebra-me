@@ -141,14 +141,14 @@ describeRangeValidation('validate-commits script', () => {
 
 		const body = 'Adds generated fixture modules so the size limit has a commit to measure.';
 
-		it('blocks more than 40 reviewable files only with --strict-size', () => {
+		it('blocks more than 40 reviewable files only with --strict', () => {
 			withBase((repoRoot, baseSha) => {
 				const headSha = commitFiles(repoRoot, sourceModules(41), [
 					'test(testing): add generated fixture modules',
 					body,
 				]);
 
-				const strict = validate(repoRoot, baseSha, headSha, ['--strict-size']);
+				const strict = validate(repoRoot, baseSha, headSha, ['--strict']);
 				expect(strict.status).toBe(1);
 				expect(strict.stderr).toContain('commit changes 41 reviewable files (limit 40)');
 
@@ -166,11 +166,44 @@ describeRangeValidation('validate-commits script', () => {
 					'Large-Change: sweep',
 				]);
 
-				const strict = validate(repoRoot, baseSha, headSha, ['--strict-size']);
+				const strict = validate(repoRoot, baseSha, headSha, ['--strict']);
 				expect(strict.status).toBe(0);
 				expect(strict.stderr).toContain(
 					'commit changes 41 reviewable files and 41 lines (Large-Change: sweep)',
 				);
+			});
+		});
+
+		it('blocks a multi-file commit without a body only with --strict', () => {
+			withBase((repoRoot, baseSha) => {
+				const headSha = commitFiles(repoRoot, sourceModules(2), [
+					'test(testing): add two fixture modules',
+					'Co-Authored-By: Fixture <fixture@example.com>',
+				]);
+
+				const strict = validate(repoRoot, baseSha, headSha, ['--strict']);
+				expect(strict.status).toBe(1);
+				expect(strict.stderr).toContain(
+					'commit changes 2 reviewable files but has no body',
+				);
+
+				const advisory = validate(repoRoot, baseSha, headSha, []);
+				expect(advisory.status).toBe(0);
+				expect(advisory.stderr).toContain(
+					'commit changes 2 reviewable files but has no body',
+				);
+			});
+		});
+
+		it('accepts a single-file commit without a body', () => {
+			withBase((repoRoot, baseSha) => {
+				const headSha = commitFiles(repoRoot, sourceModules(1), [
+					'test(testing): add one fixture module',
+				]);
+
+				const strict = validate(repoRoot, baseSha, headSha, ['--strict']);
+				expect(strict.status).toBe(0);
+				expect(strict.stderr).not.toContain('has no body');
 			});
 		});
 
@@ -192,7 +225,7 @@ describeRangeValidation('validate-commits script', () => {
 					['test(testing): add image and lockfile fixtures', body],
 				);
 
-				const strict = validate(repoRoot, baseSha, headSha, ['--strict-size']);
+				const strict = validate(repoRoot, baseSha, headSha, ['--strict']);
 				expect(strict.status).toBe(0);
 				expect(strict.stderr).not.toContain('reviewable files');
 			});

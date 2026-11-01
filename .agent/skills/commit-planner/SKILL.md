@@ -129,12 +129,12 @@ Treat these as commit-hygiene red flags:
   (agent never runs it),
 - bundling frontend markup/attribute changes with backend interface or data-layer changes.
 
-Treat advisory hygiene warnings as review prompts, not hard gates: a multi-file commit without a
-body, a commit spanning several primary areas and a commit above the warning size all deserve an
-explicit atomicity check. The hard size limit is the exception: `pre-push` refuses it unless the
-commit carries a `Large-Change:` trailer. The limits, what they count and the trailer categories
-live in [Commit Size](../../../docs/core/git-governance.md#commit-size); never restate the numbers
-in a plan.
+Treat advisory hygiene warnings as review prompts, not hard gates: a commit spanning several primary
+areas and a commit above the warning size both deserve an explicit atomicity check. Two rules block
+in `pre-push`: the hard size limit, unless the commit carries a `Large-Change:` trailer, and a
+multi-file commit without a body. The limits, what they count and the trailer categories live in
+[Commit Size](../../../docs/core/git-governance.md#commit-size); never restate the numbers in a
+plan.
 
 ## Draft Repository-Compliant Messages
 

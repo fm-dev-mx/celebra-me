@@ -54,11 +54,9 @@ node scripts/agent/git-safety.mjs start
 
 ### From the board (code tasks)
 
-A board task run from its lane folder does not start or finish the session by hand:
-`pnpm board claim <id> --rama=<branch> …` checks the lane and branch and runs
-`start --session=<branch>`, and `pnpm board close <id> … --git-safety=commit` (or `release`) runs
-`finish --session=<branch> --authorized-operation=commit` after the board write. A branch switch is
-finished by hand as below. See the [coordinator guide](coordinator-board.md#lanes).
+The board core does not run git-safety. After `pnpm board claim <id> --rama=<branch> …` from the
+lane folder, run `start --session=<branch>` by hand; after `pnpm board close <id> …` (or `release`),
+run `finish --session=<branch>`. See the [coordinator guide](coordinator-board.md#lanes).
 
 ### Finish session (verify, then clean on PASS)
 

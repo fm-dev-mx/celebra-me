@@ -211,6 +211,10 @@ Helpers: `createPlaceholderToken`, `findPlaceholderTokens`, `validatePlaceholder
 10. **Double-encode note:** Prefer delivering already-normalized managed-release WebPs without a
     second Astro/`getImage` encode that upscales or re-compresses past native width (see Hero
     managed-URL direct delivery). Record the risk when sources are provisional.
+11. **Social card (`ogShare`):** compose it natively at 1200×630 (1.91:1). WhatsApp often shows a
+    small square thumbnail cropped from the centre, so the focal artwork must sit inside the central
+    630×630 square (x 285–915) with no seams, strips or hard edges there. Never paste a portrait
+    hero onto a wide background as the social card. Review the centre-square crop before release.
 
 Prepared managed media must use direct delivery. Storage and R2 URLs do not request an implicit
 Astro transformation, including content-addressed objects. Preserve explicit `original` dimensions

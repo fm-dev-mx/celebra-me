@@ -5,8 +5,9 @@
  * Landing showroom ("vitrina"): event tabs, a phone/tablet/PC frame, a strip of styles and a
  * detail card with the full demo link and a WhatsApp quote that carries `Ref. EVENT-STYLE-VITRINA`.
  * The frame shows the real demo in an iframe (envelope included) once it scrolls near; a
- * server-rendered cover per demo is the poster while it loads. The script only toggles
- * `hidden`, so images of hidden demos are fetched when they are first shown.
+ * server-rendered cover per demo is the poster while the first one loads. On a switch the script
+ * loads the next demo in a second iframe and crossfades to it, and the panel eases to its new
+ * height. It only toggles `hidden`, so images of hidden demos are fetched when first shown.
  * `#<event>` anchors (e.g. `/#boda`) open the showroom on that event.
  */
 import { Image } from 'astro:assets';

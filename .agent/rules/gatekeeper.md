@@ -219,7 +219,7 @@ current evidence. Report failures, skips, remaining risks, and git-safety:finish
 Every session that pushes a branch runs `pnpm validate:changed` and `pnpm validate:structure` before
 each push, whatever the tier, and pushes only when both pass. `validate:changed` reads the working
 tree against `HEAD`, so run it on the uncommitted changes, before the commit. Board prompts that
-push a branch carry this step under `AL TERMINAR` (`withPushCheck` in `scripts/board/prompt.mjs`).
+push a branch carry this step under `AL TERMINAR` (written by the task author).
 
 ### 5.3 Visual evidence (screenshots and browser proof)
 

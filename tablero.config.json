@@ -67,12 +67,5 @@
             "id": "marketing",
             "nombre": "Marketing"
         }
-    ],
-    "migracion": {
-        "desde": ".agent/tmp/board",
-        "proyectos": {
-            "tablero": ["programa-tablero-nuevo"],
-            "marketing": ["programa-medicion", "servicio-medicion"]
-        }
-    }
+    ]
 }
