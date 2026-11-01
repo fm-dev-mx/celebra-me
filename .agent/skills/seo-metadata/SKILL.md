@@ -46,13 +46,15 @@ preserve public-origin canonical URLs without personalization parameters.
 
 ## 2. Image Requirements
 
-| Property       | Requirement                               |
-| -------------- | ----------------------------------------- |
-| **Dimensions** | 1200×630 px (1.91:1 ratio)                |
-| **Format**     | JPG or PNG, prefer WebP with JPG fallback |
-| **File size**  | < 300 KB for fast loading                 |
-| **Alt text**   | Descriptive, include event type           |
-| **Safe zone**  | Keep text within center 80%               |
+| Property        | Requirement                                                                                         |
+| --------------- | --------------------------------------------------------------------------------------------------- |
+| **Dimensions**  | 1200×630 px (1.91:1 ratio)                                                                          |
+| **Format**      | JPG or PNG, prefer WebP with JPG fallback                                                           |
+| **File size**   | < 300 KB for fast loading                                                                           |
+| **Alt text**    | Descriptive, include event type                                                                     |
+| **Safe zone**   | Keep text within center 80%                                                                         |
+| **Square crop** | Focal artwork inside the central 630×630 square (x 285–915); WhatsApp's small thumbnail crops to it |
+| **Composition** | Native 1.91:1 artwork; never a portrait image pasted as a strip on a wide background                |
 
 ---
 
@@ -124,6 +126,7 @@ Before deploying any invitation:
 - [ ] `og:title` is unique and under 60 chars
 - [ ] `og:description` includes date and venue, under 155 chars
 - [ ] `og:image` is 1200×630, absolute URL, < 300 KB
+- [ ] Centre 630×630 crop of `og:image` shows the focal artwork with no seams or cut strips
 - [ ] `og:url` matches canonical URL
 - [ ] Twitter Card tags present
 - [ ] JSON-LD validates at [Schema.org Validator](https://validator.schema.org/)

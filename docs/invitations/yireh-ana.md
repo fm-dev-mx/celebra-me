@@ -224,15 +224,15 @@ Source label: `source:watercolor-session` (opaque). Custom high-resolution botan
 artwork created specifically for this invitation, honoring the client's explicit request for no
 photographs.
 
-| source filename       | dims        | format | orientation | weight  | quality          | role         | duplicate   | processing                               | derivative              |
-| --------------------- | ----------- | ------ | ----------- | ------- | ---------------- | ------------ | ----------- | ---------------------------------------- | ----------------------- |
-| v3/hero-v3.webp       | 1080 x 1920 | WebP   | portrait    | 214 KiB | production-ready | hero         | no          | WebP, quality 82                         | hero-cover.webp         |
-| v3/hero-v3.webp       | 1920 x 1080 | WebP   | landscape   | 193 KiB | production-ready | hero desktop | intentional | Plate composed on wide paper             | hero-cover-wide.webp    |
-| v3/hero-v3.webp       | 1200 x 630  | WebP   | landscape   | 74 KiB  | production-ready | og-share     | intentional | Dedicated social crop                    | og-share.webp           |
-| v3/interlude-bouquet  | 1536 x 1024 | WebP   | landscape   | 124 KiB | production-ready | interlude 1  | no          | WebP                                     | interlude-bouquet.webp  |
-| v3/interlude-envelope | 1536 x 1024 | WebP   | landscape   | 44 KiB  | production-ready | interlude 2  | no          | Edges feathered into paper               | interlude-envelope.webp |
-| v3/closing-wreath     | 1254 x 1254 | WebP   | square      | 156 KiB | production-ready | thank-you    | no          | Round medallion                          | closing-wreath.webp     |
-| v3/bow                | 360 x 308   | WebP   | landscape   | 27 KiB  | production-ready | bow          | intentional | Trimmed alpha WebP; ribbon end and crest | bow.webp                |
+| source filename       | dims        | format | orientation | weight  | quality          | role         | duplicate   | processing                                      | derivative              |
+| --------------------- | ----------- | ------ | ----------- | ------- | ---------------- | ------------ | ----------- | ----------------------------------------------- | ----------------------- |
+| v3/hero-v3.webp       | 1080 x 1920 | WebP   | portrait    | 214 KiB | production-ready | hero         | no          | WebP, quality 82                                | hero-cover.webp         |
+| v3/hero-v3.webp       | 1920 x 1080 | WebP   | landscape   | 193 KiB | production-ready | hero desktop | intentional | Plate composed on wide paper                    | hero-cover-wide.webp    |
+| og/oak-ribbon         | 1200 x 630  | WebP   | landscape   | 77 KiB  | production-ready | og-share     | no          | Native 1.91:1 card; oak + ribbon in centre 630² | og-share.webp           |
+| v3/interlude-bouquet  | 1536 x 1024 | WebP   | landscape   | 124 KiB | production-ready | interlude 1  | no          | WebP                                            | interlude-bouquet.webp  |
+| v3/interlude-envelope | 1536 x 1024 | WebP   | landscape   | 44 KiB  | production-ready | interlude 2  | no          | Edges feathered into paper                      | interlude-envelope.webp |
+| v3/closing-wreath     | 1254 x 1254 | WebP   | square      | 156 KiB | production-ready | thank-you    | no          | Round medallion                                 | closing-wreath.webp     |
+| v3/bow                | 360 x 308   | WebP   | landscape   | 27 KiB  | production-ready | bow          | intentional | Trimmed alpha WebP; ribbon end and crest        | bow.webp                |
 
 ### Uniqueness table (required before READY_*)
 
@@ -240,7 +240,7 @@ photographs.
 | ------------ | --------------------- | ----------------------- | ------------------------------------- |
 | hero         | v3/hero-v3.webp       | hero-cover.webp         | no                                    |
 | hero desktop | v3/hero-v3.webp       | hero-cover-wide.webp    | yes - wide composition of the cover   |
-| og-share     | v3/hero-v3.webp       | og-share.webp           | yes - dedicated social crop           |
+| og-share     | og/oak-ribbon         | og-share.webp           | no - own painted card (square-safe)   |
 | interlude 1  | v3/interlude-bouquet  | interlude-bouquet.webp  | no                                    |
 | interlude 2  | v3/interlude-envelope | interlude-envelope.webp | no                                    |
 | thank-you    | v3/closing-wreath     | closing-wreath.webp     | no                                    |
