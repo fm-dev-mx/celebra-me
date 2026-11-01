@@ -12,6 +12,7 @@
 	--vitrina-fs-tiny: 0.66rem;
 	--vitrina-fs-micro: 0.56rem;
 	--vitrina-muted: rgb(var(--color-ivory-rgb) / 72%);
+	--vitrina-fade: 480ms;
 	--vitrina-line: rgb(var(--color-ivory-rgb) / 14%);
 	--device-radius: 36px;
 	--device-screen-radius: 27px;
@@ -26,6 +27,14 @@
 	// The id outranks every class rule below that sets `display`, so toggled parts stay hidden.
 	&#tipo-evento [hidden] {
 		display: none;
+	}
+
+	// The open hint keeps its place while hidden, so the device never shifts when it shows.
+	&#tipo-evento .vitrina__open-hint[hidden] {
+		display: inline-flex;
+		visibility: hidden;
+		opacity: 0%;
+		animation: none;
 	}
 
 	&__anchor {
@@ -231,9 +240,40 @@
 		background: var(--color-ivory);
 
 		// The real demo, drawn at the device's width and scaled into the frame; the cover below is
-		// its poster until it loads.
+		// its poster until it loads, and goes once the first demo has faded in over it.
 		&[data-live='ready'] .vitrina__poster {
 			visibility: hidden;
+			transition: visibility 0s linear var(--vitrina-fade);
+		}
+
+		// While the next demo loads, the current one dims under a small spinner.
+		&::after {
+			content: '';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			z-index: 4;
+			width: 28px;
+			height: 28px;
+			margin: -14px 0 0 -14px;
+			border: 2px solid rgb(var(--color-champagne-rgb) / 30%);
+			border-top-color: var(--color-champagne);
+			border-radius: 50%;
+			opacity: 0%;
+			pointer-events: none;
+			transition: opacity 200ms var(--ease-standard, ease);
+			animation: vitrina-spin 0.9s linear infinite;
+		}
+
+		&[data-loading='true']::after {
+			opacity: 100%;
+			transition-delay: 350ms;
+		}
+
+		@include mixins.reduced-motion {
+			&::after {
+				animation: none;
+			}
 		}
 	}
 
@@ -247,10 +287,35 @@
 		transform: scale(var(--live-scale, 1));
 		transform-origin: 0 0;
 		visibility: hidden;
+		opacity: 0%;
 		background: var(--color-ivory);
+		transition:
+			opacity var(--vitrina-fade) var(--ease-premium, ease),
+			visibility 0s linear var(--vitrina-fade),
+			filter 300ms var(--ease-standard, ease);
 
-		.vitrina__screen[data-live='ready'] & {
+		// The demo on screen sits over the one loading behind it and fades in when it arrives.
+		&[data-state='shown'] {
+			z-index: 2;
 			visibility: visible;
+			opacity: 100%;
+			transition:
+				opacity var(--vitrina-fade) var(--ease-premium, ease),
+				visibility 0s,
+				filter 300ms var(--ease-standard, ease);
+		}
+
+		.vitrina__screen[data-loading='true'] &[data-state='shown'] {
+			filter: saturate(0.6) brightness(0.82);
+			pointer-events: none;
+		}
+
+		@include mixins.reduced-motion {
+			transition: none;
+
+			&[data-state='shown'] {
+				transition: none;
+			}
 		}
 	}
 
@@ -272,11 +337,10 @@
 		font-weight: 600;
 		letter-spacing: 0.04em;
 		cursor: pointer;
+		transition:
+			opacity 360ms var(--ease-premium, ease),
+			visibility 0s;
 		animation: vitrina-open-hint 2.4s var(--ease-standard, ease-in-out) infinite;
-
-		&[hidden] {
-			display: none;
-		}
 
 		&:hover {
 			background: rgb(var(--color-champagne-rgb) / 24%);
@@ -293,6 +357,65 @@
 
 		@include mixins.reduced-motion {
 			animation: none;
+		}
+	}
+
+	&__frame-actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.5rem;
+
+		&:not(:has(> :not([hidden]))) {
+			display: none;
+		}
+	}
+
+	// Plays or pauses the framed demo's song; the speaker shows a cross until it plays.
+	&__sound {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+
+		@include mixins.touch-target;
+
+		padding: 0 1.25rem;
+		border: 1px solid var(--vitrina-line);
+		border-radius: var(--radius-pill);
+		background: rgb(var(--color-ivory-rgb) / 8%);
+		color: var(--color-ivory);
+		font: inherit;
+		font-size: var(--vitrina-fs-small);
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		cursor: pointer;
+
+		&[hidden] {
+			display: none;
+		}
+
+		&:hover {
+			background: rgb(var(--color-ivory-rgb) / 16%);
+		}
+
+		&[aria-pressed='true'] {
+			border-color: rgb(var(--color-champagne-rgb) / 55%);
+			color: var(--color-champagne);
+		}
+
+		svg {
+			width: 18px;
+			height: 18px;
+			fill: none;
+			stroke: currentcolor;
+			stroke-width: 1.6;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+		}
+
+		&[aria-pressed='true'] [data-sound-off],
+		&[aria-pressed='false'] [data-sound-on] {
+			display: none;
 		}
 	}
 
@@ -374,6 +497,11 @@
 		display: grid;
 		gap: 1rem;
 		min-width: 0;
+
+		// Its parts join the stage's column, so the actions bar can pin across the whole showroom.
+		@media (width < 900px) {
+			display: contents;
+		}
 	}
 
 	&__styles-group {
@@ -524,18 +652,34 @@
 		font-size: var(--vitrina-fs-body);
 	}
 
-	&__detail-actions {
+	// «Ver demo completa» and «Quiero una así», right under the style picker. On phones the panel
+	// dissolves into the stage so this bar can stay pinned to the bottom while the frame, the styles
+	// and the detail scroll by; it settles in place before the detail card.
+	&__actions {
 		display: grid;
-		gap: 0.625rem;
-
-		@media (width >= 480px) {
-			grid-template-columns: 1fr 1fr;
-		}
+		grid-template-columns: 1fr 1fr;
+		gap: 0.5rem;
 
 		.whatsapp-button {
 			min-width: 0;
 			min-height: 48px;
-			padding-inline: 1rem;
+			padding-inline: 0.75rem;
+		}
+
+		@media (width < 900px) {
+			position: sticky;
+			bottom: 0;
+			z-index: 5;
+			margin-inline: -1rem;
+			padding: 0.625rem 1rem calc(0.625rem + env(safe-area-inset-bottom));
+			border-top: 1px solid var(--vitrina-line);
+			background: color-mix(in srgb, var(--color-ink) 92%, transparent);
+			backdrop-filter: blur(10px);
+
+			.vitrina__open,
+			.whatsapp-button {
+				font-size: var(--vitrina-fs-small);
+			}
 		}
 	}
 
@@ -604,6 +748,12 @@
 		height: 100%;
 		object-fit: cover;
 		object-position: var(--demo-focal, 50% 50%);
+	}
+}
+
+@keyframes vitrina-spin {
+	to {
+		rotate: 1turn;
 	}
 }
 

@@ -45,7 +45,6 @@ export default function QuoteReminders({
 				data: { whatsappUrl: string; entry: CrmTimelineEntry };
 			}>('/api/dashboard/commercial/quote-reminders', {
 				leadId: item.id,
-				idempotencyKey: crypto.randomUUID(),
 			});
 			if (!result.ok) {
 				tab?.close();

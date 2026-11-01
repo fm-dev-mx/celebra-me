@@ -5,6 +5,8 @@
  * switch. Failures are swallowed: the reveal never depends on sound.
  */
 
+import { isFramedPreview } from '@/lib/invitation/music-session';
+
 type AudioContextCtor = typeof AudioContext;
 
 const PAPER_START_S = 0.24;
@@ -71,6 +73,8 @@ const scheduleChime = (context: AudioContext, destination: AudioNode, at: number
 };
 
 export const playEnvelopeOpenChime = (): void => {
+	// Framed previews (landing showroom, dashboard) open in silence.
+	if (isFramedPreview()) return;
 	const Context = resolveAudioContext();
 	if (!Context) return;
 

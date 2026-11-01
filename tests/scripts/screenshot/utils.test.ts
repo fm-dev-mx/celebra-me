@@ -226,8 +226,8 @@ describe('screenshot CLI utilities', () => {
 			baseUrl: 'http://localhost:4328',
 			portSource: 'lane',
 		});
-		expect(resolveScreenshotBaseUrl({ cwd: '/mock/celebra-me-worktrees/f05-plataforma' })).toBe(
-			'http://localhost:4325',
+		expect(resolveScreenshotBaseUrl({ cwd: '/mock/celebra-me-worktrees/f06-landing' })).toBe(
+			'http://localhost:4326',
 		);
 		expect(resolveScreenshotBaseUrl({ cwd: '/mock/celebra-me-worktrees/f11-preview' })).toBe(
 			'http://localhost:4331',

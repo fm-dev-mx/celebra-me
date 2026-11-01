@@ -5,9 +5,11 @@
  * Landing showroom ("vitrina"): event tabs, a phone/tablet/PC frame, a strip of styles and a
  * detail card with the full demo link and a WhatsApp quote that carries `Ref. EVENT-STYLE-VITRINA`.
  * The frame shows the real demo in an iframe (envelope included) once it scrolls near; a
- * server-rendered cover per demo is the poster while it loads. The script only toggles
- * `hidden`, so images of hidden demos are fetched when they are first shown.
- * `#<event>` anchors (e.g. `/#boda`) open the showroom on that event.
+ * server-rendered cover per demo is the poster while the first one loads. On a switch the script
+ * loads the next demo in a second iframe and crossfades to it, and the panel eases to its new
+ * height. It only toggles `hidden`, so images of hidden demos are fetched when first shown.
+ * `#<event>` anchors (e.g. `/#boda`) open the showroom on that event. The framed demo never
+ * plays its song by itself; the «Escuchar música» button under the frame does.
  */
 import { Image } from 'astro:assets';
 import Icon from '@/components/common/icons/Icon.astro';
@@ -174,17 +176,40 @@ if (!initialQuote) throw new Error('The landing showroom needs an initial demo.'
 							<iframe
 								class="vitrina__live"
 								title="Invitación demo en vivo"
+								allow="autoplay"
 								data-vitrina-live
 							></iframe>
 						</div>
 					</div>
-					<button type="button" class="vitrina__open-hint" data-vitrina-open-envelope hidden>
-						<svg viewBox="0 0 24 24" aria-hidden="true">
-							<rect x="3" y="5" width="18" height="14" rx="2" />
-							<path d="m3 7 9 6 9-6" />
-						</svg>
-						Abra el sobre
-					</button>
+					<div class="vitrina__frame-actions">
+						<button type="button" class="vitrina__open-hint" data-vitrina-open-envelope hidden>
+							<svg viewBox="0 0 24 24" aria-hidden="true">
+								<rect x="3" y="5" width="18" height="14" rx="2" />
+								<path d="m3 7 9 6 9-6" />
+							</svg>
+							Abra el sobre
+						</button>
+						{/* The framed demo stays silent; this plays or pauses its song. */}
+						<button
+							type="button"
+							class="vitrina__sound"
+							data-vitrina-sound
+							aria-pressed="false"
+							hidden
+							data-track-event="cta_clicked"
+							data-track-cta="event_showroom_music"
+							data-track-label="Música de la demo"
+							data-track-intent="demo_showroom"
+							data-track-destination="demo"
+						>
+							<svg viewBox="0 0 24 24" aria-hidden="true">
+								<path d="M4 9h4l5-4v14l-5-4H4z" />
+								<path data-sound-on d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />
+								<path data-sound-off d="m17 9 5 6M22 9l-5 6" />
+							</svg>
+							<span data-sound-label>Escuchar música</span>
+						</button>
+					</div>
 				</div>
 			</div>
 
@@ -225,6 +250,44 @@ if (!initialQuote) throw new Error('The landing showroom needs an initial demo.'
 					))
 				}
 
+				{/* Right under the style picker; on phones it stays pinned while the showroom scrolls by. */}
+				<div class="vitrina__actions">
+					{
+						showrooms.flatMap(({ event, demos }) =>
+							demos.map(({ demo, isInitial }) => (
+								<a
+									class="vitrina__open"
+									href={demo.href}
+									target="_blank"
+									rel="noopener"
+									data-vitrina-for={demo.slug}
+									hidden={!isInitial}
+									data-track-event="cta_clicked"
+									data-track-cta={`demo_open_${demo.slug}`}
+									data-track-label="Ver demo completa"
+									data-track-intent="demo_showroom"
+									data-track-destination="demo"
+									data-demo-slug={demo.slug}
+									data-event-type={event.eventType}
+								>
+									Ver demo completa
+								</a>
+							)),
+						)
+					}
+					<WhatsAppButton
+						className="vitrina__quote"
+						label="Quiero una así"
+						ariaLabel={`Quiero una invitación como ${initialDemo.name} por WhatsApp`}
+						message={initialQuote.message}
+						trackSection="event_showroom"
+						trackCta="event_showroom_whatsapp"
+						campaignSection="DEMO"
+						eventType={initialEvent.eventType}
+						eventLabel={initialEvent.label}
+					/>
+				</div>
+
 				<article class="vitrina__detail" aria-live="polite">
 					{
 						showrooms.flatMap(({ event, demos }) =>
@@ -254,42 +317,6 @@ if (!initialQuote) throw new Error('The landing showroom needs an initial demo.'
 							)),
 						)
 					}
-					<div class="vitrina__detail-actions">
-						{
-							showrooms.flatMap(({ event, demos }) =>
-								demos.map(({ demo, isInitial }) => (
-									<a
-										class="vitrina__open"
-										href={demo.href}
-										target="_blank"
-										rel="noopener"
-										data-vitrina-for={demo.slug}
-										hidden={!isInitial}
-										data-track-event="cta_clicked"
-										data-track-cta={`demo_open_${demo.slug}`}
-										data-track-label="Ver demo completa"
-										data-track-intent="demo_showroom"
-										data-track-destination="demo"
-										data-demo-slug={demo.slug}
-										data-event-type={event.eventType}
-									>
-										Ver demo completa
-									</a>
-								)),
-							)
-						}
-						<WhatsAppButton
-							className="vitrina__quote"
-							label="Quiero una así"
-							ariaLabel={`Quiero una invitación como ${initialDemo.name} por WhatsApp`}
-							message={initialQuote.message}
-							trackSection="event_showroom"
-							trackCta="event_showroom_whatsapp"
-							campaignSection="DEMO"
-							eventType={initialEvent.eventType}
-							eventLabel={initialEvent.label}
-						/>
-					</div>
 					{
 						showrooms.flatMap(({ demos }) =>
 							demos.map(({ demo, ref, message, isInitial }) => (

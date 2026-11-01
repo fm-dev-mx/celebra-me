@@ -2,17 +2,13 @@
     "proyecto": "Celebra-me",
     "datos": ".agent/tmp/tablero",
     "puerto": 4320,
-    "nucleo": "3cf2765e56ab5e62000329232b1d31fe6f4f419b",
+    "nucleo": "510006af19e1b44a19b5f18e775cd8838e3e5a83",
     "wipMax": 3,
+    "agentes": [{ "id": "claude" }, { "id": "codex" }, { "id": "gemini" }],
     "hechoDias": 7,
     "zonaHoraria": "America/Mexico_City",
     "ordenan": ["coordinador", "dueno"],
     "carriles": [
-        {
-            "id": "f05-plataforma",
-            "carpeta": "../celebra-me-worktrees/f05-plataforma",
-            "puerto": 4325
-        },
         {
             "id": "f06-landing",
             "carpeta": "../celebra-me-worktrees/f06-landing",
@@ -72,12 +68,5 @@
             "id": "marketing",
             "nombre": "Marketing"
         }
-    ],
-    "migracion": {
-        "desde": ".agent/tmp/board",
-        "proyectos": {
-            "tablero": ["programa-tablero-nuevo"],
-            "marketing": ["programa-medicion", "servicio-medicion"]
-        }
-    }
+    ]
 }
