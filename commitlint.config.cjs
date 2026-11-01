@@ -30,6 +30,7 @@ const PLAN_CODES = /\b(?:[DFGQT]\d+[a-z]?|d\d+)\b/;
 const SCOPES = [
 	'agent',
 	'auth',
+	'board',
 	'ci',
 	'commercial',
 	'content',
