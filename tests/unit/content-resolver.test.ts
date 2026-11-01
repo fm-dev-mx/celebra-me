@@ -397,6 +397,30 @@ describe('resolvePublicInvitation access state', () => {
 			access,
 		}) as any;
 
+	it('rejects private order snapshots before public rendering or serialization', async () => {
+		const entry = publishedEntry({ paymentStatus: 'paid', publicAccess: 'enabled' });
+		entry.content = {
+			...validPublishedContent,
+			orderSource: {
+				orderId: 'private-order-id',
+				packageName: 'Private package',
+				answers: { notes: 'Private instructions' },
+			},
+		};
+		mockFindPublishedWithAccess.mockResolvedValue(entry);
+		const log = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		try {
+			const result = await resolvePublicInvitation('my-invitation', 'xv');
+			expect(result).toBeNull();
+			expect(mockAdaptEvent).not.toHaveBeenCalled();
+			expect(mockGetRoutable).not.toHaveBeenCalled();
+			expect(JSON.stringify(result)).not.toContain('orderSource');
+			expect(JSON.stringify(log.mock.calls)).not.toContain('Private instructions');
+		} finally {
+			log.mockRestore();
+		}
+	});
+
 	it('attaches the paid access state to a published client invitation', async () => {
 		mockFindPublishedWithAccess.mockResolvedValue(
 			publishedEntry({ paymentStatus: 'paid', publicAccess: 'enabled' }),
