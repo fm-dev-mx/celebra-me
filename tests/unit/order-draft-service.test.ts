@@ -17,6 +17,7 @@ import { findInvitationById } from '@/lib/intake/repositories/invitation.reposit
 import { findDraftByInvitationId } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { mapDraftToPublished } from '@/lib/intake/mappers/draft-to-published.mapper';
 import { mergePublishedWithDraft } from '@/lib/intake/services/merge-content.service';
+import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 
 const orderId = 'b4000000-0000-4000-8000-000000000001';
 beforeEach(() => {
@@ -62,12 +63,59 @@ it('creates a normalized draft without an event-type slug prefix or publication'
 		expect.objectContaining({
 			orderId,
 			themeId: 'editorial',
-			slug: `maria-ana-${orderId}`,
+			slug: expect.stringMatching(/^maria-ana-[a-z0-9]{7}$/),
 			content: expect.objectContaining({
 				hero: expect.objectContaining({ name: 'María & Ana', date: '2026-12-12' }),
 			}),
 		}),
 	);
+	expect(jest.mocked(createOrderDraftAtomic).mock.calls[0][0].slug).not.toContain(orderId);
+});
+
+const slugCollision = () =>
+	new SupabaseHttpError(
+		409,
+		JSON.stringify({
+			code: '23505',
+			message: 'duplicate key value violates unique constraint "invitations_slug_key"',
+		}),
+		'23505',
+	);
+
+it('retries a slug collision with fresh randomness and preserves atomic idempotency', async () => {
+	const random = jest.spyOn(crypto, 'getRandomValues');
+	random.mockReturnValueOnce(new Uint32Array([1])).mockReturnValueOnce(new Uint32Array([2]));
+	try {
+		jest.mocked(createOrderDraftAtomic)
+			.mockRejectedValueOnce(slugCollision())
+			.mockResolvedValueOnce({ invitationId: 'concurrent-id', created: false });
+		await expect(createOrderDraft(orderId, 'editorial')).resolves.toMatchObject({
+			invitationId: 'concurrent-id',
+			created: false,
+		});
+		const calls = jest.mocked(createOrderDraftAtomic).mock.calls;
+		expect(calls).toHaveLength(2);
+		expect(calls[0][0]).toMatchObject({ slug: 'maria-ana-0000001' });
+		expect(calls[1][0]).toEqual({ ...calls[0][0], slug: 'maria-ana-0000002' });
+	} finally {
+		random.mockRestore();
+	}
+});
+
+it('bounds slug collision retries and returns a conflict when exhausted', async () => {
+	jest.mocked(createOrderDraftAtomic).mockRejectedValue(slugCollision());
+	await expect(createOrderDraft(orderId, 'editorial')).rejects.toMatchObject({ status: 409 });
+	expect(createOrderDraftAtomic).toHaveBeenCalledTimes(3);
+});
+
+it.each([
+	new SupabaseHttpError(409, 'unique constraint "sales_orders_invitation_id_key"', '23505'),
+	new SupabaseHttpError(403, 'permission denied', '42501'),
+	new Error('network failure'),
+])('does not retry unrelated persistence errors: %s', async (error) => {
+	jest.mocked(createOrderDraftAtomic).mockRejectedValue(error);
+	await expect(createOrderDraft(orderId, 'editorial')).rejects.toBe(error);
+	expect(createOrderDraftAtomic).toHaveBeenCalledTimes(1);
 });
 
 it('opens an existing draft without requiring a new preset or overwriting edits', async () => {
@@ -109,6 +157,7 @@ it('rejects unpaid or unsubmitted orders', async () => {
 it('reports an atomic stale-data rejection instead of returning a nonexistent draft', async () => {
 	jest.mocked(createOrderDraftAtomic).mockResolvedValue({ error: 'stale' });
 	await expect(createOrderDraft(orderId, 'editorial')).rejects.toMatchObject({ status: 409 });
+	expect(createOrderDraftAtomic).toHaveBeenCalledTimes(1);
 });
 
 it('maps locations, text, family, song and photos without inventing audio or itinerary', () => {
@@ -158,12 +207,20 @@ it('never publishes the private order snapshot', () => {
 			},
 		},
 		priorPublishedContent: {
+			orderSource: {
+				orderId,
+				packageName: 'Private package',
+				answers: { notes: 'Old private instructions' },
+			},
 			composition: { intersections: {} },
 			hero: { variant: 'standard', name: 'Test' },
 		},
 	});
 	expect(content).not.toHaveProperty('orderSource');
 	expect(JSON.stringify(content)).not.toContain('Private instructions');
+	expect(JSON.stringify(content)).not.toContain(orderId);
+	expect(JSON.stringify(content)).not.toContain('Private package');
+	expect(JSON.stringify(content)).not.toContain('Old private instructions');
 });
 
 it('keeps original instructions available after editor hydration', () => {

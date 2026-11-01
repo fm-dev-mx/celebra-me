@@ -5,6 +5,7 @@ import { findInvitationById } from '@/lib/intake/repositories/invitation.reposit
 import { findDraftByInvitationId } from '@/lib/intake/repositories/invitation-content-draft.repository';
 import { isEventType, listThemePresetsForEventType } from '@/lib/theme/theme-contract';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { SupabaseHttpError } from '@/lib/rsvp/repositories/supabase';
 
 function conflict(message: string): never {
 	throw new ApiError(409, 'conflict', message);
@@ -68,16 +69,30 @@ export async function createOrderDraft(orderId: string, themeId: string) {
 			.replace(/^-|-$/g, '')
 			.slice(0, 60)
 			.replace(/-$/, '') || 'invitacion';
-	const result = await createOrderDraftAtomic({
-		orderId,
-		expectedUpdatedAt: request.updatedAt,
-		slug: `${base}-${orderId}`,
-		themeId,
-		content: buildOrderDraftContent(request.answers, order.eventType),
-	});
-	if ('error' in result)
-		conflict(
-			'No se pudo crear el borrador. Actualice el pedido y revise el pago y los datos enviados.',
-		);
-	return { ...result, editorUrl: editorUrl(result.invitationId) };
+	const content = buildOrderDraftContent(request.answers, order.eventType);
+	for (let attempt = 0; attempt < 3; attempt++) {
+		const suffix = crypto.getRandomValues(new Uint32Array(1))[0].toString(36).padStart(7, '0');
+		try {
+			const result = await createOrderDraftAtomic({
+				orderId,
+				expectedUpdatedAt: request.updatedAt,
+				slug: `${base}-${suffix}`,
+				themeId,
+				content,
+			});
+			if ('error' in result) break;
+			return { ...result, editorUrl: editorUrl(result.invitationId) };
+		} catch (error) {
+			if (
+				!(error instanceof SupabaseHttpError) ||
+				error.code !== '23505' ||
+				!error.body.includes('invitations_slug_key')
+			) {
+				throw error;
+			}
+		}
+	}
+	conflict(
+		'No se pudo crear el borrador. Actualice el pedido y revise el pago y los datos enviados.',
+	);
 }
