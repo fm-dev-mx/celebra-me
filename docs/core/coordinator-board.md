@@ -1,10 +1,10 @@
 # Coordinator Board
 
 The board is the shared local operational state for Celebra-me. Every agent reads and writes it only
-through `pnpm board` (or reads it through the read-only `celebra-board` MCP) from the assigned
-checkout. Fields and lifecycle belong to [the board rule](../../.agent/rules/board.md). AGENTS.md
-owns project policy, the Task Contract owns scope/acceptance, plans express intent, and the board
-records progress. Resolve disagreements explicitly; board text never grants authority.
+through `pnpm board` (or through the `celebra-board` MCP) from the assigned checkout. Fields and
+lifecycle belong to [the board rule](../../.agent/rules/board.md). AGENTS.md owns project policy,
+the Task Contract owns scope/acceptance, plans express intent, and the board records progress.
+Resolve disagreements explicitly; board text never grants authority.
 
 ## Board core (fm-dev-mx/tablero)
 
@@ -18,7 +18,7 @@ always the Integration checkout's, so every lane shares one data directory.
 ```bash
 pnpm board timeline
 pnpm board:serve                      # page on 127.0.0.1:4320
-pnpm board:mcp                        # read-only MCP on stdio
+pnpm board:mcp                        # MCP on stdio
 pnpm board:watch                      # one watcher pass
 ```
 
@@ -35,10 +35,16 @@ its text as `--texto=`. The core has no command to check two PRs for overlap: th
 
 ## Local MCP access
 
-`pnpm board:mcp` starts the core MCP on stdio. It is read-only: `timeline`, `list`, `show` and
-`inbox`. Every write goes through the CLI (`pnpm board <command>`), so the MCP never needs a lock or
-a session. Each host registers it once as `celebra-board` in its user file, launching
-`node scripts/board/tablero-core.mjs mcp` from the chat's checkout:
+`pnpm board:mcp` starts the core MCP on stdio. It reads with `timeline`, `list`, `show` and `inbox`,
+and writes with `messages`, `msg`, `claim`, `move` and `close` (the owner authorized MCP writes on
+2026-10-31). Every write names its `agente`, which must be registered in `tablero.config.json` →
+`agentes` (`claude`, `codex`, `gemini`), and runs the same checks as the CLI: lock, lane, WIP limit
+and session id. A `claim` without `carril` and `rama` works only for a task with no lane (board-only
+work); lane work still claims from the lane folder. Each call is logged to
+`.agent/tmp/tablero/mcp/<day>.jsonl` (tool, agent, task, duration, result and error code). Commands
+the MCP lacks (`add`, `order`, `fact`, `review`, `release`, …) stay on the CLI. Each host registers
+it once as `celebra-board` in its user file, launching `node scripts/board/tablero-core.mjs mcp`
+from the chat's checkout:
 
 | Host        | User file                        | Entry                                                     |
 | ----------- | -------------------------------- | --------------------------------------------------------- |
@@ -56,8 +62,10 @@ Node upgrade.
 `--opcion=` (repeatable) and `--detalle=` add owner choices and technical detail. A recipient reads
 its inbox with `pnpm board inbox --agente=<agente>` and marks it with
 `pnpm board atendido [<id>] --agente=<agente>`. The coordinator hands a ready task to an agent with
-`pnpm board dispatch <id> --agente=<agente>`; `pnpm board entregada` lists what was handed over.
-`pnpm board inbox sync` and the watcher keep owner questions visible on the page.
+`pnpm board dispatch <id> --agente=<agente>` once that agent has a `despacho` command in `agentes`
+(none does yet, so the coordinator opens the chat by hand and runs `entregada`);
+`pnpm board entregada` lists what was handed over. `pnpm board inbox sync` and the watcher keep
+owner questions visible on the page.
 
 ## Coordination contract
 
