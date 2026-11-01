@@ -58,11 +58,11 @@ describe('lane guard', () => {
 		expect(result.stderr).toContain('lane: unknown');
 	});
 
-	it('refuses the retired f05-plataforma checkout', () => {
-		const result = runGuard(createCheckout('f05-plataforma'));
+	it.each(['f05-plataforma', 'f10-libre'])('refuses the retired %s checkout', (segment) => {
+		const result = runGuard(createCheckout(segment));
 		expect(result.status).toBe(1);
 		expect(result.stderr).toContain('lane: unknown');
-		expect(result.stderr).not.toContain('f05-plataforma (');
+		expect(result.stderr).not.toContain(`${segment} (`);
 	});
 
 	it('accepts a canonical lane on a task branch', () => {

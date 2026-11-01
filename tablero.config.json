@@ -12,39 +12,53 @@
         {
             "id": "f06-landing",
             "carpeta": "../celebra-me-worktrees/f06-landing",
-            "puerto": 4326
+            "puerto": 4326,
+            "tecla": 6,
+            "nombre": "F6 Landing",
+            "entorno": "local"
         },
         {
             "id": "f07-invitaciones",
             "carpeta": "../celebra-me-worktrees/f07-invitaciones",
-            "puerto": 4327
+            "puerto": 4327,
+            "tecla": 7,
+            "nombre": "F7 Invitaciones",
+            "entorno": "local"
         },
         {
             "id": "f08-demos",
             "carpeta": "../celebra-me-worktrees/f08-demos",
-            "puerto": 4328
+            "puerto": 4328,
+            "tecla": 8,
+            "nombre": "F8 Demos",
+            "entorno": "local"
         },
         {
             "id": "f09-docs",
             "carpeta": "../celebra-me-worktrees/f09-docs",
-            "puerto": 4329
-        },
-        {
-            "id": "f10-libre",
-            "carpeta": "../celebra-me-worktrees/f10-libre",
-            "puerto": 4330
+            "puerto": 4329,
+            "tecla": 9,
+            "nombre": "F9 Docs",
+            "entorno": "local"
         },
         {
             "id": "f11-preview",
             "carpeta": "../celebra-me-worktrees/f11-preview",
-            "puerto": 4331
+            "puerto": 4331,
+            "tecla": 11,
+            "nombre": "F11 Preview",
+            "entorno": "preview"
         },
         {
             "id": "f12-release",
             "carpeta": "../celebra-me-worktrees/f12-release",
-            "puerto": 4332
+            "puerto": 4332,
+            "tecla": 12,
+            "nombre": "F12 Release",
+            "entorno": "preview"
         }
     ],
+    "carrilesRetirados": ["f05-plataforma", "f10-libre"],
     "tiposPrompt": ["codigo", "docs", "operacion", "revision"],
     "github": {
         "repo": "fm-dev-mx/celebra-me"

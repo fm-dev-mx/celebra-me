@@ -30,9 +30,14 @@ are wired lives in [the coordinator guide](../../docs/core/coordinator-board.md#
 - **Projects**: `tablero.config.json` registers `celebra-me` (default), `tablero` and `marketing`;
   `add --proyecto=<id>` picks one and `move <id> --proyecto=<id>|--padre=<id>` moves a task while
   keeping its number and history.
-- **Category (d191)**: a lane preference, never a restriction: `landing` f06-landing, `invitaciones`
-  f07-invitaciones, `demos` f08-demos, `docs` f09-docs, `herramientas` f10-libre, `preview`
-  f11-preview, `release` f12-release; anything else takes any free lane.
+- **Category (d191)**: never binds a lane. Code tasks take any free generic lane (f06-landing,
+  f07-invitaciones, f08-demos, f09-docs); `preview` work takes f11-preview and `release` work
+  f12-release. f05-plataforma and f10-libre take no tasks (`carrilesRetirados`, owner 2026-10-31).
+- **Lane list**: `tablero.config.json` is the only list; `scripts/shared/worktree-lane.ts` reads it,
+  so never copy lane ids or ports into another file.
+- **Lane state**: busy or idle comes from `git worktree list` plus the locks (`pnpm board lanes`),
+  never from a stored file. `verify` warns about a lane on a branch without a lock and a lock whose
+  session title names another lane.
 - **PR number**: record it in the same write that opens the PR
   (`move <id> --a="en revision" --pr=<n>` or `close … --pr=<n>`). Every mention of a task that has a
   PR writes it next to the id: `pasarela-pago-estudio (PR #475)`.

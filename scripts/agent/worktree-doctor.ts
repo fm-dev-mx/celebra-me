@@ -17,6 +17,7 @@ import {
 	findRepoRoot,
 	getExternalWorktreeRoot,
 	gitInspectionEnv,
+	RETIRED_LANE_SEGMENTS,
 	WORKTREE_LANES,
 	type WorktreeLaneDefinition,
 } from '../shared/worktree-lane';
@@ -287,7 +288,7 @@ function defaultSweepDeps(repoRoot: string): SweepDeps {
  * (a) `.claude/worktrees/*` whose branch is merged into origin/develop and has no open PR,
  * (b) local branches merged into origin/develop with no worktree and no open PR,
  * (c) git-safety baselines older than 7 days, and
- * (d) folders under the external worktree root that are not a canonical lane.
+ * (d) folders under the external worktree root that are neither a lane nor a retired lane.
  * It never deletes anything; each finding carries the command the owner can run.
  */
 export function checkSweep(
@@ -359,7 +360,11 @@ export function checkSweep(
 	}
 
 	const externalRoot = getExternalWorktreeRoot(repoRoot);
-	const laneSegments = new Set<string>(WORKTREE_LANES.flatMap((lane) => lane.segment ?? []));
+	// Retired lanes (carrilesRetirados) keep their folders on purpose.
+	const laneSegments = new Set<string>([
+		...WORKTREE_LANES.flatMap((lane) => lane.segment ?? []),
+		...RETIRED_LANE_SEGMENTS,
+	]);
 	for (const name of deps.listDirs(externalRoot).sort()) {
 		if (laneSegments.has(name)) continue;
 		const path = resolve(externalRoot, name);
@@ -368,8 +373,8 @@ export function checkSweep(
 			kind: 'folder',
 			subject: displayPath(path),
 			detail: registered
-				? `${name} es un worktree fuera de los carriles F05–F12; revíselo antes de quitarlo.`
-				: `${name} no es un carril F05–F12 ni un worktree registrado; revísela y bórrela a mano.`,
+				? `${name} es un worktree fuera de los carriles de tablero.config.json; revíselo antes de quitarlo.`
+				: `${name} no es un carril de tablero.config.json ni un worktree registrado; revísela y bórrela a mano.`,
 			command: registered
 				? `git -C "${root}" worktree remove "${displayPath(path)}"`
 				: undefined,

@@ -28,7 +28,7 @@ it('projects the same lane table from Integration and a linked checkout without 
 				: JSON.stringify(layout);
 		expect(comparable(layouts[0])).toBe(comparable(layouts[1]));
 		expect(layouts[0].lanes.map((entry) => entry.port)).toEqual([
-			4321, 4326, 4327, 4328, 4329, 4330, 4331, 4332,
+			4321, 4326, 4327, 4328, 4329, 4331, 4332,
 		]);
 		expect(
 			layouts[0].lanes

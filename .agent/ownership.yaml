@@ -278,9 +278,10 @@ ownership:
           - 'Copied command tables in stale docs'
 
     - aspect: 'Worktree topology & ports (exec)'
-      owner: 'scripts/shared/worktree-lane.ts'
+      owner: 'tablero.config.json'
       non_owners:
-          - 'Prose cards overriding TS code'
+          - 'scripts/shared/worktree-lane.ts (reads carriles; defines only Integration)'
+          - 'Prose cards overriding the config'
 
     - aspect: 'Runtime target resolution (exec)'
       owner: 'scripts/shared/celebra-runtime-env.ts'

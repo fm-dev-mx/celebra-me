@@ -243,7 +243,7 @@ describe('screenshot CLI utilities', () => {
 	it('lets ASTRO_PORT and explicit base URL override the lane table', () => {
 		expect(
 			resolveScreenshotLaneContext({
-				cwd: '/mock/celebra-me-worktrees/f10-libre',
+				cwd: '/mock/celebra-me-worktrees/f09-docs',
 				env: { ASTRO_PORT: '4390' },
 			}),
 		).toMatchObject({
@@ -253,7 +253,7 @@ describe('screenshot CLI utilities', () => {
 		});
 		expect(
 			resolveScreenshotLaneContext({
-				cwd: '/mock/celebra-me-worktrees/f10-libre',
+				cwd: '/mock/celebra-me-worktrees/f09-docs',
 				explicitBaseUrl: 'http://127.0.0.1:9999/',
 			}),
 		).toMatchObject({
