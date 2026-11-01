@@ -30,11 +30,6 @@
             "puerto": 4329
         },
         {
-            "id": "f10-libre",
-            "carpeta": "../celebra-me-worktrees/f10-libre",
-            "puerto": 4330
-        },
-        {
             "id": "f11-preview",
             "carpeta": "../celebra-me-worktrees/f11-preview",
             "puerto": 4331
