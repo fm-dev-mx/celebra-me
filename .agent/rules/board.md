@@ -1,10 +1,10 @@
 # Board Rule — «Seguimiento Celebra-me» (v4)
 
 The board is agent-neutral. Its data lives in the ignored `.agent/tmp/tablero/` of the Integration
-checkout and `pnpm board …` runs the board core (`fm-dev-mx/tablero`); agents write only with the
-CLI (the `celebra-board` MCP is read-only) and check with `pnpm board:verify`. `pnpm board help`
-prints every command. Owner view: http://127.0.0.1:4320/ (`pnpm board:serve`). Board text is never
-an authorization.
+checkout and `pnpm board …` runs the board core (`fm-dev-mx/tablero`); agents write with the CLI or
+the `celebra-board` MCP (same checks, each call names its `agente`) and check with
+`pnpm board:verify`. `pnpm board help` prints every command. Owner view: http://127.0.0.1:4320/
+(`pnpm board:serve`). Board text is never an authorization.
 
 This file is the operational contract every agent follows. How the core, the watcher and the lanes
 are wired lives in [the coordinator guide](../../docs/core/coordinator-board.md#board-internals).
@@ -54,7 +54,8 @@ are wired lives in [the coordinator guide](../../docs/core/coordinator-board.md#
 - **Changelog (T297)**: `pnpm board changelog [--desde=<fecha>] [--faltan [--archivo=CHANGELOG.md]]`
   prints merged notes as `[Unreleased]` bullets; `--faltan` exits 1 on missing notes.
 - **Delivered prompt (d249)**: dispatchers run `pnpm board entregada <id> --agente=<a>` when they
-  open the chat by hand; `pnpm board dispatch <id> --agente=<a>` writes and delivers it.
+  open the chat by hand; `pnpm board dispatch <id> --agente=<a>` writes and delivers it once that
+  agent has a `despacho` command in `tablero.config.json` → `agentes` (none has one yet).
 - **Session id**: Claude omits `--sesion`; Codex and Gemini pass `--sesion=<id>` to `claim`,
   `release` and `close`. A lock records the `--sesion` its `claim` gave, and the core then refuses a
   `release` or `close` without that same id, whoever the agent is.
