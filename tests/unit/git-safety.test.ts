@@ -28,7 +28,7 @@ function newParent(prefix: string) {
 }
 
 /** Linked worktree at a canonical lane path, so the lane guard lets `start` run. */
-function createRepo(segment = 'f10-libre') {
+function createRepo(segment = 'f09-docs') {
 	return createLaneFixture(newParent('git-safety-'), segment, 'Git Safety Tester');
 }
 

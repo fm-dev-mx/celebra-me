@@ -1,7 +1,11 @@
 # Worktree lanes
 
-The executable source of truth is [`worktree-lane.ts`](../../../scripts/shared/worktree-lane.ts).
-External paths use the sibling `<repo-dir>-worktrees/` directory.
+The single source of truth is `tablero.config.json`: `carriles` lists each lane's id, folder, key
+(`tecla`), port, name and runtime (`entorno`), and `carrilesRetirados` lists folders that stay on
+disk but take no tasks. The board and [`worktree-lane.ts`](../../../scripts/shared/worktree-lane.ts)
+(guards, ports, doctor, VS Code task runner) both read it; only Integration is defined in code.
+Adding or retiring a lane is one pull request that edits that file. External paths use the sibling
+`<repo-dir>-worktrees/` directory.
 
 | Key | Lane                          | Use          | Runtime | Port |
 | --- | ----------------------------- | ------------ | ------- | ---- |
@@ -13,12 +17,13 @@ External paths use the sibling `<repo-dir>-worktrees/` directory.
 | F11 | `f11-preview`                 | Preview      | Preview | 4331 |
 | F12 | `f12-release`                 | Release      | Preview | 4332 |
 
-The board (`tablero.config.json` → `carriles`) assigns tasks only to these lanes: four generic lanes
-for a WIP of three, plus Preview and release. A task's category never binds a generic lane.
+The board assigns tasks only to these lanes: four generic lanes for a WIP of three, plus Preview and
+release. A task's category never binds a generic lane.
 
-Win + F4 opens the separate board project (`tablero`), not a lane. The former `f05-plataforma` lane
-is retired: its checkout is unknown to the guards. `f10-libre` takes no new tasks (owner,
-2026-10-31); its folder stays and the guards still recognize it so existing work can finish.
+Win + F4 opens the separate board project (`tablero`), not a lane. `f05-plataforma` and `f10-libre`
+are retired (`carrilesRetirados`, owner 2026-10-31): their folders stay, the guards treat them as
+unknown and refuse sessions there, and the worktree sweep (`pnpm ops:status`) does not flag them for
+removal.
 
 Roles are defaults, not permissions or domain restrictions. Explicit assignment and scoped
 authorization are required before inspecting or changing a second checkout. Clean or detached does

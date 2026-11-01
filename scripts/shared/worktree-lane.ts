@@ -10,17 +10,20 @@
  *       ├── …
  *       └── f12-release/          (Win + F12)
  *
- * WORKTREE_LANES is the single source of truth for lane ids, keys, folders,
- * runtimes and ports. Win + F4 opens the separate board project (`tablero`),
- * not a lane; F5 is Integration. The former `f05-plataforma` lane is retired.
- * A lane's role is a default, not a restriction; folders under
- * `<repo>-worktrees/` are never created ad hoc — change this table in a pull
- * request instead.
+ * `tablero.config.json` is the single source of truth for the task lanes:
+ * `carriles` gives each lane's id, folder, port, key (`tecla`), name and runtime
+ * (`entorno`), and `carrilesRetirados` lists folders that stay on disk but take
+ * no tasks (detected as `unknown`, so the guards refuse sessions there). The
+ * board reads the same file. Integration is not a board lane and stays here.
+ * Win + F4 opens the separate board project (`tablero`), not a lane. A lane's
+ * role is a default, not a restriction; folders under `<repo>-worktrees/` are
+ * never created ad hoc — change `tablero.config.json` in a pull request instead.
  */
 
 import { execSync } from 'node:child_process';
 import { statSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
+import boardConfig from '../../tablero.config.json' with { type: 'json' };
 
 export type WorktreeRuntimeDefault = 'local' | 'preview';
 
@@ -36,74 +39,92 @@ interface WorktreeLaneEntry {
 	readonly runtimeDefault: WorktreeRuntimeDefault;
 }
 
-export const WORKTREE_LANES = Object.freeze([
-	{
-		id: 'integration',
-		key: 5,
-		port: 4321,
-		segment: null,
-		displayName: 'Integration',
-		runtimeDefault: 'local',
-	},
-	{
-		id: 'f06-landing',
-		key: 6,
-		port: 4326,
-		segment: 'f06-landing',
-		displayName: 'F6 Landing',
-		runtimeDefault: 'local',
-	},
-	{
-		id: 'f07-invitaciones',
-		key: 7,
-		port: 4327,
-		segment: 'f07-invitaciones',
-		displayName: 'F7 Invitaciones',
-		runtimeDefault: 'local',
-	},
-	{
-		id: 'f08-demos',
-		key: 8,
-		port: 4328,
-		segment: 'f08-demos',
-		displayName: 'F8 Demos',
-		runtimeDefault: 'local',
-	},
-	{
-		id: 'f09-docs',
-		key: 9,
-		port: 4329,
-		segment: 'f09-docs',
-		displayName: 'F9 Docs',
-		runtimeDefault: 'local',
-	},
-	{
-		id: 'f10-libre',
-		key: 10,
-		port: 4330,
-		segment: 'f10-libre',
-		displayName: 'F10 Libre',
-		runtimeDefault: 'local',
-	},
-	{
-		id: 'f11-preview',
-		key: 11,
-		port: 4331,
-		segment: 'f11-preview',
-		displayName: 'F11 Preview',
-		runtimeDefault: 'preview',
-	},
-	{
-		id: 'f12-release',
-		key: 12,
-		port: 4332,
-		segment: 'f12-release',
-		displayName: 'F12 Release',
-		runtimeDefault: 'preview',
-	},
-] as const satisfies readonly WorktreeLaneEntry[]);
+interface BoardLaneConfig {
+	id?: unknown;
+	carpeta?: unknown;
+	puerto?: unknown;
+	tecla?: unknown;
+	nombre?: unknown;
+	entorno?: unknown;
+}
 
-export type KnownWorktreeLaneId = (typeof WORKTREE_LANES)[number]['id'];
+const INTEGRATION_LANE: WorktreeLaneEntry = Object.freeze({
+	id: 'integration',
+	key: 5,
+	port: 4321,
+	segment: null,
+	displayName: 'Integration',
+	runtimeDefault: 'local',
+});
+
+function laneConfigError(detail: string): Error {
+	return new Error(`Invalid lane config in tablero.config.json: ${detail}`);
+}
+
+function parseBoardLane(raw: BoardLaneConfig, index: number): WorktreeLaneEntry {
+	const { id, carpeta, puerto, tecla, nombre, entorno } = raw;
+	if (typeof id !== 'string' || !/^f\d{2}-[a-z0-9-]+$/.test(id)) {
+		throw laneConfigError(`carriles[${index}].id must look like "f06-landing"`);
+	}
+	if (typeof carpeta !== 'string' || basename(carpeta.replaceAll('\\', '/')) !== id) {
+		throw laneConfigError(`carriles[${index}].carpeta must end in "${id}"`);
+	}
+	if (!Number.isInteger(puerto) || !Number.isInteger(tecla)) {
+		throw laneConfigError(`carriles[${index}] needs integer "puerto" and "tecla"`);
+	}
+	if (typeof nombre !== 'string' || !nombre.trim()) {
+		throw laneConfigError(`carriles[${index}].nombre is required`);
+	}
+	if (entorno !== 'local' && entorno !== 'preview') {
+		throw laneConfigError(`carriles[${index}].entorno must be "local" or "preview"`);
+	}
+	return Object.freeze({
+		id,
+		key: tecla as number,
+		port: puerto as number,
+		segment: id,
+		displayName: nombre,
+		runtimeDefault: entorno,
+	});
+}
+
+function assertUnique(lanes: readonly WorktreeLaneEntry[], field: 'key' | 'port'): void {
+	const seen = new Set<number>();
+	for (const lane of lanes) {
+		if (seen.has(lane[field])) throw laneConfigError(`duplicate ${field} ${lane[field]}`);
+		seen.add(lane[field]);
+	}
+}
+
+function loadLaneConfig(config: { carriles?: unknown; carrilesRetirados?: unknown }): {
+	lanes: readonly WorktreeLaneEntry[];
+	retired: readonly string[];
+} {
+	if (!Array.isArray(config.carriles)) throw laneConfigError('"carriles" must be an array');
+	const lanes = [
+		INTEGRATION_LANE,
+		...config.carriles.map((raw: BoardLaneConfig, index) => parseBoardLane(raw, index)),
+	];
+	assertUnique(lanes, 'key');
+	assertUnique(lanes, 'port');
+	const retired = config.carrilesRetirados ?? [];
+	if (!Array.isArray(retired) || retired.some((segment) => typeof segment !== 'string')) {
+		throw laneConfigError('"carrilesRetirados" must be an array of folder names');
+	}
+	const live = retired.find((segment) => lanes.some((lane) => lane.segment === segment));
+	if (live) throw laneConfigError(`"${live}" is both a lane and retired`);
+	return { lanes: Object.freeze(lanes), retired: Object.freeze([...retired]) };
+}
+
+const LANE_CONFIG = loadLaneConfig(boardConfig);
+
+/** Integration first, then the board lanes in `tablero.config.json` order. */
+export const WORKTREE_LANES: readonly WorktreeLaneEntry[] = LANE_CONFIG.lanes;
+
+/** Folders kept under `<repo>-worktrees/` that take no tasks (`carrilesRetirados`). */
+export const RETIRED_LANE_SEGMENTS: readonly string[] = LANE_CONFIG.retired;
+
+export type KnownWorktreeLaneId = string;
 export type WorktreeLaneId = KnownWorktreeLaneId | 'unknown';
 
 export interface WorktreeLaneDefinition {
@@ -128,10 +149,7 @@ const UNKNOWN_LANE_PORT = 4399;
  * Override with PORT or ASTRO_PORT when needed (tests, one-off binds).
  */
 export const WORKTREE_DEV_SERVER_PORTS: Readonly<Record<WorktreeLaneId, number>> = Object.freeze({
-	...(Object.fromEntries(WORKTREE_LANES.map((lane) => [lane.id, lane.port])) as Record<
-		KnownWorktreeLaneId,
-		number
-	>),
+	...Object.fromEntries(WORKTREE_LANES.map((lane) => [lane.id, lane.port])),
 	unknown: UNKNOWN_LANE_PORT,
 });
 
@@ -298,7 +316,7 @@ export function listExpectedLanePaths(repoRoot: string): Array<{
  * runs only in a canonical lane, and Integration only on `develop`. Commits on
  * develop are refused everywhere except a merge completed in Integration; session
  * start on develop allows the authorized integration to begin. There is no
- * bypass: change WORKTREE_LANES in a pull request when a task needs another lane.
+ * bypass: change tablero.config.json in a pull request when a task needs another lane.
  *
  * Returns null when allowed, otherwise the refusal message.
  */

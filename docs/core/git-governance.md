@@ -34,8 +34,10 @@ release versioning and changelog policy are owned by [`release-process.md`](rele
 
 ## Lane model (Win + F5–F12)
 
-Nine persistent native Git lanes isolate tasks. The executable source for lane ids, paths, runtime
-defaults and ports is [worktree-lane.ts](../../scripts/shared/worktree-lane.ts). See the
+Integration plus six persistent native Git lanes isolate tasks. The single source for lane ids,
+folders, keys, runtime defaults and ports is `tablero.config.json` (`carriles`, plus
+`carrilesRetirados` for folders that take no tasks), which the board and
+[worktree-lane.ts](../../scripts/shared/worktree-lane.ts) both read. See the
 [lane guide](worktrees/README.md) for the map and environment-specific cards.
 
 Integration stays on `develop` for integration and authorized operations. External lanes host task

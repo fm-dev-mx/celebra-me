@@ -32,7 +32,9 @@ are wired lives in [the coordinator guide](../../docs/core/coordinator-board.md#
   keeping its number and history.
 - **Category (d191)**: never binds a lane. Code tasks take any free generic lane (f06-landing,
   f07-invitaciones, f08-demos, f09-docs); `preview` work takes f11-preview and `release` work
-  f12-release. f05-plataforma and f10-libre take no tasks (owner, 2026-10-31).
+  f12-release. f05-plataforma and f10-libre take no tasks (`carrilesRetirados`, owner 2026-10-31).
+- **Lane list**: `tablero.config.json` is the only list; `scripts/shared/worktree-lane.ts` reads it,
+  so never copy lane ids or ports into another file.
 - **Lane state**: busy or idle comes from `git worktree list` plus the locks (`pnpm board lanes`),
   never from a stored file. `verify` warns about a lane on a branch without a lock and a lock whose
   session title names another lane.

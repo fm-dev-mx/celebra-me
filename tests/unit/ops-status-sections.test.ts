@@ -68,7 +68,9 @@ function fakeDeps(overrides: Partial<SweepDeps> & { merged?: string[] } = {}): S
 		},
 		openPrBranches: () => new Set(['feat/merged-with-pr']),
 		listDirs: (path) =>
-			resolve(path) === LANES ? ['dev-ci', 'f08-demos', 'f12-release', 'scratch'] : [],
+			resolve(path) === LANES
+				? ['dev-ci', 'f08-demos', 'f10-libre', 'f12-release', 'scratch']
+				: [],
 		listFiles: (path) => files[resolve(path)] ?? [],
 		baselineCreatedAt: (path) => createdAt[resolve(path)] ?? null,
 		nowMs: NOW,
