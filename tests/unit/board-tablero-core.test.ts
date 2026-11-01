@@ -84,15 +84,15 @@ describe('board core cutover', () => {
 		]) {
 			expect(scripts[name]).toMatch(/^node scripts\/board\/tablero-core\.mjs\b/);
 		}
-		expect(scripts['board:viejo']).toBe('node scripts/board/board.mjs');
+		expect(scripts['board:viejo']).toBeUndefined();
 	});
 
-	it('pins the core and assigns migrated mother tasks to registered projects', () => {
+	it('pins the core and registers projects and lanes', () => {
 		const config = read('tablero.config.json');
 		expect(config.nucleo).toMatch(/^[0-9a-f]{40}$/);
 		const ids = config.proyectos.map((project: { id: string }) => project.id);
 		expect(ids[0]).toBe('celebra-me');
-		for (const id of Object.keys(config.migracion.proyectos)) expect(ids).toContain(id);
+		expect(config.migracion).toBeUndefined();
 		for (const lane of config.carriles) {
 			expect(lane.carpeta).toBe(`../celebra-me-worktrees/${lane.id}`);
 		}

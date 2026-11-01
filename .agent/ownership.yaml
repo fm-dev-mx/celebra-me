@@ -259,10 +259,9 @@ ownership:
       owner: 'scripts/board/'
       non_owners:
           - 'Prose docs overriding board code'
-          - '.agent/tmp/board/ data as policy'
           - '.agent/tmp/tablero/ data as policy'
 
-    - aspect: 'Board core pin, projects, lanes and migration'
+    - aspect: 'Board core pin, projects and lanes'
       owner: 'tablero.config.json'
       non_owners:
           - 'scripts/board/ defaults'
