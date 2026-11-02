@@ -691,3 +691,62 @@ describe('Storybook emerald theme isolation', () => {
 		}
 	});
 });
+
+describe('Storybook blush theme isolation', () => {
+	const otherPresets = THEME_PRESETS.filter((preset) => preset !== 'storybook-blush');
+	const blushContent = fs.readFileSync(path.join(presetsDir, '_storybook-blush.scss'), 'utf8');
+	const read = (file: string) => fs.readFileSync(path.join(projectRoot, file), 'utf8');
+	it('defines the expected theme root scope only', () => {
+		expect(getTopLevelSelectors(blushContent)).toEqual(['.theme-preset--storybook-blush']);
+	});
+
+	it('does not reference other registered presets', () => {
+		for (const preset of otherPresets) {
+			expect(hasPresetReference(blushContent, preset)).toBe(false);
+		}
+	});
+
+	it('does not contain !important or event-specific content', () => {
+		expect(blushContent).not.toContain('!important');
+		expect(blushContent).not.toMatch(/\bXV\b/);
+		expect(blushContent).not.toMatch(/events[/-]/i);
+	});
+
+	it('styles interludes, family and location through the base contracts', () => {
+		expectInterludeContract(blushContent);
+		expectFamilyContract(blushContent);
+		expect(blushContent).toContain('--location-bg');
+		expect(blushContent).toContain('--location-indications-grid-template');
+	});
+
+	it('paints its night band through tokens on section kinds, never through geometry', () => {
+		const shell = read('src/styles/themes/sections/theme-shell/_storybook-blush.scss');
+		expect(shell).toContain("[data-section-kind='countdown']");
+		const declarations = shell
+			.replace(/\/\/.*$/gm, '')
+			.split(/[;{}]/)
+			.map((part) => part.trim())
+			.filter((part) => /^[a-z-]+\s*:/.test(part));
+		expect(declarations.filter((part) => !part.startsWith('--'))).toEqual([]);
+	});
+
+	it('scopes its envelope skin to its own variant', () => {
+		const reveal = read('src/styles/themes/sections/reveal/_storybook-blush.scss');
+		expect(getTopLevelSelectors(reveal)).toEqual([
+			".envelope-wrapper[data-variant='storybook-blush']",
+		]);
+	});
+
+	it('leaves the emerald preset and Andrea unaware of it', () => {
+		for (const file of [
+			`${presetsDir}/_storybook-emerald.scss`,
+			'src/styles/themes/sections/theme-shell/_storybook-emerald.scss',
+			'src/invitations/clients/andrea/profile.scss',
+		]) {
+			expect({ file, match: read(file).match(/blush/i)?.[0] ?? null }).toEqual({
+				file,
+				match: null,
+			});
+		}
+	});
+});
