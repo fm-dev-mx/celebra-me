@@ -34,36 +34,7 @@
                 "mcp__celebra-board__messages,mcp__celebra-board__msg,mcp__celebra-board__atendido"
             ]
         },
-        {
-            "id": "codex",
-            "reenvio": [
-                "node",
-                "../tablero/src/puente.ts",
-                "codex",
-                "--agente={agente}",
-                "--mensaje={mensaje}",
-                "--tarea={id}",
-                "--archivo={archivo}",
-                "--carpeta={carpeta}",
-                "--datos={datos}",
-                "--",
-                "-s",
-                "read-only"
-            ],
-            "despacho": [
-                "node",
-                "../tablero/src/puente.ts",
-                "codex",
-                "--agente={agente}",
-                "--tarea={id}",
-                "--archivo={archivo}",
-                "--carpeta={carpeta}",
-                "--datos={datos}",
-                "--",
-                "-s",
-                "read-only"
-            ]
-        },
+        { "id": "codex" },
         {
             "id": "gemini",
             "reenvio": [
