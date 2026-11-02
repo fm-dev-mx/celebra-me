@@ -40,6 +40,9 @@ This file keeps only what is specific to Celebra-me. Board text is never an auth
   ([guide](../../docs/core/coordinator-board.md)).
 - Session id: Claude omits `--sesion`; Codex and Gemini pass `--sesion=<id>` to `claim`, `release`
   and `close`.
+- **Step and heartbeat (Fase B)**: while you hold a task, mark each step with
+  `pnpm board paso <id> --paso=<n> --de=<m> [--nota=<text>]` (or `--fase=<k> --paso=<n>`); 15 min
+  without a step or heartbeat shows «sin señal» in the view and in `pnpm board verify`.
 - Owner questions (d230, T322): see the core rules; the text is one plain line, and SHAs, decision
   ids and commands go in `--detalle`.
 - Closing summary (d178, T129) is the Handoff Contract (`.agent/plans/README.md`).
