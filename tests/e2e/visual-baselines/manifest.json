@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-01T04:06:36.786Z",
+    "generatedAt": "2026-11-02T06:26:22.244Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "d8f90f50fcb48cee50dc5a9f83acd859cc9ba6b5b22f87b9792928dfe9a4e7ca",
-        "cssSha256": "b0415d9a62ac0477f29abeb229229c6d576f3a7c9318f2400347d9f1937545fd",
+        "cssSha256": "e2f81b039fc734ffa0d990f0d3b19f2d5300deedb062c361be1ac0002dc5ac76",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2272,7 +2272,7 @@
             "viewport": "mobile",
             "file": "pages/invitation-boda-olivia-y-antonio-mobile.png",
             "sha256": "ad874d686f90c0d3c7e6de6e0ca2d0f0f2cbd72b73da59786ac487ca12b55cf7",
-            "contentHash": "68d5bec572bc3f4a508afc24125dd5470a09bc650e8c899f4411ab3a7eef4c3a",
+            "contentHash": "c87137191213588704ba49e882164610bfe1304e9e78c68c370193705f5910e4",
             "assetHash": "b271c86ca35427c94c5d6e39b89c741537167bb1ce0d2f548399f91db3de339a",
             "comparisonResult": "ACCEPTED"
         },
@@ -2283,8 +2283,8 @@
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
             "file": "pages/invitation-boda-olivia-y-antonio-desktop.png",
-            "sha256": "09b565f2e82f25559a2de9497f7e180fc487b85bb15694dfd0b987f496194347",
-            "contentHash": "68d5bec572bc3f4a508afc24125dd5470a09bc650e8c899f4411ab3a7eef4c3a",
+            "sha256": "1de1af035e828b28908fcdf6591cafa10733c3ab7d1eb048540423fcba8c99c0",
+            "contentHash": "c87137191213588704ba49e882164610bfe1304e9e78c68c370193705f5910e4",
             "assetHash": "b271c86ca35427c94c5d6e39b89c741537167bb1ce0d2f548399f91db3de339a",
             "comparisonResult": "ACCEPTED"
         },
@@ -2553,9 +2553,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "a256baf6839e62e8ce1b938c32d2648ae08fbcaa",
+    "referenceSha": "8b06d659cd527bd14944c3ee3387b1983fc6a506",
     "variantManifest": {
-        "generatedAt": "2026-11-01T04:06:36.786Z",
+        "generatedAt": "2026-11-02T06:26:22.244Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2568,7 +2568,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "d8f90f50fcb48cee50dc5a9f83acd859cc9ba6b5b22f87b9792928dfe9a4e7ca",
-            "cssSha256": "b0415d9a62ac0477f29abeb229229c6d576f3a7c9318f2400347d9f1937545fd",
+            "cssSha256": "e2f81b039fc734ffa0d990f0d3b19f2d5300deedb062c361be1ac0002dc5ac76",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4485,10 +4485,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "a256baf6839e62e8ce1b938c32d2648ae08fbcaa"
+        "referenceSha": "8b06d659cd527bd14944c3ee3387b1983fc6a506"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-01T04:06:36.865Z",
+        "generatedAt": "2026-11-02T06:26:22.263Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4501,7 +4501,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "d8f90f50fcb48cee50dc5a9f83acd859cc9ba6b5b22f87b9792928dfe9a4e7ca",
-            "cssSha256": "b0415d9a62ac0477f29abeb229229c6d576f3a7c9318f2400347d9f1937545fd",
+            "cssSha256": "e2f81b039fc734ffa0d990f0d3b19f2d5300deedb062c361be1ac0002dc5ac76",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4856,7 +4856,7 @@
                 "viewport": "mobile",
                 "file": "pages/invitation-boda-olivia-y-antonio-mobile.png",
                 "sha256": "ad874d686f90c0d3c7e6de6e0ca2d0f0f2cbd72b73da59786ac487ca12b55cf7",
-                "contentHash": "68d5bec572bc3f4a508afc24125dd5470a09bc650e8c899f4411ab3a7eef4c3a",
+                "contentHash": "c87137191213588704ba49e882164610bfe1304e9e78c68c370193705f5910e4",
                 "assetHash": "b271c86ca35427c94c5d6e39b89c741537167bb1ce0d2f548399f91db3de339a",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4867,8 +4867,8 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "desktop",
                 "file": "pages/invitation-boda-olivia-y-antonio-desktop.png",
-                "sha256": "09b565f2e82f25559a2de9497f7e180fc487b85bb15694dfd0b987f496194347",
-                "contentHash": "68d5bec572bc3f4a508afc24125dd5470a09bc650e8c899f4411ab3a7eef4c3a",
+                "sha256": "1de1af035e828b28908fcdf6591cafa10733c3ab7d1eb048540423fcba8c99c0",
+                "contentHash": "c87137191213588704ba49e882164610bfe1304e9e78c68c370193705f5910e4",
                 "assetHash": "b271c86ca35427c94c5d6e39b89c741537167bb1ce0d2f548399f91db3de339a",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5137,9 +5137,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "a256baf6839e62e8ce1b938c32d2648ae08fbcaa"
+        "referenceSha": "8b06d659cd527bd14944c3ee3387b1983fc6a506"
     },
-    "candidateManifestSha256": "56c4027d38645e800a6e2c931fadbc6f854a4638e89ce18c0a5f7ad693c533a3",
-    "acceptedFromCommit": "a256baf6839e62e8ce1b938c32d2648ae08fbcaa",
-    "acceptedAt": "2026-11-01T04:11:30.812Z"
+    "candidateManifestSha256": "d13f8bc06f8eac8b82b0d272868a3190d2e46d13bfcf250e5ca672557cebecaf",
+    "acceptedFromCommit": "8b06d659cd527bd14944c3ee3387b1983fc6a506",
+    "acceptedAt": "2026-11-02T06:28:13.860Z"
 }

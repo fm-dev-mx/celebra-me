@@ -167,6 +167,8 @@ const content: CanonicalEventContentInput = {
 			{ name: 'Guadalupe Martínez', role: 'Lazo' },
 			{ name: 'Liliana Domínguez', role: 'Arras' },
 			{ name: 'Yuliana Domínguez', role: 'Arras' },
+			{ name: 'Susana Martínez', role: 'Anillos' },
+			{ name: 'Francisco Carrillo', role: 'Anillos' },
 			{ name: 'Lizbeth Miranda', role: 'Biblia y rosario' },
 			{ name: 'Raúl López', role: 'Biblia y rosario' },
 		],

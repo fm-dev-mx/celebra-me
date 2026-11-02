@@ -63,6 +63,7 @@ Classification is one of: `verified` | `inferred` | `ambiguous` | `missing` | `n
 | godparentsVelacion    | Flor Martínez y Manuel Valenzuela; Karla Osobampo y Alfredo M. | verified       | source:wa-export            | Bride side first, groom side second               |
 | godparentsLazo        | Marisela Lerma; Guadalupe Martínez                             | verified       | owner-session               | Shown as supplied, also listed as a bride parent  |
 | godparentsArras       | Liliana Domínguez; Yuliana Domínguez                           | verified       | source:wa-export            |                                                   |
+| godparentsAnillos     | Susana Martínez; Francisco Carrillo                            | verified       | source:wa-export            | Added by the couple on 2026-11-01                 |
 | godparentsBiblia      | Lizbeth Miranda; Raúl López                                    | verified       | source:wa-export            | Biblia y rosario                                  |
 | dressCode             | Formal                                                         | verified       | source:wa-export            | White, red and navy/dark blue reserved            |
 | childPolicy           | none shown                                                     | not_applicable | owner-session               | No line about children; passes control attendance |
