@@ -117,6 +117,7 @@ function baseDeps(options?: {
 		revalidateInvitationPlan: async () => undefined,
 		getProductionDbUrl: () => ({ url: PROD_URL }),
 		assertReleaseReadiness: () => ({ sha: 'a'.repeat(40) }),
+		assertWorkerServesRelease: async () => undefined,
 		preparePatch: (file) => ({
 			file,
 			path: file,
@@ -431,9 +432,12 @@ describe('production apply execution', () => {
 			requireOwnerApply,
 			applySchema,
 			applyInvitation,
+			assertWorkerServesRelease: async () => {
+				order.push('worker');
+			},
 		});
 		expect(requireOwnerApply).toHaveBeenCalledTimes(1);
-		expect(order).toEqual(['authorize', 'schema', 'alpha', 'beta']);
+		expect(order).toEqual(['worker', 'authorize', 'schema', 'alpha', 'beta']);
 		expect(result.wrote).toBe(true);
 		expect(result.outcomes.find((row) => row.id === 'schema')?.outcome).toBe(
 			'APPLIED_AND_VERIFIED',
@@ -1016,6 +1020,51 @@ describe('production apply execution', () => {
 		expect(assertReleaseReadiness).toHaveBeenCalledWith({ remote: true });
 		expect(ensureSharedBackup).not.toHaveBeenCalled();
 		expect(requireOwnerApply).not.toHaveBeenCalled();
+	});
+
+	it('refuses invitation content before the owner prompt when the Production Worker lags', async () => {
+		const requireOwnerApply = jest.fn(async () => undefined);
+		const applyInvitation = jest.fn();
+		const assertWorkerServesRelease = jest.fn<
+			(input: { releaseSha: string }) => Promise<unknown>
+		>(async () => {
+			throw new OperatorError({
+				title: 'Worker atrasado',
+				cause: 'Production sirve un commit anterior',
+				code: 'PRODUCTION_WORKER_BEHIND_CONTENT',
+				remediation: [],
+			});
+		});
+		await expect(
+			applyProductionApplyPlan(cli(['--slug', 'demo', '--apply']), {
+				...baseDeps({ pending: [], preflights: { demo: invitationPreflight('demo') } }),
+				requireOwnerApply,
+				applyInvitation:
+					applyInvitation as unknown as ProductionApplyExecuteDeps['applyInvitation'],
+				assertWorkerServesRelease,
+			}),
+		).rejects.toMatchObject({ code: 'PRODUCTION_WORKER_BEHIND_CONTENT' });
+		expect(assertWorkerServesRelease).toHaveBeenCalledWith({ releaseSha: 'a'.repeat(40) });
+		expect(requireOwnerApply).not.toHaveBeenCalled();
+		expect(applyInvitation).not.toHaveBeenCalled();
+	});
+
+	it('does not consult the Production Worker for a schema-only apply', async () => {
+		const assertWorkerServesRelease = jest.fn(async () => undefined);
+		const result = await applyProductionApplyPlan(cli(['--schema', '--apply']), {
+			...baseDeps(),
+			requireOwnerApply: async (input) => {
+				issueProductionWritePermit({
+					projectRef: SUPABASE_PROJECT_REFS.production,
+					operationType: 'production_apply',
+					bindingHex: input.bindingHex,
+				});
+			},
+			applySchema: async () => ({ plan: schemaPlan(), wrote: true }),
+			assertWorkerServesRelease,
+		});
+		expect(result.wrote).toBe(true);
+		expect(assertWorkerServesRelease).not.toHaveBeenCalled();
 	});
 
 	it('requires and revalidates a current critical backup before applying a patch', async () => {

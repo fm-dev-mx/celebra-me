@@ -11,6 +11,7 @@ import {
 	assertReleaseReadinessFailFast,
 	type ReleaseReadiness,
 } from './production-release-readiness.ts';
+import { assertProductionWorkerServesRelease } from './production-worker-content-guard.ts';
 import {
 	MigrateApplyError,
 	orchestrateMigrate,
@@ -125,6 +126,8 @@ export interface ProductionApplyExecuteDeps extends ProductionApplyAssemblerDeps
 	preparedCriticalBackupManifestPath?: string;
 	/** Release evidence gate; runs before any backup or owner prompt. */
 	assertReleaseReadiness?: (options: { remote: boolean }) => ReleaseReadiness;
+	/** Worker-first gate for invitation content; runs before any backup or owner prompt. */
+	assertWorkerServesRelease?: (input: { releaseSha: string }) => Promise<unknown>;
 	/** Internal: release evidence already verified for this apply; never a CLI flag. */
 	verifiedReleaseSha?: string;
 }
@@ -714,6 +717,16 @@ async function applyPatchMutation(
 	}
 }
 
+/** Content the serving Worker cannot resolve breaks every visit until the deploy catches up. */
+async function assertWorkerFirst(
+	mutations: readonly ProductionApplyPlanItem[],
+	releaseSha: string,
+	deps: ProductionApplyExecuteDeps,
+): Promise<void> {
+	if (!mutations.some((item) => item.domain === 'invitation')) return;
+	await (deps.assertWorkerServesRelease ?? assertProductionWorkerServesRelease)({ releaseSha });
+}
+
 export async function applyProductionApplyPlan(
 	args: ProductionApplyCliArgs,
 	deps: ProductionApplyExecuteDeps = {},
@@ -740,6 +753,7 @@ export async function applyProductionApplyPlan(
 	const release = (deps.assertReleaseReadiness ?? defaultAssertReleaseReadiness)({
 		remote: hasSchema,
 	});
+	await assertWorkerFirst(mutations, release.sha, deps);
 	const shouldPrepareSharedBackup =
 		(hasSchema || hasPatch) &&
 		Boolean(
