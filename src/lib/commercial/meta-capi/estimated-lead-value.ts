@@ -26,12 +26,12 @@ import { safeErr } from '@/lib/server/safe-error';
 
 export const DEFAULT_FALLBACK_ESTIMATED_LEAD_VALUE_MXN = 150;
 export const ESTIMATED_LEAD_VALUE_CURRENCY = 'MXN';
-export const DEFAULT_PAGE_SIZE = 1000;
+const DEFAULT_PAGE_SIZE = 1000;
 
-export const ESTIMATED_LEAD_VALUE_SNAPSHOT_ACCOUNT = 'meta_commercial';
-export const ESTIMATED_LEAD_VALUE_SNAPSHOT_LEVEL = 'campaign';
-export const ESTIMATED_LEAD_VALUE_SNAPSHOT_OBJECT_ID = 'estimated_lead_value';
-export const ESTIMATED_LEAD_VALUE_SNAPSHOT_WINDOW = 'monthly_estimate';
+const ESTIMATED_LEAD_VALUE_SNAPSHOT_ACCOUNT = 'meta_commercial';
+const ESTIMATED_LEAD_VALUE_SNAPSHOT_LEVEL = 'campaign';
+const ESTIMATED_LEAD_VALUE_SNAPSHOT_OBJECT_ID = 'estimated_lead_value';
+const ESTIMATED_LEAD_VALUE_SNAPSHOT_WINDOW = 'monthly_estimate';
 
 export interface EstimatedLeadValueCalculation {
 	totalLeads: number;
@@ -149,13 +149,6 @@ export function clearPersistedSnapshotStore(): void {
 }
 
 /**
- * Resets in-memory cache accelerator.
- */
-export function resetEstimatedLeadValueStorageForTesting(): void {
-	memoryCache = null;
-}
-
-/**
  * Manually sets the memory cache accelerator.
  */
 export function setEstimatedLeadValueCache(calc: EstimatedLeadValueCalculation): void {
@@ -165,9 +158,7 @@ export function setEstimatedLeadValueCache(calc: EstimatedLeadValueCalculation):
 /**
  * Reads the persisted monthly snapshot from Supabase table `meta_ads_insights_daily`.
  */
-export async function readPersistedSnapshot(
-	month: string,
-): Promise<EstimatedLeadValueCalculation | null> {
+async function readPersistedSnapshot(month: string): Promise<EstimatedLeadValueCalculation | null> {
 	try {
 		const insightDate = `${month}-01`;
 		const pathWithQuery = `meta_ads_insights_daily?account_id=eq.${ESTIMATED_LEAD_VALUE_SNAPSHOT_ACCOUNT}&level=eq.${ESTIMATED_LEAD_VALUE_SNAPSHOT_LEVEL}&object_id=eq.${ESTIMATED_LEAD_VALUE_SNAPSHOT_OBJECT_ID}&insight_date=eq.${insightDate}&attribution_window=eq.${ESTIMATED_LEAD_VALUE_SNAPSHOT_WINDOW}&select=raw&limit=1`;
@@ -189,22 +180,10 @@ export async function readPersistedSnapshot(
 }
 
 /**
- * Synchronous snapshot lookup from memory cache accelerator.
- */
-export function getPersistedSnapshotSync(month: string): EstimatedLeadValueCalculation | null {
-	if (memoryCache && memoryCache.month === month && !memoryCache.error) {
-		return memoryCache;
-	}
-	return null;
-}
-
-/**
  * Persists the monthly snapshot to Supabase table `meta_ads_insights_daily`.
  * Never persists transient errors.
  */
-export async function writePersistedSnapshot(
-	calculation: EstimatedLeadValueCalculation,
-): Promise<void> {
+async function writePersistedSnapshot(calculation: EstimatedLeadValueCalculation): Promise<void> {
 	if (calculation.error) return;
 	try {
 		const insightDate = `${calculation.month}-01`;

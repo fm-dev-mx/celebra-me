@@ -24,7 +24,7 @@ export interface PromoThemeArt {
 export const PROMO_THEME_ART_MAX_BYTES = 2048;
 export const PROMO_EMBLEM_VIEWBOX = '0 0 24 24';
 export const PROMO_ORNAMENT_VIEWBOX = '0 0 120 12';
-export const PROMO_PATTERN_TILE = 32;
+const PROMO_PATTERN_TILE = 32;
 
 export const PROMO_THEME_ART: Readonly<Record<PromoTheme, PromoThemeArt>> = {
 	amor: {
