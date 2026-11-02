@@ -23,8 +23,9 @@ dependencies. Includes one additive migration, already applied in Preview and Pr
 
 ### Changed
 
-- Dependencies: `astro` 7.4.4, `@astrojs/cloudflare` 14.4.3 and `zod` 4.6.7, plus development tool
-  updates (`knip`, `ts-jest`, `markdownlint-cli2`) (#760, #761, #762, #763, #764).
+- Dependencies: `zod` 4.6.7, plus development tool updates (`knip`, `ts-jest`, `markdownlint-cli2`)
+  (#761, #762, #763, #764). The `astro` 7.4.4 bump (#760) was reverted before release because the
+  Preview Worker answered 500 on invitation routes.
 
 ## [0.61.0-beta.1] - 2026-11-02
 
