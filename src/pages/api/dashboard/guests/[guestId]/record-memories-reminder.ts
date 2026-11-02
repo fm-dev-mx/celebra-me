@@ -1,0 +1,28 @@
+import type { APIRoute } from 'astro';
+import { badRequest, errorResponse, jsonResponse } from '@/lib/rsvp/core/http';
+import { sanitize } from '@/lib/rsvp/core/utils';
+import { requireDashboardMutationAccess } from '@/lib/rsvp/auth/authorization';
+import { recordGuestMemoriesReminderSent } from '@/lib/rsvp/services/dashboard-guests.service';
+import { requireDashboardRateLimit } from '@/lib/rsvp/core/dashboard-guests-lib';
+
+export const POST: APIRoute = async ({ params, request, url, locals, cookies }) => {
+	try {
+		const session = await requireDashboardMutationAccess(request, cookies, locals);
+		await requireDashboardRateLimit(`reminder:${session.userId}`, request);
+
+		const guestId = sanitize(params.guestId, 120);
+		if (!guestId) return badRequest('guestId is required.');
+
+		const result = await recordGuestMemoriesReminderSent({
+			guestId,
+			hostAccessToken: session.accessToken,
+			origin: url.origin,
+			actorUserId: session.userId,
+			isSuperAdmin: session.isSuperAdmin,
+		});
+
+		return jsonResponse(result);
+	} catch (error) {
+		return errorResponse(error);
+	}
+};

@@ -10,6 +10,12 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+### Added
+
+- Guest dashboard: after the event, while the photo upload window is open, hosts can ask each guest
+  for their photos and videos one by one through WhatsApp. Adds the nullable column
+  `guest_invitations.last_memories_reminder_sent_at`; apply the migration before deploying.
+
 ## [0.61.0-beta.1] - 2026-11-02
 
 Adds the XV invitation for Naomi Huerta with a new blush storybook theme, and reorders the
