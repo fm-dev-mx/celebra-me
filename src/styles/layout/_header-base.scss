@@ -102,6 +102,7 @@
 	--header-transition-list:
 		transform var(--header-slide-duration) var(--header-slide-ease),
 		background-color var(--header-transition) var(--header-ease),
+		backdrop-filter var(--header-transition) var(--header-ease),
 		box-shadow var(--header-transition) var(--header-ease);
 
 	// 2. State Variable Contract (Implementations use these)

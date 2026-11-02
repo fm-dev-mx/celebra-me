@@ -4,17 +4,25 @@ import {
 	nextHeaderScrollState,
 	readHeaderScrollThresholds,
 	resyncHeaderScrollState,
+	isViewportSettling,
+	COARSE_POINTER_TRAVEL,
 	DEFAULT_HEADER_SCROLL_THRESHOLDS,
+	VIEWPORT_RESIZE_SETTLE_MS,
 	type HeaderScrollState,
 } from '@/lib/dom/header-scroll';
 
 const MAX_Y = 5000;
 
-function run(start: HeaderScrollState, positions: number[], maxY = MAX_Y) {
+function run(
+	start: HeaderScrollState,
+	positions: number[],
+	maxY = MAX_Y,
+	thresholds = DEFAULT_HEADER_SCROLL_THRESHOLDS,
+) {
 	const states: HeaderScrollState[] = [];
 	let state = start;
 	for (const y of positions) {
-		state = nextHeaderScrollState(state, y, maxY);
+		state = nextHeaderScrollState(state, y, maxY, thresholds);
 		states.push(state);
 	}
 	return states;
@@ -93,5 +101,50 @@ describe('readHeaderScrollThresholds', () => {
 			hideDistance: 30,
 			showDistance: 60,
 		});
+	});
+});
+
+describe('touch-screen thresholds', () => {
+	const coarse = { ...DEFAULT_HEADER_SCROLL_THRESHOLDS, ...COARSE_POINTER_TRAVEL };
+
+	it('needs longer travel on a coarse pointer and keeps desktop defaults', () => {
+		const header = document.createElement('header');
+		expect(readHeaderScrollThresholds(header, true)).toEqual(coarse);
+		expect(coarse).toMatchObject({ hideDistance: 64, showDistance: 120 });
+		expect(readHeaderScrollThresholds(header, false)).toMatchObject({
+			hideDistance: 24,
+			showDistance: 48,
+		});
+
+		header.dataset.thresholdDirection = '30';
+		expect(readHeaderScrollThresholds(header, true)).toMatchObject({
+			hideDistance: 30,
+			showDistance: 60,
+		});
+	});
+
+	it('keeps the header hidden through a short flick up that would show it on desktop', () => {
+		const flick = [1980, 1960, 1940];
+		expect(run(hiddenAt(2000), flick, MAX_Y, coarse).every((s) => s.hidden)).toBe(true);
+		expect(run(hiddenAt(2000), flick).at(-1)?.hidden).toBe(false);
+	});
+
+	it('hides only after 64px of downward travel', () => {
+		const states = run(
+			createHeaderScrollState(1000, MAX_Y, coarse),
+			[1030, 1060, 1070],
+			MAX_Y,
+			coarse,
+		);
+		expect(states.map((s) => s.hidden)).toEqual([false, false, true]);
+	});
+});
+
+describe('isViewportSettling', () => {
+	it('stays true for the settle window after the last viewport resize', () => {
+		expect(isViewportSettling(1000, -Infinity)).toBe(false);
+		expect(isViewportSettling(1000, 1000)).toBe(true);
+		expect(isViewportSettling(1000 + VIEWPORT_RESIZE_SETTLE_MS - 1, 1000)).toBe(true);
+		expect(isViewportSettling(1000 + VIEWPORT_RESIZE_SETTLE_MS, 1000)).toBe(false);
 	});
 });
