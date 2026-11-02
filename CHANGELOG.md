@@ -10,6 +10,12 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+### Added
+
+- Guest dashboard: after the event, while the photo upload window is open, hosts can ask each guest
+  for their photos and videos one by one through WhatsApp. Adds the nullable column
+  `guest_invitations.last_memories_reminder_sent_at`; apply the migration before deploying.
+
 ## [0.60.0-beta.2] - 2026-11-01
 
 The shared header also stops jumping on phones: it waits while the browser address bar resizes and

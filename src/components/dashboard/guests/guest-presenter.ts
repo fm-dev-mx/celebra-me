@@ -2,6 +2,7 @@ import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface'
 import { generateInvitationLink } from '@/utils/invitation-link';
 import { getVisibleTags } from '@/lib/guests/guest-tags';
 import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
+import { getMemoriesReminderEligibleGuests } from '@/components/dashboard/guests/reminder-eligibility';
 import type { ShareMessageType } from '@/lib/rsvp/services/shared/invitation-helpers';
 import {
 	formatMessageTimestamp,
@@ -33,7 +34,11 @@ export function formatGuestEntrySource(item: DashboardGuestItem) {
 }
 
 export type ShareFlowMode =
-	'pending-invitation' | 'single-invitation' | 'pending-reminder' | 'single-reminder';
+	| 'pending-invitation'
+	| 'single-invitation'
+	| 'pending-reminder'
+	| 'single-reminder'
+	| 'pending-memories';
 
 export type GuestSaveCallback = (
 	guestId: string,
@@ -517,9 +522,14 @@ export function getGuestStatusSentence(item: DashboardGuestItem, now: Date = new
 /** Guests a host-chosen batch can act on: unsent for invitations, sent and unanswered for reminders. */
 export function getBatchCandidates(
 	items: DashboardGuestItem[],
-	batchFlowKind: 'invitation' | 'reminder',
+	batchFlowKind: 'invitation' | 'reminder' | 'memories',
 	guestIds: ReadonlySet<string>,
 ): DashboardGuestItem[] {
+	if (batchFlowKind === 'memories') {
+		return getMemoriesReminderEligibleGuests(items).filter((item) =>
+			guestIds.has(item.guestId),
+		);
+	}
 	const bucket: GuestStatusBucket = batchFlowKind === 'reminder' ? 'waiting' : 'to-send';
 	return items.filter(
 		(item) => guestIds.has(item.guestId) && getGuestStatusBucket(item) === bucket,

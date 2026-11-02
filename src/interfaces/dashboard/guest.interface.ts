@@ -39,6 +39,7 @@ export interface DashboardGuestItem {
 	guestCode?: string;
 	hideCelebraMeBranding?: boolean;
 	lastReminderSentAt?: string | null;
+	lastMemoriesReminderSentAt?: string | null;
 	/** Test guest: excluded from totals, funnel, and engagement snapshots. */
 	isTest?: boolean;
 	/** Guest engagement projections (docs/domains/rsvp/engagement-analytics.md). */
@@ -63,6 +64,13 @@ export interface DashboardEngagementSummary {
 	trackingStartedAt: string | null;
 }
 
+/** The event's photo space while guests can still upload; drives the post-event reminder. */
+export interface DashboardMemoriesReminder {
+	url: string;
+	uploadEndsAt: string;
+	timeZone: string;
+}
+
 export interface DashboardGuestListResponse {
 	eventId: string;
 	items: DashboardGuestItem[];
@@ -85,5 +93,7 @@ export interface DashboardGuestListResponse {
 	};
 	/** Absent or null when the summary could not be loaded; the dashboard hides the funnel. */
 	engagement?: DashboardEngagementSummary | null;
+	/** Absent or null when the event has no photo space or its upload window is not open. */
+	memoriesReminder?: DashboardMemoriesReminder | null;
 	updatedAt: string;
 }

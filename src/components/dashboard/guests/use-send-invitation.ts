@@ -41,6 +41,8 @@ interface UseSendInvitationOptions {
 	shareDateContext?: ShareMessageDateContext;
 	eventTitle?: string;
 	mode?: ShareFlowMode;
+	/** Message for `pending-memories`, which has no host-editable template. */
+	memoriesTemplate?: string;
 }
 
 /**
@@ -105,6 +107,7 @@ export function useSendInvitation({
 	shareDateContext,
 	eventTitle,
 	mode = 'pending-invitation',
+	memoriesTemplate,
 }: UseSendInvitationOptions) {
 	const [editName, setEditName] = useState(guest?.fullName ?? '');
 	const [editMaxAttendees, setEditMaxAttendees] = useState(guest?.maxAllowedAttendees ?? 1);
@@ -119,8 +122,12 @@ export function useSendInvitation({
 	const [markError, setMarkError] = useState<string | null>(null);
 	const [advancing, setAdvancing] = useState(false);
 
-	const isQueueMode = mode === 'pending-invitation' || mode === 'pending-reminder';
-	const isReminderMode = mode === 'pending-reminder' || mode === 'single-reminder';
+	const isMemoriesMode = mode === 'pending-memories';
+	const isQueueMode =
+		mode === 'pending-invitation' || mode === 'pending-reminder' || isMemoriesMode;
+	// Memories sends record like reminders: the guest already has the invitation.
+	const isReminderMode =
+		mode === 'pending-reminder' || mode === 'single-reminder' || isMemoriesMode;
 
 	const pendingCount = isQueueMode ? pendingGuests.length : 0;
 
@@ -174,6 +181,15 @@ export function useSendInvitation({
 	);
 
 	const renderedMessage = useMemo(() => {
+		if (isMemoriesMode && guest && memoriesTemplate) {
+			return renderShareMessage(memoriesTemplate, {
+				guestName: editName || guest.fullName,
+				eventTitle: eventTitle || '',
+				inviteUrl,
+				attendanceStatus: guest.attendanceStatus,
+				...(shareDateContext || {}),
+			});
+		}
 		if (!templates || !guest) return guest?.shareText || '';
 		const kind = isReminderMode
 			? 'reminder'
@@ -194,7 +210,17 @@ export function useSendInvitation({
 			attendanceStatus: guest.attendanceStatus,
 			...(shareDateContext || {}),
 		});
-	}, [templates, guest, editName, eventTitle, inviteUrl, shareDateContext, isReminderMode]);
+	}, [
+		templates,
+		guest,
+		editName,
+		eventTitle,
+		inviteUrl,
+		shareDateContext,
+		isReminderMode,
+		isMemoriesMode,
+		memoriesTemplate,
+	]);
 
 	const {
 		editingMessage,
