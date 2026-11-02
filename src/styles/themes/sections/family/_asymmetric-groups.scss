@@ -245,6 +245,12 @@
 		width: 100%;
 	}
 
+	// `by-role`: an optional hairline on the aligned edge of each secondary role.
+	.family__group--godparents .family__godparent-role:not(:first-child) {
+		padding-inline-end: var(--family-godparent-role-rule-gap, 0);
+		border-inline-end: var(--family-godparent-role-rule, 0);
+	}
+
 	@include mixins.respond-below(sm) {
 		.family__content {
 			grid-template-columns: 1fr;
@@ -270,6 +276,28 @@
 		.family__group--godparents .family__name {
 			justify-content: flex-start;
 			text-align: left;
+		}
+
+		.family__group--godparents .family__godparent-role:not(:first-child) {
+			padding-inline: var(--family-godparent-role-rule-gap, 0) 0;
+			border-inline-start: var(--family-godparent-role-rule, 0);
+			border-inline-end: 0;
+		}
+
+		// Phones may stack the roles and trade the step down for an indent.
+		.family__group--godparents .family__godparent-roles {
+			grid-template-columns: var(
+				--family-godparent-roles-columns-mobile,
+				repeat(var(--family-godparent-roles-columns, 2), minmax(0, 1fr))
+			);
+		}
+
+		.family__group--godparents .family__godparent-role:nth-child(2n + 3) {
+			margin-top: var(
+				--family-godparent-role-offset-mobile,
+				var(--family-godparent-role-offset, 0)
+			);
+			margin-inline-start: var(--family-godparent-role-indent-mobile, 0);
 		}
 	}
 }
