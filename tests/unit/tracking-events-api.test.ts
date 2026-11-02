@@ -74,6 +74,26 @@ describe('/api/tracking/events', () => {
 		);
 	});
 
+	it('passes the Worker context so Meta delivery outlives the response', async () => {
+		const waitUntil = jest.fn();
+		const request = new Request('https://www.celebra-me.com/api/tracking/events', {
+			method: 'POST',
+			headers: BROWSER_HEADERS,
+			body: JSON.stringify(payload),
+		});
+		const context = {
+			...createApiContext(request),
+			locals: { runtime: { ctx: { waitUntil } } },
+		};
+
+		await POST(context as never);
+		const after = mockIngestTrackingEvent.mock.calls[0]?.[0].after;
+		const task = Promise.resolve();
+		after?.waitUntil(task);
+
+		expect(waitUntil).toHaveBeenCalledWith(task);
+	});
+
 	it('returns accepted false events without persisting route-forbidden details as errors', async () => {
 		mockIngestTrackingEvent.mockResolvedValue({ accepted: false, reason: 'route_not_allowed' });
 		const request = new Request('https://www.celebra-me.com/api/tracking/events', {

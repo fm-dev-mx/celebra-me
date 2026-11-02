@@ -4,6 +4,7 @@ import { readConsent, VISITOR_STORAGE_KEY } from '@/lib/tracking/consent-client'
 import type { ConsentSnapshot } from '@/lib/tracking/consent-policy';
 import { initGA4, forwardToGA4 } from '@/lib/tracking/ga4-forwarder';
 import { initMetaPixel, forwardToMetaPixel } from '@/lib/tracking/meta-pixel';
+import { hasIgnoreCookie } from '@/lib/tracking/internal-exclusion';
 import {
 	createMetaAttributionSnapshot,
 	metaAttributionOrUndefined,
@@ -43,7 +44,6 @@ type TrackingPayload = {
 const SESSION_KEY = 'cm_session_id';
 const UTM_KEY = 'cm_utm_snapshot';
 const TTCLID_KEY = 'cm_ttclid';
-const IGNORE_COOKIE = 'cm_ignore_tracking=true';
 const SCROLL_BUCKETS = [25, 50, 75, 90, 100] as const;
 
 /**
@@ -59,6 +59,12 @@ const WHATSAPP_LEAD_KEY = 'cm_whatsapp_lead_code';
  * per session and not overwritten by subsequent events.
  */
 const SESSION_INIT_KEY = 'cm_session_initialized';
+
+/**
+ * sessionStorage key with the package ids already reported as `package_viewed` in this tab, so
+ * reloads and return visits to pricing send one ViewContent per package per session.
+ */
+const PACKAGE_VIEWS_KEY = 'cm_package_views';
 
 function randomId(prefix: string): string {
 	if (crypto.randomUUID) return `${prefix}_${crypto.randomUUID()}`;
@@ -149,7 +155,7 @@ function getTtclidSnapshot(): string | undefined {
 }
 
 function shouldIgnoreTracking(): boolean {
-	return document.cookie.split(';').some((cookie) => cookie.trim() === IGNORE_COOKIE);
+	return hasIgnoreCookie(document.cookie);
 }
 
 function pushDataLayer(
@@ -427,10 +433,31 @@ function getTrackedClickProperties(
 	};
 }
 
+function readSeenPackageViews(): Set<string> {
+	try {
+		const stored: unknown = JSON.parse(sessionStorage.getItem(PACKAGE_VIEWS_KEY) ?? '[]');
+		return new Set(
+			Array.isArray(stored)
+				? stored.filter((id): id is string => typeof id === 'string')
+				: [],
+		);
+	} catch {
+		return new Set();
+	}
+}
+
+function writeSeenPackageViews(seen: Set<string>): void {
+	try {
+		sessionStorage.setItem(PACKAGE_VIEWS_KEY, JSON.stringify([...seen]));
+	} catch {
+		// sessionStorage unavailable — the in-memory set still dedupes this page.
+	}
+}
+
 function bindPackageViews(): void {
 	if (!('IntersectionObserver' in window)) return;
 
-	const seen = new Set<string>();
+	const seen = readSeenPackageViews();
 	const observer = new IntersectionObserver(
 		(entries) => {
 			entries.forEach((entry) => {
@@ -442,6 +469,7 @@ function bindPackageViews(): void {
 				if (!packageId || seen.has(packageId)) return;
 
 				seen.add(packageId);
+				writeSeenPackageViews(seen);
 				void trackEvent('package_viewed', {
 					package_id: packageId,
 					package_name: packageName,

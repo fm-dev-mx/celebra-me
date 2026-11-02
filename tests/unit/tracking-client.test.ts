@@ -174,6 +174,55 @@ describe('initCommercialTracking package views', () => {
 
 		expect(packageEvents).toHaveLength(1);
 	});
+
+	it('remembers viewed packages for the session so a reload sends no second package_viewed', async () => {
+		initCommercialTracking();
+		const packageCard = document.querySelector('[data-track-package-view]') as Element;
+		MockIntersectionObserver.instances
+			.find((observer) => observer.observed.has(packageCard))
+			?.trigger(packageCard, 0.6);
+		await flushPromises();
+		expect(JSON.parse(window.sessionStorage.getItem('cm_package_views') ?? '[]')).toEqual([
+			'premium',
+		]);
+		const firstVisitViews = getTrackedPayloads(fetchMock).filter(
+			(payload) => payload.eventName === 'package_viewed',
+		);
+		expect(firstVisitViews).toHaveLength(1);
+
+		fetchMock.mockClear();
+		MockIntersectionObserver.instances = [];
+		delete document.body.dataset.commercialTrackingBound;
+		initCommercialTracking();
+		const reloadedObserver = MockIntersectionObserver.instances.find((observer) =>
+			observer.observed.has(packageCard),
+		);
+		reloadedObserver?.trigger(packageCard, 0.6);
+		await flushPromises();
+
+		expect(reloadedObserver).toBeDefined();
+		expect(
+			getTrackedPayloads(fetchMock).filter(
+				(payload) => payload.eventName === 'package_viewed',
+			),
+		).toHaveLength(0);
+	});
+
+	it('still tracks the package when the stored session list is corrupt', async () => {
+		window.sessionStorage.setItem('cm_package_views', '{not json');
+		initCommercialTracking();
+		const packageCard = document.querySelector('[data-track-package-view]') as Element;
+		MockIntersectionObserver.instances
+			.find((observer) => observer.observed.has(packageCard))
+			?.trigger(packageCard, 0.6);
+		await flushPromises();
+
+		expect(
+			getTrackedPayloads(fetchMock).filter(
+				(payload) => payload.eventName === 'package_viewed',
+			),
+		).toHaveLength(1);
+	});
 });
 
 /* ================================================================
