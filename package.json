@@ -200,7 +200,7 @@
     },
     "devDependencies": {
         "@astrojs/check": "^0.9.12",
-        "@astrojs/cloudflare": "14.4.2",
+        "@astrojs/cloudflare": "14.4.3",
         "@astrojs/react": "7.1.2",
         "@astrojs/sitemap": "^3.7.4",
         "@axe-core/playwright": "^4.13.0",
@@ -221,7 +221,7 @@
         "@types/sanitize-html": "^2.16.1",
         "@typescript/native": "npm:typescript@7.0.2",
         "age-encryption": "0.3.1",
-        "astro": "7.4.2",
+        "astro": "7.4.4",
         "astro-eslint-parser": "^3.2.0",
         "astro-robots-txt": "^1.0.0",
         "aws4fetch": "1.0.20",
