@@ -3,7 +3,99 @@
     "datos": ".agent/tmp/tablero",
     "puerto": 4320,
     "wipMax": 3,
-    "agentes": [{ "id": "claude" }, { "id": "codex" }, { "id": "gemini" }],
+    "agentes": [
+        {
+            "id": "claude",
+            "reenvio": [
+                "node",
+                "../tablero/src/puente.ts",
+                "claude",
+                "--agente={agente}",
+                "--mensaje={mensaje}",
+                "--tarea={id}",
+                "--archivo={archivo}",
+                "--carpeta={carpeta}",
+                "--datos={datos}",
+                "--",
+                "--allowedTools",
+                "mcp__celebra-board__messages,mcp__celebra-board__msg,mcp__celebra-board__atendido"
+            ],
+            "despacho": [
+                "node",
+                "../tablero/src/puente.ts",
+                "claude",
+                "--agente={agente}",
+                "--tarea={id}",
+                "--archivo={archivo}",
+                "--carpeta={carpeta}",
+                "--datos={datos}",
+                "--",
+                "--allowedTools",
+                "mcp__celebra-board__messages,mcp__celebra-board__msg,mcp__celebra-board__atendido"
+            ]
+        },
+        {
+            "id": "codex",
+            "reenvio": [
+                "node",
+                "../tablero/src/puente.ts",
+                "codex",
+                "--agente={agente}",
+                "--mensaje={mensaje}",
+                "--tarea={id}",
+                "--archivo={archivo}",
+                "--carpeta={carpeta}",
+                "--datos={datos}",
+                "--",
+                "-s",
+                "read-only"
+            ],
+            "despacho": [
+                "node",
+                "../tablero/src/puente.ts",
+                "codex",
+                "--agente={agente}",
+                "--tarea={id}",
+                "--archivo={archivo}",
+                "--carpeta={carpeta}",
+                "--datos={datos}",
+                "--",
+                "-s",
+                "read-only"
+            ]
+        },
+        {
+            "id": "gemini",
+            "reenvio": [
+                "node",
+                "../tablero/src/puente.ts",
+                "gemini",
+                "--agente={agente}",
+                "--mensaje={mensaje}",
+                "--tarea={id}",
+                "--archivo={archivo}",
+                "--carpeta={carpeta}",
+                "--datos={datos}",
+                "--",
+                "--allowed-tools",
+                "mcp_celebra-board_messages,mcp_celebra-board_msg,mcp_celebra-board_atendido"
+            ],
+            "despacho": [
+                "node",
+                "../tablero/src/puente.ts",
+                "gemini",
+                "--agente={agente}",
+                "--tarea={id}",
+                "--archivo={archivo}",
+                "--carpeta={carpeta}",
+                "--datos={datos}",
+                "--",
+                "--allowed-tools",
+                "mcp_celebra-board_messages,mcp_celebra-board_msg,mcp_celebra-board_atendido"
+            ]
+        }
+    ],
+    "vigia": { "escalar": [10, 30] },
     "hechoDias": 7,
     "zonaHoraria": "America/Mexico_City",
     "ordenan": ["coordinador", "dueno"],
