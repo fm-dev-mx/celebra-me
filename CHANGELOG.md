@@ -10,6 +10,12 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+### Changed
+
+- Dependencies: `astro` 7.4.4, `@astrojs/cloudflare` 14.4.3 and `vite` 8.3.5. The root `vite` pin
+  now moves with Astro; leaving it at 8.3.4 installed two copies of vite and left `require("fs")` in
+  the Worker bundle, which answered 500 on invitation routes (#760, #770).
+
 ## [0.62.0-beta.1] - 2026-11-02
 
 Lets hosts ask each guest for their photos and videos after the event, and refreshes a few
