@@ -482,17 +482,6 @@
 		border-bottom: var(--family-godparent-role-lead-border, 0);
 	}
 
-	&__godparent-role:first-child &__godparent-role-names {
-		font-size: var(
-			--family-godparent-role-lead-name-size,
-			var(--family-godparent-role-name-size, 1.0625rem)
-		);
-		line-height: var(
-			--family-godparent-role-lead-name-line-height,
-			var(--family-godparent-role-name-line-height, 1.4)
-		);
-	}
-
 	&__godparent-role:nth-child(2n + 3) {
 		margin-top: var(--family-godparent-role-offset, 0);
 	}
