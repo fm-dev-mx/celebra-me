@@ -4,6 +4,7 @@ import { readConsent, VISITOR_STORAGE_KEY } from '@/lib/tracking/consent-client'
 import type { ConsentSnapshot } from '@/lib/tracking/consent-policy';
 import { initGA4, forwardToGA4 } from '@/lib/tracking/ga4-forwarder';
 import { initMetaPixel, forwardToMetaPixel } from '@/lib/tracking/meta-pixel';
+import { hasIgnoreCookie } from '@/lib/tracking/internal-exclusion';
 import {
 	createMetaAttributionSnapshot,
 	metaAttributionOrUndefined,
@@ -43,7 +44,6 @@ type TrackingPayload = {
 const SESSION_KEY = 'cm_session_id';
 const UTM_KEY = 'cm_utm_snapshot';
 const TTCLID_KEY = 'cm_ttclid';
-const IGNORE_COOKIE = 'cm_ignore_tracking=true';
 const SCROLL_BUCKETS = [25, 50, 75, 90, 100] as const;
 
 /**
@@ -59,6 +59,12 @@ const WHATSAPP_LEAD_KEY = 'cm_whatsapp_lead_code';
  * per session and not overwritten by subsequent events.
  */
 const SESSION_INIT_KEY = 'cm_session_initialized';
+
+/**
+ * sessionStorage key with the package ids already reported as `package_viewed` in this tab, so
+ * reloads and return visits to pricing send one ViewContent per package per session.
+ */
+const PACKAGE_VIEWS_KEY = 'cm_package_views';
 
 function randomId(prefix: string): string {
 	if (crypto.randomUUID) return `${prefix}_${crypto.randomUUID()}`;
@@ -149,7 +155,7 @@ function getTtclidSnapshot(): string | undefined {
 }
 
 function shouldIgnoreTracking(): boolean {
-	return document.cookie.split(';').some((cookie) => cookie.trim() === IGNORE_COOKIE);
+	return hasIgnoreCookie(document.cookie);
 }
 
 function pushDataLayer(
@@ -204,21 +210,22 @@ interface TrackEventOptions {
 	serverStored?: boolean;
 }
 
+/** Returns whether the event was dispatched; false when consent, the ignore flag or the route drop it. */
 function trackEvent(
 	eventName: BrowserTrackingEventName,
 	eventProperties: TrackingPayload['eventProperties'] = {},
 	options: TrackEventOptions = {},
-): void {
-	if (shouldIgnoreTracking()) return;
+): boolean {
+	if (shouldIgnoreTracking()) return false;
 	const consent = getConsentSnapshot();
-	if (!consent.analytics && !consent.marketing) return;
+	if (!consent.analytics && !consent.marketing) return false;
 	eventProperties = {
 		...eventProperties,
 		event_id: options.eventId ?? (crypto.randomUUID ? crypto.randomUUID() : fallbackUuid()),
 	};
 
 	const routeClass = document.body.dataset.trackingRouteClass;
-	if (!routeClass) return;
+	if (!routeClass) return false;
 
 	const publicProperties = { ...eventProperties };
 	delete publicProperties.lead_code;
@@ -232,7 +239,7 @@ function trackEvent(
 	forwardToGA4(eventName, eventProperties);
 	forwardToMetaPixel(eventName, eventProperties);
 
-	if (isClientOnlyEvent(eventName) || options.serverStored) return;
+	if (isClientOnlyEvent(eventName) || options.serverStored) return true;
 
 	const utm = getUtmSnapshot();
 	const metaAttribution = consent.marketing
@@ -283,6 +290,7 @@ function trackEvent(
 	} catch {
 		// Degrade gracefully if keepalive fetch is not supported/throws.
 	}
+	return true;
 }
 
 function isClientOnlyEvent(
@@ -427,10 +435,31 @@ function getTrackedClickProperties(
 	};
 }
 
+function readSeenPackageViews(): Set<string> {
+	try {
+		const stored: unknown = JSON.parse(sessionStorage.getItem(PACKAGE_VIEWS_KEY) ?? '[]');
+		return new Set(
+			Array.isArray(stored)
+				? stored.filter((id): id is string => typeof id === 'string')
+				: [],
+		);
+	} catch {
+		return new Set();
+	}
+}
+
+function writeSeenPackageViews(seen: Set<string>): void {
+	try {
+		sessionStorage.setItem(PACKAGE_VIEWS_KEY, JSON.stringify([...seen]));
+	} catch {
+		// sessionStorage unavailable — the in-memory set still dedupes this page.
+	}
+}
+
 function bindPackageViews(): void {
 	if (!('IntersectionObserver' in window)) return;
 
-	const seen = new Set<string>();
+	const seen = readSeenPackageViews();
 	const observer = new IntersectionObserver(
 		(entries) => {
 			entries.forEach((entry) => {
@@ -441,14 +470,17 @@ function bindPackageViews(): void {
 				const packageName = entry.target.dataset.packageName ?? packageId;
 				if (!packageId || seen.has(packageId)) return;
 
-				seen.add(packageId);
-				void trackEvent('package_viewed', {
+				const sent = trackEvent('package_viewed', {
 					package_id: packageId,
 					package_name: packageName,
 					content_name: packageName,
 					content_category: 'package',
 					source_area: entry.target.dataset.sourceArea ?? 'pricing',
 				});
+				// Only a dispatched view counts, so a view dropped before consent can still fire later.
+				if (!sent) return;
+				seen.add(packageId);
+				writeSeenPackageViews(seen);
 			});
 		},
 		{ threshold: [0.4, 0.6] },

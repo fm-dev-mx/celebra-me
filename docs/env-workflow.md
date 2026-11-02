@@ -42,7 +42,7 @@ shell, the Cloudflare Worker, or gitignored secret paths documented by the ownin
 
 ## Validation Role of Preview vs Local Default
 
-- **Local Default (Integration, F5–F10)**: Local development (`SUPABASE_URL=http://127.0.0.1:54321`)
+- **Local Default (Integration, F6–F9)**: Local development (`SUPABASE_URL=http://127.0.0.1:54321`)
   is the default application runtime for Integration and the Local development lanes. Use it for
   normal development, unit testing, component/SCSS iteration, and disposable destructive migration
   reconstruction.
@@ -324,7 +324,7 @@ logs, or evidence.
 - Astro/Vite bootstrap runs `scripts/shared/celebra-runtime-env.ts` from `astro.config.mjs` before
   app runtime modules access environment values.
 - Lane detection (`scripts/shared/worktree-lane.ts`) selects the runtime default:
-  - Integration / F5–F10 → Local
+  - Integration / F6–F9 → Local
   - `f11-preview` / `f12-release` → Preview
 - File loading for local processes (`NODE_ENV=development`, no hosted deploy identity):
   1. Vite `loadEnv` merges `.env`, `.env.local`, `.env.[mode]`, `.env.[mode].local`
@@ -387,7 +387,7 @@ Rules:
 | Worktree    | Files used at runtime                                    | Notes                   |
 | ----------- | -------------------------------------------------------- | ----------------------- |
 | Integration | `.env.local`                                             | Canonical copies        |
-| F5–F10      | `.env.local`                                             | Local default           |
+| F6–F9       | `.env.local`                                             | Local default           |
 | F11/F12     | `.env.local` + **required** `.env.preview.local` overlay | Preview runtime default |
 | Any lane    | `.env.e2e.local` only for Preview Playwright and smoke   | Hosted test runner      |
 

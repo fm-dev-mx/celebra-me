@@ -3,7 +3,7 @@
  * Does not touch real credentials or mutate worktrees.
  */
 
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -20,7 +20,9 @@ import {
 	detectWorktreeLane,
 	getWorktreeDevServerPort,
 	listExpectedLanePaths,
+	RETIRED_LANE_SEGMENTS,
 	WORKTREE_DEV_SERVER_PORTS,
+	WORKTREE_LANES,
 } from '../../scripts/shared/worktree-lane';
 
 describe('worktree lane detection', () => {
@@ -29,12 +31,11 @@ describe('worktree lane detection', () => {
 		'f07-invitaciones',
 		'f08-demos',
 		'f09-docs',
-		'f10-libre',
 		'f11-preview',
 		'f12-release',
 	] as const;
 
-	it('recognizes Integration and the seven keyed lanes', () => {
+	it('recognizes Integration and the six keyed lanes', () => {
 		expect(detectWorktreeLane('/mock/celebra-me').id).toBe('integration');
 		for (const segment of laneSegments) {
 			expect(detectWorktreeLane(`/mock/celebra-me-worktrees/${segment}`).id).toBe(segment);
@@ -59,6 +60,7 @@ describe('worktree lane detection', () => {
 		expect(detectWorktreeLane('/mock/celebra-me-worktrees/f06-landing2').id).toBe('unknown');
 		// Retired lane folders are no longer lanes.
 		expect(detectWorktreeLane('/mock/celebra-me-worktrees/f05-plataforma').id).toBe('unknown');
+		expect(detectWorktreeLane('/mock/celebra-me-worktrees/f10-libre').id).toBe('unknown');
 		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-local').id).toBe('unknown');
 	});
 
@@ -76,13 +78,13 @@ describe('worktree lane detection', () => {
 	});
 
 	it('detects lanes from subdirectories of a lane checkout', () => {
-		expect(detectWorktreeLane('/mock/celebra-me-worktrees/f10-libre/src').id).toBe('f10-libre');
+		expect(detectWorktreeLane('/mock/celebra-me-worktrees/f09-docs/src').id).toBe('f09-docs');
 	});
 
 	it('lists expected lane paths, keys and runtimes under the repository root', () => {
 		const lanes = listExpectedLanePaths('/mock/celebra-me');
 		expect(lanes.map((lane) => lane.id)).toEqual(['integration', ...laneSegments]);
-		expect(lanes.map((lane) => lane.key)).toEqual([5, 6, 7, 8, 9, 10, 11, 12]);
+		expect(lanes.map((lane) => lane.key)).toEqual([5, 6, 7, 8, 9, 11, 12]);
 		expect(
 			lanes.filter((lane) => lane.runtimeDefault === 'preview').map((lane) => lane.id),
 		).toEqual(['f11-preview', 'f12-release']);
@@ -101,9 +103,46 @@ describe('worktree lane detection', () => {
 		const localPorts = listExpectedLanePaths('/mock/celebra-me')
 			.filter((lane) => lane.runtimeDefault === 'local')
 			.map((lane) => WORKTREE_DEV_SERVER_PORTS[lane.id]);
-		expect(localPorts).toHaveLength(6);
+		expect(localPorts).toHaveLength(5);
 		expect(new Set(localPorts).size).toBe(localPorts.length);
 		expect(localPorts).not.toContain(WORKTREE_DEV_SERVER_PORTS.unknown);
+	});
+
+	it('derives every non-Integration lane from tablero.config.json', () => {
+		const config = JSON.parse(
+			readFileSync(join(process.cwd(), 'tablero.config.json'), 'utf8'),
+		) as {
+			carriles: Array<{
+				id: string;
+				carpeta: string;
+				puerto: number;
+				tecla: number;
+				nombre: string;
+				entorno: string;
+			}>;
+			carrilesRetirados: string[];
+		};
+		expect(WORKTREE_LANES[0].id).toBe('integration');
+		expect(
+			WORKTREE_LANES.slice(1).map((lane) => [
+				lane.id,
+				lane.segment,
+				lane.port,
+				lane.key,
+				lane.displayName,
+				lane.runtimeDefault,
+			]),
+		).toEqual(
+			config.carriles.map((lane) => [
+				lane.id,
+				lane.carpeta.split('/').pop(),
+				lane.puerto,
+				lane.tecla,
+				lane.nombre,
+				lane.entorno,
+			]),
+		);
+		expect(RETIRED_LANE_SEGMENTS).toEqual(config.carrilesRetirados);
 	});
 });
 

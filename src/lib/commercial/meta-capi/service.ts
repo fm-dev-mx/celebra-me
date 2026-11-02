@@ -269,8 +269,12 @@ export interface BrowserConversionInput {
  * Queues a browser PageView, ViewContent, Contact or Lead for server delivery. A repeated event ID
  * keeps the first row, so a replayed ingestion never sends the event twice. Callers check marketing
  * consent first. Contact and Lead rows carry the monthly estimated lead value (or fallback).
+ * Resolves to the new outbox row id, or null when the eventID was already queued, so the caller can
+ * deliver it right away; the cron stays the fallback.
  */
-export async function enqueueBrowserConversionEvent(input: BrowserConversionInput): Promise<void> {
+export async function enqueueBrowserConversionEvent(
+	input: BrowserConversionInput,
+): Promise<string | null> {
 	const eventName = BROWSER_CONVERSION_TRIGGERS[input.trigger];
 	const isContactOrLead = eventName === 'Contact' || eventName === 'Lead';
 	const value =
@@ -281,11 +285,11 @@ export async function enqueueBrowserConversionEvent(input: BrowserConversionInpu
 				: null;
 	const currency = input.currency || 'MXN';
 
-	await supabaseRestRequest<unknown>({
-		pathWithQuery: 'meta_conversion_events?on_conflict=event_id',
+	const rows = await supabaseRestRequest<Array<{ id: string }> | null>({
+		pathWithQuery: 'meta_conversion_events?on_conflict=event_id&select=id',
 		method: 'POST',
 		useServiceRole: true,
-		prefer: 'resolution=ignore-duplicates,return=minimal',
+		prefer: 'resolution=ignore-duplicates,return=representation',
 		body: {
 			event_name: eventName,
 			event_id: input.eventId,
@@ -299,6 +303,7 @@ export async function enqueueBrowserConversionEvent(input: BrowserConversionInpu
 			status: 'pending',
 		},
 	});
+	return Array.isArray(rows) && rows[0]?.id ? rows[0].id : null;
 }
 
 export async function processPendingMetaConversionEvents(): Promise<ProcessResult> {

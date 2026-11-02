@@ -64,7 +64,9 @@
 .header-base {
 	// Layout, sizing, z-index, spacing, breakpoints, structural timing
 	--blur-lg: 20px;
-	--nav-height: 100px;
+
+	// One fixed height: animating 100px -> 70px near the top caused layout work on every frame.
+	--nav-height: 70px;
 	--nav-height-scrolled: 70px;
 	--nav-container-max-width: 1400px;
 	--layer-nav: 1000;
@@ -93,6 +95,15 @@
 	--header-height-scrolled: var(--nav-height-scrolled);
 	--header-transition: #{tokens.$duration-slower};
 	--header-ease: #{tokens.$ease-premium};
+	--header-slide-duration: 240ms;
+	--header-slide-ease: cubic-bezier(0, 0, 0.2, 1);
+
+	// Shared so state rules (e.g. the sealed envelope) can extend it instead of replacing it.
+	--header-transition-list:
+		transform var(--header-slide-duration) var(--header-slide-ease),
+		background-color var(--header-transition) var(--header-ease),
+		backdrop-filter var(--header-transition) var(--header-ease),
+		box-shadow var(--header-transition) var(--header-ease);
 
 	// 2. State Variable Contract (Implementations use these)
 	--nav-bg: var(--nav-glass-bg);
@@ -109,12 +120,8 @@
 	height: var(--header-height);
 	overflow-x: clip;
 	z-index: var(--layer-nav);
-	transition:
-		height var(--header-transition) var(--header-ease),
-		background-color var(--header-transition) var(--header-ease),
-		backdrop-filter var(--header-transition) var(--header-ease),
-		transform var(--header-transition) var(--header-ease),
-		box-shadow var(--header-transition) var(--header-ease);
+	transition: var(--header-transition-list);
+	will-change: transform;
 	background: var(--nav-bg);
 	backdrop-filter: blur(var(--nav-blur)) saturate(var(--nav-saturate));
 	border-bottom: var(--nav-border);
@@ -139,8 +146,6 @@
 	}
 
 	&--scrolled {
-		height: var(--header-height-scrolled);
-
 		--nav-bg: var(
 			--nav-bg-scrolled,
 			var(--header-bg-scrolled, var(--header-bg-scrolled-fallback, var(--nav-scrolled-bg)))
@@ -155,6 +160,9 @@
 	}
 
 	&--hidden {
+		--header-slide-duration: 200ms;
+		--header-slide-ease: cubic-bezier(0.4, 0, 1, 1);
+
 		transform: translateY(-100%);
 	}
 
@@ -642,6 +650,10 @@
 }
 
 @include mixins.reduced-motion {
+	.header-base {
+		--header-slide-duration: 0ms;
+	}
+
 	.header-base__mobile-menu,
 	.header-base__mobile-overlay,
 	.header-base__mobile-toggle .hamburger__line,

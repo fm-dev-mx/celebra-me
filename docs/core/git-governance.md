@@ -34,8 +34,10 @@ release versioning and changelog policy are owned by [`release-process.md`](rele
 
 ## Lane model (Win + F5–F12)
 
-Nine persistent native Git lanes isolate tasks. The executable source for lane ids, paths, runtime
-defaults and ports is [worktree-lane.ts](../../scripts/shared/worktree-lane.ts). See the
+Integration plus six persistent native Git lanes isolate tasks. The single source for lane ids,
+folders, keys, runtime defaults and ports is `tablero.config.json` (`carriles`, plus
+`carrilesRetirados` for folders that take no tasks), which the board and
+[worktree-lane.ts](../../scripts/shared/worktree-lane.ts) both read. See the
 [lane guide](worktrees/README.md) for the map and environment-specific cards.
 
 Integration stays on `develop` for integration and authorized operations. External lanes host task
@@ -67,7 +69,8 @@ Runtime connectivity never authorizes database, publication or release mutations
 3. **Integrate** through a GitHub pull request into `develop`, the standard path for every task:
    - The author pushes the task branch, opens the pull request and records it on the board task.
    - An agent other than the author reviews it at its exact head SHA (d183; the reviewer and the
-     risk rule are in the [board rule](../../.agent/rules/board.md#working-rules-every-agent)).
+     risk rule are in the
+     [board rule](../../.agent/rules/board.md#messaging-closing-and-review-project-additions)).
      Under d282 a low-risk pull request by Claude (board, tooling, documentation or tests, nothing
      in invitations, the database, migrations, payments, secrets or Production) is reviewed by a
      Claude subagent with a clean context; medium and high risk keep Codex or Gemini. A new commit
