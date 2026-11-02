@@ -2,7 +2,7 @@
 import { z } from 'zod';
 
 const percent = z.number().min(0).max(100).nullable();
-export const metaQualityEventSchema = z.object({
+const metaQualityEventSchema = z.object({
 	event: z.string().regex(/^[A-Za-z][A-Za-z0-9_ ]{0,79}$/),
 	emq: z.number().min(0).max(10).nullable(),
 	coverage: percent,

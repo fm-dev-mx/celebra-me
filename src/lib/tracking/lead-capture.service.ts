@@ -34,7 +34,7 @@ const optionalText = (max: number) =>
 		.optional()
 		.transform((value) => value || undefined);
 
-export const LeadCaptureSchema = TrackingEventSchema.pick({
+const LeadCaptureSchema = TrackingEventSchema.pick({
 	sessionId: true,
 	visitorId: true,
 	routePath: true,

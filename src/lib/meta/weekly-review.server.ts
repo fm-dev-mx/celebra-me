@@ -15,7 +15,7 @@ import { commercialPeriod } from '@/lib/tracking/commercial-period';
 import { getEnv } from '@/lib/server/env';
 import { readDeployEnvironment } from '@/lib/server/deploy-identity';
 
-export const META_REVIEW_PIXEL = '1348260657445453';
+const META_REVIEW_PIXEL = '1348260657445453';
 const WINDOW = 'weekly_review_v1';
 // Same aggregate snapshot convention as the monthly estimated lead value calculation.
 const FILTER = `account_id=eq.meta_commercial&level=eq.campaign&object_id=eq.weekly_review_${META_REVIEW_PIXEL}&attribution_window=eq.${WINDOW}`;

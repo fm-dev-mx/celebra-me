@@ -481,9 +481,9 @@ const SAFE_META_KEYS = new Set([
 	'currency',
 ]);
 
-export const FALLBACK_ESTIMATED_LEAD_VALUE_MXN = 150;
+const FALLBACK_ESTIMATED_LEAD_VALUE_MXN = 150;
 
-export function resolveClientEstimatedLeadValue(explicitValue?: unknown): number {
+function resolveClientEstimatedLeadValue(explicitValue?: unknown): number {
 	if (typeof explicitValue === 'number' && Number.isFinite(explicitValue) && explicitValue > 0) {
 		return explicitValue;
 	}
