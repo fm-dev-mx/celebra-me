@@ -2,7 +2,7 @@
     "proyecto": "Celebra-me",
     "datos": ".agent/tmp/tablero",
     "puerto": 4320,
-    "nucleo": "b3641d3d7beacb3dfe5d64c914b3904e8822713e",
+    "nucleo": "2eacdc3ac82491cb4a3d66b9aa086b92b6ca9736",
     "wipMax": 3,
     "agentes": [{ "id": "claude" }, { "id": "codex" }, { "id": "gemini" }],
     "hechoDias": 7,
