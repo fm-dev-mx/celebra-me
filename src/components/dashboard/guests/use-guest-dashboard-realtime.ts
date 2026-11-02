@@ -5,6 +5,7 @@ import type {
 	DashboardGuestItem,
 	DashboardGuestListResponse,
 	DashboardEngagementSummary,
+	DashboardMemoriesReminder,
 } from '@/interfaces/dashboard/guest.interface';
 import type { DashboardEventListDebug } from '@/interfaces/dashboard/admin.interface';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
@@ -71,6 +72,9 @@ export const useGuestDashboardRealtime = ({ initialEventId }: UseGuestDashboardR
 	const [items, setItems] = useState<DashboardGuestItem[]>([]);
 	const [totals, setTotals] = useState(DEFAULT_TOTALS);
 	const [engagement, setEngagement] = useState<DashboardEngagementSummary | null>(null);
+	const [memoriesReminder, setMemoriesReminder] = useState<DashboardMemoriesReminder | null>(
+		null,
+	);
 	const [shareTemplates, setShareTemplates] =
 		useState<ShareMessagesConfig>(resolveShareTemplates());
 	const [reminderSettings, setReminderSettings] = useState<ReminderSettings>(
@@ -130,6 +134,7 @@ export const useGuestDashboardRealtime = ({ initialEventId }: UseGuestDashboardR
 			setItems(data.items);
 			setTotals(data.totals);
 			setEngagement(data.engagement ?? null);
+			setMemoriesReminder(data.memoriesReminder ?? null);
 			if (data.shareTemplates) {
 				setShareTemplates(data.shareTemplates);
 			}
@@ -204,6 +209,7 @@ export const useGuestDashboardRealtime = ({ initialEventId }: UseGuestDashboardR
 		items,
 		loading,
 		loadGuests,
+		memoriesReminder,
 		realtimeState,
 		reminderSettings,
 		setEventId,

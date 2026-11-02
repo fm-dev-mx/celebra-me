@@ -1,4 +1,7 @@
-import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import type {
+	DashboardGuestItem,
+	DashboardMemoriesReminder,
+} from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
 import type {
 	ReminderAudience,
@@ -20,6 +23,29 @@ export function getReminderEligibleGuests(
 
 		return item.attendanceStatus !== 'declined';
 	});
+}
+
+/** Guests who got the invitation and did not decline can be asked for their photos once. */
+export function getMemoriesReminderEligibleGuests(
+	items: DashboardGuestItem[],
+): DashboardGuestItem[] {
+	return items.filter(
+		(item) =>
+			item.deliveryStatus === 'shared' &&
+			item.attendanceStatus !== 'declined' &&
+			!item.lastMemoriesReminderSentAt,
+	);
+}
+
+/** Shown from the event day on, while the photo space accepts uploads (memoriesReminder set). */
+export function shouldShowMemoriesReminderCta(
+	shareDateContext: ShareMessageDateContext,
+	memoriesReminder: DashboardMemoriesReminder | null | undefined,
+	eligibleCount: number,
+): boolean {
+	if (!memoriesReminder || eligibleCount === 0) return false;
+	const rawDays = shareDateContext.rawDaysUntilEvent;
+	return rawDays === null || rawDays <= 0;
 }
 
 export function shouldShowReminderCta(

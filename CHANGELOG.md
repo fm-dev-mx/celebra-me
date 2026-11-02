@@ -10,6 +10,23 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.62.0-beta.1] - 2026-11-02
+
+Lets hosts ask each guest for their photos and videos after the event, and refreshes a few
+dependencies. Includes one additive migration, already applied in Preview and Production.
+
+### Added
+
+- Guest dashboard: after the event, while the photo upload window is open, hosts can ask each guest
+  for their photos and videos one by one through WhatsApp. Adds the nullable column
+  `guest_invitations.last_memories_reminder_sent_at`; apply the migration before deploying (#759).
+
+### Changed
+
+- Dependencies: `zod` 4.6.7, plus development tool updates (`knip`, `ts-jest`, `markdownlint-cli2`)
+  (#761, #762, #763, #764). The `astro` 7.4.4 bump (#760) was reverted before release because the
+  Preview Worker answered 500 on invitation routes.
+
 ## [0.61.0-beta.1] - 2026-11-02
 
 Adds the XV invitation for Naomi Huerta with a new blush storybook theme, and reorders the
