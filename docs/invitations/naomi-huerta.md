@@ -176,7 +176,8 @@ the client's castle session (stone arches, rose window, pale pink gown, silver c
 
 ## Creative Direction & Acceptance
 
-**Human creative outcome:** `PENDING` (draft for the owner and the client, round 0)
+**Human creative outcome:** `ACCEPTED` (owner accepted the round-0 draft on 2026-11-02; client
+review pending)
 
 - **concern:** Typography roles — preset roles; name in rose script, «MIS XV AÑOS» spaced capitals
   in silver ink. **status:** draft

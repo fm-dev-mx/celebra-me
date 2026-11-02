@@ -296,8 +296,8 @@ export default defineCanonicalInvitation({
 	eventTiming: NAOMI_TIMING,
 	content,
 	managedIdentityId: '19b65fbe-7082-44d6-9df6-75992163d044',
-	managedIdentityProvenance: 'owner-approved',
-	lifecycle: 'in_progress',
+	managedIdentityProvenance: 'persisted',
+	lifecycle: 'published',
 	hostLoginAlias: 'naomi_xv',
 	assetDir: 'src/invitations/clients/naomi-huerta/assets',
 	// One role per crop; the thank-you portrait and the og card share one source photograph.
