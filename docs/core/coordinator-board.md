@@ -14,9 +14,13 @@ templates). This guide keeps only what is Celebra-me specific; the rule is
 
 Celebra-me never installs the core (not in `package.json`, the lockfile or CI).
 `scripts/board/tablero-core.mjs` runs it from a local checkout, by default `../tablero` beside the
-Integration checkout (`TABLERO_DIR` overrides it), at the commit pinned in `tablero.config.json` →
-`nucleo`. A missing checkout or another commit stops with the command that fixes it. The config is
-always the Integration checkout's, so every lane shares one data directory (`.agent/tmp/tablero/`).
+Integration checkout (`TABLERO_DIR` overrides it). Celebra-me tracks no core version: the default
+checkout must sit on a commit of `origin/main`, and a missing checkout or any other commit stops
+with the command that fixes it. To update the core, run
+`git -C ../tablero fetch && git -C ../tablero checkout --detach origin/main` and restart the board;
+no pull request here. Each start appends the running commit to `.agent/tmp/tablero/nucleo.log` when
+it changed; the previous line is the rollback target. The config is always the Integration
+checkout's, so every lane shares one data directory (`.agent/tmp/tablero/`).
 
 `pnpm board`, `board:serve` (127.0.0.1:4320) and `board:mcp` run the core; `sync`, `verify` and
 `watch --once` are `pnpm board <command>`.
