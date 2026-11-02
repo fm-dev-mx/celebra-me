@@ -16,6 +16,25 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
   for their photos and videos one by one through WhatsApp. Adds the nullable column
   `guest_invitations.last_memories_reminder_sent_at`; apply the migration before deploying.
 
+## [0.61.0-beta.1] - 2026-11-02
+
+Adds the XV invitation for Naomi Huerta with a new blush storybook theme, and reorders the
+godparents of Olivia y Antonio by role. No database migrations are included.
+
+### Added
+
+- Invitations: new XV invitation `naomi-huerta` (`/xv/naomi-huerta`) with the `storybook-blush`
+  theme preset, published with mobile and desktop page baselines (#756, #757).
+- Invitations: the `by-role` godparents layout gains an opt-in hierarchy (leading role, stepped
+  secondary roles, optional hairline and stacked phone layout) (#758).
+
+### Changed
+
+- Invitations: `olivia-y-antonio` adds the ring godparents and orders the roles by relevance (#754,
+  #758).
+- Tooling: the board core runs from the board repository `origin/main` without a tracked pin, and
+  sessions are tied to the task lock (#753, #755).
+
 ## [0.60.0-beta.2] - 2026-11-01
 
 The shared header also stops jumping on phones: it waits while the browser address bar resizes and

@@ -61,9 +61,9 @@ Classification is one of: `verified` | `inferred` | `ambiguous` | `missing` | `n
 | brideParents          | Irma Miranda; Guadalupe Martínez                               | verified       | source:wa-export            |                                                   |
 | groomParents          | Josefa Flores                                                  | verified       | owner-session               | Only this name; owner confirmed                   |
 | godparentsVelacion    | Flor Martínez y Manuel Valenzuela; Karla Osobampo y Alfredo M. | verified       | source:wa-export            | Bride side first, groom side second               |
-| godparentsLazo        | Marisela Lerma; Guadalupe Martínez                             | verified       | owner-session               | Shown as supplied, also listed as a bride parent  |
-| godparentsArras       | Liliana Domínguez; Yuliana Domínguez                           | verified       | source:wa-export            |                                                   |
 | godparentsAnillos     | Susana Martínez; Francisco Carrillo                            | verified       | source:wa-export            | Added by the couple on 2026-11-01                 |
+| godparentsArras       | Liliana Domínguez; Yuliana Domínguez                           | verified       | source:wa-export            |                                                   |
+| godparentsLazo        | Marisela Lerma; Guadalupe Martínez                             | verified       | owner-session               | Shown as supplied, also listed as a bride parent  |
 | godparentsBiblia      | Lizbeth Miranda; Raúl López                                    | verified       | source:wa-export            | Biblia y rosario                                  |
 | dressCode             | Formal                                                         | verified       | source:wa-export            | White, red and navy/dark blue reserved            |
 | childPolicy           | none shown                                                     | not_applicable | owner-session               | No line about children; passes control attendance |
@@ -200,14 +200,14 @@ full-bleed navy closing.
 
 **Human creative outcome:** `ACCEPTED`
 
-| concern                                                  | decision / evidence                                                         | status  |
-| -------------------------------------------------------- | --------------------------------------------------------------------------- | ------- |
-| Typography roles (display, heading, body, metadata)      | Playfair 500 navy titles; Cinzel labels in champagne ink (4.5:1 on ivory)   | applied |
-| Vertical rhythm and density                              | Page at 390 px is 10,437 px tall with the night round (7-photo gallery)     | applied |
-| Surface hierarchy (open flow vs cards/containers)        | Open ivory flow; compact time-led venue cards; formal RSVP register         | applied |
-| Photographic treatment (role, crop, focal point, filter) | One role per photograph (see inventory); champagne hairline frame on photos | applied |
-| Section-intersection intent and narrative cadence        | `composition.intersections` in the definition is the executable record      | applied |
-| Local exceptions to the selected preset                  | Invitation profile retints the preset blue; godparents grouped by role      | applied |
+| concern                                                  | decision / evidence                                                                                              | status  |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------- |
+| Typography roles (display, heading, body, metadata)      | Playfair 500 navy titles; Cinzel labels in champagne ink (4.5:1 on ivory)                                        | applied |
+| Vertical rhythm and density                              | Page at 390 px is 10,437 px tall with the night round (7-photo gallery)                                          | applied |
+| Surface hierarchy (open flow vs cards/containers)        | Open ivory flow; compact time-led venue cards; formal RSVP register                                              | applied |
+| Photographic treatment (role, crop, focal point, filter) | One role per photograph (see inventory); champagne hairline frame on photos                                      | applied |
+| Section-intersection intent and narrative cadence        | `composition.intersections` in the definition is the executable record                                           | applied |
+| Local exceptions to the selected preset                  | Invitation profile retints the preset blue; godparents ranked by role (velación leads, others in a stepped grid) | applied |
 
 ### Creative acceptance record
 
