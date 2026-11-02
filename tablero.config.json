@@ -2,7 +2,7 @@
     "proyecto": "Celebra-me",
     "datos": ".agent/tmp/tablero",
     "puerto": 4320,
-    "nucleo": "0bef7db6a3d661e12bdc07bbf3991f50d326e64c",
+    "nucleo": "baed82168054b2ff049ea84096a029849139a5f3",
     "wipMax": 3,
     "agentes": [{ "id": "claude" }, { "id": "codex" }, { "id": "gemini" }],
     "hechoDias": 7,
@@ -59,6 +59,7 @@
         }
     ],
     "carrilesRetirados": ["f05-plataforma", "f10-libre"],
+    "sesiones": { "sinTarea": "^Despachador\\b" },
     "tiposPrompt": ["codigo", "docs", "operacion", "revision"],
     "github": {
         "repo": "fm-dev-mx/celebra-me"
