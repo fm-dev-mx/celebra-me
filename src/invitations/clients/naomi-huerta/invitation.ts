@@ -289,7 +289,7 @@ export default defineCanonicalInvitation({
 	slug: 'naomi-huerta',
 	eventType: 'xv',
 	title: `Mis XV Años — ${CELEBRANT_NAME}`,
-	// Provisional: the intake contact did not sign with a full name; the mother is assumed.
+	// Owner-confirmed: the mother is the contracting client.
 	clientName: 'Martha Leticia Chávez García',
 	themeId: 'storybook-blush',
 	visualProfileId: 'naomi-huerta',
@@ -298,7 +298,6 @@ export default defineCanonicalInvitation({
 	managedIdentityId: '19b65fbe-7082-44d6-9df6-75992163d044',
 	managedIdentityProvenance: 'owner-approved',
 	lifecycle: 'in_progress',
-	// Provisional until the client confirms the host login.
 	hostLoginAlias: 'naomi_xv',
 	assetDir: 'src/invitations/clients/naomi-huerta/assets',
 	// One role per crop; the thank-you portrait and the og card share one source photograph.
