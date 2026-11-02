@@ -14,9 +14,13 @@ jest.mock('@/lib/tracking/lead.repository', () => ({
 jest.mock('@/lib/commercial/meta-capi/service', () => ({
 	...jest.requireActual<object>('@/lib/commercial/meta-capi/service'),
 	enqueueBrowserConversionEvent: jest.fn(),
+	deliverMetaConversionEvent: jest.fn(),
 }));
 
-import { enqueueBrowserConversionEvent } from '@/lib/commercial/meta-capi/service';
+import {
+	deliverMetaConversionEvent,
+	enqueueBrowserConversionEvent,
+} from '@/lib/commercial/meta-capi/service';
 
 import { ingestTrackingEvent } from '@/lib/tracking/ingestion.service';
 import { INTERNAL_TRACKING_EVENT_NAMES } from '@/lib/tracking/event-contract';
@@ -42,9 +46,14 @@ const mockEnqueueBrowserConversionEvent = enqueueBrowserConversionEvent as jest.
 	typeof enqueueBrowserConversionEvent
 >;
 
+const mockDeliverMetaConversionEvent = deliverMetaConversionEvent as jest.MockedFunction<
+	typeof deliverMetaConversionEvent
+>;
+
 beforeEach(() => {
 	jest.clearAllMocks();
-	mockEnqueueBrowserConversionEvent.mockResolvedValue(undefined);
+	mockEnqueueBrowserConversionEvent.mockResolvedValue(null);
+	mockDeliverMetaConversionEvent.mockResolvedValue('sent');
 	mockFindSessionLeadCustomerId.mockResolvedValue(null);
 	mockUpsertVisitorSession.mockResolvedValue(undefined);
 	mockInsertTrackingEvent.mockResolvedValue({
@@ -363,6 +372,81 @@ describe('ingestTrackingEvent', () => {
 				payload: clickPayload(true, 'cta_clicked'),
 			});
 			expect(mockEnqueueBrowserConversionEvent).not.toHaveBeenCalled();
+		});
+
+		it('delivers the new row after the response instead of waiting for the cron', async () => {
+			mockEnqueueBrowserConversionEvent.mockResolvedValueOnce('outbox-id');
+			const waitUntil = jest.fn();
+			await ingestTrackingEvent({
+				request: makeRequest('/demos/xv'),
+				deployEnvironment: 'production',
+				payload: clickPayload(true),
+				after: { waitUntil },
+			});
+			expect(mockDeliverMetaConversionEvent).toHaveBeenCalledWith('outbox-id');
+			expect(waitUntil).toHaveBeenCalledTimes(1);
+		});
+
+		it('leaves delivery to the cron for a duplicate eventID or without a request context', async () => {
+			const waitUntil = jest.fn();
+			await ingestTrackingEvent({
+				request: makeRequest('/demos/xv'),
+				deployEnvironment: 'production',
+				payload: clickPayload(true),
+				after: { waitUntil },
+			});
+			mockEnqueueBrowserConversionEvent.mockResolvedValueOnce('outbox-id');
+			await ingestTrackingEvent({
+				request: makeRequest('/demos/xv'),
+				deployEnvironment: 'production',
+				payload: clickPayload(true),
+			});
+			expect(mockDeliverMetaConversionEvent).not.toHaveBeenCalled();
+			expect(waitUntil).not.toHaveBeenCalled();
+		});
+
+		it('delivers a replayed eventID only once', async () => {
+			// The second insert hits on_conflict=event_id: return=representation is empty → null.
+			mockEnqueueBrowserConversionEvent
+				.mockResolvedValueOnce('outbox-id')
+				.mockResolvedValueOnce(null);
+			const waitUntil = jest.fn();
+			for (let i = 0; i < 2; i += 1) {
+				await ingestTrackingEvent({
+					request: makeRequest('/demos/xv'),
+					deployEnvironment: 'production',
+					payload: clickPayload(true),
+					after: { waitUntil },
+				});
+			}
+			expect(mockEnqueueBrowserConversionEvent).toHaveBeenCalledTimes(2);
+			expect(mockDeliverMetaConversionEvent).toHaveBeenCalledTimes(1);
+			expect(waitUntil).toHaveBeenCalledTimes(1);
+		});
+
+		it('keeps the event accepted and the row queued for the cron when delivery fails', async () => {
+			mockEnqueueBrowserConversionEvent.mockResolvedValueOnce('outbox-id');
+			mockDeliverMetaConversionEvent.mockRejectedValueOnce(new Error('claim failed'));
+			const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+			const waitUntil = jest.fn();
+			await expect(
+				ingestTrackingEvent({
+					request: makeRequest('/demos/xv'),
+					deployEnvironment: 'production',
+					payload: clickPayload(true),
+					after: { waitUntil },
+				}),
+			).resolves.toEqual({ accepted: true, eventId: clickEventId });
+
+			await expect(waitUntil.mock.calls[0]?.[0]).resolves.toBeUndefined();
+			expect(consoleError).toHaveBeenCalledWith(
+				'[tracking:capi:outbox-id] Background task failed after the response:',
+				expect.anything(),
+			);
+			// Nothing else touches the outbox: the row stays pending (or failed with a retry time),
+			// which is what the cron claims next.
+			expect(mockEnqueueBrowserConversionEvent).toHaveBeenCalledTimes(1);
+			expect(mockDeliverMetaConversionEvent).toHaveBeenCalledTimes(1);
 		});
 
 		it('keeps the event accepted when queueing fails', async () => {

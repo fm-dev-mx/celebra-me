@@ -245,7 +245,7 @@ secrets are exposed client-side.
 | -------------------------- | ------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------- |
 | `page_viewed`              | `PageView`    | Commercial/demo page load after marketing consent                          | `content_category=page`, optional `content_name`, `source_area`                                                     | —                         |
 | `demo_viewed`              | `ViewContent` | Demo page load on real showroom/demo routes                                | `content_name`, `content_category=demo`, `event_type`, `source_area`                                                | —                         |
-| `package_viewed`           | `ViewContent` | Pricing/package card becomes visible on the landing page                   | `content_name`, `content_category=package`, `source_area`                                                           | —                         |
+| `package_viewed`           | `ViewContent` | Pricing/package card first becomes visible in the browser session          | `content_name`, `content_category=package`, `source_area`                                                           | —                         |
 | `whatsapp_contact_clicked` | `Contact`     | Commercial WhatsApp CTA click; then the custom `WhatsAppClick` copy        | `content_name`, `content_category`, optional `event_type`, `source_area`, `value`, `currency=MXN`                   | Technical `event_id` UUID |
 | `form_submitted`           | `Lead`        | Capture form submitted («Aparta su fecha»); also mapped for `lead_created` | `content_name=contact`, `content_category=lead_form`, optional `event_type`, `source_area`, `value`, `currency=MXN` | Technical `event_id` UUID |
 
@@ -266,6 +266,16 @@ Notes:
   constant fallback value (`150 MXN`, `DEFAULT_FALLBACK_ESTIMATED_LEAD_VALUE_MXN`) applies.
 - Pixel loading stays route-gated and consent-gated through `route-policy.ts`, `consent-client.ts`,
   and `meta-pixel.ts`.
+- `package_viewed` fires once per package per browser session: the seen package IDs live in
+  sessionStorage (`cm_package_views`), so a reload or a return to the landing page does not send
+  another `ViewContent` for the same card.
+- Internal traffic: the `cm_ignore_tracking=true` cookie (one year, readable by scripts on purpose)
+  marks a device as the owner's. With it, the client tracker sends no first-party events, the Pixel
+  neither loads nor forwards, and server ingestion drops anything that still arrives, so the owner's
+  own visits never reach Meta. Signing in as `super_admin` sets it. For a phone or any browser
+  without signing in, open `https://www.celebra-me.com/?interno=1` once on that device; the
+  middleware sets the cookie and redirects to the same URL without the param. Repeat after clearing
+  cookies or site data; `?interno=0` removes the mark.
 
 ### Guest-route isolation
 
@@ -345,13 +355,17 @@ admins.
    `trg_visitor_sessions_keep_marketing_withdrawal` trigger (insert and update) keeps marketing off
    unless the snapshot carries a strictly newer decision, so a tracking request sent before the
    withdrawal cannot turn it back on, even for a session stored after the withdrawal.
-4. The Production-only `*/15 * * * *` cron runs the platform usage collector and then
-   `processPendingMetaConversionEvents()` (up to 20 due rows, oldest first, so at most 1,920 rows a
-   day; one page view queues one `PageView` plus one `ViewContent` per demo page or package card
-   seen). The sweep skips outside Production and while `META_CAPI_DELIVERY_MODE=disabled`, so rows
-   stay `pending` instead of being marked `skipped`. A batch with failed or ambiguous deliveries
-   fails the job (the rows are retried later). The dashboard «Filas sin pedido» check counts only
-   Purchase rows.
+4. When the request has a Worker context, ingestion delivers the new row right after the response
+   (`runAfterResponse` → `deliverMetaConversionEvent`), so Meta receives it within seconds. A
+   replayed event ID inserts no row and delivers nothing. The claim keeps the cron from sending the
+   same row twice.
+5. The Production-only `*/15 * * * *` cron is the fallback: it runs the platform usage collector and
+   then `processPendingMetaConversionEvents()` (up to 20 due rows, oldest first, so at most 1,920
+   rows a day; one page view queues one `PageView` plus one `ViewContent` per demo page or package
+   card seen). The sweep skips outside Production and while `META_CAPI_DELIVERY_MODE=disabled`, so
+   rows stay `pending` instead of being marked `skipped`. A batch with failed or ambiguous
+   deliveries fails the job (the rows are retried later). The dashboard «Filas sin pedido» check
+   counts only Purchase rows.
 
 ### CRM lead-stage events
 
@@ -397,12 +411,15 @@ another reason leaves that lead without a Purchase.
 
 ### Environment Variables
 
-| Variable                  | Values / Purpose                                                                          |
-| ------------------------- | ----------------------------------------------------------------------------------------- |
-| `META_CAPI_DELIVERY_MODE` | `disabled` (default), `test` (sends test payload), or `production` (live Graph API calls) |
-| `META_CAPI_ACCESS_TOKEN`  | Meta Graph API access token                                                               |
-| `META_PIXEL_ID`           | Meta Pixel Identifier (fallback to `PUBLIC_META_PIXEL_ID`)                                |
-| `META_TEST_EVENT_CODE`    | Required in `test` mode to register events in Meta Events Manager                         |
+- **Variable:** `META_CAPI_DELIVERY_MODE`
+  - **Values / Purpose:** `disabled` (default), `test` (sends test payload), or `production` (live
+    Graph API calls; set on the Production Worker, which delivers live)
+- **Variable:** `META_CAPI_ACCESS_TOKEN`
+  - **Values / Purpose:** Meta Graph API access token
+- **Variable:** `META_PIXEL_ID`
+  - **Values / Purpose:** Meta Pixel Identifier (fallback to `PUBLIC_META_PIXEL_ID`)
+- **Variable:** `META_TEST_EVENT_CODE`
+  - **Values / Purpose:** Required in `test` mode to register events in Meta Events Manager
 
 ### Match keys
 

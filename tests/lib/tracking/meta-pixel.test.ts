@@ -378,6 +378,8 @@ describe('pending-event queue [T4]', () => {
 		expect(trackCalls[0]?.[1]).toBe('PageView');
 		expect(trackCalls[1]?.[1]).toBe('Contact');
 		expect(trackCalls[2]?.[1]).toBe('WhatsAppClick');
+		// The queued copy keeps Contact's parameters so both counts stay 1:1.
+		expect(trackCalls[2]?.[2]).toEqual(trackCalls[1]?.[2]);
 	});
 
 	it('[T4b] pending queue is not flushed after onerror — events are discarded', async () => {
@@ -821,6 +823,62 @@ describe('route boundaries for Meta Pixel', () => {
 		const fbqMock = setFbqMock();
 		freshPixel?.forwardToMetaPixel('page_viewed', { page_type: 'commercial' });
 		expect(fbqMock).not.toHaveBeenCalled();
+	});
+
+	it('does not initialize or forward events on a device marked as internal traffic', () => {
+		type PixelMod = {
+			initMetaPixel: () => void;
+			forwardToMetaPixel: (
+				name: string,
+				props: Record<string, string | number | boolean>,
+			) => void;
+		};
+		let freshPixel: PixelMod | undefined;
+		jest.isolateModules(() => {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			freshPixel = require('@/lib/tracking/meta-pixel') as PixelMod;
+		});
+
+		document.body.dataset.trackingRouteClass = 'commercial';
+		document.cookie = 'cm_ignore_tracking=true; path=/';
+		try {
+			freshPixel?.initMetaPixel();
+			expect(document.querySelector('script[src*="fbevents.js"]')).toBeNull();
+			const fbqMock = setFbqMock();
+			freshPixel?.forwardToMetaPixel('package_viewed', { package_id: 'premium' });
+			expect(fbqMock).not.toHaveBeenCalled();
+		} finally {
+			document.cookie = 'cm_ignore_tracking=; path=/; max-age=0';
+		}
+	});
+
+	it('stops forwarding once the internal-traffic cookie appears after the Pixel loaded', async () => {
+		type PixelMod = {
+			initMetaPixel: () => void;
+			forwardToMetaPixel: (
+				name: string,
+				props: Record<string, string | number | boolean>,
+			) => void;
+		};
+		let freshPixel: PixelMod | undefined;
+		jest.isolateModules(() => {
+			// eslint-disable-next-line @typescript-eslint/no-require-imports
+			freshPixel = require('@/lib/tracking/meta-pixel') as PixelMod;
+		});
+
+		document.body.dataset.trackingRouteClass = 'commercial';
+		freshPixel?.initMetaPixel();
+		firePixelOnLoad();
+		await flushPromises();
+		const fbqMock = setFbqMock();
+
+		document.cookie = 'cm_ignore_tracking=true; path=/';
+		try {
+			freshPixel?.forwardToMetaPixel('whatsapp_contact_clicked', { source_area: 'hero' });
+			expect(fbqMock).not.toHaveBeenCalled();
+		} finally {
+			document.cookie = 'cm_ignore_tracking=; path=/; max-age=0';
+		}
 	});
 
 	it('does not forward or queue events on ineligible routes', async () => {

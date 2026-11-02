@@ -57,6 +57,7 @@ import {
 	type ConsentState,
 } from '@/lib/tracking/consent-client';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
+import { hasIgnoreCookie } from '@/lib/tracking/internal-exclusion';
 import { getPixelIdFromEnv, isPixelEnabledInEnv } from '@/lib/tracking/meta-pixel-env';
 
 declare global {
@@ -101,8 +102,14 @@ function environmentAllowsMeta(): boolean {
 	return document.body.dataset.metaDeliveryBlocked !== 'true';
 }
 
+/** Owner devices carry the internal-traffic cookie (super_admin sign-in or the ?interno=1 link). */
+function deviceAllowsMeta(): boolean {
+	return !hasIgnoreCookie(document.cookie);
+}
+
 function shouldLoad(): boolean {
 	if (!environmentAllowsMeta()) return false;
+	if (!deviceAllowsMeta()) return false;
 	if (!document.body.dataset.trackingRouteClass) return false;
 	if (!routeAllowsMeta()) return false;
 	if (!pixelId) return false;
@@ -377,6 +384,7 @@ function trackMetaEvent(
 	const consent = readConsent();
 	if (!consent.marketing) return;
 	if (!environmentAllowsMeta()) return;
+	if (!deviceAllowsMeta()) return;
 	if (!routeAllowsMeta()) return; // Respect route boundaries and do not track on disallowed pages.
 
 	if (pixelFailed) {

@@ -1,4 +1,5 @@
 import {
+	deliverMetaConversionEvent,
 	enqueueBrowserConversionEvent,
 	isBrowserConversionTrigger,
 } from '@/lib/commercial/meta-capi/service';
@@ -16,13 +17,19 @@ import { findSessionLeadCustomerId } from '@/lib/tracking/lead.repository';
 import { createLeadFromTrackingEvent } from '@/lib/tracking/lead.service';
 import { insertTrackingEvent, upsertVisitorSession } from '@/lib/tracking/repository';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
-import { getClientIp } from '@/lib/server/platform-request';
+import {
+	getClientIp,
+	runAfterResponse,
+	type AfterResponseContext,
+} from '@/lib/server/platform-request';
 import { safeErr } from '@/lib/server/safe-error';
 
 export interface IngestTrackingEventInput {
 	request: Request;
 	deployEnvironment?: HostedDeployEnvironment | null;
 	payload: unknown;
+	/** Request context that keeps the first Meta delivery alive after the response. */
+	after?: AfterResponseContext | null;
 }
 
 export type IngestTrackingEventResult =
@@ -31,7 +38,8 @@ export type IngestTrackingEventResult =
 /**
  * Mirror the Pixel: only Production, a Meta-allowed route and marketing consent queue a row. After
  * the «Aparta su fecha» form the row carries the lead's customer, so delivery adds the hashed
- * phone as the Pixel does.
+ * phone as the Pixel does. With a request context the new row is delivered after the response, so
+ * Meta receives it within seconds instead of on the next 15-minute cron run.
  */
 async function queueServerMetaEvent(input: {
 	eventName: string;
@@ -41,6 +49,7 @@ async function queueServerMetaEvent(input: {
 	marketingConsent: boolean;
 	metaAllowed: boolean;
 	deployEnvironment?: HostedDeployEnvironment | null;
+	after?: AfterResponseContext | null;
 }): Promise<void> {
 	if (
 		!isBrowserConversionTrigger(input.eventName) ||
@@ -56,13 +65,18 @@ async function queueServerMetaEvent(input: {
 		return null;
 	});
 	try {
-		await enqueueBrowserConversionEvent({
+		const outboxId = await enqueueBrowserConversionEvent({
 			trigger: input.eventName,
 			eventId: input.eventId,
 			sessionId: input.sessionId,
 			eventSourcePath: input.routePath,
 			...(customerId ? { customerId } : {}),
 		});
+		if (outboxId && input.after) {
+			runAfterResponse(input.after, () => deliverMetaConversionEvent(outboxId), {
+				label: `tracking:capi:${outboxId}`,
+			});
+		}
 	} catch (enqueueError) {
 		console.error('[tracking] Failed to queue the Meta server event:', safeErr(enqueueError));
 	}
@@ -162,6 +176,7 @@ export async function ingestTrackingEvent(
 		marketingConsent: consentSnapshot.marketing === true,
 		metaAllowed: routePolicy.metaAllowed,
 		deployEnvironment: input.deployEnvironment,
+		after: input.after,
 	});
 
 	// Auto-create a WhatsApp channel lead when a whatsapp_contact_clicked

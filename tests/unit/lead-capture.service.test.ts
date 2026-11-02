@@ -86,7 +86,7 @@ beforeEach(() => {
 		outcome: 'created',
 		customer: { id: 'customer-id', displayName: 'Gloria Garza', phoneE164: '+526681112233' },
 	});
-	mockEnqueue.mockResolvedValue(undefined);
+	mockEnqueue.mockResolvedValue(null);
 });
 
 describe('submitLeadCapture', () => {
