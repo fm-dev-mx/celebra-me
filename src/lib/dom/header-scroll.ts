@@ -203,8 +203,9 @@ export function bindHeaderScroll(header: HTMLElement): () => void {
 		if (!frame) frame = requestAnimationFrame(update);
 	};
 
+	// Width-only or repeated resize events must not open the settle window.
 	const onViewportResize = () => {
-		lastViewportResizeAt = performance.now();
+		if (viewportHeight() !== lastViewportHeight) lastViewportResizeAt = performance.now();
 		schedule();
 	};
 

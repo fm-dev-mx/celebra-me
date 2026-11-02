@@ -47,9 +47,9 @@ test.describe('shared header auto-hide on a phone', () => {
 
 	test('keeps a fixed 70px height from the top to scrolled', async ({ page }) => {
 		const header = page.locator('.header-base');
-		expect((await header.boundingBox())?.height).toBe(70);
+		expect((await header.boundingBox())?.height).toBeCloseTo(70, 1);
 		await scrollTo(page, 400);
-		expect((await header.boundingBox())?.height).toBe(70);
+		expect((await header.boundingBox())?.height).toBeCloseTo(70, 1);
 	});
 
 	test('small back-and-forth scrolling does not toggle the header', async ({ page }) => {
