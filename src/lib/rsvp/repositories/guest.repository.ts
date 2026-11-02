@@ -77,6 +77,7 @@ const GUEST_COLUMN_MAP: Record<string, keyof UpdateGuestInput> = {
 	tags: 'tags',
 	hide_celebra_me_branding: 'hideCelebraMeBranding',
 	last_reminder_sent_at: 'lastReminderSentAt',
+	last_memories_reminder_sent_at: 'lastMemoriesReminderSentAt',
 	is_test: 'isTest',
 };
 

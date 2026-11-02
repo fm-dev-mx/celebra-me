@@ -48,6 +48,7 @@ const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'storybook-butterflies': 'storybook-lanterns',
 	'sage-champagne': 'sage-champagne',
 	'storybook-emerald': 'storybook-emerald',
+	'storybook-blush': 'storybook-blush',
 	'premiere-floral': 'premiere-floral',
 	'luxury-hacienda': 'luxury-hacienda',
 	'jewelry-box': 'shared-light',

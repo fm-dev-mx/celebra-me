@@ -2,9 +2,11 @@
 // Do not edit by hand.
 import type { InvitationDefinition } from './invitation-definition.ts';
 import invitation0 from '../../../src/invitations/clients/andrea/invitation.ts';
-import invitation1 from '../../../src/invitations/clients/yireh-ana/invitation.ts';
+import invitation1 from '../../../src/invitations/clients/naomi-huerta/invitation.ts';
+import invitation2 from '../../../src/invitations/clients/yireh-ana/invitation.ts';
 
 export const CLIENT_INVITATION_DEFINITIONS: readonly InvitationDefinition[] = [
 	invitation0,
 	invitation1,
+	invitation2,
 ];
