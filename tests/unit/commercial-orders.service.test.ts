@@ -1,6 +1,13 @@
 jest.mock('@/lib/commercial/orders.repository', () => ({
 	createSalesOrder: jest.fn(),
 	registerSalesOrderDepositPurchase: jest.fn(),
+	findSalesOrderByIdempotencyKey: jest.fn().mockResolvedValue(null),
+	redeemCustomerReferralCredit: jest.fn().mockResolvedValue(true),
+}));
+
+jest.mock('@/lib/commercial/customer.repository', () => ({
+	findCommercialCustomerById: jest.fn().mockResolvedValue(null),
+	findCommercialCustomerByReferralCode: jest.fn().mockResolvedValue(null),
 }));
 
 jest.mock('@/lib/commercial/meta-capi/service', () => ({
@@ -13,6 +20,7 @@ jest.mock('@/lib/commercial/commercial-tracking', () => ({
 
 jest.mock('@/lib/tracking/lead.repository', () => ({
 	findLeadOrderAttribution: jest.fn(),
+	markLeadAsPastSale: jest.fn(),
 }));
 
 jest.mock('@/lib/commercial/meta-capi/lead-stage-events', () => ({
@@ -55,6 +63,10 @@ const order = {
 	totalAmount: 1800,
 	amountPaid: 899,
 	depositPaidAt: '2026-07-11T18:00:00.000Z',
+	isPastSale: false,
+	discountAmount: 0,
+	referrerCreditAwarded: 0,
+	referrerCreditRedeemed: 0,
 };
 
 const conversionEvent = {

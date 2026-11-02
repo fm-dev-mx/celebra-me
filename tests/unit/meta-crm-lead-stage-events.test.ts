@@ -48,6 +48,33 @@ describe('Meta CRM lead-stage mapping', () => {
 });
 
 describe('enqueueMetaCrmLeadStageEvent', () => {
+	it('never queues a stage for a lead registered as a past sale', async () => {
+		rest.mockResolvedValueOnce([
+			{
+				id: 'lead-id',
+				session_id: 'session-id',
+				consent_marketing: true,
+				is_past_sale: true,
+			},
+		]);
+
+		await enqueueMetaCrmLeadStageEvent({ leadId: 'lead-id', stage: 'paid' });
+
+		expect(rest).toHaveBeenCalledTimes(1);
+	});
+
+	it('skips sales stages of a past-sale lead before reading it', async () => {
+		await enqueueMetaCrmLeadSalesStageEvents({
+			id: 'lead-id',
+			route: 'landing',
+			stage: 'order_confirmed',
+			packageValue: 1800,
+			isPastSale: true,
+		});
+
+		expect(rest).not.toHaveBeenCalled();
+	});
+
 	it('does not queue a stage without stored marketing consent', async () => {
 		rest.mockResolvedValueOnce([
 			{ id: 'lead-id', session_id: 'session-id', consent_marketing: false },

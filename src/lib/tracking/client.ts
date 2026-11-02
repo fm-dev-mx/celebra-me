@@ -15,6 +15,7 @@ import {
 	type ClientOnlyTrackingEventName,
 	type PublicTrackingEventName,
 } from '@/lib/tracking/event-contract';
+import { normalizeReferralCode, readReferralCodeFromUrl } from '@/lib/commercial/referrals';
 import { readTtclidFromUrl, sanitizeTtclid } from '@/lib/tracking/tiktok-attribution';
 
 type BrowserTrackingEventName = PublicTrackingEventName | ClientOnlyTrackingEventName;
@@ -37,6 +38,7 @@ type TrackingPayload = {
 	referrer?: string;
 	metaAttribution?: MetaAttribution;
 	ttclid?: string;
+	referralCode?: string;
 	eventProperties: Record<string, string | number | boolean>;
 	consentSnapshot: ConsentSnapshot;
 };
@@ -44,6 +46,7 @@ type TrackingPayload = {
 const SESSION_KEY = 'cm_session_id';
 const UTM_KEY = 'cm_utm_snapshot';
 const TTCLID_KEY = 'cm_ttclid';
+const REFERRAL_CODE_KEY = 'cm_referral_code';
 const SCROLL_BUCKETS = [25, 50, 75, 90, 100] as const;
 
 /**
@@ -149,6 +152,25 @@ function getTtclidSnapshot(): string | undefined {
 			return fromUrl;
 		}
 		return sanitizeTtclid(sessionStorage.getItem(TTCLID_KEY));
+	} catch {
+		return fromUrl;
+	}
+}
+
+/**
+ * Customer referral code (`?ref=ANA24`) captured on arrival. First-touch within the session
+ * (first referrer wins), so an existing stored code is kept if the visitor opens another link.
+ */
+function getReferralCodeSnapshot(): string | undefined {
+	const fromUrl = readReferralCodeFromUrl(window.location.href);
+	try {
+		const existing = normalizeReferralCode(sessionStorage.getItem(REFERRAL_CODE_KEY));
+		if (existing) return existing;
+		if (fromUrl) {
+			sessionStorage.setItem(REFERRAL_CODE_KEY, fromUrl);
+			return fromUrl;
+		}
+		return undefined;
 	} catch {
 		return fromUrl;
 	}
@@ -262,6 +284,7 @@ function trackEvent(
 		referrer: firstTouchReferrer,
 		metaAttribution,
 		ttclid: consent.marketing ? getTtclidSnapshot() : undefined,
+		referralCode: getReferralCodeSnapshot(),
 		eventProperties,
 		consentSnapshot: consent,
 	};
@@ -377,7 +400,10 @@ function updateWhatsAppUrl(anchor: HTMLAnchorElement, leadCode: string): void {
 	// Pattern: CM-XXXXXX (6 alphanumeric chars, no price suffix).
 	const CANONICAL_LEAD_CODE_PATTERN = /CM-[A-Z0-9]{6}(?!\d)/i;
 	if (CANONICAL_LEAD_CODE_PATTERN.test(baseMessage)) return;
-	const folioLine = `Folio ${leadCode}`;
+	const referralCode = getReferralCodeSnapshot();
+	const folioLine = referralCode
+		? `Folio ${leadCode} · Recomendación ${referralCode}`
+		: `Folio ${leadCode}`;
 	url.searchParams.set('text', baseMessage ? `${baseMessage}\n${folioLine}` : folioLine);
 	anchor.href = url.toString();
 }
@@ -432,6 +458,7 @@ function getTrackedClickProperties(
 		currency: target.dataset.trackCurrency ?? '',
 		demo_slug: target.dataset.demoSlug ?? '',
 		lead_code: leadCode,
+		...(getReferralCodeSnapshot() ? { referral_code: getReferralCodeSnapshot()! } : {}),
 	};
 }
 
@@ -536,6 +563,7 @@ export interface LeadCaptureContext {
 	referrer?: string;
 	metaAttribution?: MetaAttribution;
 	ttclid?: string;
+	referralCode?: string;
 	consentSnapshot: ConsentSnapshot;
 }
 
@@ -545,6 +573,7 @@ export interface LeadCaptureContext {
  */
 export function getLeadCaptureContext(): LeadCaptureContext {
 	const consent = getConsentSnapshot();
+	const referralCode = getReferralCodeSnapshot();
 	const tracked =
 		Boolean(document.body.dataset.trackingRouteClass) &&
 		!shouldIgnoreTracking() &&
@@ -556,6 +585,7 @@ export function getLeadCaptureContext(): LeadCaptureContext {
 			visitorId: randomId('visitor'),
 			leadCode: createLeadCode(),
 			routePath: window.location.pathname,
+			referralCode,
 			consentSnapshot: consent,
 		};
 	}
@@ -575,6 +605,7 @@ export function getLeadCaptureContext(): LeadCaptureContext {
 			? metaAttributionOrUndefined(getMetaAttributionSnapshot())
 			: undefined,
 		ttclid: consent.marketing ? getTtclidSnapshot() : undefined,
+		referralCode,
 		consentSnapshot: consent,
 	};
 }
@@ -624,9 +655,11 @@ export function initCommercialTracking(): void {
 
 	// Attribution only: never adopt a return-link code as the session's lead identity.
 	const returnCode = new URLSearchParams(window.location.search).get('lead_code');
+	const referralCode = getReferralCodeSnapshot();
 	void trackEvent('page_viewed', {
 		page_type: routeClass,
 		...(returnCode && /^CM-[A-Z0-9]{6}$/.test(returnCode) ? { lead_code: returnCode } : {}),
+		...(referralCode ? { referral_code: referralCode } : {}),
 	});
 	if (routeClass === 'demo') {
 		const [, routeType = '', routeSlug = ''] = window.location.pathname.split('/');

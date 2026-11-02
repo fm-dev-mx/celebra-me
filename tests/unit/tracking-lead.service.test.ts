@@ -1,6 +1,7 @@
 jest.mock('@/lib/tracking/lead.repository', () => ({
 	upsertLead: jest.fn(),
 	findLeadByCode: jest.fn(),
+	resolveLeadReferralAttribution: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('@/lib/tracking/repository', () => ({

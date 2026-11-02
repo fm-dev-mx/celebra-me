@@ -57,7 +57,14 @@ test('denies customer and order reads before accessing their repositories', asyn
 	expect(findCommercialCustomerByPhone).not.toHaveBeenCalled();
 });
 test('finds standalone customers by canonical phone or email and deduplicates', async () => {
-	const customer = { id: 'c1', displayName: 'Cliente de prueba' };
+	const customer = {
+		id: 'c1',
+		displayName: 'Cliente de prueba',
+		referralCode: 'ANA24',
+		country: 'MX',
+		isPastClient: false,
+		referralCreditMxn: 0,
+	};
 	jest.mocked(findCommercialCustomerByPhone).mockResolvedValue(customer);
 	jest.mocked(findCommercialCustomerByEmail).mockResolvedValue(customer);
 	const response = await customers(

@@ -121,7 +121,10 @@ update public.example set name = 'unsafe';
 		const cases: Array<[string, RegExp]> = [
 			['create table public.pwned (id int);', /Persistent CREATE TABLE/],
 			['create index idx_pwned on public.example (id);', /CREATE INDEX belongs/],
-			['create or replace function public.pwned() returns void language sql as $$ select 1 $$;', /Persistent routine creation/],
+			[
+				'create or replace function public.pwned() returns void language sql as $$ select 1 $$;',
+				/Persistent routine creation/,
+			],
 			['alter table public.example add column extra text;', /Schema-changing ALTER/],
 			['drop index public.idx_example;', /Persistent DROP belongs/],
 			['grant select on public.example to anon;', /GRANT\/REVOKE belongs/],
@@ -133,7 +136,9 @@ update public.example set name = 'unsafe';
 			expect(result.errors.some((error) => message.test(error))).toBe(true);
 		}
 
-		const tempAllowed = lintProductionPatchSql(`${validPatch}\ncreate temp table _probe (id int) on commit drop;`);
+		const tempAllowed = lintProductionPatchSql(
+			`${validPatch}\ncreate temp table _probe (id int) on commit drop;`,
+		);
 		expect(tempAllowed.ok).toBe(true);
 	});
 
@@ -158,7 +163,9 @@ delete from public.example;
 	});
 
 	it('does not lose DML after a dollar-quoted guard block', () => {
-		const result = lintProductionPatchSql(`${validPatch}\nupdate public.example set name = 'unsafe';`);
+		const result = lintProductionPatchSql(
+			`${validPatch}\nupdate public.example set name = 'unsafe';`,
+		);
 
 		expect(result.ok).toBe(false);
 		expect(result.errors).toContain('UPDATE statements must include a WHERE clause.');
@@ -239,8 +246,12 @@ update public.example set name = 'safe' where name is distinct from 'safe';
 		expect(result.errors).toContain(
 			'@expected-rows-min must be less than or equal to @expected-rows-max.',
 		);
-		expect(result.errors).toContain('@operation delete must match every top-level mutation statement.');
-		expect(result.errors).toContain('@tables must match the complete set of mutation target tables.');
+		expect(result.errors).toContain(
+			'@operation delete must match every top-level mutation statement.',
+		);
+		expect(result.errors).toContain(
+			'@tables must match the complete set of mutation target tables.',
+		);
 		expect(result.errors).toContain(
 			'@dry-run-query must include mutation target table public.example.',
 		);

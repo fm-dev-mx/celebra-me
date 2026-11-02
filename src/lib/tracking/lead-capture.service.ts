@@ -17,7 +17,12 @@ import {
 	LEAD_CAPTURE_MIN_FILL_MS,
 } from '@/lib/tracking/lead-capture';
 import { createLeadCode } from '@/lib/tracking/lead-code';
-import { findLeadByCode, upsertLead, type StoredLead } from '@/lib/tracking/lead.repository';
+import {
+	findLeadByCode,
+	resolveLeadReferralAttribution,
+	upsertLead,
+	type StoredLead,
+} from '@/lib/tracking/lead.repository';
 import { insertTrackingEvent, upsertVisitorSession } from '@/lib/tracking/repository';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 
@@ -46,6 +51,7 @@ const LeadCaptureSchema = TrackingEventSchema.pick({
 	utmTerm: true,
 	metaAttribution: true,
 	ttclid: true,
+	referralCode: true,
 	consentSnapshot: true,
 }).extend({
 	/** Shared with the browser Pixel Lead as `eventID`, so Meta deduplicates both copies. */
@@ -123,6 +129,11 @@ async function storeCaptureLead(
 			leadCode = createLeadCode();
 			continue;
 		}
+		const referralAttribution = await resolveLeadReferralAttribution({
+			referralCode: input.referralCode,
+			existingLead: existing,
+			phoneE164: phone?.e164,
+		});
 		const lead = await upsertLead({
 			leadCode,
 			sessionId: context.sessionId,
@@ -146,6 +157,9 @@ async function storeCaptureLead(
 			metaAttribution: context.marketing ? input.metaAttribution : undefined,
 			consentContact: true,
 			consentMarketing: context.marketing,
+			referredByCustomerId: referralAttribution?.referredByCustomerId,
+			referralCodeUsed: referralAttribution?.referralCodeUsed,
+			referrerExternalId: referralAttribution?.referrerExternalId,
 		});
 		return { lead, created: !existing };
 	}

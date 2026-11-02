@@ -92,6 +92,48 @@ function parseTrackingPayload(payload: unknown): PublicTrackingEvent {
 	return result.data;
 }
 
+function readStringProperty(
+	eventProperties: Record<string, unknown>,
+	key: string,
+): string | undefined {
+	const value = eventProperties[key];
+	return typeof value === 'string' && value.trim().length > 0 ? value : undefined;
+}
+
+/**
+ * Auto-creates a WhatsApp channel lead when a whatsapp_contact_clicked event carries a non-empty
+ * lead_code. This bridges the attribution gap between anonymous visitor/session and identifiable
+ * commercial intent. A failure is logged and never rejects the tracking event.
+ */
+async function createWhatsAppLeadFromEvent(
+	payload: PublicTrackingEvent,
+	eventProperties: Record<string, unknown>,
+	sourceEventId: string,
+): Promise<void> {
+	const leadCode = readStringProperty(eventProperties, 'lead_code');
+	if (!leadCode) return;
+	const marketing = payload.consentSnapshot.marketing;
+	try {
+		await createLeadFromTrackingEvent({
+			leadCode,
+			sessionId: payload.sessionId,
+			sourceEventId,
+			channel: 'whatsapp',
+			visitorId: payload.visitorId,
+			utmSource: payload.source,
+			utmMedium: payload.medium,
+			utmCampaign: payload.campaign,
+			utmContent: payload.utmContent,
+			ttclid: marketing ? payload.ttclid : undefined,
+			referralCode:
+				payload.referralCode ?? readStringProperty(eventProperties, 'referral_code'),
+			metaAttribution: marketing ? payload.metaAttribution : undefined,
+		});
+	} catch (leadError) {
+		console.error('[tracking] Failed to auto-create WhatsApp lead:', safeErr(leadError));
+	}
+}
+
 export async function ingestTrackingEvent(
 	input: IngestTrackingEventInput,
 ): Promise<IngestTrackingEventResult> {
@@ -179,39 +221,8 @@ export async function ingestTrackingEvent(
 		after: input.after,
 	});
 
-	// Auto-create a WhatsApp channel lead when a whatsapp_contact_clicked
-	// event carries a non-empty lead_code. This bridges the attribution gap
-	// between anonymous visitor/session and identifiable commercial intent.
 	if (payload.eventName === 'whatsapp_contact_clicked') {
-		const leadCode =
-			typeof eventProperties['lead_code'] === 'string' &&
-			eventProperties['lead_code'].trim().length > 0
-				? eventProperties['lead_code']
-				: undefined;
-		if (leadCode) {
-			try {
-				await createLeadFromTrackingEvent({
-					leadCode,
-					sessionId: payload.sessionId,
-					sourceEventId: event.id,
-					channel: 'whatsapp',
-					visitorId: payload.visitorId,
-					utmSource: payload.source,
-					utmMedium: payload.medium,
-					utmCampaign: payload.campaign,
-					utmContent: payload.utmContent,
-					ttclid: consentSnapshot.marketing ? payload.ttclid : undefined,
-					metaAttribution: consentSnapshot.marketing
-						? payload.metaAttribution
-						: undefined,
-				});
-			} catch (leadError) {
-				console.error(
-					'[tracking] Failed to auto-create WhatsApp lead:',
-					safeErr(leadError),
-				);
-			}
-		}
+		await createWhatsAppLeadFromEvent(payload, eventProperties, event.id);
 	}
 
 	return { accepted: true, eventId: event.id };

@@ -16,6 +16,12 @@ export interface SalesOrder {
 	amountPaid: number;
 	depositPaidAt?: string | null;
 	paidAt?: string | null;
+	isPastSale?: boolean;
+	soldAt?: string | null;
+	referralCodeUsed?: string | null;
+	discountAmount?: number;
+	referrerCreditAwarded?: number;
+	referrerCreditRedeemed?: number;
 }
 
 interface CustomerOrdersBoxProps {
@@ -47,6 +53,40 @@ function formatCurrency(amount: number): string {
 		maximumFractionDigits: 2,
 	}).format(amount);
 }
+
+function balanceClassName(hasInconsistentAmounts: boolean, balanceDue: number): string {
+	if (hasInconsistentAmounts) return 'order-balance-inconsistent';
+	return balanceDue > 0 ? 'order-balance-due' : 'order-balance-zero';
+}
+
+/** Past-sale and referral reward lines shown under an order's description. */
+const OrderReferralNotes: React.FC<{ order: SalesOrder }> = ({ order }) => {
+	const discountAmount = order.discountAmount ?? 0;
+	const creditRedeemed = order.referrerCreditRedeemed ?? 0;
+	const creditAwarded = order.referrerCreditAwarded ?? 0;
+	const soldOn = order.soldAt ? ` del ${new Date(order.soldAt).toLocaleDateString('es-MX')}` : '';
+	return (
+		<>
+			{order.isPastSale && (
+				<p className="order-meta">Venta anterior{soldOn}: no se envía a Meta.</p>
+			)}
+			{discountAmount > 0 && (
+				<p className="order-meta">
+					Descuento aplicado: {formatCurrency(discountAmount)}
+					{order.referralCodeUsed ? ` (recomendación ${order.referralCodeUsed})` : ''}
+					{creditRedeemed > 0
+						? ` | Saldo a favor usado: ${formatCurrency(creditRedeemed)}`
+						: ''}
+				</p>
+			)}
+			{creditAwarded > 0 && (
+				<p className="order-meta">
+					Saldo a favor otorgado a quien recomendó: {formatCurrency(creditAwarded)}
+				</p>
+			)}
+		</>
+	);
+};
 
 const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 	customerOrders,
@@ -86,6 +126,7 @@ const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 							Evento: {labelCommercialEventType(ord.eventType)}
 							{ord.packageName ? ` | Paquete: ${ord.packageName}` : ''}
 						</p>
+						<OrderReferralNotes order={ord} />
 						<div className="order-price-row">
 							<div className="order-amount">
 								<span className="order-amount-label">Total:</span>
@@ -98,13 +139,7 @@ const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 							<div className="order-amount">
 								<span className="order-amount-label">Saldo:</span>
 								<strong
-									className={
-										hasInconsistentAmounts
-											? 'order-balance-inconsistent'
-											: balanceDue > 0
-												? 'order-balance-due'
-												: 'order-balance-zero'
-									}
+									className={balanceClassName(hasInconsistentAmounts, balanceDue)}
 								>
 									{hasInconsistentAmounts
 										? 'Por conciliar'
