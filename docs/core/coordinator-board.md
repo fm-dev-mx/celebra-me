@@ -27,10 +27,9 @@ checkout's, so every lane shares one data directory (`.agent/tmp/tablero/`).
 
 ## MCP hosts (`celebra-board`)
 
-The MCP reads the board and writes `msg`, `claim`, `move` and `close`, with the same checks as the
-CLI (owner authorized MCP writes on 2026-10-31). Agents: `claude`, `codex`, `gemini`. Each host
-registers the server once in its user file, launching `node scripts/board/tablero-core.mjs mcp` from
-the chat's checkout:
+Its tools and checks are the core's (`docs/coordinator.md`, «MCP»); the owner authorized MCP writes
+on 2026-10-31. Agents: `claude`, `codex`, `gemini`. Each host registers the server once in its user
+file, launching `node scripts/board/tablero-core.mjs mcp` from the chat's checkout:
 
 | Host        | User file                        | Entry                                                     |
 | ----------- | -------------------------------- | --------------------------------------------------------- |
@@ -40,7 +39,7 @@ the chat's checkout:
 | Antigravity | `.gemini/config/mcp_config.json` | `mcpServers.celebra-board`                                |
 
 The node path in those files is absolute (fnm's per-shell junction disappears); update it after a
-Node upgrade. Calls log to `.agent/tmp/tablero/mcp/<day>.jsonl`.
+Node upgrade.
 
 ## Coordination contract (d351)
 
@@ -77,24 +76,25 @@ the coordinator asks the masters to archive finished chats.
 ## Assigning work (project additions)
 
 Assign by verified capability (`requiere`): image editing → `gemini` or `codex`; visual review in a
-browser → `claude` or `codex`; image generation → never `claude`. Board PRs open in the order the
-coordinator sets, after `git merge-tree` on their branches.
+browser → `claude` or `codex`; image generation → never `claude`. Board PRs follow the
+[board rule](../../.agent/rules/board.md#messaging-closing-and-review-project-additions).
 
 ## Prompts
 
 Repository rules and templates are English; a prompt the owner pastes into an app is Spanish,
-`prompt-v1` (T160, owner-approved 2026-10-24; core layout in `docs/agent-rules.md`). `PARA USTED`
-(T322) comes first and `DECISIONES` is always present (d046). Prompts written before T160 keep
-working and are never rewritten. Prompt kinds: one `.agent/kinds/<tipo>.yaml` each (T130), checked
-by `pnpm validate:structure` through `scripts/shared/task-kinds.mjs`;
+`prompt-v1` (T160, owner-approved 2026-10-24; core layout in `docs/agent-rules.md`, project
+additions in the [board rule](../../.agent/rules/board.md#prompts-and-names)). Prompts written
+before T160 keep working and are never rewritten. Prompt kinds: one `.agent/kinds/<tipo>.yaml` each
+(T130), checked by `pnpm validate:structure` through `scripts/shared/task-kinds.mjs`;
 `pnpm board prompt <id> --agente=<a> --tipo=<tipo> --carril=<lane>` builds the prompt from the
 templates in `tiposPrompt`/`prompts` (copies of tablero `plantillas/`, with Celebra-me additions:
 `pnpm validate:changed`, git-safety, `/code-review`, plus the invitation and Cloudflare kinds).
 
 ## Lanes
 
-Lanes and folders come from `tablero.config.json` → `carriles`; `claim` needs `--agente`, `--carril`
-and `--rama`, runs inside that lane's folder and respects `wipMax` (3). Lane roles and idle state:
+Lanes and folders come from `tablero.config.json` → `carriles` (`wipMax` 3); the claim itself is in
+the core rules. `claim` never starts git-safety: start and finish it by hand
+([`git-safety-session.md`](./git-safety-session.md)). Lane roles and idle state:
 [`git-governance.md`](./git-governance.md).
 
 ## Operations specific to this machine
@@ -107,7 +107,7 @@ and `--rama`, runs inside that lane's folder and respects `wipMax` (3). Lane rol
   powershell -File ..\tablero\scripts\windows\register.ps1 -Kind watch -Name 'Celebra-me vigilante del tablero' -Entry scripts\board\tablero-core.mjs
   ```
 
-  Remove one with `..\tablero\scripts\windows\unregister.ps1 -Name '<same name>'`. The watcher runs
-  `watch --once` every minute; `hechoDias` is set in `tablero.config.json`.
+  Remove one with `..\tablero\scripts\windows\unregister.ps1 -Name '<same name>'`; what the watcher
+  does is in the core's `docs/coordinator.md`.
 
 - Owner alerts: Celebra-me has no `telegram` key yet, so `pnpm board notify` prints.
