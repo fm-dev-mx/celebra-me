@@ -10,6 +10,21 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.60.0-beta.2] - 2026-11-01
+
+The shared header also stops jumping on phones: it waits while the browser address bar resizes and
+uses wider touch distances before it hides or shows. No database migrations are included.
+
+### Changed
+
+- Tooling: the board core pin advances to the nested subtask tree (#748).
+
+### Fixed
+
+- Header: on mobile the shared header waits 300 ms while the address bar resizes, opens that window
+  only on viewport height changes, hides and shows after 64/120 px of touch scroll and fades its
+  blur with a transition (#749).
+
 ## [0.60.0-beta.1] - 2026-11-01
 
 The shared header no longer jumps while scrolling invitations and demos, and the Meta signal is
