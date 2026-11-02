@@ -98,7 +98,7 @@ export function readMediaCopyConfig(
 	return values;
 }
 
-export function sourceLocation(config: MediaCopyConfig, bucket: string): R2Location {
+function sourceLocation(config: MediaCopyConfig, bucket: string): R2Location {
 	return {
 		accountId: config.accountId,
 		bucket,
@@ -116,7 +116,7 @@ export function targetLocation(config: MediaCopyConfig): R2Location {
 	};
 }
 
-export interface MediaCopyItem {
+interface MediaCopyItem {
 	sourceBucket: string;
 	sourceKey: string;
 	targetKey: string;
@@ -160,7 +160,7 @@ function sha256(bytes: Uint8Array): string {
 }
 
 /** Downloads one object; the body is buffered (originals are at most 80 MB). */
-export async function downloadR2Object(
+async function downloadR2Object(
 	location: R2Location,
 	key: string,
 	fetchImpl: Fetch = fetch,
@@ -198,7 +198,7 @@ function keyDigest(key: string): string | undefined {
  * Copies one original into the backup bucket without overwriting, then checks the stored size.
  * Returns null when the source was deleted after it was listed (a guest removed a photo).
  */
-export async function copyMediaObject(
+async function copyMediaObject(
 	config: MediaCopyConfig,
 	item: MediaCopyItem,
 	fetchImpl: Fetch = fetch,

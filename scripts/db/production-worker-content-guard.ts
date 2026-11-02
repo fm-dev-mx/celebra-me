@@ -13,7 +13,7 @@ import { PRODUCTION_ALIAS_URL, probeHealth } from '../ops/release-status.ts';
 type HealthFetch = Parameters<typeof probeHealth>[2];
 type HealthEvidence = Awaited<ReturnType<typeof probeHealth>>;
 
-export const PRODUCTION_HEALTH_DEADLINE_MS = 10_000;
+const PRODUCTION_HEALTH_DEADLINE_MS = 10_000;
 
 export interface ProductionWorkerGuardDeps {
 	fetchImpl?: HealthFetch;
