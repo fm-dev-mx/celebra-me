@@ -210,21 +210,22 @@ interface TrackEventOptions {
 	serverStored?: boolean;
 }
 
+/** Returns whether the event was dispatched; false when consent, the ignore flag or the route drop it. */
 function trackEvent(
 	eventName: BrowserTrackingEventName,
 	eventProperties: TrackingPayload['eventProperties'] = {},
 	options: TrackEventOptions = {},
-): void {
-	if (shouldIgnoreTracking()) return;
+): boolean {
+	if (shouldIgnoreTracking()) return false;
 	const consent = getConsentSnapshot();
-	if (!consent.analytics && !consent.marketing) return;
+	if (!consent.analytics && !consent.marketing) return false;
 	eventProperties = {
 		...eventProperties,
 		event_id: options.eventId ?? (crypto.randomUUID ? crypto.randomUUID() : fallbackUuid()),
 	};
 
 	const routeClass = document.body.dataset.trackingRouteClass;
-	if (!routeClass) return;
+	if (!routeClass) return false;
 
 	const publicProperties = { ...eventProperties };
 	delete publicProperties.lead_code;
@@ -238,7 +239,7 @@ function trackEvent(
 	forwardToGA4(eventName, eventProperties);
 	forwardToMetaPixel(eventName, eventProperties);
 
-	if (isClientOnlyEvent(eventName) || options.serverStored) return;
+	if (isClientOnlyEvent(eventName) || options.serverStored) return true;
 
 	const utm = getUtmSnapshot();
 	const metaAttribution = consent.marketing
@@ -289,6 +290,7 @@ function trackEvent(
 	} catch {
 		// Degrade gracefully if keepalive fetch is not supported/throws.
 	}
+	return true;
 }
 
 function isClientOnlyEvent(
@@ -468,15 +470,17 @@ function bindPackageViews(): void {
 				const packageName = entry.target.dataset.packageName ?? packageId;
 				if (!packageId || seen.has(packageId)) return;
 
-				seen.add(packageId);
-				writeSeenPackageViews(seen);
-				void trackEvent('package_viewed', {
+				const sent = trackEvent('package_viewed', {
 					package_id: packageId,
 					package_name: packageName,
 					content_name: packageName,
 					content_category: 'package',
 					source_area: entry.target.dataset.sourceArea ?? 'pricing',
 				});
+				// Only a dispatched view counts, so a view dropped before consent can still fire later.
+				if (!sent) return;
+				seen.add(packageId);
+				writeSeenPackageViews(seen);
 			});
 		},
 		{ threshold: [0.4, 0.6] },

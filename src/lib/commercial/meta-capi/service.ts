@@ -269,10 +269,8 @@ export interface BrowserConversionInput {
  * Queues a browser PageView, ViewContent, Contact or Lead for server delivery. A repeated event ID
  * keeps the first row, so a replayed ingestion never sends the event twice. Callers check marketing
  * consent first. Contact and Lead rows carry the monthly estimated lead value (or fallback).
- */
-/**
- * Queue a browser event for the server. Resolves to the new outbox row id, or null when the Pixel
- * eventID was already queued, so the caller can deliver it right away; the cron stays the fallback.
+ * Resolves to the new outbox row id, or null when the eventID was already queued, so the caller can
+ * deliver it right away; the cron stays the fallback.
  */
 export async function enqueueBrowserConversionEvent(
 	input: BrowserConversionInput,

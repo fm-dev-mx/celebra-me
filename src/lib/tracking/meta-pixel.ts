@@ -102,7 +102,7 @@ function environmentAllowsMeta(): boolean {
 	return document.body.dataset.metaDeliveryBlocked !== 'true';
 }
 
-/** Owner devices carry the internal-traffic cookie set by the dashboard. */
+/** Owner devices carry the internal-traffic cookie (super_admin sign-in or the ?interno=1 link). */
 function deviceAllowsMeta(): boolean {
 	return !hasIgnoreCookie(document.cookie);
 }

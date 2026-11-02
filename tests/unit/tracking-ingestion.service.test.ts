@@ -405,6 +405,50 @@ describe('ingestTrackingEvent', () => {
 			expect(waitUntil).not.toHaveBeenCalled();
 		});
 
+		it('delivers a replayed eventID only once', async () => {
+			// The second insert hits on_conflict=event_id: return=representation is empty → null.
+			mockEnqueueBrowserConversionEvent
+				.mockResolvedValueOnce('outbox-id')
+				.mockResolvedValueOnce(null);
+			const waitUntil = jest.fn();
+			for (let i = 0; i < 2; i += 1) {
+				await ingestTrackingEvent({
+					request: makeRequest('/demos/xv'),
+					deployEnvironment: 'production',
+					payload: clickPayload(true),
+					after: { waitUntil },
+				});
+			}
+			expect(mockEnqueueBrowserConversionEvent).toHaveBeenCalledTimes(2);
+			expect(mockDeliverMetaConversionEvent).toHaveBeenCalledTimes(1);
+			expect(waitUntil).toHaveBeenCalledTimes(1);
+		});
+
+		it('keeps the event accepted and the row queued for the cron when delivery fails', async () => {
+			mockEnqueueBrowserConversionEvent.mockResolvedValueOnce('outbox-id');
+			mockDeliverMetaConversionEvent.mockRejectedValueOnce(new Error('claim failed'));
+			const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+			const waitUntil = jest.fn();
+			await expect(
+				ingestTrackingEvent({
+					request: makeRequest('/demos/xv'),
+					deployEnvironment: 'production',
+					payload: clickPayload(true),
+					after: { waitUntil },
+				}),
+			).resolves.toEqual({ accepted: true, eventId: clickEventId });
+
+			await expect(waitUntil.mock.calls[0]?.[0]).resolves.toBeUndefined();
+			expect(consoleError).toHaveBeenCalledWith(
+				'[tracking:capi:outbox-id] Background task failed after the response:',
+				expect.anything(),
+			);
+			// Nothing else touches the outbox: the row stays pending (or failed with a retry time),
+			// which is what the cron claims next.
+			expect(mockEnqueueBrowserConversionEvent).toHaveBeenCalledTimes(1);
+			expect(mockDeliverMetaConversionEvent).toHaveBeenCalledTimes(1);
+		});
+
 		it('keeps the event accepted when queueing fails', async () => {
 			mockEnqueueBrowserConversionEvent.mockRejectedValueOnce(new Error('insert failed'));
 			const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
