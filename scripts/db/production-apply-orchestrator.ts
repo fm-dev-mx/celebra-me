@@ -126,7 +126,7 @@ export interface ProductionApplyExecuteDeps extends ProductionApplyAssemblerDeps
 	preparedCriticalBackupManifestPath?: string;
 	/** Release evidence gate; runs before any backup or owner prompt. */
 	assertReleaseReadiness?: (options: { remote: boolean }) => ReleaseReadiness;
-	/** Worker-first gate for invitation content; runs before any backup or owner prompt. */
+	/** Worker-first gate for invitation content and owner patches; runs before any backup or owner prompt. */
 	assertWorkerServesRelease?: (input: { releaseSha: string }) => Promise<unknown>;
 	/** Internal: release evidence already verified for this apply; never a CLI flag. */
 	verifiedReleaseSha?: string;
@@ -717,13 +717,17 @@ async function applyPatchMutation(
 	}
 }
 
-/** Content the serving Worker cannot resolve breaks every visit until the deploy catches up. */
+/**
+ * Content the serving Worker cannot resolve breaks every visit until the deploy catches up. Owner
+ * patches are arbitrary SQL that may write invitation content, so they are gated too; schema
+ * migrations are expand-first and precede the Worker that uses them.
+ */
 async function assertWorkerFirst(
 	mutations: readonly ProductionApplyPlanItem[],
 	releaseSha: string,
 	deps: ProductionApplyExecuteDeps,
 ): Promise<void> {
-	if (!mutations.some((item) => item.domain === 'invitation')) return;
+	if (!mutations.some((item) => item.domain === 'invitation' || item.domain === 'patch')) return;
 	await (deps.assertWorkerServesRelease ?? assertProductionWorkerServesRelease)({ releaseSha });
 }
 

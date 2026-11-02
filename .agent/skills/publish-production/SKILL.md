@@ -56,7 +56,8 @@ compatibility is a blocker, not permission to migrate.
 Invitation content publication is a separate operation that follows this skill, never precedes it:
 **Worker first, content second.** Hand off to the owner's `pnpm prod:apply -- --slug <slug>` only
 after the activated Production Worker is verified for the merged `main` SHA. `prod:apply` refuses
-content when the Worker serving Production does not contain the commit it publishes from.
+invitation content and owner patches when the Worker serving Production does not contain the commit
+it publishes from.
 
 Finish only after verifying the actual merged `main` SHA, correct Production Worker/environment,
 uploaded and activated Worker version, serving alias, and correlated smoke. The merged SHA may

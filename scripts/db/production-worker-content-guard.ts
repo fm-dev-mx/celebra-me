@@ -4,18 +4,22 @@
  * resolved by the old Worker, and every visit (and the invitations health check) fails until the
  * deploy catches up.
  *
- * Read-only: one `/api/health` request to the public alias and one local `git merge-base`.
+ * Read-only: one bounded `/api/health` request to the public alias and one local `git merge-base`.
  */
 import { OperatorError } from './operator-cli-ux.ts';
 import { defaultGitRunner, type GitRunner } from '../ops/release-readiness.ts';
 import { PRODUCTION_ALIAS_URL, probeHealth } from '../ops/release-status.ts';
 
 type HealthFetch = Parameters<typeof probeHealth>[2];
+type HealthEvidence = Awaited<ReturnType<typeof probeHealth>>;
+
+export const PRODUCTION_HEALTH_DEADLINE_MS = 10_000;
 
 export interface ProductionWorkerGuardDeps {
 	fetchImpl?: HealthFetch;
 	git?: GitRunner;
 	origin?: string;
+	deadlineMs?: number;
 }
 
 const NO_WRITES = 'No se realizaron escrituras en Production.';
@@ -37,6 +41,33 @@ function refuse(code: string, title: string, cause: string, remediation: string[
 	});
 }
 
+/** A hung connection must refuse the apply, not stall it: abort the request and stop waiting. */
+async function probeWithDeadline(
+	origin: string,
+	releaseSha: string,
+	fetchImpl: HealthFetch,
+	deadlineMs: number,
+): Promise<HealthEvidence | 'timeout'> {
+	const controller = new AbortController();
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	const deadline = new Promise<'timeout'>((resolve) => {
+		timer = setTimeout(() => {
+			controller.abort();
+			resolve('timeout');
+		}, deadlineMs);
+	});
+	const bounded: HealthFetch = (url, init) =>
+		fetchImpl(url, { ...init, signal: controller.signal } as Parameters<HealthFetch>[1]);
+	try {
+		return await Promise.race([
+			probeHealth(origin, releaseSha, bounded, undefined, 'production'),
+			deadline,
+		]);
+	} finally {
+		clearTimeout(timer);
+	}
+}
+
 /**
  * Refuses unless the serving Production Worker reports a build SHA that contains `releaseSha`
  * (equal to it or a descendant of it). Runs before any backup, owner prompt or write.
@@ -46,14 +77,27 @@ export async function assertProductionWorkerServesRelease(
 	deps: ProductionWorkerGuardDeps = {},
 ): Promise<{ servingSha: string }> {
 	const releaseSha = input.releaseSha.toLowerCase();
-	const probe = await probeHealth(
-		deps.origin ?? PRODUCTION_ALIAS_URL,
+	const origin = deps.origin ?? PRODUCTION_ALIAS_URL;
+	const deadlineMs = deps.deadlineMs ?? PRODUCTION_HEALTH_DEADLINE_MS;
+	const probe = await probeWithDeadline(
+		origin,
 		releaseSha,
 		deps.fetchImpl ?? (fetch as unknown as HealthFetch),
-		undefined,
-		'production',
+		deadlineMs,
 	);
 	const title = 'El Worker de Production todavía no puede mostrar este contenido';
+
+	if (probe === 'timeout') {
+		refuse(
+			'PRODUCTION_WORKER_UNVERIFIED',
+			title,
+			`${origin} no respondió /api/health en ${Math.round(deadlineMs / 1000)} s.`,
+			[
+				'Confirme que Production responde sano y vuelva a intentarlo.',
+				'Sin esa verificación no se publica contenido.',
+			],
+		);
+	}
 
 	if (probe.result === 'unreachable' || probe.result === 'protected') {
 		refuse(
@@ -101,7 +145,12 @@ export async function assertProductionWorkerServesRelease(
 	refuse(
 		'PRODUCTION_WORKER_UNVERIFIED',
 		title,
-		`El commit ${servingSha.slice(0, 12)} que sirve Production no existe en este checkout.`,
-		['Ejecute git fetch origin y vuelva a intentarlo.', ...DEPLOY_FIRST],
+		`git no pudo comparar el commit ${servingSha.slice(0, 12)} que sirve Production con ` +
+			`${releaseSha.slice(0, 12)} (estado ${contains}).`,
+		[
+			'Si ese commit no está en este checkout, ejecute git fetch origin.',
+			'Revise que git funcione en este checkout y vuelva a intentarlo.',
+			...DEPLOY_FIRST,
+		],
 	);
 }

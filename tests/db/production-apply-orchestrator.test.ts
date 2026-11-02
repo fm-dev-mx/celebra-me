@@ -1067,6 +1067,45 @@ describe('production apply execution', () => {
 		expect(assertWorkerServesRelease).not.toHaveBeenCalled();
 	});
 
+	it('refuses an owner patch before its backup when the Production Worker lags', async () => {
+		const assertWorkerServesRelease = jest.fn<
+			(input: { releaseSha: string }) => Promise<unknown>
+		>(async () => {
+			throw new OperatorError({
+				title: 'Worker behind',
+				cause: 'test',
+				code: 'PRODUCTION_WORKER_BEHIND_CONTENT',
+				remediation: [],
+			});
+		});
+		const ensurePatchBackup = jest.fn(() => ({ manifestPath: '.tmp/test-backup.json' }));
+		const applyPatch = jest.fn(async () => ({ state: 'APPLIED_AND_VERIFIED' as const }));
+		await expect(
+			applyProductionApplyPlan(
+				cli([
+					'--patch',
+					'scripts/manual/production-patches/test.sql',
+					'--owner-user-id',
+					'550e8400-e29b-41d4-a716-446655440000',
+					'--apply',
+				]),
+				{
+					...baseDeps({ pending: [] }),
+					preparePatch: (file) => ({
+						...baseDeps().preparePatch!(file),
+						fingerprint: 'patch-reviewed',
+					}),
+					assertWorkerServesRelease,
+					ensurePatchBackup,
+					applyPatch,
+				},
+			),
+		).rejects.toMatchObject({ code: 'PRODUCTION_WORKER_BEHIND_CONTENT' });
+		expect(assertWorkerServesRelease).toHaveBeenCalledWith({ releaseSha: 'a'.repeat(40) });
+		expect(ensurePatchBackup).not.toHaveBeenCalled();
+		expect(applyPatch).not.toHaveBeenCalled();
+	});
+
 	it('requires and revalidates a current critical backup before applying a patch', async () => {
 		const ensurePatchBackup: NonNullable<ProductionApplyExecuteDeps['ensurePatchBackup']> =
 			jest.fn(() => ({ manifestPath: '.tmp/test-backup.json' }));

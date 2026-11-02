@@ -21,9 +21,9 @@ implementing these skills is never a live-release invocation.
   can resolve it is activated and verified
   (`pnpm ops:release-status -- --sha <main-sha> --target production --wait` reports `VERIFIED`).
   Content written earlier makes the serving Worker reject it and fails `/api/health/invitations`.
-  `prod:apply` enforces this before any backup, prompt or write: it refuses unless the
-  `build.commitSha` reported by `/api/health` on the Production alias equals or contains the commit
-  it publishes from.
+  `prod:apply` enforces this for invitation content and owner patches before any backup, prompt or
+  write: it refuses unless the `build.commitSha` reported by `/api/health` on the Production alias
+  equals or contains the commit it publishes from.
 - `Post-deploy Smoke` validates the correlated deployment, SHA, approved host and critical HTTP
   behavior. The scheduled/manual `Production Image Audit` separately reports published-media drift
   and never determines deployment health.

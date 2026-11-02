@@ -53,18 +53,40 @@ describe('Production Worker content guard', () => {
 		});
 	});
 
-	it('refuses when the serving commit is unknown to the checkout', async () => {
+	it.each([128, 2])('refuses when git cannot compare the commits (status %i)', async (status) => {
 		await expect(
 			assertProductionWorkerServesRelease(
 				{ releaseSha },
-				{ fetchImpl: serving(newerSha), git: gitStatus(128) },
+				{ fetchImpl: serving(newerSha), git: gitStatus(status) },
 			),
 		).rejects.toMatchObject({
 			code: 'PRODUCTION_WORKER_UNVERIFIED',
+			causeText: expect.stringContaining(`(estado ${status})`),
 			remediation: expect.arrayContaining([
-				'Ejecute git fetch origin y vuelva a intentarlo.',
+				'Si ese commit no está en este checkout, ejecute git fetch origin.',
 			]),
 		});
+	});
+
+	it('aborts and refuses when /api/health does not answer before the deadline', async () => {
+		let signal: AbortSignal | undefined;
+		const hanging = ((_url: string, init?: { signal?: AbortSignal }) => {
+			signal = init?.signal;
+			return new Promise(() => undefined);
+		}) as unknown as ReturnType<typeof health>;
+		const git = gitStatus(0);
+		await expect(
+			assertProductionWorkerServesRelease(
+				{ releaseSha },
+				{ fetchImpl: hanging, git, deadlineMs: 5 },
+			),
+		).rejects.toMatchObject({
+			code: 'PRODUCTION_WORKER_UNVERIFIED',
+			causeText: expect.stringContaining('no respondió /api/health'),
+			noChangesMessage: 'No se realizaron escrituras en Production.',
+		});
+		expect(signal?.aborted).toBe(true);
+		expect(git).not.toHaveBeenCalled();
 	});
 
 	it.each([
@@ -72,6 +94,7 @@ describe('Production Worker content guard', () => {
 			'an unhealthy Worker',
 			health({ status: 'unhealthy', build: { commitSha: releaseSha } }, 503),
 		],
+		['a Worker behind an authentication challenge', health({}, 401)],
 		['a Worker without build identity', serving(null)],
 		['a Worker reporting another environment', serving(releaseSha, 'preview')],
 		[
