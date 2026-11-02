@@ -3,6 +3,7 @@ import {
 	findCommercialCustomerByEmail,
 	findCommercialCustomerByPhone,
 	linkCommercialLeadToCustomer,
+	updateCommercialCustomerAttributes,
 	upsertCommercialCustomer,
 	type CommercialCustomer,
 } from '@/lib/commercial/customer.repository';
@@ -13,6 +14,10 @@ export interface CreateCommercialCustomerInput {
 	email?: string;
 	phone?: string;
 	createdFromLeadId?: string;
+	city?: string;
+	country?: string;
+	isPastClient?: boolean;
+	referralCode?: string;
 }
 
 export type CommercialCustomerReconciliationResult =
@@ -24,6 +29,44 @@ function hasIdentityConflict(
 	byPhone: CommercialCustomer | null,
 ): byEmail is CommercialCustomer {
 	return Boolean(byEmail && byPhone && byEmail.id !== byPhone.id);
+}
+
+async function linkLeadIfRequested(
+	createdFromLeadId: string | undefined,
+	customerId: string,
+): Promise<void> {
+	if (createdFromLeadId)
+		await linkCommercialLeadToCustomer({ leadId: createdFromLeadId, customerId });
+}
+
+/** Fills a missing city, a changed country and the past-client flag on a matched customer. */
+async function refreshMatchedCustomer(
+	existing: CommercialCustomer,
+	city: string | undefined,
+	country: string | undefined,
+	isPastClient: boolean | undefined,
+): Promise<CommercialCustomer> {
+	const update = {
+		city: city && !existing.city ? city : undefined,
+		country: country && existing.country !== country ? country : undefined,
+		isPastClient: isPastClient === true && !existing.isPastClient ? true : undefined,
+	};
+	if (!update.city && !update.country && !update.isPastClient) return existing;
+	return (
+		(await updateCommercialCustomerAttributes({ customerId: existing.id, ...update })) ??
+		existing
+	);
+}
+
+async function findRacedCustomer(
+	normalizedEmail: string | undefined,
+	normalizedPhoneE164: string | undefined,
+): Promise<CommercialCustomer | null> {
+	const racedByEmail = normalizedEmail
+		? await findCommercialCustomerByEmail(normalizedEmail)
+		: null;
+	if (racedByEmail || !normalizedPhoneE164) return racedByEmail;
+	return findCommercialCustomerByPhone(normalizedPhoneE164);
 }
 
 /**
@@ -49,6 +92,8 @@ export async function createCommercialCustomer(
 	const normalizedEmail = normalizeCommercialEmail(input.email);
 	const normalizedPhone = normalizeCommercialPhone(input.phone);
 	const createdFromLeadId = emptyToUndefined(input.createdFromLeadId);
+	const city = emptyToUndefined(input.city);
+	const country = emptyToUndefined(input.country)?.toUpperCase();
 
 	// --- Search for an existing customer before inserting ---
 	const [existingByEmail, existingByPhone] = await Promise.all([
@@ -64,14 +109,9 @@ export async function createCommercialCustomer(
 	const existing = existingByEmail ?? existingByPhone;
 
 	if (existing) {
-		// Link the lead to the existing customer if requested.
-		if (createdFromLeadId) {
-			await linkCommercialLeadToCustomer({
-				leadId: createdFromLeadId,
-				customerId: existing.id,
-			});
-		}
-		return { outcome: 'matched', customer: existing };
+		const customer = await refreshMatchedCustomer(existing, city, country, input.isPastClient);
+		await linkLeadIfRequested(createdFromLeadId, customer.id);
+		return { outcome: 'matched', customer };
 	}
 
 	// --- No existing customer found — insert a new one. ---
@@ -84,38 +124,20 @@ export async function createCommercialCustomer(
 			phoneNational: normalizedPhone?.national,
 			phoneE164: normalizedPhone?.e164,
 			createdFromLeadId,
+			city,
+			country,
+			isPastClient: input.isPastClient,
+			referralCode: input.referralCode,
 		});
-
-		if (createdFromLeadId) {
-			await linkCommercialLeadToCustomer({
-				leadId: createdFromLeadId,
-				customerId: customer.id,
-			});
-		}
-
+		await linkLeadIfRequested(createdFromLeadId, customer.id);
 		return { outcome: 'created', customer };
 	} catch (error) {
 		// Handle unique-constraint race: another process inserted the same
 		// normalized email / phone between our check and our insert.  Fall
 		// back to a final lookup.
-		const racedByEmail = normalizedEmail
-			? await findCommercialCustomerByEmail(normalizedEmail)
-			: null;
-
-		const racedByPhone =
-			!racedByEmail && normalizedPhone
-				? await findCommercialCustomerByPhone(normalizedPhone.e164)
-				: null;
-
-		const raced = racedByEmail ?? racedByPhone;
-
+		const raced = await findRacedCustomer(normalizedEmail, normalizedPhone?.e164);
 		if (raced) {
-			if (createdFromLeadId) {
-				await linkCommercialLeadToCustomer({
-					leadId: createdFromLeadId,
-					customerId: raced.id,
-				});
-			}
+			await linkLeadIfRequested(createdFromLeadId, raced.id);
 			return { outcome: 'matched', customer: raced };
 		}
 

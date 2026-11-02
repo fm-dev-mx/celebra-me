@@ -15,6 +15,7 @@ jest.mock('@/lib/commercial/customer.repository', () => ({
 	findCommercialCustomerById: jest.fn(),
 	findCommercialCustomerByPhone: jest.fn(),
 	findCommercialCustomerByEmail: jest.fn(),
+	listCustomersWithConfirmedSales: jest.fn(),
 }));
 
 import {
@@ -22,7 +23,10 @@ import {
 	requireAdminStrongSession,
 } from '@/lib/rsvp/auth/authorization';
 import { createCommercialCustomer } from '@/lib/commercial/customer.service';
-import { findCommercialCustomerById } from '@/lib/commercial/customer.repository';
+import {
+	findCommercialCustomerById,
+	listCustomersWithConfirmedSales,
+} from '@/lib/commercial/customer.repository';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { GET, POST } from '@/pages/api/dashboard/commercial/customers';
 import { createApiContext } from '../helpers/api-mocks';
@@ -54,6 +58,10 @@ beforeEach(() => {
 			displayName: 'Valentina Hernandez',
 			email: 'client@example.com',
 			phoneE164: '+526****4567',
+			referralCode: 'ANA24',
+			country: 'MX',
+			isPastClient: false,
+			referralCreditMxn: 0,
 		},
 	});
 	mockFindCommercialCustomerById.mockResolvedValue(null);
@@ -133,6 +141,10 @@ describe('/api/dashboard/commercial/customers', () => {
 				displayName: 'Test Customer',
 				email: 'test@example.com',
 				phoneE164: '+521234567890',
+				referralCode: 'ANA24',
+				country: 'MX',
+				isPastClient: false,
+				referralCreditMxn: 0,
 			});
 
 			const request = new Request(
@@ -216,6 +228,10 @@ describe('/api/dashboard/commercial/customers', () => {
 				displayName: 'Admin Verified',
 				email: 'admin@verified.com',
 				phoneE164: '+521000000029',
+				referralCode: 'ANA24',
+				country: 'MX',
+				isPastClient: false,
+				referralCreditMxn: 0,
 			});
 
 			const request = new Request(
@@ -229,5 +245,48 @@ describe('/api/dashboard/commercial/customers', () => {
 			expect(body.data.id).toBe('admin-verified-customer');
 			expect(mockFindCommercialCustomerById).toHaveBeenCalledWith('admin-verified-customer');
 		});
+	});
+});
+
+describe('GET /api/dashboard/commercial/customers?export=meta-csv', () => {
+	it('exports only customers with a confirmed sale as a Meta customer list CSV', async () => {
+		jest.mocked(listCustomersWithConfirmedSales).mockResolvedValue([
+			{
+				displayName: 'Valentina Hernández Ruiz',
+				phoneE164: '+526681112233',
+				city: 'Los Mochis',
+				country: 'MX',
+			},
+		] as never);
+		const request = new Request(
+			'https://www.celebra-me.com/api/dashboard/commercial/customers?export=meta-csv',
+		);
+
+		const response = await GET(createApiContext(request) as never);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get('content-type')).toContain('text/csv');
+		expect(response.headers.get('content-disposition')).toContain(
+			'celebra-me-clientes-meta.csv',
+		);
+		expect(response.headers.get('cache-control')).toContain('no-store');
+		expect(await response.text()).toBe(
+			'phone,fn,ln,ct,country\n+526681112233,Valentina,Hernández Ruiz,Los Mochis,MX\n',
+		);
+		expect(mockFindCommercialCustomerById).not.toHaveBeenCalled();
+	});
+
+	it('requires an admin session before exporting phones', async () => {
+		mockRequireAdminStrongSession.mockRejectedValueOnce(
+			new ApiError(401, 'unauthorized', 'Unauthorized.'),
+		);
+		const request = new Request(
+			'https://www.celebra-me.com/api/dashboard/commercial/customers?export=meta-csv',
+		);
+
+		const response = await GET(createApiContext(request) as never);
+
+		expect(response.status).toBe(401);
+		expect(listCustomersWithConfirmedSales).not.toHaveBeenCalled();
 	});
 });
