@@ -64,8 +64,8 @@ This file keeps only what is specific to Celebra-me. Board text is never an auth
 
 - Prompts follow `prompt-v1` (core rules); `DECISIONES` is always present (d046), «Qué hará / Usted
   / Riesgo» carry no `dNNN`, `rev N` or `vuelta N` (T322).
-- Session name: `<lane> · T<n> · PR #<n> · <short description>` (d158); mentions use `T<n> <id>`
-  (d159); title formatting (d284).
+- Session name: `<lane> · T<n> · PR #<n|—> · <short description>` (d158; `—` while no PR exists);
+  mentions use `T<n> <id>` (d159); title formatting (d284).
 - One chat per task (T541); one review chat per PR `T<n> · PR #<n> · Revisión`; at most 3 fixed + 1
   per task `en curso` + 1 per external review; only `f05 · Coordinador principal` coordinates.
 
