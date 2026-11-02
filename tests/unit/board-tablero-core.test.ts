@@ -72,19 +72,14 @@ describe('board core launcher', () => {
 describe('board core cutover', () => {
 	const read = (file: string) => JSON.parse(readFileSync(path.join(ROOT, file), 'utf8'));
 
-	it('runs every board script through the core launcher', () => {
+	it('keeps one board script group on the core launcher', () => {
 		const { scripts } = read('package.json');
-		for (const name of [
-			'board',
-			'board:serve',
-			'board:sync',
-			'board:verify',
-			'board:watch',
-			'board:mcp',
-		]) {
+		const group = ['board', 'board:serve', 'board:mcp'];
+		for (const name of group) {
 			expect(scripts[name]).toMatch(/^node scripts\/board\/tablero-core\.mjs\b/);
 		}
-		expect(scripts['board:viejo']).toBeUndefined();
+		const boardScripts = Object.keys(scripts).filter((name) => /^(board|tablero)\b/.test(name));
+		expect(boardScripts.sort()).toEqual([...group].sort());
 	});
 
 	it('pins the core and registers projects and lanes', () => {

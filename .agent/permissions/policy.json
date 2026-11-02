@@ -24,8 +24,6 @@
         "gh run view",
         "gh run watch",
         "pnpm board",
-        "pnpm board:verify",
-        "pnpm tablero",
         "pnpm agent:git-safety:start",
         "pnpm agent:git-safety:check",
         "pnpm agent:git-safety:finish",

@@ -210,11 +210,6 @@ $commandDetails = @{
         UseCase = "Ver la cola, los carriles y el historial del tablero; cada cambio de pnpm board aparece al instante."
         Help    = "Presione Enter para (re)abrirlo: cierra lo que ocupe el 4320 y corre el codigo de Integration desde cualquier carril."
     }
-    "board:sync"                = @{
-        Desc    = "Sincroniza el tablero con ramas, PRs y carriles, sin IA (lo mismo que el boton Sincronizar)."
-        UseCase = "Pasar tareas a 'en revision' o 'hecho' segun su PR."
-        Help    = "Presione Enter para sincronizar."
-    }
     "ops:status"              = @{
         Desc    = "Estado de operacion en texto, solo lectura (git, preflight, limpieza, dbs y, con --remote, migraciones)."
         UseCase = "Ver develop frente a main, el diagnostico de prod:apply, que limpiar con su comando y las migraciones pendientes por entorno."
@@ -248,7 +243,7 @@ $checkoutRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 
 # The board data lives in Integration and the board is served from there (d165), so these commands
 # run Integration's code from any lane; a lane on an older commit would otherwise serve an old board.
-$integrationCommands = @("board:serve", "board:sync")
+$integrationCommands = @("board:serve")
 $commandRoot = $checkoutRoot
 if ($integrationCommands -contains $Command) {
     $commonDir = git -C $checkoutRoot rev-parse --path-format=absolute --git-common-dir 2>$null

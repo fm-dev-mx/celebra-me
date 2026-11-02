@@ -22,7 +22,7 @@ routes matching the touched surfaces.
 - [`.agent/rules/git-safety.md`](./rules/git-safety.md) — Task-scoped Git authorization and worktree
   safety
 - [`.agent/rules/board.md`](./rules/board.md) — Coordinator board v4: board core, `pnpm board`,
-  states, claims, review and closing (`pnpm board:verify`)
+  states, claims, review and closing (`pnpm board verify`)
 - [`.agent/rules/agent-routing.md`](./rules/agent-routing.md) — Provider-neutral role routing and
   subagent boundaries
 - [`.agent/load-skills.md`](./load-skills.md) — Runtime-neutral skill loading protocol

@@ -69,7 +69,8 @@ Runtime connectivity never authorizes database, publication or release mutations
 3. **Integrate** through a GitHub pull request into `develop`, the standard path for every task:
    - The author pushes the task branch, opens the pull request and records it on the board task.
    - An agent other than the author reviews it at its exact head SHA (d183; the reviewer and the
-     risk rule are in the [board rule](../../.agent/rules/board.md#working-rules-every-agent)).
+     risk rule are in the
+     [board rule](../../.agent/rules/board.md#messaging-closing-and-review-project-additions)).
      Under d282 a low-risk pull request by Claude (board, tooling, documentation or tests, nothing
      in invitations, the database, migrations, payments, secrets or Production) is reviewed by a
      Claude subagent with a clean context; medium and high risk keep Codex or Gemini. A new commit
