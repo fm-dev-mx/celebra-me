@@ -475,6 +475,17 @@
 		grid-column: 1 / -1;
 	}
 
+	// The first role leads; every other role after it steps down (the second column when the lead
+	// spans the row). Both are opt-in by tokens and render as a plain grid by default.
+	&__godparent-role:first-child {
+		padding-bottom: var(--family-godparent-role-lead-padding-bottom, 0);
+		border-bottom: var(--family-godparent-role-lead-border, 0);
+	}
+
+	&__godparent-role:nth-child(2n + 3) {
+		margin-top: var(--family-godparent-role-offset, 0);
+	}
+
 	&__godparent-role-label {
 		margin: 0 0 0.35rem;
 		font-family: var(--family-meta-font, var(--font-label, var(--font-body)));
@@ -495,6 +506,10 @@
 		line-height: var(--family-godparent-role-name-line-height, 1.4);
 		color: var(--family-name-color, currentcolor);
 		text-wrap: pretty;
+	}
+
+	&__godparent-role-name {
+		white-space: var(--family-godparent-role-name-white-space, normal);
 	}
 
 	&__godparent-role-separator {
