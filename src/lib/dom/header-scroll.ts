@@ -6,7 +6,8 @@
  * iOS rubber-band, URL-bar resize), which makes the bar flicker in and out.
  * This module adds hysteresis: the header only changes after a sustained travel
  * in one direction, scroll positions are clamped to the real scroll range, and
- * tiny deltas are ignored.
+ * tiny deltas are ignored. While the visual viewport is resizing (URL bar) and
+ * briefly after, positions are only resynced, and touch screens need longer travel.
  */
 
 export interface HeaderScrollThresholds {
@@ -38,6 +39,25 @@ export const DEFAULT_HEADER_SCROLL_THRESHOLDS: HeaderScrollThresholds = {
 	showDistance: 48,
 	minDelta: 4,
 };
+
+/** A finger flick and the phone URL bar (about 50-90px) both exceed the mouse-wheel distances. */
+export const COARSE_POINTER_TRAVEL: Pick<HeaderScrollThresholds, 'hideDistance' | 'showDistance'> =
+	{
+		hideDistance: 64,
+		showDistance: 120,
+	};
+
+/** The URL bar animates for about 200-300ms and the content settles after the last resize. */
+export const VIEWPORT_RESIZE_SETTLE_MS = 300;
+
+/** True while a viewport resize is in progress or settled less than `settleMs` ago. */
+export function isViewportSettling(
+	now: number,
+	lastResizeAt: number,
+	settleMs: number = VIEWPORT_RESIZE_SETTLE_MS,
+): boolean {
+	return now - lastResizeAt < settleMs;
+}
 
 export function clampScrollY(rawY: number, maxY: number): number {
 	return Math.min(Math.max(rawY, 0), Math.max(maxY, 0));
@@ -100,8 +120,13 @@ function readThreshold(value: string | undefined, fallback: number): number {
 	return value !== undefined && value !== '' && Number.isFinite(parsed) ? parsed : fallback;
 }
 
-export function readHeaderScrollThresholds(header: HTMLElement): HeaderScrollThresholds {
-	const defaults = DEFAULT_HEADER_SCROLL_THRESHOLDS;
+export function readHeaderScrollThresholds(
+	header: HTMLElement,
+	coarsePointer = false,
+): HeaderScrollThresholds {
+	const defaults = coarsePointer
+		? { ...DEFAULT_HEADER_SCROLL_THRESHOLDS, ...COARSE_POINTER_TRAVEL }
+		: DEFAULT_HEADER_SCROLL_THRESHOLDS;
 	const direction = readThreshold(header.dataset.thresholdDirection, Number.NaN);
 	return {
 		shrinkAt: readThreshold(header.dataset.thresholdShrink, defaults.shrinkAt),
@@ -116,22 +141,28 @@ const ANCHOR_SCROLL_GUARD_MS = 1200;
 
 /**
  * Wires one header to window scroll. Work runs at most once per frame and the
- * DOM (classes, --nav-current-height on :root) is only written when it changes.
+ * classes are only written when they change. --nav-current-height on :root is
+ * the header's fixed height, written once: hiding is a transform, and rewriting
+ * a root variable on every show/hide restyles the whole page mid-scroll.
  */
 export function bindHeaderScroll(header: HTMLElement): () => void {
 	const root = document.documentElement;
-	const thresholds = readHeaderScrollThresholds(header);
+	const thresholds = readHeaderScrollThresholds(
+		header,
+		window.matchMedia?.('(pointer: coarse)').matches ?? false,
+	);
 	const isTransparentConfigured = header.dataset.transparent === 'true';
 	const visibleHeight =
 		getComputedStyle(header).getPropertyValue('--header-height').trim() || '70px';
-	const maxScrollY = () => root.scrollHeight - window.innerHeight;
+	const viewportHeight = () => window.visualViewport?.height ?? window.innerHeight;
+	const maxScrollY = () => root.scrollHeight - viewportHeight();
 
 	let state = createHeaderScrollState(window.scrollY, maxScrollY(), thresholds);
 	let frame = 0;
 	let resyncNext = false;
 	let anchorGuardUntil = 0;
-	let lastViewportHeight = window.visualViewport?.height ?? window.innerHeight;
-	let lastNavHeight = '';
+	let lastViewportHeight = viewportHeight();
+	let lastViewportResizeAt = Number.NEGATIVE_INFINITY;
 
 	const apply = () => {
 		const isMenuOpen = header.classList.contains('header-base--menu-open');
@@ -150,21 +181,17 @@ export function bindHeaderScroll(header: HTMLElement): () => void {
 		if (header.classList.contains('header-base--hidden') !== hidden) {
 			header.classList.toggle('header-base--hidden', hidden);
 		}
-
-		const navHeight = hidden ? '0px' : visibleHeight;
-		if (navHeight !== lastNavHeight) {
-			root.style.setProperty('--nav-current-height', navHeight);
-			lastNavHeight = navHeight;
-		}
 	};
 
 	const update = () => {
 		frame = 0;
-		const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-		const viewportChanged = viewportHeight !== lastViewportHeight;
-		lastViewportHeight = viewportHeight;
+		const now = performance.now();
+		const height = viewportHeight();
+		if (height !== lastViewportHeight) lastViewportResizeAt = now;
+		lastViewportHeight = height;
 
-		const guarded = resyncNext || viewportChanged || performance.now() < anchorGuardUntil;
+		const guarded =
+			resyncNext || isViewportSettling(now, lastViewportResizeAt) || now < anchorGuardUntil;
 		resyncNext = false;
 		state = guarded
 			? resyncHeaderScrollState(state, window.scrollY, maxScrollY(), thresholds)
@@ -177,7 +204,7 @@ export function bindHeaderScroll(header: HTMLElement): () => void {
 	};
 
 	const onViewportResize = () => {
-		resyncNext = true;
+		lastViewportResizeAt = performance.now();
 		schedule();
 	};
 
@@ -195,6 +222,9 @@ export function bindHeaderScroll(header: HTMLElement): () => void {
 		schedule();
 	};
 
+	if (root.style.getPropertyValue('--nav-current-height') !== visibleHeight) {
+		root.style.setProperty('--nav-current-height', visibleHeight);
+	}
 	apply();
 	window.addEventListener('scroll', schedule, { passive: true });
 	window.addEventListener('scrollend', onScrollEnd);

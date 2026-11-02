@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, devices, type CDPSession, type Page } from '@playwright/test';
 import { buildSync } from 'esbuild';
 import { compile } from 'sass';
 
@@ -83,3 +83,121 @@ test.describe('shared header auto-hide on a phone', () => {
 		expect(await isHidden(page)).toBe(true);
 	});
 });
+
+// Phones scroll by touch and resize the viewport while the URL bar collapses or re-expands.
+// Chromium's mobile emulation drives both: CDP touch events and real viewport resizes.
+// CI installs only Chromium, so the iPhone profile reuses its metrics, touch and user agent.
+const { defaultBrowserType: _iphoneBrowser, ...iPhone } = devices['iPhone 13'];
+const { defaultBrowserType: _pixelBrowser, ...pixel } = devices['Pixel 7'];
+const PHONES = [
+	{ name: 'iPhone', device: iPhone },
+	{ name: 'Pixel', device: pixel },
+];
+
+for (const phone of PHONES) {
+	test.describe(`shared header auto-hide on a touch ${phone.name}`, () => {
+		test.use(phone.device);
+
+		let cdp: CDPSession;
+		const urlBar = 56;
+
+		const scrollY = (page: Page) => page.evaluate(() => Math.round(window.scrollY));
+		const frames = (page: Page, count = 2) =>
+			page.evaluate(async (n) => {
+				for (let i = 0; i < n; i += 1) await new Promise((r) => requestAnimationFrame(r));
+			}, count);
+
+		/** Finger drags of at most 400px; positive `dy` moves further down the page. */
+		async function touchScroll(page: Page, dy: number) {
+			const point = (y: number) => [{ x: 200, y }];
+			for (let left = dy; left !== 0;) {
+				const drag = Math.sign(left) * Math.min(Math.abs(left), 400);
+				let y = drag > 0 ? 550 : 150;
+				await cdp.send('Input.dispatchTouchEvent', {
+					type: 'touchStart',
+					touchPoints: point(y),
+				});
+				for (let moved = 0; moved !== drag;) {
+					const step = Math.sign(drag) * Math.min(Math.abs(drag - moved), 10);
+					moved += step;
+					y -= step;
+					await cdp.send('Input.dispatchTouchEvent', {
+						type: 'touchMove',
+						touchPoints: point(y),
+					});
+				}
+				await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+				left -= drag;
+			}
+			await frames(page);
+		}
+
+		/** URL bar animation: the viewport height changes in steps over about 250ms. */
+		async function animateUrlBar(page: Page, to: number) {
+			const from = page.viewportSize()!;
+			const steps = 5;
+			for (let i = 1; i <= steps; i += 1) {
+				const height = Math.round(from.height + ((to - from.height) * i) / steps);
+				await page.setViewportSize({ width: from.width, height });
+				await page.waitForTimeout(50);
+			}
+		}
+
+		/** The browser moves the content by the bar height a few frames after the bar settles. */
+		async function shiftAfterUrlBar(page: Page) {
+			await page.waitForTimeout(100);
+			await page.evaluate((dy) => window.scrollBy(0, dy), -urlBar);
+			await frames(page);
+		}
+
+		test.beforeEach(async ({ page }) => {
+			await page.setContent(markup);
+			await page.addScriptTag({ content: script });
+			cdp = await page.context().newCDPSession(page);
+			expect(await page.evaluate(() => matchMedia('(pointer: coarse)').matches)).toBe(true);
+		});
+
+		test('the content shift after the URL bar re-expands keeps the header hidden', async ({
+			page,
+		}) => {
+			await touchScroll(page, 1500);
+			expect(await isHidden(page)).toBe(true);
+			const { height } = page.viewportSize()!;
+
+			await animateUrlBar(page, height - urlBar);
+			await shiftAfterUrlBar(page);
+			expect(await isHidden(page)).toBe(true);
+		});
+
+		test('the URL bar collapsing mid-scroll does not bring the header back', async ({
+			page,
+		}) => {
+			await touchScroll(page, 800);
+			expect(await isHidden(page)).toBe(true);
+			const { height } = page.viewportSize()!;
+
+			const collapse = animateUrlBar(page, height + urlBar);
+			await touchScroll(page, 400);
+			await collapse;
+			await shiftAfterUrlBar(page);
+			expect(await isHidden(page)).toBe(true);
+		});
+
+		test('a short flick up keeps the header hidden; a long one brings it back', async ({
+			page,
+		}) => {
+			await touchScroll(page, 1500);
+			const start = await scrollY(page);
+			expect(await isHidden(page)).toBe(true);
+
+			// Touch slop eats part of the drag; the page itself moves past the 48px desktop distance.
+			await touchScroll(page, -100);
+			expect(start - (await scrollY(page))).toBeGreaterThan(48);
+			expect(start - (await scrollY(page))).toBeLessThan(120);
+			expect(await isHidden(page)).toBe(true);
+
+			await touchScroll(page, -250);
+			expect(await isHidden(page)).toBe(false);
+		});
+	});
+}
