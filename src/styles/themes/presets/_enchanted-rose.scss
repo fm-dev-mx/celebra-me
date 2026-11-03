@@ -212,9 +212,24 @@
 	--quote-texture-opacity: 0.08;
 
 	// ---------------------------------------------------------------------
+	// Folio seams
+	// ---------------------------------------------------------------------
+	// The turned corner shows the back of the same ivory paper, shaded faintly blush toward the fold,
+	// instead of the brighter elevated surface that read as a white patch.
+	--intersection-folio-back: var(--color-warm-ivory);
+	--intersection-folio-back-shade: color-mix(
+		in srgb,
+		var(--color-warm-ivory) 86%,
+		rgb(var(--color-blush-pink-rgb))
+	);
+
+	// ---------------------------------------------------------------------
 	// Family section
 	// ---------------------------------------------------------------------
+	// The folio page above the family cuts in plain ivory, so the top edge starts on that ivory and
+	// the blush glow opens just below it, without a change of tone at the cut.
 	--family-bg-fallback:
+		linear-gradient(180deg, var(--color-warm-ivory) 0%, transparent 6rem),
 		radial-gradient(
 			circle at 50% 0%,
 			rgb(var(--color-blush-pink-rgb) / 28%) 0%,

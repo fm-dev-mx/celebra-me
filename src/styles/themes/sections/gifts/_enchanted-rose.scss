@@ -3,15 +3,12 @@
 .theme-preset--enchanted-rose .gifts-section {
 	--gifts-padding-block-fallback: clamp(4.4rem, 8vw, 6.6rem);
 	--gifts-padding-inline-fallback: clamp(1rem, 4vw, 2rem);
+
+	// The folio page over the photo cuts in plain ivory, so the top carries no shadow band; only
+	// the foot keeps a faint shade.
 	--gifts-bg-fallback:
-		linear-gradient(
-			180deg,
-			rgb(var(--color-rose-shadow-rgb) / 24%) 0%,
-			transparent 10%,
-			transparent 88%,
-			rgb(var(--color-rose-shadow-rgb) / 8%) 100%
-		),
-		linear-gradient(180deg, rgb(var(--color-rose-shadow-rgb) / 7%) 0%, transparent 12%),
+		linear-gradient(180deg, var(--color-warm-ivory) 0%, transparent 6rem),
+		linear-gradient(180deg, transparent 88%, rgb(var(--color-rose-shadow-rgb) / 8%) 100%),
 		var(--enchanted-section-ivory-bg, var(--color-warm-ivory));
 	--gifts-text-color: var(--color-velvet-burgundy);
 	--gifts-title-color-fallback: var(--color-velvet-burgundy);
