@@ -245,3 +245,19 @@
 		}
 	}
 }
+
+// The paper programme titles set in upright Cormorant, like the other section titles; the script
+// stays for signatures, and a long title wraps in close lines instead of overlapping its note.
+.theme-preset--enchanted-rose .itinerary[data-variant='timeline-paper'] {
+	--itinerary-paper-title-size: clamp(1.625rem, 3vw, 2rem);
+	--itinerary-paper-title-size-sm: clamp(1.375rem, 6vw, 1.625rem);
+	--itinerary-paper-title-line-height: 1.1;
+	--itinerary-paper-title-line-height-sm: 1.1;
+	--itinerary-paper-title-margin-top: 0.4em;
+
+	.itinerary__program-row-title {
+		font-family: var(--font-display);
+		font-weight: 500;
+		text-wrap: balance;
+	}
+}

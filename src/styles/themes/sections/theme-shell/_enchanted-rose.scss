@@ -643,3 +643,21 @@ $velvet-rest:
 		padding: 0 12px;
 	}
 }
+
+.theme-preset--enchanted-rose {
+	// Small caps speak in the label voice everywhere, so no stray sans slips in.
+	.gallery-section__eyebrow {
+		font-family: var(--font-label);
+	}
+
+	// The closing signature signs in burgundy script on one line, clear of the music control; the
+	// gold stays on the frame.
+	.thank-you-section .closing-name {
+		font-size: var(--rose-closing-name-size);
+		white-space: nowrap;
+		background: none;
+		color: var(--color-velvet-burgundy);
+		-webkit-text-fill-color: var(--color-velvet-burgundy);
+		text-shadow: none;
+	}
+}

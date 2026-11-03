@@ -1,9 +1,7 @@
 // A page of the jewelry box, not a card: no rounded panel or doubled border, the group titles
-// signed in the quote's gold script, names in burgundy Cormorant, and the quote's diamond hairline
+// set in upright deep rose Cormorant (the script stays for signatures), names in burgundy Cormorant, and the quote's diamond hairline
 // between parents and godparents (upright on desktop, where the groups open as two pages).
 .theme-preset--enchanted-rose .family {
-	// Antique gold alone reads 2.2:1 on the ivory; half walnut keeps it gold at about 4.2:1.
-	$signature-gold: color-mix(in srgb, var(--color-action-accent) 50%, var(--color-walnut-brown));
 	$hairline: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 10'%3E%3Cpath d='M0 5h72M88 5h72' stroke='black' stroke-width='1'/%3E%3Cpath d='M80 1l4 4-4 4-4-4z'/%3E%3C/svg%3E";
 	$hairline-upright: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 160'%3E%3Cpath d='M5 0v72M5 88v72' stroke='black' stroke-width='1'/%3E%3Cpath d='M5 76l4 4-4 4-4-4z'/%3E%3C/svg%3E";
 
@@ -11,14 +9,14 @@
 	--family-panel-border: none;
 	--family-panel-shadow: none;
 	--family-panel-radius: 0;
-	--family-eyebrow-color: #{$signature-gold};
+	--family-eyebrow-color: var(--color-deep-rose-red);
 	--family-eyebrow-opacity: 100%;
-	--family-group-title-font: var(--font-calligraphy);
-	--family-group-title-size: clamp(1.7rem, 5vw, 2.1rem);
-	--family-group-title-weight: 400;
+	--family-group-title-font: var(--font-display);
+	--family-group-title-size: clamp(1.5rem, 4.4vw, 1.875rem);
+	--family-group-title-weight: 500;
 	--family-group-title-letter-spacing: 0;
 	--family-group-title-text-transform: none;
-	--family-group-title-color: #{$signature-gold};
+	--family-group-title-color: var(--color-deep-rose-red);
 	--family-group-title-opacity: 100%;
 	--family-group-padding: clamp(1.5rem, 4vw, 2rem) 0;
 	--family-parents-padding: var(--family-group-padding);
