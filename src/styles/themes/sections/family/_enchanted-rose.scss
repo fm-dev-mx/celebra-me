@@ -1,4 +1,32 @@
+// A page of the jewelry box, not a card: no rounded panel or doubled border, the group titles
+// signed in the quote's gold script, names in burgundy Cormorant, and the quote's diamond hairline
+// between parents and godparents (upright on desktop, where the groups open as two pages).
 .theme-preset--enchanted-rose .family {
+	// Antique gold alone reads 2.2:1 on the ivory; half walnut keeps it gold at about 4.2:1.
+	$signature-gold: color-mix(in srgb, var(--color-action-accent) 50%, var(--color-walnut-brown));
+	$hairline: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 10'%3E%3Cpath d='M0 5h72M88 5h72' stroke='black' stroke-width='1'/%3E%3Cpath d='M80 1l4 4-4 4-4-4z'/%3E%3C/svg%3E";
+	$hairline-upright: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 160'%3E%3Cpath d='M5 0v72M5 88v72' stroke='black' stroke-width='1'/%3E%3Cpath d='M5 76l4 4-4 4-4-4z'/%3E%3C/svg%3E";
+
+	--family-panel-bg: transparent;
+	--family-panel-border: none;
+	--family-panel-shadow: none;
+	--family-panel-radius: 0;
+	--family-eyebrow-color: #{$signature-gold};
+	--family-eyebrow-opacity: 100%;
+	--family-group-title-font: var(--font-calligraphy);
+	--family-group-title-size: clamp(1.7rem, 5vw, 2.1rem);
+	--family-group-title-weight: 400;
+	--family-group-title-letter-spacing: 0;
+	--family-group-title-text-transform: none;
+	--family-group-title-color: #{$signature-gold};
+	--family-group-title-opacity: 100%;
+	--family-group-padding: clamp(1.5rem, 4vw, 2rem) 0;
+	--family-parents-padding: var(--family-group-padding);
+	--family-parents-margin-inline: 0;
+	--family-name-color: var(--color-velvet-burgundy);
+	--family-name-max-width: 26ch;
+	--family-meta-color: var(--color-walnut-brown);
+
 	&::before {
 		content: '';
 		position: absolute;
@@ -31,54 +59,23 @@
 		opacity: 74%;
 	}
 
-	.family__panel {
-		border-color: rgb(var(--color-antique-gold-rgb) / 30%);
-		box-shadow:
-			0 24px 64px rgb(var(--color-rose-shadow-rgb) / 12%),
-			inset 0 1px 0 rgb(var(--color-warm-ivory-rgb) / 82%);
-
-		&::after {
-			content: '';
-			position: absolute;
-			inset: 8px;
-			pointer-events: none;
-			border: 1px solid rgb(var(--color-antique-gold-rgb) / 36%);
-			border-radius: calc(var(--family-panel-radius, 18px) - 2px);
-		}
-	}
-
-	.family__content-overlay::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background: radial-gradient(
-			circle at 72% 12%,
-			rgb(var(--color-candle-gold-rgb) / 20%) 0%,
-			transparent 34%
-		);
-		border-radius: inherit;
-		pointer-events: none;
-	}
-
 	.family__media-frame {
 		border-color: rgb(var(--color-antique-gold-rgb) / 36%);
 		box-shadow: 0 18px 48px rgb(var(--color-rose-shadow-rgb) / 14%);
 	}
 
-	.family__group-title {
-		color: var(--color-antique-gold);
-	}
-
 	.family__group + .family__group::before {
-		background: var(--rose-gold-divider);
-		opacity: 48%;
+		width: clamp(7rem, 22vw, 10rem);
+		height: auto;
+		aspect-ratio: 16;
+		background: rgb(var(--color-action-accent-rgb) / 70%);
+		opacity: 100%;
+		mask: url($hairline) center / 100% 100% no-repeat;
 	}
-}
 
-// Desktop: the text-only family card opens like a two-page folio, blessing on the left and
-// godparents on the right, split by a vertical gold hairline instead of a narrow single column.
-@media (width >= 62rem) {
-	.theme-preset--enchanted-rose {
+	// Desktop: the text-only page opens in two columns that start on the same line, split by the
+	// upright hairline.
+	@media (width >= 62rem) {
 		.family__panel--no-media {
 			max-width: 60rem;
 		}
@@ -86,16 +83,18 @@
 		.family__groups {
 			display: grid;
 			grid-template-columns: repeat(2, minmax(0, 1fr));
-			align-items: center;
+			align-items: start;
 			column-gap: clamp(2.5rem, 5vw, 4.5rem);
 		}
 
 		.family__group + .family__group::before {
 			top: 50%;
 			left: calc(clamp(2.5rem, 5vw, 4.5rem) / -2);
-			width: 1px;
+			width: auto;
 			height: 70%;
-			transform: translateY(-50%);
+			aspect-ratio: 1 / 16;
+			transform: translate(-50%, -50%);
+			mask-image: url($hairline-upright);
 		}
 	}
 }
