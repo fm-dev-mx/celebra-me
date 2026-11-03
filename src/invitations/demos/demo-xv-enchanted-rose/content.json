@@ -276,7 +276,7 @@
     "countdown": {
         "variant": "clock-face",
         "title": "Faltan",
-        "footerText": "20 de noviembre de 2027 · El Marqués, Querétaro",
+        "footerText": "Sábado 20 de noviembre de 2027 · El Marqués, Querétaro",
         "presentationOptions": {
             "visibleUnits": ["days", "hours", "minutes"]
         }
