@@ -32,7 +32,8 @@ describe('Aithan Darell managed definition', () => {
 
 	it('builds published content with the authored variants', () => {
 		const parsed = eventContentSchema.parse(publishedContent());
-		expect(parsed.templateId).toBe('cumple-editorial-magazine');
+		expect(parsed.templateId).toBeUndefined();
+		expect(parsed.theme.fontFamily).toBeUndefined();
 		expect(parsed.visualProfileId).toBe('aithan-darell');
 		expect(parsed.hero.variant).toBe('editorial-cover');
 		expect(parsed.countdown?.variant).toBe('magazine-folio');
@@ -86,7 +87,9 @@ describe('Aithan Darell managed definition', () => {
 		expect(parsed.location?.venues?.[0]).toMatchObject({
 			type: 'reception',
 			venueName: 'Jardín de Teresita',
-			time: '5:30 p. m.',
+			// Unparseable prose is never rendered; it stays untouched so the card keeps hiding it.
+			date: 'sábado 24 de octubre de 2026',
+			time: '17:30',
 		});
 	});
 

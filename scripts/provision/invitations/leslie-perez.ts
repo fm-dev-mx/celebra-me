@@ -207,7 +207,6 @@ export function buildLesliePublishedContent(
 	return {
 		eventType: LESLIE_EVENT.eventType,
 		isDemo: false,
-		templateId: 'xv-celestial-blue',
 		visualProfileId: LESLIE_EVENT.visualProfileId,
 		title: LESLIE_EVENT.title,
 		description: 'Invitación a los XV años de Leslie en San Carlos Eventos.',

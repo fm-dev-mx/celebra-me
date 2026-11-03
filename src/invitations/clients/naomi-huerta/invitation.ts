@@ -22,10 +22,9 @@ const EVENT_DATE_LABEL = '18 de diciembre de 2026';
 const content: CanonicalEventContentInput = {
 	eventType: 'xv',
 	isDemo: false,
-	templateId: 'xv-storybook-blush',
 	title: `Mis XV Años — ${CELEBRANT_NAME}`,
 	description: `${CELEBRANT_NAME} cumple quince. Viernes ${EVENT_DATE_LABEL}, Guadalajara, Jalisco.`,
-	theme: { preset: 'storybook-blush', fontFamily: 'serif', motion: 'editorial' },
+	theme: { preset: 'storybook-blush', motion: 'editorial' },
 	eventTiming: NAOMI_TIMING,
 	sectionOrder: [
 		'quote',

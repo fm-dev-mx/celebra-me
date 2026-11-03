@@ -134,7 +134,6 @@ export function buildVictoriaPublishedContent(
 	return {
 		eventType: VICTORIA_EVENT.eventType,
 		isDemo: false,
-		templateId: 'boda-jewelry-box-wedding',
 		visualProfileId: VICTORIA_EVENT.visualProfileId,
 		title: VICTORIA_EVENT.title,
 		description:

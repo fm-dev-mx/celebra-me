@@ -18,6 +18,7 @@ import {
 	resolveInvitationValidityWindow,
 	type InvitationValidityWindow,
 } from '../../../src/lib/invitation/access/invitation-validity-window.ts';
+import { stripSupersededPublishedShapes } from './superseded-content.ts';
 
 export interface InvitationAssetSpec {
 	delivery?: ImageDelivery;
@@ -329,7 +330,7 @@ export function defineInvitation<K extends string = string>(
 					presentedAssets[key] = { ...assets[key], delivery: asset.delivery };
 				}
 			}
-			return buildContent(presentedAssets);
+			return stripSupersededPublishedShapes(buildContent(presentedAssets));
 		},
 	};
 	const semanticAssets = Object.fromEntries(

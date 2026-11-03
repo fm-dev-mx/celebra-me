@@ -119,7 +119,6 @@ export function buildAlbaPublishedContent(
 	return {
 		eventType: ALBA_EVENT.eventType,
 		isDemo: false,
-		templateId: 'cumple-luxury-hacienda',
 		visualProfileId: ALBA_EVENT.visualProfileId,
 		title: ALBA_EVENT.title,
 		description:

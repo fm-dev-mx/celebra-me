@@ -148,11 +148,10 @@ export function buildRominaPublishedContent(
 	return {
 		eventType: ROMINA_EVENT.eventType,
 		isDemo: false,
-		templateId: 'xv-premiere-floral',
 		visualProfileId: ROMINA_EVENT.visualProfileId,
 		title: ROMINA_EVENT.title,
 		description: 'Acompáñeme a celebrar este momento tan especial.',
-		theme: { preset: ROMINA_EVENT.themeId, fontFamily: 'serif' },
+		theme: { preset: ROMINA_EVENT.themeId },
 		music: {
 			url: 'https://media.celebra-me.com/invitations/xv/romina-rios-chaparro/music-a6d5edabcd2c7441a93b5a51284226a2046fec6aa89dba515bc5c28ccf70c827.mp3',
 			title: 'Perfect',

@@ -108,7 +108,6 @@ function buildNormaPublishedContent(
 	return {
 		eventType: NORMA_EVENT.eventType,
 		isDemo: false,
-		templateId: 'cumple-luxury-hacienda',
 		_assetSlug: NORMA_EVENT.slug,
 		visualProfileId: NORMA_EVENT.slug,
 		title: NORMA_EVENT.title,

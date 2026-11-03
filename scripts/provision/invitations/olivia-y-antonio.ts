@@ -38,7 +38,6 @@ const RECEPTION = {
 const content: CanonicalEventContentInput = {
 	eventType: 'boda',
 	isDemo: false,
-	templateId: 'boda-jewelry-box-wedding',
 	title: 'Boda de Olivia Martínez y Antonio Vázquez',
 	description: `Invitación a la boda de Olivia y Antonio, el ${EVENT_DATE_LONG} en Los Mochis, Sinaloa.`,
 	theme: { preset: 'jewelry-box-wedding', motion: 'editorial' },
