@@ -2,9 +2,12 @@ import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-m
 import type { ReminderSettings } from '@/lib/rsvp/services/shared/share-message-defaults';
 import { makeGuest } from '@tests/helpers/guest-factory';
 import {
+	getMemoriesReminderEligibleGuests,
 	getReminderEligibleGuests,
+	shouldShowMemoriesReminderCta,
 	shouldShowReminderCta,
 } from '@/components/dashboard/guests/reminder-eligibility';
+import { buildMemoriesReminderTemplate } from '@/components/dashboard/guests/memories-reminder-message';
 import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
 
 function makeDateContext(
@@ -280,5 +283,70 @@ describe('shouldShowReminderCta', () => {
 		const ctx = makeDateContext({ rawDaysUntilEvent: 0, daysUntilEvent: '0' });
 		const settings = makeSettings({ showWhenDaysBeforeEvent: 7 });
 		expect(shouldShowReminderCta(ctx, settings, 2)).toBe(true);
+	});
+});
+
+const MEMORIES_REMINDER = {
+	url: 'https://celebra-me.com/r/demo',
+	uploadEndsAt: '2026-11-07T06:00:00.000Z',
+	timeZone: 'America/Mexico_City',
+};
+
+describe('getMemoriesReminderEligibleGuests', () => {
+	it('keeps shared, not-declined guests that have not been asked for photos', () => {
+		const items = [
+			makeGuest({ guestId: 'a', deliveryStatus: 'shared', attendanceStatus: 'confirmed' }),
+			makeGuest({ guestId: 'b', deliveryStatus: 'shared', attendanceStatus: 'pending' }),
+			makeGuest({ guestId: 'c', deliveryStatus: 'shared', attendanceStatus: 'declined' }),
+			makeGuest({ guestId: 'd', deliveryStatus: 'generated', attendanceStatus: 'pending' }),
+			makeGuest({
+				guestId: 'e',
+				deliveryStatus: 'shared',
+				attendanceStatus: 'confirmed',
+				lastMemoriesReminderSentAt: '2026-11-01T00:00:00.000Z',
+			}),
+		];
+		expect(getMemoriesReminderEligibleGuests(items).map((g) => g.guestId)).toEqual(['a', 'b']);
+	});
+});
+
+describe('shouldShowMemoriesReminderCta', () => {
+	it('hides without an open photo space or eligible guests', () => {
+		const past = makeDateContext({ rawDaysUntilEvent: -3 });
+		expect(shouldShowMemoriesReminderCta(past, null, 4)).toBe(false);
+		expect(shouldShowMemoriesReminderCta(past, MEMORIES_REMINDER, 0)).toBe(false);
+	});
+
+	it('shows on or after the event day, not before', () => {
+		expect(
+			shouldShowMemoriesReminderCta(
+				makeDateContext({ rawDaysUntilEvent: -3 }),
+				MEMORIES_REMINDER,
+				2,
+			),
+		).toBe(true);
+		expect(
+			shouldShowMemoriesReminderCta(
+				makeDateContext({ rawDaysUntilEvent: 0 }),
+				MEMORIES_REMINDER,
+				2,
+			),
+		).toBe(true);
+		expect(
+			shouldShowMemoriesReminderCta(
+				makeDateContext({ rawDaysUntilEvent: 5 }),
+				MEMORIES_REMINDER,
+				2,
+			),
+		).toBe(false);
+	});
+});
+
+describe('buildMemoriesReminderTemplate', () => {
+	it('links the photo space and names the upload deadline in the event time zone', () => {
+		const template = buildMemoriesReminderTemplate(MEMORIES_REMINDER);
+		expect(template).toContain('{{enlace}}');
+		expect(template).toContain('{{invitado}}');
+		expect(template).toContain('hasta el 7 de noviembre');
 	});
 });

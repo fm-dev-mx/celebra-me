@@ -23,6 +23,11 @@ export interface Customer {
 	displayName: string;
 	email?: string | null;
 	phoneE164?: string | null;
+	referralCode?: string;
+	city?: string | null;
+	country?: string | null;
+	isPastClient?: boolean;
+	referralCreditMxn?: number;
 }
 
 interface LeadCandidatesListProps {

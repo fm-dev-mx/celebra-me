@@ -152,6 +152,13 @@ class GuestsApi {
 		return this.handleResponse(result, 'guests.recordReminderSent').item;
 	}
 
+	async recordMemoriesReminderSent(guestId: string): Promise<DashboardGuestItem> {
+		const result = await dashboardApi.post<{ item: DashboardGuestItem }>(
+			`/api/dashboard/guests/${encodeURIComponent(guestId)}/record-memories-reminder`,
+		);
+		return this.handleResponse(result, 'guests.recordMemoriesReminderSent').item;
+	}
+
 	async toggleBrandingRemoval(
 		guestId: string,
 		hideCelebraMeBranding: boolean,

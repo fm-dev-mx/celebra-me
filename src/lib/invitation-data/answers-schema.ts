@@ -16,7 +16,7 @@ import {
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/u;
 const TIME = /^(?:[01]\d|2[0-3]):[0-5]\d$/u;
 
-export const invitationDataPhotoSchema = z.object({
+const invitationDataPhotoSchema = z.object({
 	id: z.string().uuid(),
 	url: z.string().url(),
 	name: z.string().min(1).max(120),
@@ -25,7 +25,7 @@ export const invitationDataPhotoSchema = z.object({
 	uploadedAt: z.string().datetime().optional(),
 });
 
-export const invitationDataPhotosSchema = z
+const invitationDataPhotosSchema = z
 	.array(invitationDataPhotoSchema)
 	.max(
 		INVITATION_DATA_MAX_PHOTOS,

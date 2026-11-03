@@ -3,7 +3,6 @@
  * CSS visual parity harness — required before invitation-profile LAYOUT deletion.
  * @see docs/domains/theme/css-visual-parity.md
  */
-import * as crypto from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -11,6 +10,7 @@ import {
 	corpusPublicRoute,
 	listLocalRenderCorpus,
 } from '../provision/local-render-corpus/registry.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 export type ParityPhase = 'baseline' | 'compare';
 
@@ -37,7 +37,7 @@ export function manifestPath(slug: string, phase: ParityPhase): string {
 
 export function sha256File(filePath: string): string {
 	const buf = fs.readFileSync(filePath);
-	return crypto.createHash('sha256').update(buf).digest('hex');
+	return sha256Hex(buf);
 }
 
 export function listPngFiles(dir: string): string[] {

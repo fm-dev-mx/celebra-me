@@ -32,8 +32,8 @@ describe('normalizeDef — auth prefix normalization (positive equivalence)', ()
 	});
 
 	it('normalizes auth.role() to role()', () => {
-		const a = normalizeDef('(auth.role() = \'authenticated\')', 'policy_name');
-		const b = normalizeDef('(role() = \'authenticated\')', 'policy_name');
+		const a = normalizeDef("(auth.role() = 'authenticated')", 'policy_name');
+		const b = normalizeDef("(role() = 'authenticated')", 'policy_name');
 		expect(a).toBe(b);
 	});
 
@@ -58,12 +58,9 @@ describe('normalizeDef — auth prefix normalization (positive equivalence)', ()
 	it('handles combined auth.uid and auth.role in one expression', () => {
 		const a = normalizeDef(
 			"(auth.uid() = owner_id AND auth.role() = 'authenticated')",
-			'my_policy'
+			'my_policy',
 		);
-		const b = normalizeDef(
-			"(uid() = owner_id AND role() = 'authenticated')",
-			'my_policy'
-		);
+		const b = normalizeDef("(uid() = owner_id AND role() = 'authenticated')", 'my_policy');
 		expect(a).toBe(b);
 	});
 });
@@ -76,8 +73,8 @@ describe('normalizeDef — negative tests (genuine differences are NOT masked)',
 	});
 
 	it('does NOT normalize different logical operators to be equivalent', () => {
-		const a = normalizeDef('(auth.uid() = owner_id AND status = \'active\')', 'p');
-		const b = normalizeDef('(auth.uid() = owner_id OR status = \'active\')', 'p');
+		const a = normalizeDef("(auth.uid() = owner_id AND status = 'active')", 'p');
+		const b = normalizeDef("(auth.uid() = owner_id OR status = 'active')", 'p');
 		expect(a).not.toBe(b);
 	});
 
@@ -95,7 +92,10 @@ describe('normalizeDef — negative tests (genuine differences are NOT masked)',
 
 	it('does NOT normalize different table names to be equivalent', () => {
 		const a = normalizeDef('(EXISTS (SELECT 1 FROM events WHERE owner_id = auth.uid()))', 'p');
-		const b = normalizeDef('(EXISTS (SELECT 1 FROM invitations WHERE owner_id = auth.uid()))', 'p');
+		const b = normalizeDef(
+			'(EXISTS (SELECT 1 FROM invitations WHERE owner_id = auth.uid()))',
+			'p',
+		);
 		expect(a).not.toBe(b);
 	});
 

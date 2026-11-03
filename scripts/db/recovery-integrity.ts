@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { quoteIdentifier, runCommand } from './db-workflow-lib.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 /** Highest migration a `pre-phase3` disposable fixture is reset to. */
 export const PRE_PHASE3_MAX_MIGRATION = '20260727180000';
@@ -184,10 +185,6 @@ function psqlCopy(dbUrl: string, sql: string): string {
 	return result.stdout;
 }
 
-function sha256(value: string): string {
-	return createHash('sha256').update(value).digest('hex');
-}
-
 const AUTH_USERS_SOURCE = `(
 			  select id, aud, role, email, email_confirmed_at, raw_app_meta_data,
 			         raw_user_meta_data, is_super_admin, phone, phone_confirmed_at,
@@ -300,9 +297,9 @@ export function captureRecoveryIntegrity(
 		capturedAt: new Date().toISOString(),
 		migrationCount: migrationVersions.length,
 		migrationVersions,
-		migrationSha256: sha256(migrations),
+		migrationSha256: sha256Hex(migrations),
 		tables: payload.tables,
-		businessStateSha256: sha256(businessState),
+		businessStateSha256: sha256Hex(businessState),
 		invariants: payload.invariants,
 	};
 }

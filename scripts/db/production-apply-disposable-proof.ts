@@ -62,7 +62,7 @@ function defaultRunPnpm(args: readonly string[]): number | null {
 }
 
 /** Only a plan that includes schema consumes the disposable proof. */
-export function schemaInScope(args: { schema: boolean; inspectAll: boolean }): boolean {
+function schemaInScope(args: { schema: boolean; inspectAll: boolean }): boolean {
 	return args.schema || args.inspectAll;
 }
 

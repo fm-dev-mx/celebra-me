@@ -19,7 +19,12 @@ import type {
 import type {
 	DashboardEngagementSummary,
 	DashboardGuestListResponse,
+	DashboardMemoriesReminder,
 } from '@/interfaces/dashboard/guest.interface';
+import { resolveMemoriesWindowState } from '@/lib/memories/contract/catalog';
+import { buildMemoriesPublicUrl } from '@/lib/memories/contract/private-request';
+import { findMemorySpaceByEventId } from '@/lib/memories/server/settings.repository';
+import { resolveMemoriesPublicOrigin } from '@/lib/memories/server/public-origin';
 import { ApiError, isApiError } from '@/lib/rsvp/core/errors';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
 import { logAdminAction } from '@/lib/rsvp/services/audit-logger.service';
@@ -216,6 +221,27 @@ async function loadEngagementSummary(
 	}
 }
 
+/** Same rule as the funnel: a photo space failure hides the reminder, never the guest list. */
+async function loadMemoriesReminder(
+	eventId: string,
+	origin: string,
+): Promise<DashboardMemoriesReminder | null> {
+	try {
+		const space = await findMemorySpaceByEventId(eventId);
+		if (!space || resolveMemoriesWindowState(space, new Date()) !== 'open') return null;
+		return {
+			url: buildMemoriesPublicUrl(space.publicSlug, resolveMemoriesPublicOrigin(origin)),
+			uploadEndsAt: space.uploadEndsAt,
+			timeZone: space.timeZone,
+		};
+	} catch (error) {
+		console.warn('[dashboard] Memories reminder unavailable:', {
+			error: safeErr(error),
+		});
+		return null;
+	}
+}
+
 export async function listDashboardGuests(input: {
 	eventId: string;
 	userId: string;
@@ -257,6 +283,7 @@ export async function listDashboardGuests(input: {
 			shareDateContext: sharingContext.shareDateContext,
 			totals: buildDashboardTotals(items),
 			engagement: await loadEngagementSummary(event.id, input.hostAccessToken),
+			memoriesReminder: await loadMemoriesReminder(event.id, input.origin),
 			updatedAt: new Date().toISOString(),
 		};
 	}
@@ -280,6 +307,7 @@ export async function listDashboardGuests(input: {
 			shareDateContext: buildShareMessageDateContext(null, null, '', new Date()),
 			totals: buildDashboardTotals(items),
 			engagement: await loadEngagementSummary(membership.eventId, input.hostAccessToken),
+			memoriesReminder: await loadMemoriesReminder(membership.eventId, input.origin),
 			updatedAt: new Date().toISOString(),
 		};
 	}
@@ -566,19 +594,37 @@ export async function markGuestShared(input: {
 	};
 }
 
-export async function recordGuestReminderSent(input: {
+type RecordReminderInput = {
 	guestId: string;
 	hostAccessToken: string;
 	origin: string;
 	actorUserId?: string;
 	isSuperAdmin?: boolean;
-}): Promise<DashboardGuestMutationResponse> {
+};
+
+export async function recordGuestReminderSent(
+	input: RecordReminderInput,
+): Promise<DashboardGuestMutationResponse> {
+	return recordGuestReminder(input, 'rsvp');
+}
+
+/** Post-event nudge to share photos; tracked apart so it never hides the RSVP reminder history. */
+export async function recordGuestMemoriesReminderSent(
+	input: RecordReminderInput,
+): Promise<DashboardGuestMutationResponse> {
+	return recordGuestReminder(input, 'memories');
+}
+
+async function recordGuestReminder(
+	input: RecordReminderInput,
+	kind: 'rsvp' | 'memories',
+): Promise<DashboardGuestMutationResponse> {
 	const existing = await getGuestAccessOrThrow(input.guestId, input.hostAccessToken);
+	const sentAt = new Date().toISOString();
 	const updated = await updateGuestById(
-		{
-			guestId: input.guestId,
-			lastReminderSentAt: new Date().toISOString(),
-		},
+		kind === 'memories'
+			? { guestId: input.guestId, lastMemoriesReminderSentAt: sentAt }
+			: { guestId: input.guestId, lastReminderSentAt: sentAt },
 		input.hostAccessToken,
 	);
 
@@ -596,7 +642,10 @@ export async function recordGuestReminderSent(input: {
 	if (input.isSuperAdmin && input.actorUserId) {
 		await logAdminAction({
 			actorId: input.actorUserId,
-			action: 'record_guest_reminder_sent',
+			action:
+				kind === 'memories'
+					? 'record_guest_memories_reminder_sent'
+					: 'record_guest_reminder_sent',
 			targetTable: 'guest_invitations',
 			targetId: input.guestId,
 			oldData: existing as unknown as Record<string, unknown>,

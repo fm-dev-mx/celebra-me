@@ -8,7 +8,7 @@
  * has no transformation URLs.
  */
 import { execFileSync } from 'node:child_process';
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
@@ -27,6 +27,7 @@ import {
 	encodeResponsiveVariants,
 } from '../../src/lib/images/responsive-variants.ts';
 import { sharpImageTransformer } from '../../src/lib/images/sharp-image-transformer.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 export { buildR2SocialImageUrl } from '../../src/lib/intake/services/r2-invitation-media.ts';
 
@@ -52,10 +53,6 @@ export interface R2AssetUploadResult {
 	objectKey: string;
 	secureUrl: string;
 	action: 'UPLOAD' | 'REUSE';
-}
-
-function sha256(bytes: Uint8Array): string {
-	return createHash('sha256').update(bytes).digest('hex');
 }
 
 export function buildR2AssetObjectKey(identity: R2AssetIdentity): string {
@@ -165,7 +162,7 @@ export async function verifyR2Asset(input: {
 		throw new Error(
 			`R2 object MIME "${published.contentType ?? 'missing'}" does not match "${input.mimeType}".`,
 		);
-	if (sha256(published.bytes) !== input.sha256)
+	if (sha256Hex(published.bytes) !== input.sha256)
 		throw new Error(`R2 object ${input.objectKey} does not hold the canonical bytes.`);
 }
 
@@ -237,7 +234,7 @@ async function ensureResponsiveVariants(
 export async function uploadOrReconcileR2Asset(
 	input: R2AssetUploadInput,
 ): Promise<R2AssetUploadResult> {
-	if (sha256(input.bytes) !== input.sha256)
+	if (sha256Hex(input.bytes) !== input.sha256)
 		throw new Error(`Canonical bytes for "${input.key}" do not match their sha256.`);
 	const objectKey = buildR2AssetObjectKey(input);
 	const target = input.targetEnvironment;
@@ -248,7 +245,7 @@ export async function uploadOrReconcileR2Asset(
 		action = 'UPLOAD';
 	} else if (existing.status !== 200) {
 		throw new Error(`R2 object ${objectKey} read failed (HTTP ${existing.status}).`);
-	} else if (sha256(existing.bytes) !== input.sha256) {
+	} else if (sha256Hex(existing.bytes) !== input.sha256) {
 		throw new Error(`R2 object ${objectKey} already holds different bytes.`);
 	}
 	await verifyR2Asset({ ...input, objectKey });

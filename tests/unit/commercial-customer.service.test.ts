@@ -35,6 +35,10 @@ const existingCustomer = {
 	displayName: 'Valentina Hernandez',
 	email: 'client@example.com',
 	phoneE164: '+521000000005',
+	referralCode: 'ANA24',
+	country: 'MX',
+	isPastClient: false,
+	referralCreditMxn: 0,
 };
 
 const newCustomer = {
@@ -42,6 +46,10 @@ const newCustomer = {
 	displayName: 'Valentina Hernandez',
 	email: 'client@example.com',
 	phoneE164: '+526****4567',
+	referralCode: 'ANA24',
+	country: 'MX',
+	isPastClient: false,
+	referralCreditMxn: 0,
 };
 
 beforeEach(() => {

@@ -1,6 +1,6 @@
-import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve, sep } from 'node:path';
+import { sha256Hex } from '../shared/hash.ts';
 
 export interface StorageObjectArchiveEntry {
 	bucketId: string;
@@ -34,10 +34,6 @@ export interface MaterializedStorageObject {
 	path: string;
 	bytes: number;
 	sha256: string;
-}
-
-function sha256(value: Uint8Array): string {
-	return createHash('sha256').update(value).digest('hex');
 }
 
 function assertSafeSegment(value: string, label: string): void {
@@ -76,7 +72,7 @@ export function createStorageObjectArchiveEntry(
 		name,
 		contentType,
 		bytes: content.byteLength,
-		sha256: sha256(content),
+		sha256: sha256Hex(content),
 		contentBase64: Buffer.from(content).toString('base64'),
 	};
 }
@@ -95,7 +91,7 @@ export function validateStorageObjectArchive(archive: StorageObjectArchive): voi
 		if (content.byteLength === 0 || content.byteLength !== object.bytes) {
 			throw new Error(`Storage object size mismatch: ${identity}`);
 		}
-		if (sha256(content) !== object.sha256) {
+		if (sha256Hex(content) !== object.sha256) {
 			throw new Error(`Storage object checksum mismatch: ${identity}`);
 		}
 	}
@@ -124,7 +120,7 @@ export function materializeStorageObjectArchive(
 		mkdirSync(dirname(target), { recursive: true });
 		writeFileSync(target, content, { mode: 0o600 });
 		const restored = readFileSync(target);
-		const restoredHash = sha256(restored);
+		const restoredHash = sha256Hex(restored);
 		if (restored.byteLength !== object.bytes || restoredHash !== object.sha256) {
 			throw new Error(
 				`Restored Storage object verification failed: ${object.bucketId}/${object.name}`,

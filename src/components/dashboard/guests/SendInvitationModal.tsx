@@ -32,6 +32,7 @@ interface SendInvitationModalProps {
 	shareDateContext?: ShareMessageDateContext;
 	eventTitle?: string;
 	mode?: ShareFlowMode;
+	memoriesTemplate?: string;
 }
 
 const MODE_TITLES: Record<ShareFlowMode, string> = {
@@ -39,6 +40,7 @@ const MODE_TITLES: Record<ShareFlowMode, string> = {
 	'single-invitation': 'Compartir invitación',
 	'pending-reminder': 'Enviar recordatorio',
 	'single-reminder': 'Enviar recordatorio',
+	'pending-memories': 'Pedir fotos y videos',
 };
 
 const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
@@ -55,6 +57,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 	shareDateContext,
 	eventTitle,
 	mode = 'pending-invitation',
+	memoriesTemplate,
 }) => {
 	const {
 		editName,
@@ -102,6 +105,7 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 		shareDateContext,
 		eventTitle,
 		mode,
+		memoriesTemplate,
 	});
 
 	// Raw text so the host can clear the field while typing a larger number.
@@ -141,9 +145,11 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 			>
 				<div className="dashboard-modal__content">
 					<p className="dashboard-modal__confirm-text">
-						{mode === 'pending-reminder'
-							? 'No hay recordatorios pendientes por enviar.'
-							: 'No hay invitaciones pendientes por enviar.'}
+						{mode === 'pending-memories'
+							? 'Ya no hay invitados pendientes por pedirles fotos.'
+							: mode === 'pending-reminder'
+								? 'No hay recordatorios pendientes por enviar.'
+								: 'No hay invitaciones pendientes por enviar.'}
 					</p>
 				</div>
 			</ModalShell>
@@ -153,11 +159,13 @@ const SendInvitationModal: React.FC<SendInvitationModalProps> = ({
 	const subtitle = isQueueMode ? (
 		<span className="dashboard-modal__queue-count">
 			{pendingCount}{' '}
-			{isReminderMode
-				? 'recordatorios pendientes'
-				: pendingCount === 1
-					? 'pendiente'
-					: 'pendientes'}
+			{mode === 'pending-memories'
+				? 'por pedir fotos'
+				: isReminderMode
+					? 'recordatorios pendientes'
+					: pendingCount === 1
+						? 'pendiente'
+						: 'pendientes'}
 		</span>
 	) : undefined;
 

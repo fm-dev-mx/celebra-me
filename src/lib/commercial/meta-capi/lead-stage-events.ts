@@ -66,6 +66,7 @@ interface LeadConsentRow {
 	id: string;
 	session_id: string | null;
 	consent_marketing: boolean | null;
+	is_past_sale?: boolean | null;
 }
 
 /**
@@ -80,12 +81,12 @@ export async function enqueueMetaCrmLeadStageEvent(input: {
 }): Promise<void> {
 	const event = META_CRM_LEAD_STAGE_EVENTS[input.stage];
 	const rows = await supabaseRestRequest<LeadConsentRow[]>({
-		pathWithQuery: `leads?id=eq.${encodeURIComponent(input.leadId)}&select=id,session_id,consent_marketing&limit=1`,
+		pathWithQuery: `leads?id=eq.${encodeURIComponent(input.leadId)}&select=id,session_id,consent_marketing,is_past_sale&limit=1`,
 		method: 'GET',
 		useServiceRole: true,
 	});
 	const lead = rows[0];
-	if (!lead || lead.consent_marketing !== true) return;
+	if (!lead || lead.is_past_sale === true || lead.consent_marketing !== true) return;
 
 	await supabaseRestRequest<unknown>({
 		pathWithQuery: 'meta_conversion_events?on_conflict=event_id',
@@ -114,7 +115,9 @@ export async function enqueueMetaCrmLeadSalesStageEvents(lead: {
 	route: string | null;
 	stage: string;
 	packageValue: number | null;
+	isPastSale?: boolean;
 }): Promise<void> {
+	if (lead.isPastSale) return;
 	if (lead.route !== 'landing') return;
 	if (lead.stage !== 'qualified' && lead.stage !== 'order_confirmed') return;
 	await enqueueMetaCrmLeadStageEvent({ leadId: lead.id, stage: 'qualified' });

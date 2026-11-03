@@ -154,6 +154,7 @@ function baseDeps(): ProductionApplyExecuteDeps {
 		preflightSchema: () => schemaPlan(),
 		getProductionDbUrl: () => ({ url: PROD_URL }),
 		assertReleaseReadiness: () => ({ sha: 'abc1234' }),
+		assertWorkerServesRelease: async () => undefined,
 		resolvePackage: async (slug) => pkg(slug),
 		runInvitationPreflight: async (packageData) =>
 			invitationPreflight(packageData.invitation.slug),

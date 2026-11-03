@@ -379,7 +379,7 @@ export function requireReleaseCandidate(geometry: ReleaseCandidateGeometry): voi
 
 export type GitRunner = (args: string[]) => { status: number; stdout: string };
 
-function defaultGitRunner(args: string[]): { status: number; stdout: string } {
+export function defaultGitRunner(args: string[]): { status: number; stdout: string } {
 	try {
 		return { status: 0, stdout: execFileSync('git', args, { encoding: 'utf8' }) };
 	} catch (error) {

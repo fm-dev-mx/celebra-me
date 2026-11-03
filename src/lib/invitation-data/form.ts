@@ -44,7 +44,7 @@ export interface InvitationDataStep {
 	fields: InvitationDataField[];
 }
 
-export const INVITATION_DATA_TEXT_FIELD_NAMES = [
+const INVITATION_DATA_TEXT_FIELD_NAMES = [
 	'celebrantNames',
 	'eventDate',
 	'invitationTitle',

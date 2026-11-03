@@ -8,6 +8,7 @@ import {
 	sanitizeMetaAttribution,
 	type MetaAttribution,
 } from '@/lib/tracking/meta-attribution';
+import { normalizeReferralCode } from '@/lib/commercial/referrals';
 import { sanitizeTtclid } from '@/lib/tracking/tiktok-attribution';
 import type { TrackingRouteClass } from '@/lib/tracking/route-policy';
 
@@ -91,6 +92,7 @@ const SAFE_EVENT_PROPERTY_KEYS = new Set([
 	'lead_channel',
 	'lead_source',
 	'lead_code',
+	'referral_code',
 	'event_id',
 	'content_name',
 	'content_category',
@@ -173,6 +175,7 @@ export const TrackingEventSchema = z.object({
 	metaAttribution: MetaAttributionSchema,
 	// TikTok click ID; the browser sends it only with marketing consent.
 	ttclid: z.unknown().optional().transform(sanitizeTtclid),
+	referralCode: z.unknown().optional().transform(normalizeReferralCode),
 	eventProperties: z.record(z.string(), z.unknown()).default({}),
 	consentSnapshot: ConsentSnapshotSchema.optional().transform(normalizeConsentSnapshot),
 	isInternal: z.boolean().optional().default(false),

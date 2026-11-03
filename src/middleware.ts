@@ -18,6 +18,7 @@ import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
 import { isLocalProcess } from '@/lib/server/deploy-identity';
 import { isPreviewMfaBypassEnabled } from '@/lib/server/preview-mfa-bypass';
 import { resolvePermanentRedirect, withSecurityHeaders } from '@/lib/server/security-headers';
+import { COOKIE_NAME_IGNORE_TRACKING } from '@/lib/tracking/internal-exclusion';
 
 interface CookieStore {
 	get(name: string): { value: string } | undefined;
@@ -122,6 +123,8 @@ function finalizeMiddlewareResponse(pathname: string, response: Response): Respo
 	);
 }
 
+const IGNORE_TRACKING_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+
 function buildCookieOptions(maxAge: number) {
 	return {
 		path: '/',
@@ -130,6 +133,42 @@ function buildCookieOptions(maxAge: number) {
 		maxAge,
 		secure: !isLocalProcess(),
 	};
+}
+
+const INTERNAL_MARKER_PARAM = 'interno';
+
+/**
+ * Marker link for the owner's devices: `?interno=1` sets the internal-traffic cookie without
+ * signing in, `?interno=0` clears it. Either way the visit redirects to the same URL without the
+ * param, so the marker never lands in analytics or a shared link.
+ */
+function handleInternalTrafficMarker(
+	url: URL,
+	method: string | undefined,
+	cookies: CookieStore,
+): Response | null {
+	if (method !== 'GET' && method !== 'HEAD') return null;
+	const marker = url.searchParams.get(INTERNAL_MARKER_PARAM);
+	if (marker !== '1' && marker !== '0') return null;
+
+	if (marker === '1') {
+		cookies.set(COOKIE_NAME_IGNORE_TRACKING, 'true', {
+			...buildCookieOptions(IGNORE_TRACKING_MAX_AGE_SECONDS),
+			httpOnly: false,
+		});
+	} else {
+		cookies.delete(COOKIE_NAME_IGNORE_TRACKING, { path: '/' });
+	}
+
+	const target = new URL(url);
+	target.searchParams.delete(INTERNAL_MARKER_PARAM);
+	return new Response(null, {
+		status: 302,
+		headers: {
+			Location: `${target.pathname}${target.search}${target.hash}`,
+			'Cache-Control': PRIVATE_CACHE_CONTROL,
+		},
+	});
 }
 
 function clearPrimaryAuthCookies(cookies: CookieStore) {
@@ -436,6 +475,15 @@ function syncPostAuthCookies(
 	}
 
 	cookies.set('sb-idle-seen', String(now), buildCookieOptions(IDLE_TIMEOUT_SECONDS));
+
+	// Owner devices stop sending landing analytics and Meta events. The cookie is readable by
+	// the client tracker on purpose; the server ingestion reads the same flag.
+	if (authContext.role === 'super_admin') {
+		cookies.set(COOKIE_NAME_IGNORE_TRACKING, 'true', {
+			...buildCookieOptions(IGNORE_TRACKING_MAX_AGE_SECONDS),
+			httpOnly: false,
+		});
+	}
 }
 
 function buildSessionFromUser(
@@ -589,6 +637,9 @@ async function handleRequest(
 	if (isScannerRequest(url.pathname)) {
 		return new Response(null, { status: 404 });
 	}
+
+	const markerRedirect = handleInternalTrafficMarker(url, request.method, cookies);
+	if (markerRedirect) return markerRedirect;
 
 	if (!shouldHandleAuth(url.pathname)) {
 		const response = await next();

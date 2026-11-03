@@ -1,0 +1,15 @@
+// Naomi: the few rules her tokens cannot express. Everything else lives in the profile.
+
+// The cover arrives slowly as the envelope lifts: the portrait settles first, the letter follows.
+// The shared fade-in-up keyframes (opacity and a 20px lift) stay smooth on modest phones. The
+// wrapper's global reduced-motion reset removes both animations.
+.event--naomi-huerta.event-theme-wrapper[data-reveal-state='revealed']
+	.invitation-hero[data-variant='framed-portrait'] {
+	.framed-portrait-hero__photograph {
+		animation: motion-fade-in-up 2.2s cubic-bezier(0.33, 1, 0.68, 1) 0.8s both;
+	}
+
+	.framed-portrait-hero__letter {
+		animation: motion-fade-in-up 1.8s cubic-bezier(0.33, 1, 0.68, 1) 1.4s both;
+	}
+}

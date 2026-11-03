@@ -10,6 +10,84 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+### Changed
+
+- Dependencies: `astro` 7.4.4, `@astrojs/cloudflare` 14.4.3 and `vite` 8.3.5. The root `vite` pin
+  now moves with Astro; leaving it at 8.3.4 installed two copies of vite and left `require("fs")` in
+  the Worker bundle, which answered 500 on invitation routes (#760, #770).
+
+## [0.62.0-beta.1] - 2026-11-02
+
+Lets hosts ask each guest for their photos and videos after the event, and refreshes a few
+dependencies. Includes one additive migration, already applied in Preview and Production.
+
+### Added
+
+- Guest dashboard: after the event, while the photo upload window is open, hosts can ask each guest
+  for their photos and videos one by one through WhatsApp. Adds the nullable column
+  `guest_invitations.last_memories_reminder_sent_at`; apply the migration before deploying (#759).
+
+### Changed
+
+- Dependencies: `zod` 4.6.7, plus development tool updates (`knip`, `ts-jest`, `markdownlint-cli2`)
+  (#761, #762, #763, #764). The `astro` 7.4.4 bump (#760) was reverted before release because the
+  Preview Worker answered 500 on invitation routes.
+
+## [0.61.0-beta.1] - 2026-11-02
+
+Adds the XV invitation for Naomi Huerta with a new blush storybook theme, and reorders the
+godparents of Olivia y Antonio by role. No database migrations are included.
+
+### Added
+
+- Invitations: new XV invitation `naomi-huerta` (`/xv/naomi-huerta`) with the `storybook-blush`
+  theme preset, published with mobile and desktop page baselines (#756, #757).
+- Invitations: the `by-role` godparents layout gains an opt-in hierarchy (leading role, stepped
+  secondary roles, optional hairline and stacked phone layout) (#758).
+
+### Changed
+
+- Invitations: `olivia-y-antonio` adds the ring godparents and orders the roles by relevance (#754,
+  #758).
+- Tooling: the board core runs from the board repository `origin/main` without a tracked pin, and
+  sessions are tied to the task lock (#753, #755).
+
+## [0.60.0-beta.2] - 2026-11-01
+
+The shared header also stops jumping on phones: it waits while the browser address bar resizes and
+uses wider touch distances before it hides or shows. No database migrations are included.
+
+### Changed
+
+- Tooling: the board core pin advances to the nested subtask tree (#748).
+
+### Fixed
+
+- Header: on mobile the shared header waits 300 ms while the address bar resizes, opens that window
+  only on viewport height changes, hides and shows after 64/120 px of touch scroll and fades its
+  blur with a transition (#749).
+
+## [0.60.0-beta.1] - 2026-11-01
+
+The shared header no longer jumps while scrolling invitations and demos, and the Meta signal is
+cleaner: one ViewContent per package per session, CAPI delivery right after each tracked event and
+internal traffic kept out. No database migrations are included.
+
+### Changed
+
+- Tracking: browser conversion events reach the Meta Conversions API right after the tracking
+  response, with the scheduled job kept as fallback; `package_viewed` fires once per package per
+  browser session; a `super_admin` sign-in or the `?interno=1` link marks the device as internal
+  traffic and stops every Pixel, client and server event (`?interno=0` clears it) (#743).
+- Tooling: four generic lanes plus Preview and release (#737), the board keeps only its config and
+  launcher (#742) and the board core pin advances (#738, #741, #744, #745, #746); the consent
+  withdrawal pgTAP runs in CI and the backup provider filter is documented (#739).
+
+### Fixed
+
+- Header: a fixed 70 px header on desktop and scroll hysteresis stop the shared header from jumping
+  on invitations and demos (#740).
+
 ## [0.59.0-beta.1] - 2026-10-31
 
 The landing showroom switches demos smoothly and keeps its actions within reach, demos play one song

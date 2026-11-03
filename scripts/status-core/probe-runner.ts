@@ -4,9 +4,9 @@
  */
 
 import { spawn } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { PROJECT_ROOT, runPsql, type CommandResult } from '../db/db-workflow-lib.ts';
 import { redactCredentials } from '../db/db-target-config.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 export interface StatusProbeSessionOptions {
 	/** Per-query wall-clock budget (ms). */
@@ -22,11 +22,11 @@ export interface StatusProbeDebugCounters {
 }
 
 function memoKey(dbUrl: string, sql: string): string {
-	return createHash('sha256').update(`${dbUrl}\0${sql}`).digest('hex');
+	return sha256Hex(`${dbUrl}\0${sql}`);
 }
 
 function urlKey(dbUrl: string): string {
-	return createHash('sha256').update(dbUrl).digest('hex');
+	return sha256Hex(dbUrl);
 }
 
 function buildReadOnlyEnv(base: NodeJS.ProcessEnv, readOnly: boolean): NodeJS.ProcessEnv {

@@ -5,7 +5,9 @@ import {
 	findCommercialCustomerById,
 	findCommercialCustomerByPhone,
 	findCommercialCustomerByEmail,
+	listCustomersWithConfirmedSales,
 } from '@/lib/commercial/customer.repository';
+import { buildMetaCustomerListCsv } from '@/lib/commercial/referrals';
 import { normalizeCommercialPhone, normalizeCommercialEmail } from '@/lib/commercial/phone';
 import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
 import {
@@ -21,6 +23,14 @@ const CreateCommercialCustomerSchema = z.object({
 	email: z.email().optional().or(z.literal('')),
 	phone: z.string().trim().max(60).optional().or(z.literal('')),
 	createdFromLeadId: z.string().trim().min(1).max(80).optional(),
+	city: z.string().trim().max(120).optional().or(z.literal('')),
+	country: z
+		.string()
+		.trim()
+		.regex(/^[A-Za-z]{2}$/)
+		.optional()
+		.or(z.literal('')),
+	isPastClient: z.boolean().optional(),
 });
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -35,6 +45,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 			email: parsed.email,
 			phone: parsed.phone,
 			createdFromLeadId: parsed.createdFromLeadId,
+			city: parsed.city,
+			country: parsed.country,
+			isPastClient: parsed.isPastClient,
 		});
 
 		return successResponse(result, result.outcome === 'created' ? 201 : 200);
@@ -70,6 +83,19 @@ export const GET: APIRoute = async ({ request, url }) => {
 	try {
 		await requireAdminRateLimit(request, 'commercial:customers:search');
 		await requireAdminStrongSession(request);
+		if (url.searchParams.get('export') === 'meta-csv') {
+			// Meta customer list: only customers with a confirmed sale; the owner uploads it by hand.
+			const customers = await listCustomersWithConfirmedSales();
+			const csv = buildMetaCustomerListCsv(customers);
+			return new Response(csv, {
+				status: 200,
+				headers: {
+					'Content-Type': 'text/csv; charset=utf-8',
+					'Content-Disposition': 'attachment; filename="celebra-me-clientes-meta.csv"',
+					'Cache-Control': 'no-store',
+				},
+			});
+		}
 		if (url.searchParams.has('phone') || url.searchParams.has('email')) {
 			const query = validateQueryOrRespond(
 				url.searchParams,

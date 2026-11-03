@@ -1,4 +1,5 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import { normalizeReferralCode } from '@/lib/commercial/referrals';
 
 export interface CommercialLeadCandidate {
 	id: string;
@@ -16,6 +17,10 @@ export interface CommercialLeadCandidate {
 	utmMedium?: string | null;
 	utmCampaign?: string | null;
 	createdAt?: string | null;
+	isPastSale?: boolean;
+	referredByCustomerId?: string | null;
+	referralCodeUsed?: string | null;
+	referrerExternalId?: string | null;
 }
 
 export interface CommercialCustomerInput {
@@ -26,6 +31,10 @@ export interface CommercialCustomerInput {
 	phoneNational?: string;
 	phoneE164?: string;
 	createdFromLeadId?: string;
+	city?: string;
+	country?: string;
+	isPastClient?: boolean;
+	referralCode?: string;
 }
 
 export interface CommercialCustomer {
@@ -33,6 +42,11 @@ export interface CommercialCustomer {
 	displayName: string;
 	email?: string | null;
 	phoneE164?: string | null;
+	referralCode: string;
+	city?: string | null;
+	country: string;
+	isPastClient: boolean;
+	referralCreditMxn: number;
 }
 
 export interface LinkCommercialLeadToCustomerInput {
@@ -56,6 +70,10 @@ interface CommercialLeadRow {
 	utm_medium?: string | null;
 	utm_campaign?: string | null;
 	created_at?: string | null;
+	is_past_sale?: boolean | null;
+	referred_by_customer_id?: string | null;
+	referral_code_used?: string | null;
+	referrer_external_id?: string | null;
 }
 
 interface CommercialCustomerRow {
@@ -63,10 +81,15 @@ interface CommercialCustomerRow {
 	display_name: string;
 	email?: string | null;
 	phone_e164?: string | null;
+	referral_code?: string | null;
+	city?: string | null;
+	country?: string | null;
+	is_past_client?: boolean | null;
+	referral_credit_mxn?: number | string | null;
 }
 
 const LEAD_SELECT =
-	'id,lead_code,channel,status,customer_id,name,email,phone,phone_e164,event_type,package_interest,utm_source,utm_medium,utm_campaign,created_at';
+	'id,lead_code,channel,status,customer_id,name,email,phone,phone_e164,event_type,package_interest,utm_source,utm_medium,utm_campaign,created_at,is_past_sale,referred_by_customer_id,referral_code_used,referrer_external_id';
 
 export function emptyToUndefined(value: string | undefined): string | undefined {
 	const trimmed = value?.trim();
@@ -90,6 +113,10 @@ function toLeadCandidate(row: CommercialLeadRow): CommercialLeadCandidate {
 		utmMedium: row.utm_medium,
 		utmCampaign: row.utm_campaign,
 		createdAt: row.created_at,
+		isPastSale: row.is_past_sale === true,
+		referredByCustomerId: row.referred_by_customer_id,
+		referralCodeUsed: row.referral_code_used,
+		referrerExternalId: row.referrer_external_id,
 	};
 }
 
@@ -145,6 +172,28 @@ export async function findRecentCommercialLeads(input: {
 	return rows.map(toLeadCandidate);
 }
 
+const CUSTOMER_SELECT =
+	'id,display_name,email,phone_e164,referral_code,city,country,is_past_client,referral_credit_mxn';
+
+function toCustomer(row: CommercialCustomerRow): CommercialCustomer {
+	return {
+		id: row.id,
+		displayName: row.display_name,
+		email: row.email,
+		phoneE164: row.phone_e164,
+		referralCode: row.referral_code ?? '',
+		city: row.city ?? null,
+		country: row.country?.trim() || 'MX',
+		isPastClient: row.is_past_client === true,
+		referralCreditMxn:
+			typeof row.referral_credit_mxn === 'number'
+				? row.referral_credit_mxn
+				: typeof row.referral_credit_mxn === 'string'
+					? Number(row.referral_credit_mxn) || 0
+					: 0,
+	};
+}
+
 export async function upsertCommercialCustomer(
 	input: CommercialCustomerInput,
 ): Promise<CommercialCustomer> {
@@ -161,16 +210,47 @@ export async function upsertCommercialCustomer(
 			phone_national: emptyToUndefined(input.phoneNational),
 			phone_e164: emptyToUndefined(input.phoneE164),
 			created_from_lead_id: emptyToUndefined(input.createdFromLeadId),
+			city: emptyToUndefined(input.city),
+			country: emptyToUndefined(input.country)?.toUpperCase() ?? 'MX',
+			...(input.isPastClient !== undefined ? { is_past_client: input.isPastClient } : {}),
+			...(input.referralCode
+				? { referral_code: normalizeReferralCode(input.referralCode) }
+				: {}),
 		},
 	});
 	const row = rows[0];
 	if (!row) throw new Error('Customer upsert did not return a customer id.');
-	return {
-		id: row.id,
-		displayName: row.display_name,
-		email: row.email,
-		phoneE164: row.phone_e164,
-	};
+	return toCustomer(row);
+}
+
+export async function updateCommercialCustomerAttributes(input: {
+	customerId: string;
+	city?: string;
+	country?: string;
+	isPastClient?: boolean;
+	referralCreditMxn?: number;
+}): Promise<CommercialCustomer | null> {
+	const body: Record<string, unknown> = {};
+	const city = emptyToUndefined(input.city);
+	const country = emptyToUndefined(input.country)?.toUpperCase();
+	if (city !== undefined) body.city = city;
+	if (country !== undefined) body.country = country;
+	if (input.isPastClient !== undefined) body.is_past_client = input.isPastClient;
+	if (input.referralCreditMxn !== undefined) {
+		body.referral_credit_mxn = Math.max(0, Math.floor(input.referralCreditMxn));
+	}
+	if (Object.keys(body).length === 0) {
+		return findCommercialCustomerById(input.customerId);
+	}
+	body.updated_at = new Date().toISOString();
+	const rows = await supabaseRestRequest<CommercialCustomerRow[]>({
+		pathWithQuery: `customers?id=eq.${encodeURIComponent(input.customerId)}&select=${CUSTOMER_SELECT}`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body,
+	});
+	return rows[0] ? toCustomer(rows[0]) : null;
 }
 
 export async function linkCommercialLeadToCustomer(
@@ -185,17 +265,6 @@ export async function linkCommercialLeadToCustomer(
 			customer_id: input.customerId,
 		},
 	});
-}
-
-const CUSTOMER_SELECT = 'id,display_name,email,phone_e164';
-
-function toCustomer(row: CommercialCustomerRow): CommercialCustomer {
-	return {
-		id: row.id,
-		displayName: row.display_name,
-		email: row.email,
-		phoneE164: row.phone_e164,
-	};
 }
 
 export async function findCommercialCustomerByEmail(
@@ -220,13 +289,66 @@ export async function findCommercialCustomerByPhone(
 	return rows[0] ? toCustomer(rows[0]) : null;
 }
 
-export async function findCommercialCustomerById(
-	id: string,
-): Promise<CommercialCustomer | null> {
+export async function findCommercialCustomerById(id: string): Promise<CommercialCustomer | null> {
 	const rows = await supabaseRestRequest<CommercialCustomerRow[]>({
 		pathWithQuery: `customers?id=eq.${encodeURIComponent(id)}&select=${CUSTOMER_SELECT}&limit=1`,
 		method: 'GET',
 		useServiceRole: true,
 	});
 	return rows[0] ? toCustomer(rows[0]) : null;
+}
+
+export async function findCommercialCustomerByReferralCode(
+	referralCode: string,
+): Promise<CommercialCustomer | null> {
+	const normalized = normalizeReferralCode(referralCode);
+	if (!normalized) return null;
+	const rows = await supabaseRestRequest<CommercialCustomerRow[]>({
+		pathWithQuery: `customers?referral_code=eq.${encodeURIComponent(normalized)}&select=${CUSTOMER_SELECT}&limit=1`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	return rows[0] ? toCustomer(rows[0]) : null;
+}
+
+export async function listCustomersWithConfirmedSales(): Promise<CommercialCustomer[]> {
+	interface ConfirmedOrderWithCustomerRow {
+		id: string;
+		customer_id: string;
+		customers: CommercialCustomerRow | null;
+	}
+	interface ClassificationRow {
+		record_type: string;
+		record_id: string;
+	}
+	const [orderRows, classifications] = await Promise.all([
+		supabaseRestRequest<ConfirmedOrderWithCustomerRow[]>({
+			pathWithQuery: `sales_orders?status=in.(confirmed,deposit_paid,paid)&select=id,customer_id,customers(${CUSTOMER_SELECT})&order=created_at.desc&limit=5000`,
+			method: 'GET',
+			useServiceRole: true,
+		}),
+		supabaseRestRequest<ClassificationRow[]>({
+			pathWithQuery:
+				'commercial_record_classifications?classification=eq.test_qa&revoked_at=is.null&select=record_type,record_id&limit=5000',
+			method: 'GET',
+			useServiceRole: true,
+		}).catch(() => [] as ClassificationRow[]),
+	]);
+
+	const excludedOrders = new Set(
+		classifications.filter((c) => c.record_type === 'order').map((c) => c.record_id),
+	);
+	const excludedCustomers = new Set(
+		classifications.filter((c) => c.record_type === 'customer').map((c) => c.record_id),
+	);
+
+	const uniqueCustomers = new Map<string, CommercialCustomer>();
+	for (const row of orderRows) {
+		if (!row.customers) continue;
+		if (excludedOrders.has(row.id) || excludedCustomers.has(row.customer_id)) continue;
+		if (!uniqueCustomers.has(row.customer_id)) {
+			uniqueCustomers.set(row.customer_id, toCustomer(row.customers));
+		}
+	}
+	return [...uniqueCustomers.values()];
 }

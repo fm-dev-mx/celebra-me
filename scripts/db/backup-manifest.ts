@@ -1,7 +1,7 @@
-import { createHash } from 'node:crypto';
 import { readFileSync, statSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import type { RecoveryIntegritySnapshot } from './recovery-integrity.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 export const CRITICAL_BACKUP_KINDS = [
 	'database',
@@ -38,7 +38,7 @@ export interface CriticalBackupManifest {
 }
 
 function hashFile(path: string): string {
-	return createHash('sha256').update(readFileSync(path)).digest('hex');
+	return sha256Hex(readFileSync(path));
 }
 
 export function createArtifactManifest(

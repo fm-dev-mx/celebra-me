@@ -388,7 +388,7 @@ function applyDisposableMigrations(options: { isBaseline: boolean; maxVersion?: 
 	console.info('Migrations applied successfully via shared disposable migrate policy.');
 }
 
-export function cmdReset(): void {
+function cmdReset(): void {
 	console.info('=== Disposable Test Environment: Reset ===\n');
 
 	if (!isDisposableDbReady()) {
@@ -767,6 +767,7 @@ function cmdRunManagedDbContracts(): void {
 			'--config',
 			'jest.managed-db-contracts.config.cjs',
 			'tests/provision/identity-rekey-disposable-integration.test.ts',
+			'tests/provision/superseded-republish-disposable-integration.test.ts',
 		],
 		{
 			throwOnError: false,

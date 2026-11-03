@@ -53,6 +53,12 @@ content/assets publication, fixture provisioning, visual-reference acceptance, p
 changes, bypasses, force pushes, history rewrites, or destructive cleanup. Missing required schema
 compatibility is a blocker, not permission to migrate.
 
+Invitation content publication is a separate operation that follows this skill, never precedes it:
+**Worker first, content second.** Hand off to the owner's `pnpm prod:apply -- --slug <slug>` only
+after the activated Production Worker is verified for the merged `main` SHA. `prod:apply` refuses
+invitation content and owner patches when the Worker serving Production does not contain the commit
+it publishes from.
+
 Finish only after verifying the actual merged `main` SHA, correct Production Worker/environment,
 uploaded and activated Worker version, serving alias, and correlated smoke. The merged SHA may
 differ from the reviewed develop SHA; report both. Follow shared stop/recovery rules if incomplete.

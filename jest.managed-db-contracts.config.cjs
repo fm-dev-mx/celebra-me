@@ -8,6 +8,8 @@ const base = require('./jest.config.cjs');
 module.exports = {
 	...base,
 	testPathIgnorePatterns: (base.testPathIgnorePatterns || []).filter(
-		(pattern) => !pattern.includes('identity-rekey-disposable-integration'),
+		(pattern) =>
+			!pattern.includes('identity-rekey-disposable-integration') &&
+			!pattern.includes('superseded-republish-disposable-integration'),
 	),
 };

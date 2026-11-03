@@ -711,6 +711,94 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect(context.locals.hasAdminStrongAuth).toBe(true);
 	});
 
+	it('marks the superadmin device as internal tracking traffic', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockReturnValue({ value: 'admin-token' });
+		mockSupabaseResponse({
+			id: 'admin-1',
+			email: 'admin@test.com',
+			app_metadata: { role: 'super_admin' },
+			amr: [{ method: 'totp' }],
+		});
+
+		await middleware(context as unknown as APIContext, mockNext);
+
+		expect(mockCookies.set).toHaveBeenCalledWith(
+			'cm_ignore_tracking',
+			'true',
+			expect.objectContaining({ path: '/', httpOnly: false, maxAge: 60 * 60 * 24 * 365 }),
+		);
+	});
+
+	it('does not mark host devices as internal tracking traffic', async () => {
+		const context = createContext('/dashboard/invitados');
+		mockCookies.get.mockReturnValue({ value: 'valid-token' });
+		mockSupabaseResponse({
+			id: 'user-1',
+			email: 'host@test.com',
+			app_metadata: { role: 'host_client' },
+			amr: [{ method: 'password' }],
+		});
+
+		await middleware(context as unknown as APIContext, mockNext);
+
+		expect(mockCookies.set).not.toHaveBeenCalledWith(
+			'cm_ignore_tracking',
+			expect.anything(),
+			expect.anything(),
+		);
+	});
+
+	describe('internal-traffic marker link', () => {
+		function markerContext(path: string, method = 'GET') {
+			const context = createContext(path);
+			return { ...context, request: { ...context.request, method } };
+		}
+
+		it('marks the device with ?interno=1 and drops the param from the URL', async () => {
+			const context = markerContext('/precios?utm_source=ig&interno=1');
+
+			const response = (await middleware(
+				context as unknown as APIContext,
+				mockNext,
+			)) as Response;
+
+			expect(response.status).toBe(302);
+			expect(response.headers.get('Location')).toBe('/precios?utm_source=ig');
+			expect(response.headers.get('Cache-Control')).toContain('no-store');
+			expect(mockCookies.set).toHaveBeenCalledWith(
+				'cm_ignore_tracking',
+				'true',
+				expect.objectContaining({ path: '/', httpOnly: false, maxAge: 60 * 60 * 24 * 365 }),
+			);
+			expect(mockNext).not.toHaveBeenCalled();
+		});
+
+		it('clears the mark with ?interno=0', async () => {
+			const context = markerContext('/?interno=0');
+
+			const response = (await middleware(
+				context as unknown as APIContext,
+				mockNext,
+			)) as Response;
+
+			expect(response.headers.get('Location')).toBe('/');
+			expect(mockCookies.delete).toHaveBeenCalledWith('cm_ignore_tracking', { path: '/' });
+			expect(mockCookies.set).not.toHaveBeenCalled();
+		});
+
+		it('ignores other values and non-GET requests', async () => {
+			await middleware(markerContext('/?interno=si') as unknown as APIContext, mockNext);
+			await middleware(
+				markerContext('/api/tracking/events?interno=1', 'POST') as unknown as APIContext,
+				mockNext,
+			);
+
+			expect(mockCookies.set).not.toHaveBeenCalled();
+			expect(mockNext).toHaveBeenCalledTimes(2);
+		});
+	});
+
 	it('allows superadmin with OTP MFA (aal2) to dashboard', async () => {
 		const context = createContext('/dashboard/invitados');
 		mockCookies.get.mockReturnValue({ value: 'admin-token' });
