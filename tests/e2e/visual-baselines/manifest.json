@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-10-31T16:34:11.686Z",
+    "generatedAt": "2026-11-03T06:14:50.870Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,8 +11,8 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "19f33d7ec64fc53573eca6d1cee99c38c3ae826e11f0fb8d034193f90b870b6c",
-        "cssSha256": "fd80755edb0b77f802d9a46341cb2842972fbd5dbae9794b316096cf2e652219",
+        "lockfileSha256": "d8f90f50fcb48cee50dc5a9f83acd859cc9ba6b5b22f87b9792928dfe9a4e7ca",
+        "cssSha256": "652d987130f1dbd4f103175695fec48025efd98e98f9e2e25984af9a7cf810ff",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -187,7 +187,7 @@
             "cssOwner": "src/styles/themes/sections/hero/_editorial-cover.scss",
             "fixtureIdentity": "synthetic:hero.editorial-cover",
             "file": "jewelry-box-desktop-hero-editorial-cover.png",
-            "sha256": "be22bbc8238543fd2a85aa5ed018aa310711da2bad71220de2afc1c382b4a46e",
+            "sha256": "ef2ce585e64fdcbf3cab03ec04dfa69344a8ed5c0d9a75e3258ec82bf2ac7a6f",
             "contentHash": "1d328166f582f8a3f7f94a2e70529f56e39aa5faff2a52dd6b2ed527adfee767",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -2321,7 +2321,7 @@
             "file": "pages/invitation-xv-yireh-ana-mobile.png",
             "sha256": "3ef7261f9ab2719365a1910b287307a8702cea1683497823180aa44ba51a3ad4",
             "contentHash": "821c1120b89165be2d2a340e922289155532e080ec1425500e37a2bb07811919",
-            "assetHash": "1cb4408907cbdecf0db575b51a67f7cdfa87ad4eada65fc3cb25a6550ce28cf0",
+            "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2333,7 +2333,7 @@
             "file": "pages/invitation-xv-yireh-ana-desktop.png",
             "sha256": "ae44826f928891949bd28ae7bef357bac2b77fa461dac2edc13ab12ef7eb74ed",
             "contentHash": "821c1120b89165be2d2a340e922289155532e080ec1425500e37a2bb07811919",
-            "assetHash": "1cb4408907cbdecf0db575b51a67f7cdfa87ad4eada65fc3cb25a6550ce28cf0",
+            "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2391,8 +2391,8 @@
             "preset": "luxury-hacienda",
             "viewport": "mobile",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-            "sha256": "29c1b87d983836e4931cac5daeca51c8719201291f294511d5786c898473c01d",
-            "contentHash": "2bccce7fbb437bf847c3a191d80dfc99aad24fa6d7fb4519e671ba68c1b73759",
+            "sha256": "b5dda17b1c944aad6e9a7d67e03f24cd8ff46c99f5450ea8c83c273c41d2b137",
+            "contentHash": "35eea541e519067d46ef5eb65e249db3661a0bfa02983427a91432f169cbd34e",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
         },
@@ -2403,8 +2403,8 @@
             "preset": "luxury-hacienda",
             "viewport": "desktop",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-            "sha256": "bc81921c8fd217778e54ea4782a5678b27d993ffd4c4adc421db991e6f98a88e",
-            "contentHash": "2bccce7fbb437bf847c3a191d80dfc99aad24fa6d7fb4519e671ba68c1b73759",
+            "sha256": "0980bd538b5df1c06d1ec66bc1743895e4c4ee1fd40fdf89cee7a4377c5117e6",
+            "contentHash": "35eea541e519067d46ef5eb65e249db3661a0bfa02983427a91432f169cbd34e",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
         },
@@ -2553,9 +2553,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "5f2c9387cc28f8456ff0ef4805ad6df30649c202",
+    "referenceSha": "9f08f2a7b84d6cb43dc2930ccfa598696af07438",
     "variantManifest": {
-        "generatedAt": "2026-10-31T16:34:11.686Z",
+        "generatedAt": "2026-11-03T06:14:50.870Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2567,8 +2567,8 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "19f33d7ec64fc53573eca6d1cee99c38c3ae826e11f0fb8d034193f90b870b6c",
-            "cssSha256": "fd80755edb0b77f802d9a46341cb2842972fbd5dbae9794b316096cf2e652219",
+            "lockfileSha256": "d8f90f50fcb48cee50dc5a9f83acd859cc9ba6b5b22f87b9792928dfe9a4e7ca",
+            "cssSha256": "652d987130f1dbd4f103175695fec48025efd98e98f9e2e25984af9a7cf810ff",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2743,7 +2743,7 @@
                 "cssOwner": "src/styles/themes/sections/hero/_editorial-cover.scss",
                 "fixtureIdentity": "synthetic:hero.editorial-cover",
                 "file": "jewelry-box-desktop-hero-editorial-cover.png",
-                "sha256": "be22bbc8238543fd2a85aa5ed018aa310711da2bad71220de2afc1c382b4a46e",
+                "sha256": "ef2ce585e64fdcbf3cab03ec04dfa69344a8ed5c0d9a75e3258ec82bf2ac7a6f",
                 "contentHash": "1d328166f582f8a3f7f94a2e70529f56e39aa5faff2a52dd6b2ed527adfee767",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -4485,10 +4485,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "5f2c9387cc28f8456ff0ef4805ad6df30649c202"
+        "referenceSha": "9f08f2a7b84d6cb43dc2930ccfa598696af07438"
     },
     "pageManifest": {
-        "generatedAt": "2026-10-31T16:34:11.727Z",
+        "generatedAt": "2026-11-03T06:14:50.875Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4500,8 +4500,8 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "19f33d7ec64fc53573eca6d1cee99c38c3ae826e11f0fb8d034193f90b870b6c",
-            "cssSha256": "fd80755edb0b77f802d9a46341cb2842972fbd5dbae9794b316096cf2e652219",
+            "lockfileSha256": "d8f90f50fcb48cee50dc5a9f83acd859cc9ba6b5b22f87b9792928dfe9a4e7ca",
+            "cssSha256": "652d987130f1dbd4f103175695fec48025efd98e98f9e2e25984af9a7cf810ff",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4905,7 +4905,7 @@
                 "file": "pages/invitation-xv-yireh-ana-mobile.png",
                 "sha256": "3ef7261f9ab2719365a1910b287307a8702cea1683497823180aa44ba51a3ad4",
                 "contentHash": "821c1120b89165be2d2a340e922289155532e080ec1425500e37a2bb07811919",
-                "assetHash": "1cb4408907cbdecf0db575b51a67f7cdfa87ad4eada65fc3cb25a6550ce28cf0",
+                "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -4917,7 +4917,7 @@
                 "file": "pages/invitation-xv-yireh-ana-desktop.png",
                 "sha256": "ae44826f928891949bd28ae7bef357bac2b77fa461dac2edc13ab12ef7eb74ed",
                 "contentHash": "821c1120b89165be2d2a340e922289155532e080ec1425500e37a2bb07811919",
-                "assetHash": "1cb4408907cbdecf0db575b51a67f7cdfa87ad4eada65fc3cb25a6550ce28cf0",
+                "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -4975,8 +4975,8 @@
                 "preset": "luxury-hacienda",
                 "viewport": "mobile",
                 "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-                "sha256": "29c1b87d983836e4931cac5daeca51c8719201291f294511d5786c898473c01d",
-                "contentHash": "2bccce7fbb437bf847c3a191d80dfc99aad24fa6d7fb4519e671ba68c1b73759",
+                "sha256": "b5dda17b1c944aad6e9a7d67e03f24cd8ff46c99f5450ea8c83c273c41d2b137",
+                "contentHash": "35eea541e519067d46ef5eb65e249db3661a0bfa02983427a91432f169cbd34e",
                 "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4987,8 +4987,8 @@
                 "preset": "luxury-hacienda",
                 "viewport": "desktop",
                 "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-                "sha256": "bc81921c8fd217778e54ea4782a5678b27d993ffd4c4adc421db991e6f98a88e",
-                "contentHash": "2bccce7fbb437bf847c3a191d80dfc99aad24fa6d7fb4519e671ba68c1b73759",
+                "sha256": "0980bd538b5df1c06d1ec66bc1743895e4c4ee1fd40fdf89cee7a4377c5117e6",
+                "contentHash": "35eea541e519067d46ef5eb65e249db3661a0bfa02983427a91432f169cbd34e",
                 "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5137,9 +5137,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "5f2c9387cc28f8456ff0ef4805ad6df30649c202"
+        "referenceSha": "9f08f2a7b84d6cb43dc2930ccfa598696af07438"
     },
-    "candidateManifestSha256": "fbf1a17d3e9d2c82e9684120411e03e7ce8e92c98e61992dc47afcf49fa8697e",
-    "acceptedFromCommit": "5f2c9387cc28f8456ff0ef4805ad6df30649c202",
-    "acceptedAt": "2026-10-31T16:59:46.768Z"
+    "candidateManifestSha256": "c6e9d0d2764fd9bbe7c0ad623b5c8638affb2bc5f9cdf806265820426913d78a",
+    "acceptedFromCommit": "9f08f2a7b84d6cb43dc2930ccfa598696af07438",
+    "acceptedAt": "2026-11-03T06:15:42.774Z"
 }
