@@ -15,11 +15,6 @@
 		rgb(var(--color-candle-gold-rgb) / 12%),
 		transparent 48%
 	);
-	--location-er-map-surface: linear-gradient(
-		180deg,
-		rgb(var(--color-rose-shadow-rgb) / 12%),
-		rgb(var(--color-midnight-navy-rgb) / 18%)
-	);
 	--location-er-focus-ring: 2px solid rgb(var(--color-candle-gold-rgb) / 90%);
 	--location-er-route-line: var(--rose-gold-divider);
 	--location-bg-fallback:
@@ -27,11 +22,9 @@
 		var(--location-er-candle-glow), var(--enchanted-section-dark-bg);
 	--location-text-color: var(--color-text-on-dark);
 	--location-padding-block-fallback: clamp(3.5rem, 6vw, 5rem) clamp(3rem, 6vw, 5rem);
-	--location-container-max-width: min(1120px, calc(100vw - 2rem));
 	--location-container-max-width-sm: min(34rem, calc(100vw - 2rem));
 	--location-gap: clamp(2.4rem, 5vw, 4.8rem);
 	--location-container-gap-sm: clamp(2rem, 8vw, 3rem);
-	--location-card-max-width: 28rem;
 	--location-card-bg-fallback: var(--location-er-frame-bg);
 	--location-card-border-fallback: 1px solid var(--location-er-frame-border);
 	--location-card-radius: 8px;
@@ -70,8 +63,8 @@
 			1px 36% no-repeat,
 		linear-gradient(var(--location-er-inner-border), var(--location-er-inner-border)) 100%
 			100% / 1px 36% no-repeat;
-	--location-outer-frame-padding: clamp(0.4rem, 1vw, 0.6rem);
-	--location-outer-frame-bg: var(--location-er-map-surface);
+	--location-outer-frame-padding: 0;
+	--location-outer-frame-bg: transparent;
 	--location-outer-frame-border-bottom: 1px solid rgb(var(--color-antique-gold-rgb) / 34%);
 	--location-image-aspect-ratio: 4 / 3;
 	--location-image-aspect-ratio-xs: 16 / 10;
@@ -225,36 +218,6 @@
 
 	.event-location__container {
 		align-items: stretch;
-
-		@include mixins.respond-to(md) {
-			position: relative;
-
-			&::before {
-				content: '';
-				position: absolute;
-				top: clamp(5rem, 10vw, 7.5rem);
-				left: 50%;
-				width: min(4.5vw, 3rem);
-				height: 1px;
-				background: var(--location-er-route-line);
-				opacity: 50%;
-				pointer-events: none;
-				transform: translateX(-50%);
-			}
-
-			&::after {
-				content: '';
-				position: absolute;
-				top: calc(clamp(5rem, 10vw, 7.5rem) - 0.22rem);
-				left: 50%;
-				width: 0.45rem;
-				height: 0.45rem;
-				border: 1px solid rgb(var(--color-candle-gold-rgb) / 38%);
-				background: rgb(var(--color-rose-shadow-rgb) / 44%);
-				pointer-events: none;
-				transform: translateX(-50%) rotate(45deg);
-			}
-		}
 	}
 
 	.event-location__card-wrapper {
@@ -450,4 +413,11 @@
 			animation: none;
 		}
 	}
+}
+
+// The venue-plates variant narrows the pair to 26rem cards in a 56rem column and wins on source
+// order; on a wide page the two venues take a fuller share of the width.
+.theme-preset--enchanted-rose .event-location[data-variant] {
+	--location-container-max-width: min(76rem, calc(100vw - 2rem));
+	--location-card-max-width: 34rem;
 }
