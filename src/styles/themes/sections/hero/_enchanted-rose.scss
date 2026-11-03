@@ -1,6 +1,5 @@
-@use 'sass:list';
-@use 'sass:string';
 @use '../../../global/mixins' as mixins;
+@use '../theme-shell/enchanted-rose-paper' as paper;
 
 // ---------------------------------------------------------------------------
 // Corner ornament patterns
@@ -470,125 +469,75 @@
 	}
 }
 
-// Candle sparks for the velvet bed, one small gold point per (x, y) position.
-@function enchanted-rose-sparks($points) {
-	$spark: rgb(var(--color-candle-gold-rgb) / 75%);
-	$glow: rgb(var(--color-candle-gold-rgb) / 14%);
-	$layers: ();
-
-	@each $x, $y in $points {
-		$layers: list.append(
-			$layers,
-			string.unquote(
-				'radial-gradient(circle, #{$spark} 0 1.5px, #{$glow} 2px, transparent 6px) #{$x} #{$y} / 12px 12px no-repeat'
-			),
-			$separator: comma
-		);
-	}
-
-	@return $layers;
-}
-
-// A small gold diamond ringed in velvet, set on the seam between the velvet bed and the ivory.
-@mixin enchanted-rose-seam-diamond($fill, $ring) {
-	content: '';
-	position: absolute;
-	width: 0.5rem;
-	height: 0.5rem;
-	background: #{$fill};
-	translate: -50% -50%;
-	rotate: 45deg;
-	box-shadow:
-		0 0 0 2px color-mix(in srgb, var(--color-velvet-burgundy) 82%, black),
-		0 0 0 3px #{$ring},
-		0 0 10px 2px rgb(var(--color-candle-gold-rgb) / 18%);
-	pointer-events: none;
-}
-
-@keyframes enchanted-rose-spark-twinkle {
-	0%,
-	100% {
-		opacity: 35%;
-	}
-
-	50% {
-		opacity: 60%;
-	}
-}
-
-// Velvet case: the opening's jewelry box carries into the cover. The portrait sits on a burgundy
-// velvet bed inside a double gold hairline, like a jewel set in its case, and a candle glow warms
-// the ivory ground around it.
+// Open jewelry case: the opening's velvet box carries into the cover. The whole hero is the velvet
+// bed; the portrait rests in a gilded double-bevel frame, and the title is a card of the letter's
+// laid paper laid over the velvet, overlapping the frame's foot, so the page never splits in two.
 .theme-preset--enchanted-rose
 	.invitation-hero.framed-portrait-hero[data-variant='framed-portrait'] {
 	$gold: rgb(var(--color-action-accent-rgb));
 	$gold-soft: rgb(var(--color-action-accent-rgb) / 55%);
+	$gold-bright: rgb(var(--color-candle-gold-rgb));
 	$velvet: var(--color-velvet-burgundy);
-	$bracket: linear-gradient(
-		rgb(var(--color-action-accent-rgb) / 80%),
-		rgb(var(--color-action-accent-rgb) / 80%)
-	);
-	$arm: clamp(1rem, 2.2vw, 1.5rem);
-	$bar: 1.5px;
+	$velvet-deep: color-mix(in srgb, var(--color-velvet-burgundy) 82%, black);
+	$radius: clamp(1rem, 2.6vw, 1.5rem);
+	$pad: clamp(0.625rem, 1.8vw, 1.125rem);
+	$inset: 0.3125rem;
 
+	--hero-letter-align: center;
+	--hero-title-max-width: none;
+	--hero-scroll-align: center;
+	--hero-scroll-display: grid;
+
+	// A candle pool lights the velvet behind the portrait.
 	&::before {
 		inset: 0;
 		height: auto;
 		border-radius: 0;
-		background:
-			radial-gradient(
-				ellipse 46% 52% at 50% 30%,
-				rgb(var(--color-candle-gold-rgb) / 16%),
-				transparent 72%
-			),
-			radial-gradient(
-				ellipse 60% 44% at 50% 34%,
-				rgb(var(--color-blush-pink-rgb) / 22%),
-				transparent 74%
-			);
+		background: radial-gradient(
+			ellipse 70% 42% at 50% 30%,
+			rgb(var(--color-deep-rose-red-rgb) / 40%),
+			transparent 72%
+		);
 		opacity: 100%;
 	}
 
 	.framed-portrait-hero__photograph {
-		// Square case, so nothing needs clipping; without its own stacking context the velvet bed
-		// below paints under the case and over the ivory ground.
+		// A cushioned case with softly rounded corners (never an arch); nothing needs clipping, and
+		// without its own stacking context the velvet bed below paints under the case and over the
+		// hero's ground.
 		isolation: auto;
 		overflow: visible;
-		padding: clamp(0.75rem, 2.2vw, 1.375rem);
+		padding: #{$pad};
+		border-radius: #{$radius};
 		background:
-			radial-gradient(
-				ellipse 70% 60% at 50% 38%,
-				rgb(var(--color-deep-rose-red-rgb) / 38%),
-				transparent 72%
-			),
-			radial-gradient(ellipse 120% 100% at 50% 50%, transparent 55%, rgb(0 0 0 / 34%)),
-			#{$velvet};
+			linear-gradient(145deg, rgb(255 255 255 / 6%), transparent 40%),
+			#{$velvet-deep};
 
-		// Outer gold hairline on the case edge, a velvet gap, then the inner bezel around the photo.
+		// Double bevel: a bright outer lip, a dark cut, the gold face, a velvet channel and a fine
+		// inner bezel around the photo, then the case's shadow and a candle halo on the velvet.
 		box-shadow:
-			inset 0 0 0 1px #{$gold-soft},
-			inset 0 0 0 5px #{$velvet},
-			inset 0 0 0 6px #{$gold-soft},
-			inset 0 1px 10px rgb(0 0 0 / 30%),
-			0 28px 56px -18px rgb(var(--color-rose-shadow-rgb) / 52%),
-			0 10px 22px -10px rgb(var(--color-rose-shadow-rgb) / 36%),
-			0 0 90px 24px rgb(var(--color-deep-rose-red-rgb) / 42%),
-			0 0 170px 60px rgb(var(--color-candle-gold-rgb) / 14%);
+			inset 0 0 0 1px #{$gold-bright},
+			inset 0 0 0 2px color-mix(in srgb, #{$gold} 55%, black),
+			inset 0 0 0 4px #{$gold},
+			inset 0 0 0 5px color-mix(in srgb, #{$gold} 45%, black),
+			inset 0 1px 12px 5px rgb(0 0 0 / 45%),
+			0 0 0 1px rgb(0 0 0 / 35%),
+			0 30px 48px -16px rgb(0 0 0 / 55%),
+			0 0 120px 30px rgb(var(--color-candle-gold-rgb) / 10%);
 
-		// The velvet bed: it runs from the case to the screen's edges (the hero clips it) and stops
-		// a short way past the case on the letter's side, where a gold hairline finishes it and its
-		// shadow falls on the ivory. A fine crossed weave gives it the pile of velvet.
+		// The velvet bed covers the whole hero (the hero clips it); a fine crossed weave and a soft
+		// sheen give it the pile of velvet.
 		&::before {
 			content: '';
 			position: absolute;
-			inset: -100vh -100vw -2.5rem;
+			inset: -100vh -100vw;
 			z-index: -1;
 			pointer-events: none;
 			background:
 				linear-gradient(
 					115deg,
 					transparent 40%,
-					rgb(var(--color-blush-pink-rgb) / 7%) 50%,
+					rgb(var(--color-blush-pink-rgb) / 6%) 50%,
 					transparent 60%
 				),
 				repeating-linear-gradient(
@@ -597,66 +546,71 @@
 					transparent 1px 3px
 				),
 				repeating-linear-gradient(-45deg, rgb(0 0 0 / 14%) 0 1px, transparent 1px 4px),
-				color-mix(in srgb, var(--color-velvet-burgundy) 82%, black);
-			box-shadow:
-				1px 1px 0 #{$gold-soft},
-				0 22px 40px -18px rgb(var(--color-rose-shadow-rgb) / 55%),
-				22px 0 40px -18px rgb(var(--color-rose-shadow-rgb) / 55%);
+				#{$velvet-deep};
 		}
 
 		img {
-			box-shadow: 0 0 0 1px rgb(var(--color-action-accent-rgb) / 40%);
+			border-radius: calc(#{$radius} - #{$pad} + 0.25rem);
+			box-shadow:
+				0 0 0 1px #{$gold-soft},
+				0 0 0 3px rgb(0 0 0 / 30%);
 		}
 
-		// Fine gold corner brackets, the metal guards of a jewelry case, clasp the four corners.
+		// A fine gold hairline runs inside the bevel, following the case's rounded corners.
 		&::after {
 			content: '';
 			position: absolute;
-			inset: 0.375rem;
+			inset: #{$inset};
 			z-index: 1;
+			border: 1px solid rgb(var(--color-action-accent-rgb) / 70%);
+			border-radius: calc(#{$radius} - #{$inset});
 			pointer-events: none;
-			background:
-				#{$bracket} top left / #{$arm} #{$bar} no-repeat,
-				#{$bracket} top left / #{$bar} #{$arm} no-repeat,
-				#{$bracket} top right / #{$arm} #{$bar} no-repeat,
-				#{$bracket} top right / #{$bar} #{$arm} no-repeat,
-				#{$bracket} bottom left / #{$arm} #{$bar} no-repeat,
-				#{$bracket} bottom left / #{$bar} #{$arm} no-repeat,
-				#{$bracket} bottom right / #{$arm} #{$bar} no-repeat,
-				#{$bracket} bottom right / #{$bar} #{$arm} no-repeat;
 		}
 	}
 
-	// Four sparks over the velvet twinkle softly in two pairs; under reduced motion they hold.
-	.framed-portrait-hero__layout {
+	// The title card: the letter's deckled laid paper. The deckle mask would cut a box shadow, so
+	// the paper lives on a layer behind the copy and the card casts its shadow as a filter.
+	.framed-portrait-hero__letter {
 		position: relative;
-
-		&::before,
-		&::after {
-			content: '';
-			position: absolute;
-			inset: -5rem -1.5rem 0;
-			pointer-events: none;
-			animation: enchanted-rose-spark-twinkle 6s ease-in-out infinite;
-		}
+		z-index: 1;
+		isolation: isolate;
+		justify-self: center;
+		width: 100%;
+		max-width: 26rem;
+		padding: clamp(1.5rem, 3vw, 2.25rem) clamp(1.25rem, 3vw, 2.5rem);
+		filter: drop-shadow(0 1px 1px rgb(0 0 0 / 30%))
+			drop-shadow(0 1.25rem 1.5rem rgb(0 0 0 / 45%));
 
 		&::before {
-			background: enchanted-rose-sparks((6% 8%, 94% 48%));
-		}
-
-		&::after {
-			background: enchanted-rose-sparks((88% 4%, 5% 58%));
-			animation-delay: -3s;
+			content: '';
+			position: absolute;
+			inset: 0;
+			z-index: -1;
+			background:
+				#{paper.$grain} 0 0 / 180px 180px,
+				#{paper.$fibres} 0 0 / 240px 240px,
+				repeating-linear-gradient(
+					0deg,
+					transparent 0 2px,
+					rgb(var(--color-walnut-brown-rgb) / 3.5%) 2px 3px
+				),
+				linear-gradient(
+					90deg,
+					rgb(var(--color-walnut-brown-rgb) / 8%),
+					transparent 12% 88%,
+					rgb(var(--color-walnut-brown-rgb) / 10%)
+				),
+				radial-gradient(ellipse 80% 60% at 50% 0%, rgb(255 255 255 / 50%), transparent 70%),
+				color-mix(in srgb, var(--color-warm-ivory) 88%, rgb(var(--color-antique-gold-rgb)));
+			mask: #{paper.$deckle} center / 100% 100% no-repeat;
 		}
 	}
 
-	// A gold diamond pins the seam where the velvet meets the ivory page.
-	.framed-portrait-hero__letter,
+	// The name reads in two lines of one upright serif: the given names, then the family name.
 	.framed-portrait-hero__name {
-		position: relative;
+		margin-inline: auto;
 	}
 
-	// The name reads in two lines of one upright serif: the first name, then the family names.
 	.framed-portrait-hero__name-lead,
 	.framed-portrait-hero__name-rest {
 		display: block;
@@ -673,8 +627,8 @@
 			display: block;
 			width: 4.5rem;
 			height: 9px;
-			margin: 1.125rem 0 1rem;
-			background: #{$gold-soft};
+			margin: 1rem auto 0.875rem;
+			background: #{$gold};
 			mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 9'%3E%3Cpath d='M0 4h42v1H0zM54 4h42v1H54zM48 0l4.5 4.5L48 9l-4.5-4.5z'/%3E%3C/svg%3E")
 				center / 100% 100% no-repeat;
 		}
@@ -685,96 +639,56 @@
 		color: rgb(var(--color-velvet-burgundy-rgb) / 82%);
 	}
 
+	// The cue: a small label over a chevron at the foot of the case, in candle gold on the velvet.
+	.framed-portrait-hero__invitation {
+		gap: 0.375rem;
+		color: rgb(var(--color-candle-gold-rgb) / 88%);
+	}
+
 	@include mixins.respond-below(lg) {
+		--hero-portrait-max-width: none;
+		--hero-portrait-width-mobile: 100%;
+		--hero-portrait-height-mobile: auto;
+		--hero-title-size: clamp(2.25rem, 10vw, 3rem);
+
 		.framed-portrait-hero__photograph {
+			width: min(85%, 22rem);
 			margin-inline: auto;
-		}
 
-		// The velvet stops just under the case, so the title opens on the ivory page.
-		.framed-portrait-hero__photograph::before {
-			inset-block-end: -1rem;
-		}
-
-		// The letter keeps the desktop's leading edge, which leaves the right edge to the scroll cue.
-		.framed-portrait-hero__letter {
-			margin-top: 2rem;
-			text-align: start;
-
-			// The seam runs 1.75rem above the letter (the grid gap plus its margin), under the case.
-			&::before {
-				@include enchanted-rose-seam-diamond($bracket, $gold-soft);
-
-				top: -1.75rem;
-				left: 50%;
+			img {
+				aspect-ratio: 4 / 5;
+				object-fit: cover;
 			}
 		}
 
-		// Phones set the family names on one line under the first name, clear of the scroll cue.
-		--hero-title-size: clamp(2.75rem, 12.25vw, 4rem);
+		// The card overlaps the frame's foot and runs a little narrower than the case.
+		.framed-portrait-hero__letter {
+			width: min(92%, 24rem);
+			margin-top: -2.5rem;
+		}
 	}
 
 	@include mixins.respond-to(lg) {
-		// Sized so "Rose Valenzuela" fills one line of the letter column.
-		--hero-title-size: clamp(3.75rem, 6.1vw, 5.5rem);
+		--hero-title-size: clamp(3rem, 4.6vw, 4.25rem);
 
-		// The sparks frame the case: the layer covers the velvet column from the screen edge.
 		.framed-portrait-hero__layout {
-			&::before,
-			&::after {
-				inset: -8rem auto -6rem -12rem;
-				width: calc(12rem + 45%);
-			}
-
-			&::before {
-				background: enchanted-rose-sparks((12% 24%, 64% 95%));
-			}
-
-			&::after {
-				background: enchanted-rose-sparks((78% 7%, 16% 76%));
-			}
+			align-items: center;
 		}
 
-		// The seam sits halfway across the 5rem gap, level with the name.
-		.framed-portrait-hero__name::before {
-			@include enchanted-rose-seam-diamond($bracket, $gold-soft);
-
-			top: 50%;
-			left: -2.5rem;
+		.framed-portrait-hero__photograph {
+			justify-self: end;
 		}
 
-		// The candle glow warms the letter's ivory beside the velvet.
-		&::before {
-			background:
-				radial-gradient(
-					ellipse 34% 60% at 66% 46%,
-					rgb(var(--color-candle-gold-rgb) / 14%),
-					transparent 72%
-				),
-				radial-gradient(
-					ellipse 46% 70% at 62% 50%,
-					rgb(var(--color-blush-pink-rgb) / 22%),
-					transparent 74%
-				);
+		// The card leans on the case from the right, overlapping its edge.
+		.framed-portrait-hero__letter {
+			justify-self: start;
+			max-width: 30rem;
+			margin-left: -4rem;
 		}
 
-		// The bed runs the full height and stops halfway across the gap to the letter.
-		.framed-portrait-hero__photograph::before {
-			inset: -100vh -2.5rem -100vh -100vw;
-			box-shadow:
-				1px 0 0 #{$gold-soft},
-				22px 0 40px -18px rgb(var(--color-rose-shadow-rgb) / 55%);
-		}
-	}
-}
-
-@include mixins.reduced-motion {
-	.theme-preset--enchanted-rose
-		.invitation-hero.framed-portrait-hero[data-variant='framed-portrait']
-		.framed-portrait-hero__layout {
-		&::before,
-		&::after {
-			animation: none;
-			opacity: 70%;
+		// The occasion keeps one line at the desktop script size.
+		.framed-portrait-hero__occasion {
+			white-space: nowrap;
 		}
 	}
 }

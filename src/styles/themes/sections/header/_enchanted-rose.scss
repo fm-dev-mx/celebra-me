@@ -126,16 +126,16 @@
 		backdrop-filter: blur(12px) saturate(120%);
 	}
 
-	// The resting header drops the scrim. Its links sit on the hero's ivory page (burgundy), while
-	// the initials and the phone latch sit on the velvet bed, so they keep the candle gold. The
-	// scrolled bar keeps its ivory on midnight.
+	// The resting header drops the scrim: the whole hero is the velvet bed, so its links read in
+	// warm ivory and the initials and the phone latch keep the candle gold. The scrolled bar keeps
+	// its ivory on midnight.
 	&.header-base--transparent {
 		--nav-transparent-scrim: none;
-		--header-nav-color-transparent: rgb(var(--color-velvet-burgundy-rgb) / 84%);
+		--header-nav-color-transparent: rgb(var(--color-warm-ivory-rgb) / 86%);
 		--header-nav-shadow-transparent: none;
 		--header-nav-filter-transparent: none;
-		--header-nav-cta-bg: var(--color-velvet-burgundy);
-		--header-nav-cta-color: var(--color-warm-ivory);
+		--header-nav-cta-bg: transparent;
+		--header-nav-cta-color: var(--color-candle-gold);
 
 		.event-header__title {
 			color: var(--color-candle-gold);

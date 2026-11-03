@@ -11,13 +11,11 @@
 	--music-player-prompt-accent: rgb(var(--color-candle-gold-rgb));
 
 	.invitation-hero.framed-portrait-hero {
-		// The arched frame gives way to a square velvet case (structure in the preset hero); the
-		// cue rises clear of the music pill, and the name sets in two lines.
+		// The arched frame gives way to a square velvet case (structure in the preset hero), and
+		// the name sets in two lines.
 		--hero-portrait-radius: 0;
 		--hero-portrait-outline: none;
 		--hero-portrait-height-desktop: min(68svh, 40rem);
-		--hero-title-max-width: 16ch;
-		--hero-scroll-bottom: 6.5rem;
 		--hero-name-font-weight: 400;
 		--hero-name-letter-spacing: -0.02em;
 		--hero-details-font: 500 0.8125rem / 1.6 var(--font-body);

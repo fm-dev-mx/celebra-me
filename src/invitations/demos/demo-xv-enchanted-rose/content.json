@@ -56,10 +56,10 @@
         }
     },
     "hero": {
-        "scrollCue": "constellation",
+        "scrollCue": "chevron",
         "presentation": {
             "venueIndex": 1,
-            "nameLeadWords": 1
+            "nameLeadWords": 2
         },
         "name": "Isabella Rose Valenzuela",
         "label": "Mis XV Años",
