@@ -21,7 +21,6 @@
 
 import { readdirSync, existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { createHash } from 'node:crypto';
 import { PROJECT_ROOT, queryJsonArray } from './db-workflow-lib.ts';
 import { fetchRemoteMigrationVersions } from '../status-core/migration-history-reader.ts';
 import { ensureDisposableDbAvailable } from './disposable-availability.ts';
@@ -55,6 +54,7 @@ import {
 	resolveDbUrl,
 	classifyDbTarget,
 } from './db-target-config.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 const MIGRATIONS_DIR = resolve(PROJECT_ROOT, 'supabase', 'migrations');
 
@@ -201,7 +201,7 @@ function queryGrants(dbUrl: string): GrantMetadata[] {
 
 function generateFingerprint(data: unknown): string {
 	const str = JSON.stringify(data);
-	return createHash('sha256').update(str).digest('hex');
+	return sha256Hex(str);
 }
 
 function fingerprintPayload(meta: SchemaMetadata): unknown {

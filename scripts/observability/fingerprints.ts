@@ -2,7 +2,6 @@
  * Deterministic fingerprints for Local Render Corpus observability freshness.
  */
 
-import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import {
@@ -10,6 +9,7 @@ import {
 	listLocalRenderCorpus,
 } from '../provision/local-render-corpus/registry.ts';
 import type { ObservabilityFingerprints } from './types.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 const PROJECT_ROOT = process.cwd();
 
@@ -20,12 +20,8 @@ const INPUT_PATHS = [
 	'tests/provision/local-render-corpus-regression.test.ts',
 ] as const;
 
-function sha256Hex(input: string): string {
-	return createHash('sha256').update(input).digest('hex');
-}
-
 function hashFileContents(absPath: string): string {
-	return createHash('sha256').update(readFileSync(absPath)).digest('hex');
+	return sha256Hex(readFileSync(absPath));
 }
 
 function collectFilesRecursive(absDir: string): string[] {

@@ -1,5 +1,5 @@
 /** Read-only Preview receipt inspection and metadata-only stale provenance recovery. */
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { requirePreviewDbUrl, runPsql, sqlLiteral } from '../db/db-workflow-lib.ts';
@@ -25,6 +25,7 @@ import {
 	type PreviewReceiptState,
 	type ReceiptRow,
 } from './preview/preview-receipt-state-query.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 export interface PreviewReceiptDiagnosis {
 	status: 'IN_SYNC' | 'RECOVERABLE' | 'BLOCKED';
@@ -92,7 +93,7 @@ function readPackage(path: string): InvitationPackageData {
 }
 
 function hashValue(value: unknown): string {
-	return createHash('sha256').update(canonicalize(value)).digest('hex');
+	return sha256Hex(canonicalize(value));
 }
 
 function same(left: unknown, right: unknown): boolean {

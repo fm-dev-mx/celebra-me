@@ -15,6 +15,7 @@ import type {
 	MigrationRolloutEntry,
 	MigrationRolloutRegistry,
 } from './migration-deployment-compatibility.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 type MigrationSqlRiskKind =
 	| 'ordinary'
@@ -211,7 +212,7 @@ function normalizeSqlForDigest(sql: string): string {
 }
 
 export function contentDigestOf(sql: string): string {
-	return createHash('sha256').update(normalizeSqlForDigest(sql)).digest('hex');
+	return sha256Hex(normalizeSqlForDigest(sql));
 }
 
 function resolveMigrationSqlPath(version: string): string | null {
