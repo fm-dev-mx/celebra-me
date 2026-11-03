@@ -64,7 +64,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | rsvpGuestCap          | 2                                                                                            | inferred       | owner-session | Fallback only; per-guest passes govern seats                 |
 | rsvpWhatsappPhone     | —                                                                                            | not_applicable | owner-session | No WhatsApp confirmation flow                                |
 | rsvpDeadline          | 2026-12-04 (viernes 4 de diciembre)                                                          | inferred       | owner-session | 14 days before (D4)                                          |
-| gifts                 | Lluvia de sobres                                                                             | inferred       | owner-session | Agent draft, pending client approval (D4)                    |
+| gifts                 | Liverpool registry, event 60070167                                                           | verified       | owner-session | Client-supplied 2026-11-03; gift stays optional              |
 | itinerary             | Misa 18:30, Recepción 21:00, Vals 21:30, Cena 22:30, Baile 23:30, Cierre 02:00               | inferred       | owner-session | Agent draft, pending client approval (D4)                    |
 | musicUrl              | Client song (YouTube reference)                                                              | verified       | wa-export     | Hosted at 64 kbps on the media domain (So This Is Love)      |
 | checkInQr             | —                                                                                            | not_applicable | wa-export     | Promo package without QR check-in                            |
@@ -150,8 +150,9 @@ Guest-facing copy (agent draft, D4; pending client approval). Voice: Naomi in th
 - Program: «Así será mi noche» · Misa 18:30 · Recepción 21:00 · Vals 21:30 · Cena 22:30 · Baile
   23:30 · Cierre 02:00.
 - Gallery: «Antes de mi gran noche».
-- Gifts: «Lluvia de sobres» · «Su presencia es mi mejor regalo. Si desea tener un detalle conmigo,
-  habrá lluvia de sobres.»
+- Gifts: «Mesa de regalos» · «Su presencia es mi mejor regalo. Si desea tener un detalle conmigo, es
+  totalmente opcional: puede elegir de mi mesa en Liverpool o el obsequio que guste.» · Liverpool,
+  «Número de evento: 60070167».
 - Pass: «Su lugar ya está apartado» · «Pase personal e intransferible».
 - RSVP: «¿Me acompaña?» · «Le agradeceré confirmar antes del viernes 4 de diciembre.»
 - Closing: «Gracias por ser parte de mis quince años. Le espero el 18 de diciembre.» · «Naomi».

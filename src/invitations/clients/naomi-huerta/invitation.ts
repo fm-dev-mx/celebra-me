@@ -211,12 +211,20 @@ const content: CanonicalEventContentInput = {
 		],
 	},
 	gifts: {
-		// A two-line note, as on printed stationery.
+		// Client-supplied Liverpool registry; the note keeps the gift optional.
 		variant: 'standard',
-		title: 'Lluvia de sobres',
-		presentation: 'legend-only',
+		title: 'Mesa de regalos',
+		presentation: 'catalog',
 		subtitle:
-			'Su presencia es mi mejor regalo. Si desea tener un detalle conmigo, habrá lluvia de sobres.',
+			'Su presencia es mi mejor regalo. Si desea tener un detalle conmigo, es totalmente opcional: puede elegir de mi mesa en Liverpool o el obsequio que guste.',
+		items: [
+			{
+				type: 'store',
+				title: 'Liverpool',
+				url: 'https://mesaderegalos.liverpool.com.mx/milistaderegalos/60070167',
+				description: 'Número de evento: 60070167',
+			},
+		],
 	},
 	rsvp: {
 		// Pass and confirmation read as one printed reply card; seats are fixed per guest.
