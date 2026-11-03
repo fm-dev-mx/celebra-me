@@ -468,32 +468,21 @@
 	}
 }
 
-// Concave (cut-in) corners on the framed portrait, the die-cut window of a printed XV card. The
-// mask sits on the image, so the square hairline outline on the frame stays a clean rectangle.
-.theme-preset--enchanted-rose
-	.invitation-hero.framed-portrait-hero
-	.framed-portrait-hero__photograph
-	img {
-	$r: 1.5rem;
-	$fill:
-		transparent #{$r},
-		black calc(#{$r} + 0.5px);
-
-	mask:
-		radial-gradient(circle at 0 0, $fill) top left / 51% 51% no-repeat,
-		radial-gradient(circle at 100% 0, $fill) top right / 51% 51% no-repeat,
-		radial-gradient(circle at 0 100%, $fill) bottom left / 51% 51% no-repeat,
-		radial-gradient(circle at 100% 100%, $fill) bottom right / 51% 51% no-repeat;
-}
-
 // Velvet case: the opening's jewelry box carries into the cover. The portrait sits on a burgundy
 // velvet bed inside a double gold hairline, like a jewel set in its case, and a candle glow warms
 // the ivory ground around it.
 .theme-preset--enchanted-rose
 	.invitation-hero.framed-portrait-hero[data-variant='framed-portrait'] {
-	$gold: rgb(var(--color-action-accent-rgb) / 85%);
-	$gold-soft: rgb(var(--color-action-accent-rgb) / 55%);
+	$gold: rgb(var(--color-action-accent-rgb));
+	$gold-soft: rgb(var(--color-action-accent-rgb) / 75%);
 	$velvet: var(--color-velvet-burgundy);
+	$bracket: linear-gradient(
+		135deg,
+		rgb(var(--color-candle-gold-rgb)),
+		rgb(var(--color-action-accent-rgb))
+	);
+	$arm: clamp(1.5rem, 3.2vw, 2.25rem);
+	$bar: 3px;
 
 	&::before {
 		inset: 0;
@@ -526,7 +515,7 @@
 
 		// Outer gold hairline on the case edge, a velvet gap, then the inner bezel around the photo.
 		box-shadow:
-			inset 0 0 0 1px #{$gold},
+			inset 0 0 0 1.5px #{$gold},
 			inset 0 0 0 5px #{$velvet},
 			inset 0 0 0 6px #{$gold-soft},
 			inset 0 1px 10px rgb(0 0 0 / 30%),
@@ -535,7 +524,26 @@
 			0 0 70px rgb(var(--color-candle-gold-rgb) / 18%);
 
 		img {
-			box-shadow: 0 0 0 1px rgb(var(--color-action-accent-rgb) / 55%);
+			box-shadow: 0 0 0 1px rgb(var(--color-action-accent-rgb) / 70%);
+		}
+
+		// Gold corner brackets, the metal guards of a jewelry case, clasp the four corners.
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0.375rem;
+			z-index: 1;
+			pointer-events: none;
+			background:
+				#{$bracket} top left / #{$arm} #{$bar} no-repeat,
+				#{$bracket} top left / #{$bar} #{$arm} no-repeat,
+				#{$bracket} top right / #{$arm} #{$bar} no-repeat,
+				#{$bracket} top right / #{$bar} #{$arm} no-repeat,
+				#{$bracket} bottom left / #{$arm} #{$bar} no-repeat,
+				#{$bracket} bottom left / #{$bar} #{$arm} no-repeat,
+				#{$bracket} bottom right / #{$arm} #{$bar} no-repeat,
+				#{$bracket} bottom right / #{$bar} #{$arm} no-repeat;
+			filter: drop-shadow(0 1px 1px rgb(0 0 0 / 35%));
 		}
 	}
 
@@ -545,14 +553,29 @@
 		display: block;
 	}
 
-	// A short gold rule sets the date apart from the name, echoing the case's hairline.
-	.framed-portrait-hero__details::before {
-		content: '';
-		display: block;
-		width: 3rem;
-		height: 1px;
-		margin: 1rem 0 0.875rem;
-		background: linear-gradient(90deg, #{$gold}, transparent);
+	// A gold rule with a small diamond sets the date apart from the name, echoing the case's
+	// hairline; the venue follows the date.
+	.framed-portrait-hero__details {
+		--hero-details-venue-display: block;
+
+		&::before {
+			content: '';
+			display: block;
+			width: 6rem;
+			height: 9px;
+			margin: 1.125rem 0 1rem;
+			background: #{$gold};
+			mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 9'%3E%3Cpath d='M0 4h42v1H0zM54 4h42v1H54zM48 0l4.5 4.5L48 9l-4.5-4.5z'/%3E%3C/svg%3E")
+				center / 100% 100% no-repeat;
+		}
+	}
+
+	.framed-portrait-hero__details-venue {
+		margin-top: 0.375rem;
+		font: italic 400 clamp(1.0625rem, 1.6vw, 1.25rem) / 1.4 var(--font-display);
+		letter-spacing: 0.01em;
+		text-transform: none;
+		color: rgb(var(--color-velvet-burgundy-rgb) / 82%);
 	}
 
 	@include mixins.respond-below(lg) {
@@ -564,9 +587,11 @@
 			text-align: center;
 		}
 
+		// Phones set the family names on one line under the first name.
+		--hero-title-size: clamp(2.75rem, 11.5vw, 3.75rem);
+
 		.framed-portrait-hero__details::before {
 			margin-inline: auto;
-			background: linear-gradient(90deg, transparent, #{$gold}, transparent);
 		}
 	}
 

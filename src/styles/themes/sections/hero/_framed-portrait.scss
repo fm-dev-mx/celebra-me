@@ -118,6 +118,11 @@
 		}
 	}
 
+	// The venue under the date stays hidden unless a profile shows it.
+	.framed-portrait-hero__details-venue {
+		display: var(--hero-details-venue-display, none);
+	}
+
 	.framed-portrait-hero__invitation {
 		width: 100%;
 		max-width: 70rem;

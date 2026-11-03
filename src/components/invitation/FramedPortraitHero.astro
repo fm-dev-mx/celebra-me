@@ -80,6 +80,7 @@ const height = delivery?.height ?? ('height' in backgroundImage ? backgroundImag
 			) : (
 				<div class="framed-portrait-hero__details">
 					<p>{formattedDate}</p>
+					{venueName && <p class="framed-portrait-hero__details-venue">{venueName}</p>}
 				</div>
 			)}
 		</div>
