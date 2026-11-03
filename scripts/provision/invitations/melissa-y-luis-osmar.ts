@@ -76,7 +76,6 @@ export function buildMelissaPublishedContent(assets: UploadedAssetMap<MelissaAss
 	return {
 		eventType: MELISSA_EVENT.eventType,
 		isDemo: false,
-		templateId: 'boda-jewelry-box-wedding',
 		visualProfileId: MELISSA_EVENT.visualProfileId,
 		title: MELISSA_EVENT.title,
 		description:

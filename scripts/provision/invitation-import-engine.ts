@@ -93,6 +93,7 @@ import {
 	assertManagedDraftContentSchema,
 } from './managed-content-validation.ts';
 import { decideRekeyIdentity, resolveIdentityWithoutRekey } from './managed-identity-guards.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 export interface ImportEngineOptions {
 	packagePath?: string;
@@ -149,10 +150,6 @@ export interface ImportEngineResult {
 		completedOperations: number;
 		publishedVersion?: number;
 	};
-}
-
-function sha256Bytes(bytes: Uint8Array): string {
-	return createHash('sha256').update(bytes).digest('hex');
 }
 
 function parsePsqlJson(stdout: string): Record<string, unknown> {
@@ -426,7 +423,7 @@ async function probeStorageStates(
 					const fetchRes = await fetch(targetAssetUrl);
 					if (fetchRes.ok) {
 						const ab = await fetchRes.arrayBuffer();
-						const hash = sha256Bytes(new Uint8Array(ab));
+						const hash = sha256Hex(new Uint8Array(ab));
 						observedStorage[storagePath] = {
 							present: true,
 							sha256: hash,
@@ -690,7 +687,7 @@ async function verifyContentOnlyHostedAssets(
 				throw new Error(
 					`Supabase object MIME "${contentType ?? 'missing'}" does not match "${asset.mimeType}".`,
 				);
-			if (sha256Bytes(new Uint8Array(await response.arrayBuffer())) !== asset.sha256)
+			if (sha256Hex(new Uint8Array(await response.arrayBuffer())) !== asset.sha256)
 				throw new Error('Supabase object SHA-256 does not match the canonical asset.');
 		} catch (error: unknown) {
 			failures.push(

@@ -1,4 +1,4 @@
-// Storybook blush: a storybook printed on blush paper in leaf-silver ink that turns into a rose-plum
+// Storybook blush: a storybook printed on blush paper in leaf-silver ink that turns into a raspberry-rose
 // night lit with pale silver. Tonal band "3-band": the opening chapters (hero, quote, family) sit on
 // blush paper; from the countdown on, every section shares one night ground, so the story reaches
 // the venues, the gallery, the reply card and the closing after dark. The night is a remap of the
@@ -25,42 +25,42 @@
 	// ---------------------------------------------------------------------
 	// Base palette
 	// ---------------------------------------------------------------------
-	--color-blush-paper: rgb(250 243 244);
-	--color-blush-paper-rgb: 250 243 244;
-	--color-rose-mist: rgb(246 233 236);
-	--color-rose-mist-rgb: 246 233 236;
-	--color-rose-veil: rgb(238 216 222);
-	--color-rose-veil-rgb: 238 216 222;
-	--color-rose-glow: rgb(214 158 178);
-	--color-rose-glow-rgb: 214 158 178;
-	--color-rose-deep: rgb(146 70 98);
-	--color-rose-deep-rgb: 146 70 98;
-	--color-plum-ink: rgb(62 34 47);
-	--color-plum-ink-rgb: 62 34 47;
-	--color-plum-ink-soft: rgb(104 70 86);
-	--color-plum-ink-soft-rgb: 104 70 86;
-	--color-rose-dusk: rgb(96 54 78);
-	--color-rose-dusk-rgb: 96 54 78;
-	--color-rose-night: rgb(70 38 60);
-	--color-rose-night-rgb: 70 38 60;
-	--color-rose-midnight: rgb(48 25 42);
-	--color-rose-midnight-rgb: 48 25 42;
-	--color-leaf-silver: rgb(138 140 154);
-	--color-leaf-silver-rgb: 138 140 154;
-	--color-silver-ink: rgb(86 88 104);
-	--color-silver-ink-rgb: 86 88 104;
-	--color-pale-silver: rgb(222 224 234);
-	--color-pale-silver-rgb: 222 224 234;
+	--color-blush-paper: rgb(252 236 241);
+	--color-blush-paper-rgb: 252 236 241;
+	--color-rose-mist: rgb(249 222 232);
+	--color-rose-mist-rgb: 249 222 232;
+	--color-rose-veil: rgb(243 200 216);
+	--color-rose-veil-rgb: 243 200 216;
+	--color-rose-glow: rgb(236 150 182);
+	--color-rose-glow-rgb: 236 150 182;
+	--color-rose-deep: rgb(194 74 124);
+	--color-rose-deep-rgb: 194 74 124;
+	--color-plum-ink: rgb(92 36 62);
+	--color-plum-ink-rgb: 92 36 62;
+	--color-plum-ink-soft: rgb(128 72 100);
+	--color-plum-ink-soft-rgb: 128 72 100;
+	--color-rose-dusk: rgb(190 96 138);
+	--color-rose-dusk-rgb: 190 96 138;
+	--color-rose-night: rgb(156 66 106);
+	--color-rose-night-rgb: 156 66 106;
+	--color-rose-midnight: rgb(112 42 76);
+	--color-rose-midnight-rgb: 112 42 76;
+	--color-leaf-silver: rgb(178 184 200);
+	--color-leaf-silver-rgb: 178 184 200;
+	--color-silver-ink: rgb(100 106 126);
+	--color-silver-ink-rgb: 100 106 126;
+	--color-pale-silver: rgb(224 228 238);
+	--color-pale-silver-rgb: 224 228 238;
 	--color-pale-pearl: rgb(248 244 247);
 	--color-pale-pearl-rgb: 248 244 247;
-	--color-night-blush: rgb(240 206 220);
-	--color-night-blush-rgb: 240 206 220;
+	--color-night-blush: rgb(250 214 228);
+	--color-night-blush-rgb: 250 214 228;
 	--color-story-pearl: rgb(255 251 252);
 	--color-story-pearl-rgb: 255 251 252;
 
 	// Paper and night grounds shared by every section of a band, so no seam shows between them.
 	--storybook-paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.09 0 0 0 0 0.2 0 0 0 0 0.16 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url%28%23n%29'/%3E%3C/svg%3E");
-	--storybook-night-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.91 0 0 0 0 0.84 0 0 0 0 0.64 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url%28%23n%29'/%3E%3C/svg%3E");
+	--storybook-night-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.9 0 0 0 0 0.91 0 0 0 0 0.95 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url%28%23n%29'/%3E%3C/svg%3E");
 	--storybook-paper: var(--storybook-paper-grain), var(--color-blush-paper);
 	--storybook-paper-mist: var(--storybook-paper-grain), var(--color-rose-mist);
 	--storybook-night: var(--storybook-night-grain), var(--color-rose-night);
@@ -100,16 +100,16 @@
 	--color-text-on-dark: var(--color-pale-pearl);
 	--color-text-on-dark-rgb: var(--color-pale-pearl-rgb);
 	--color-text-on-light: var(--color-plum-ink);
-	--color-border-subtle: rgb(var(--color-rose-deep-rgb) / 18%);
-	--color-border-premium: rgb(var(--color-leaf-silver-rgb) / 62%);
+	--color-border-subtle: rgb(var(--color-leaf-silver-rgb) / 55%);
+	--color-border-premium: var(--color-leaf-silver);
 	--color-envelope-paper-ivory: var(--color-story-pearl);
 	--color-ornament-gold: var(--color-leaf-silver);
 
 	// Wax seal: pale silver pressed over leaf silver, so the sun reads as metal, not pewter.
-	--storybook-wax-light: rgb(246 222 230);
-	--storybook-wax: rgb(214 158 178);
-	--storybook-wax-deep: rgb(160 92 120);
-	--storybook-wax-press: rgb(104 52 76);
+	--storybook-wax-light: rgb(246 247 251);
+	--storybook-wax: rgb(206 209 220);
+	--storybook-wax-deep: rgb(150 154 170);
+	--storybook-wax-press: rgb(98 102 120);
 
 	// ---------------------------------------------------------------------
 	// Typography: engraved capitals for labels, Cormorant for display, Garamond for reading, a
@@ -150,7 +150,7 @@
 	--gifts-bg-fallback: var(--storybook-night);
 	--gifts-text-color: var(--color-pale-pearl);
 	--gifts-title-color-fallback: var(--color-pale-pearl);
-	--gifts-subtitle-color-fallback: var(--color-night-blush);
+	--gifts-subtitle-color-fallback: var(--color-pale-silver);
 	--gifts-card-bg: rgb(var(--color-story-pearl-rgb) / 6%);
 	--gifts-card-border: 1px solid rgb(var(--color-pale-silver-rgb) / 38%);
 	--gifts-card-radius: 2px;
@@ -163,7 +163,7 @@
 	// Countdown: dusk, where the night begins.
 	// ---------------------------------------------------------------------
 	--countdown-section-background: var(--storybook-dusk);
-	--countdown-section-color: var(--color-pale-pearl);
+	--countdown-section-color: var(--color-pale-silver);
 	--countdown-section-padding-block: clamp(5rem, 10vw, 8rem);
 	--countdown-written-bg: var(--storybook-dusk);
 	--countdown-written-padding-block: clamp(5.5rem, 14vw, 8.5rem);
@@ -274,7 +274,7 @@
 	--hero-split-overlay-soft-fallback: rgb(var(--color-rose-night-rgb) / 18%);
 	--hero-title-color-start-fallback: var(--color-pale-pearl);
 	--hero-title-color-mid-fallback: var(--color-pale-silver);
-	--hero-title-color-end-fallback: var(--color-night-blush);
+	--hero-title-color-end-fallback: var(--color-pale-silver);
 	--hero-badge-text-fallback: var(--color-text-on-dark);
 	--hero-label-color: var(--color-silver-ink);
 	--hero-bleed-bg: transparent;
@@ -336,7 +336,7 @@
 	--gallery-item-bg: var(--color-rose-midnight);
 	--gallery-title-font-fallback: var(--font-display);
 	--gallery-title-color-fallback: var(--color-pale-pearl);
-	--gallery-subtitle-color-fallback: var(--color-night-blush);
+	--gallery-subtitle-color-fallback: var(--color-pale-silver);
 	--gallery-caption-bg: rgb(var(--color-rose-night-rgb) / 86%);
 	--gallery-caption-color: var(--color-pale-pearl);
 	--gallery-caption-font: var(--font-body);
@@ -433,7 +433,7 @@
 	--itinerary-slate-rgb: var(--color-plum-ink-soft-rgb);
 	--itinerary-paper-section-bg: var(--storybook-night);
 	--itinerary-paper-title-color: var(--color-pale-pearl);
-	--itinerary-paper-subtitle-color: var(--color-night-blush);
+	--itinerary-paper-subtitle-color: var(--color-pale-silver);
 	--itinerary-paper-surface-bg: var(--storybook-paper-grain), var(--color-story-pearl);
 	--itinerary-paper-rule: rgb(var(--color-leaf-silver-rgb) / 40%);
 	--itinerary-paper-row-rule: rgb(var(--color-leaf-silver-rgb) / 22%);
@@ -455,7 +455,7 @@
 	--location-card-radius: 2px;
 	--location-card-shadow-fallback: none;
 	--location-image-aspect-ratio: 4 / 3.35;
-	--location-title-color: var(--color-night-blush);
+	--location-title-color: var(--color-pale-silver);
 	--location-title-font-family-fallback: var(--font-label);
 	--location-place-color-fallback: var(--color-pale-pearl);
 	--location-place-font-family-fallback: var(--font-display);
@@ -473,7 +473,7 @@
 	--location-nav-hover-color: var(--color-rose-night);
 	--location-nav-hover-border-color: var(--color-pale-silver);
 	--location-indications-grid-template: repeat(2, minmax(0, 1fr));
-	--location-indications-heading-color-fallback: var(--color-night-blush);
+	--location-indications-heading-color-fallback: var(--color-pale-silver);
 	--location-indication-item-bg: rgb(var(--color-story-pearl-rgb) / 5%);
 	--location-indication-item-border: 1px solid rgb(var(--color-pale-silver-rgb) / 26%);
 	--location-indication-item-radius: 2px;

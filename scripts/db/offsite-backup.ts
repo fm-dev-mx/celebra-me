@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { Decrypter, Encrypter, generateIdentity, identityToRecipient } from 'age-encryption';
@@ -9,6 +8,7 @@ import {
 	type CriticalBackupManifest,
 } from './backup-manifest.ts';
 import { getSecretFromEnvOrFiles, PROD_SECRET_FILES } from './db-target-config.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 /**
  * Off-site copy of a verified critical backup: one age-encrypted bundle per recovery point,
@@ -49,10 +49,6 @@ interface BundleEntry {
 interface BundleHeader {
 	version: 1;
 	entries: BundleEntry[];
-}
-
-function sha256(bytes: Uint8Array): string {
-	return createHash('sha256').update(bytes).digest('hex');
 }
 
 /**
@@ -109,7 +105,7 @@ export function createOffsiteBundle(manifestPath: string): {
 		if (names.has(name)) throw new Error(`Duplicate artifact file name in bundle: ${name}`);
 		names.add(name);
 		const data = readFileSync(artifact.path);
-		if (data.byteLength !== artifact.bytes || sha256(data) !== artifact.sha256) {
+		if (data.byteLength !== artifact.bytes || sha256Hex(data) !== artifact.sha256) {
 			throw new Error(`Artifact changed after the manifest was written: ${artifact.kind}`);
 		}
 		files.push({ name, data });
@@ -125,7 +121,7 @@ export function createOffsiteBundle(manifestPath: string): {
 		entries: files.map(({ name, data }) => ({
 			name,
 			bytes: data.byteLength,
-			sha256: sha256(data),
+			sha256: sha256Hex(data),
 		})),
 	};
 	const headerBytes = Buffer.from(JSON.stringify(header));
@@ -176,7 +172,7 @@ export function extractOffsiteBundle(bundle: Uint8Array, outputDir: string): str
 		}
 		const data = buffer.subarray(offset, offset + entry.bytes);
 		offset += entry.bytes;
-		if (data.byteLength !== entry.bytes || sha256(data) !== entry.sha256) {
+		if (data.byteLength !== entry.bytes || sha256Hex(data) !== entry.sha256) {
 			throw new Error(`Bundle entry is truncated or corrupted: ${entry.name}`);
 		}
 		const path = resolve(target, entry.name);
@@ -297,7 +293,7 @@ export async function uploadOffsiteObject(
 			headers: {
 				'content-type': 'application/octet-stream',
 				'if-none-match': '*',
-				'x-amz-content-sha256': sha256(body),
+				'x-amz-content-sha256': sha256Hex(body),
 			},
 		},
 		fetchImpl,

@@ -1,0 +1,98 @@
+// Naomi: the few rules her tokens cannot express. Everything else lives in the profile.
+
+// The cover arrives slowly as the envelope lifts: the portrait settles first, the letter follows.
+// The shared fade-in-up keyframes (opacity and a 20px lift) stay smooth on modest phones. The
+// wrapper's global reduced-motion reset removes both animations.
+.event--naomi-huerta.event-theme-wrapper[data-reveal-state='revealed']
+	.invitation-hero[data-variant='framed-portrait'] {
+	.framed-portrait-hero__photograph {
+		animation: motion-fade-in-up 2.2s cubic-bezier(0.33, 1, 0.68, 1) 0.8s both;
+	}
+
+	.framed-portrait-hero__letter {
+		animation: motion-fade-in-up 1.8s cubic-bezier(0.33, 1, 0.68, 1) 1.4s both;
+	}
+}
+
+// The church and the hall sit in a storybook window: a pearl arch framed in a brushed silver edge
+// that catches rose light, with an inner rose filet, a lit sheen and a soft halo. The shared
+// variant has no frame tokens, and adding them would move the package hash of every program-sheet
+// invitation.
+.event--naomi-huerta
+	.event-location[data-variant='program-sheet']
+	.event-location__program-drawing {
+	box-sizing: border-box;
+	height: 11rem;
+	padding: 3.6rem 0.85rem 1.35rem;
+	border-radius: 50% 50% 0.85rem 0.85rem / 34% 34% 0.85rem 0.85rem;
+	border: 2px solid transparent;
+	background:
+		radial-gradient(circle at 24% 30%, var(--color-story-pearl) 0 2px, transparent 3px)
+			padding-box,
+		radial-gradient(circle at 78% 22%, var(--color-leaf-silver) 0 1.5px, transparent 2.5px)
+			padding-box,
+		linear-gradient(155deg, rgb(255 255 255 / 75%) 0%, transparent 38%) padding-box,
+		radial-gradient(
+				ellipse at 50% 12%,
+				rgb(var(--color-rose-glow-rgb) / 38%) 0%,
+				transparent 60%
+			)
+			padding-box,
+		linear-gradient(180deg, var(--color-story-pearl) 0%, var(--color-blush-paper) 100%)
+			padding-box,
+		conic-gradient(
+				from 210deg,
+				var(--color-pale-silver),
+				var(--color-leaf-silver),
+				var(--color-story-pearl),
+				var(--color-rose-glow),
+				var(--color-leaf-silver),
+				var(--color-story-pearl),
+				var(--color-pale-silver)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 5px rgb(255 255 255 / 55%),
+		inset 0 0 0 6px rgb(var(--color-rose-glow-rgb) / 55%),
+		inset 0 -1.25rem 1.75rem -1rem rgb(var(--color-rose-glow-rgb) / 30%),
+		0 0 0 5px rgb(var(--color-story-pearl-rgb) / 55%),
+		0 0 0 6px rgb(var(--color-leaf-silver-rgb) / 35%),
+		0 0 2.25rem rgb(var(--color-rose-glow-rgb) / 35%),
+		0 1.25rem 2.25rem -0.75rem rgb(var(--color-rose-night-rgb) / 30%);
+
+	// Each venue inks itself on as it takes the stage. The route stage is pinned, so the lines
+	// follow the scene's own timeline; without the scene the drawing stays whole, and the
+	// wrapper's global reduced-motion reset removes the animation.
+	@supports (animation-timeline: view()) {
+		path {
+			animation: naomi-venue-ink linear both;
+			animation-timeline: --scroll-scene;
+			animation-range: entry 40% contain 12%;
+		}
+	}
+
+	// The dash outruns every venue path. Nested so it stays inside the scope; Sass emits it at
+	// the root.
+	@keyframes naomi-venue-ink {
+		from {
+			stroke-dasharray: 1000;
+			stroke-dashoffset: 1000;
+		}
+
+		to {
+			stroke-dasharray: 1000;
+			stroke-dashoffset: 0;
+		}
+	}
+}
+
+@supports (animation-timeline: view()) {
+	.event--naomi-huerta
+		.event-location[data-variant='program-sheet']
+		.event-location__program-entry
+		+ .event-location__program-entry
+		.event-location__program-drawing
+		path {
+		animation-range: contain 50% contain 64%;
+	}
+}

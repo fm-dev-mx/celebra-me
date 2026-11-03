@@ -25,11 +25,21 @@ import {
 } from '@/components/dashboard/commercial/SalesWorkspaceDetails';
 import type { CrmTimelineEntry } from '@/lib/commercial/crm-timeline.service';
 import { dashboardApi } from '@/lib/dashboard/api-client';
-import { labelLeadChannel, labelLeadStatus } from '@/lib/tracking/commercial-dashboard';
 import {
-	labelCommercialEventType,
-	EVENT_TYPE_LABELS,
-} from '@/lib/tracking/commercial-presentation';
+	CustomerOriginFields,
+	CustomerReferralPanel,
+	EMPTY_CUSTOMER_ORIGIN,
+	EMPTY_ORDER_REFERRAL,
+	OrderReferralFields,
+	buildCustomerOriginPayload,
+	buildOrderReferralPayload,
+} from '@/components/dashboard/commercial/ReferralFields';
+import { labelLeadChannel, labelLeadStatus } from '@/lib/tracking/commercial-dashboard';
+import { labelCommercialEventType } from '@/lib/tracking/commercial-presentation';
+import {
+	EMPTY_ORDER_BASICS,
+	OrderBasicsFields,
+} from '@/components/dashboard/commercial/OrderBasicsFields';
 
 interface ReconciliationResult {
 	byLeadCode?: LeadCandidate | null;
@@ -42,11 +52,6 @@ interface SalesWorkspaceProps {
 	initialLeads: LeadCandidate[];
 	demoInventory?: DemoInventoryItem[];
 }
-
-const EVENT_TYPE_OPTIONS = Object.entries(EVENT_TYPE_LABELS).map(([value, label]) => ({
-	value,
-	label,
-}));
 
 function getSuggestedAction(lead: LeadCandidate): string {
 	if (!lead.customerId) return 'Vincular o crear cliente';
@@ -79,13 +84,12 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 	const [custName, setCustName] = useState('');
 	const [custEmail, setCustEmail] = useState('');
 	const [custPhone, setCustPhone] = useState('');
+	const [custOrigin, setCustOrigin] = useState(EMPTY_CUSTOMER_ORIGIN);
 	const [creatingCustomer, setCreatingCustomer] = useState(false);
 	const [customerToolOpen, setCustomerToolOpen] = useState(false);
 	const [orderToolOpen, setOrderToolOpen] = useState(false);
-	const [orderEventType, setOrderEventType] = useState('xv');
-	const [orderPackageName, setOrderPackageName] = useState('');
-	const [orderTotalAmount, setOrderTotalAmount] = useState('');
-	const [orderDepositAmount, setOrderDepositAmount] = useState('');
+	const [orderBasics, setOrderBasics] = useState(EMPTY_ORDER_BASICS);
+	const [orderReferral, setOrderReferral] = useState(EMPTY_ORDER_REFERRAL);
 	const [creatingOrder, setCreatingOrder] = useState(false);
 	const [depositAmounts, setDepositAmounts] = useState<Record<string, string>>({});
 	const [markingDepositPaid, setMarkingDepositPaid] = useState<Record<string, boolean>>({});
@@ -319,6 +323,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 				email: custEmail.trim() || undefined,
 				phone: custPhone.trim() || undefined,
 				createdFromLeadId: selectedLead?.id || undefined,
+				...buildCustomerOriginPayload(custOrigin),
 			});
 			if (response.ok) {
 				const result = response.data.data;
@@ -339,6 +344,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 				setCustName('');
 				setCustEmail('');
 				setCustPhone('');
+				setCustOrigin(EMPTY_CUSTOMER_ORIGIN);
 			} else setErrorMessage(response.message || 'Error al crear cliente.');
 		} catch (error) {
 			setErrorMessage(
@@ -355,12 +361,16 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 			setErrorMessage('Seleccione un cliente antes de crear una orden.');
 			return;
 		}
-		const total = Number.parseFloat(orderTotalAmount);
+		const total = Number.parseFloat(orderBasics.totalAmount);
 		if (!Number.isFinite(total) || total <= 0) {
 			setErrorMessage('El monto total debe ser un número positivo.');
 			return;
 		}
-		const deposit = Number.parseFloat(orderDepositAmount);
+		const deposit = Number.parseFloat(orderBasics.depositAmount);
+		if (orderReferral.isPastSale && !orderReferral.soldAt) {
+			setErrorMessage('Indique la fecha real de la venta anterior.');
+			return;
+		}
 		setCreatingOrder(true);
 		setErrorMessage('');
 		setSuccessMessage('');
@@ -370,11 +380,12 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 				{
 					customerId: activeCustomer.id,
 					leadId: selectedLead?.id || undefined,
-					eventType: orderEventType,
-					packageName: orderPackageName.trim() || undefined,
+					eventType: orderBasics.eventType,
+					packageName: orderBasics.packageName.trim() || undefined,
 					totalAmount: total,
 					depositAmount: Number.isFinite(deposit) && deposit >= 0 ? deposit : undefined,
 					idempotencyKey: orderIdempotencyKey,
+					...buildOrderReferralPayload(orderReferral),
 				},
 			);
 			if (response.ok) {
@@ -383,10 +394,10 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 				);
 				void fetchCustomerOrders(activeCustomer.id);
 				void fetchTimeline(activeCustomer.id);
-				setOrderPackageName('');
-				setOrderTotalAmount('');
-				setOrderDepositAmount('');
+				setOrderBasics({ ...EMPTY_ORDER_BASICS, eventType: orderBasics.eventType });
+				setOrderReferral(EMPTY_ORDER_REFERRAL);
 				setOrderIdempotencyKey(crypto.randomUUID());
+				void fetchRealCustomer(activeCustomer.id);
 			} else setErrorMessage(response.message || 'Error al crear la orden.');
 		} catch (error) {
 			setErrorMessage(
@@ -415,7 +426,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 		setSuccessMessage('');
 		try {
 			const response = await dashboardApi.post<{
-				data: { order: SalesOrder; conversionEvent: ConversionEvent };
+				data: { order: SalesOrder; conversionEvent: ConversionEvent | null };
 			}>(`/api/dashboard/commercial/orders/${orderId}/deposit-paid`, {
 				amountPaid: amount,
 				idempotencyKey,
@@ -432,8 +443,11 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 						: status === 'failed' || status === 'skipped' || status === 'ambiguous'
 							? 'Conversión requiere atención.'
 							: 'Conversión pendiente.';
+				const conversionNote = conversionEvent
+					? formatConversion(conversionEvent.status)
+					: 'Venta anterior: no se envía a Meta.';
 				setSuccessMessage(
-					`Anticipo registrado. ${formatConversion(conversionEvent.status)} Ya puede enviar el enlace para los datos de la invitación.`,
+					`Anticipo registrado. ${conversionNote} Ya puede enviar el enlace para los datos de la invitación.`,
 				);
 				setAutoIssueInvitationDataOrderId(orderId);
 				if (activeCustomer) {
@@ -442,7 +456,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 				}
 				// Poll the conversion status for a short bounded period so the UI
 				// can truthfully reflect the async delivery outcome.
-				if (conversionEvent.status === 'pending' && conversionEvent.id) {
+				if (conversionEvent?.status === 'pending' && conversionEvent.id) {
 					pollGenerationRef.current += 1;
 					void pollConversionStatus(conversionEvent.id, formatConversion);
 				}
@@ -666,6 +680,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 									onChange={(event) => setCustPhone(event.target.value)}
 								/>
 							</div>
+							<CustomerOriginFields value={custOrigin} onChange={setCustOrigin} />
 							<div className="dashboard-actions dashboard-actions--full">
 								<button
 									type="submit"
@@ -695,6 +710,12 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 									setTimelineEntries([]);
 								}}
 								onOpenOrderTool={() => setOrderToolOpen(true)}
+							/>
+
+							<CustomerReferralPanel
+								customer={activeCustomer}
+								onSuccess={setSuccessMessage}
+								onError={setErrorMessage}
 							/>
 
 							<section
@@ -748,59 +769,15 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 							>
 								<summary>Crear una nueva orden</summary>
 								<form className="dashboard-form-grid" onSubmit={handleCreateOrder}>
-									<div className="dashboard-form-field">
-										<label htmlFor="order-event">Tipo de evento</label>
-										<select
-											id="order-event"
-											value={orderEventType}
-											onChange={(event) =>
-												setOrderEventType(event.target.value)
-											}
-										>
-											{EVENT_TYPE_OPTIONS.map((option) => (
-												<option key={option.value} value={option.value}>
-													{option.label}
-												</option>
-											))}
-										</select>
-									</div>
-									<div className="dashboard-form-field">
-										<label htmlFor="order-package">Paquete</label>
-										<input
-											id="order-package"
-											value={orderPackageName}
-											onChange={(event) =>
-												setOrderPackageName(event.target.value)
-											}
-										/>
-									</div>
-									<div className="dashboard-form-field">
-										<label htmlFor="order-total">Monto total ($ MXN) *</label>
-										<input
-											id="order-total"
-											type="number"
-											required
-											min="1"
-											value={orderTotalAmount}
-											onChange={(event) =>
-												setOrderTotalAmount(event.target.value)
-											}
-										/>
-									</div>
-									<div className="dashboard-form-field">
-										<label htmlFor="order-deposit">
-											Anticipo sugerido ($ MXN)
-										</label>
-										<input
-											id="order-deposit"
-											type="number"
-											min="0"
-											value={orderDepositAmount}
-											onChange={(event) =>
-												setOrderDepositAmount(event.target.value)
-											}
-										/>
-									</div>
+									<OrderBasicsFields
+										value={orderBasics}
+										onChange={setOrderBasics}
+									/>
+									<OrderReferralFields
+										value={orderReferral}
+										onChange={setOrderReferral}
+										referralCreditMxn={activeCustomer.referralCreditMxn ?? 0}
+									/>
 									<div className="dashboard-actions dashboard-actions--full">
 										<button
 											type="submit"

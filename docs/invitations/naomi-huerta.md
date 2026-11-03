@@ -64,9 +64,9 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | rsvpGuestCap          | 2                                                                                            | inferred       | owner-session | Fallback only; per-guest passes govern seats                 |
 | rsvpWhatsappPhone     | —                                                                                            | not_applicable | owner-session | No WhatsApp confirmation flow                                |
 | rsvpDeadline          | 2026-12-04 (viernes 4 de diciembre)                                                          | inferred       | owner-session | 14 days before (D4)                                          |
-| gifts                 | Lluvia de sobres                                                                             | inferred       | owner-session | Agent draft, pending client approval (D4)                    |
+| gifts                 | Liverpool registry, event 60070167                                                           | verified       | owner-session | Client-supplied 2026-11-03; gift stays optional              |
 | itinerary             | Misa 18:30, Recepción 21:00, Vals 21:30, Cena 22:30, Baile 23:30, Cierre 02:00               | inferred       | owner-session | Agent draft, pending client approval (D4)                    |
-| musicUrl              | Client song (YouTube reference)                                                              | verified       | wa-export     | Audio file not hosted yet; music omitted in the draft        |
+| musicUrl              | Client song (YouTube reference)                                                              | verified       | wa-export     | Hosted at 64 kbps on the media domain (So This Is Love)      |
 | checkInQr             | —                                                                                            | not_applicable | wa-export     | Promo package without QR check-in                            |
 | specialMessages       | Copy proposed by agent                                                                       | inferred       | owner-session | Pending client approval (D4)                                 |
 
@@ -83,8 +83,8 @@ inferred. The seven client photographs are inventoried and declared final by the
 
 ### Non-blocking gaps
 
-- Music: the client named the song by link only; the file is encoded to 64 kbps and hosted on the
-  media domain in a later round.
+- Music: the client named the song by link only (So This Is Love, Cinderella); the file is encoded
+  to 64 kbps and hosted on the media domain.
 - Adults-only rule and gifts: unknown; gifts drafted, adults-only omitted until the client answers.
 - Godparents' role and the accent in «Macías».
 - Program, RSVP deadline and all guest-facing copy are agent drafts for client approval.
@@ -132,7 +132,7 @@ payment.
 | ---------------------- | ----------------------------------------------------------------------------------------------- |
 | requested              | location (two venues), family (parents + godparents), dress code «De gala», personal passes     |
 | inferred / recommended | envelope, hero, quote, countdown, itinerary, gallery, gifts, personalizedAccess, rsvp, thankYou |
-| client-provided        | music: link only (omitted until the file is hosted)                                             |
+| client-provided        | music: YouTube link; encoded to 64 kbps and hosted on the media domain                          |
 | omitted                | adults-only rule (unknown), check-in QR (not in the package)                                    |
 | unresolved             | —                                                                                               |
 
@@ -140,20 +140,24 @@ Guest-facing copy (agent draft, D4; pending client approval). Voice: Naomi in th
 "usted" register, warm and formal.
 
 - Envelope: «Abra su invitación».
-- Quote: «Hay cuentos que se esperan toda la vida.» · «El mío comienza el 18 de diciembre, y quiero
-  que usted esté ahí.»
+- Quote: «Esperé quince años por esta noche.» · «Me haría muy feliz que usted estuviera ahí.»
 - Family: «Mis padres» · José Humberto Huerta Navarro · Martha Leticia Chávez García · «Mis
   padrinos» · Christina y Anthony Macías.
 - Countdown: «Faltan N días para mi gran noche».
-- Location: «Dónde y cuándo» · «Primero daremos gracias en misa y después celebraremos juntos.»
+- Location: «Dos lugares, una noche» · «A las 18:30 daré gracias en misa; a las 21:00 le espero en
+  La Mattea para celebrar.»
 - Indications: «Vestimenta» · «De gala» · «Rosa — Reservado para la quinceañera».
-- Program: «Así será mi noche» · Misa 18:30 · Recepción 21:00 · Vals 21:30 · Cena 22:30 · Baile
-  23:30 · Cierre 02:00.
-- Gallery: «Antes de mi gran noche».
-- Gifts: «Lluvia de sobres» · «Su presencia es mi mejor regalo. Si desea tener un detalle conmigo,
-  habrá lluvia de sobres.»
-- Pass: «Su lugar ya está apartado» · «Pase personal e intransferible».
-- RSVP: «¿Me acompaña?» · «Le agradeceré confirmar antes del viernes 4 de diciembre.»
+- Program: «Los capítulos de mi noche» · Misa 18:30 · Recepción 21:00 · Vals 21:30 · Cena 22:30 ·
+  Baile 23:30 · Despedida 02:00.
+- Gallery: «Mi cuento de hadas».
+- Gifts: «Mesa de regalos» · «Verle en mi noche ya es el regalo. Si aun así desea darme algo, mi
+  mesa está en Liverpool; también recibiré con cariño el detalle que usted elija.» · Liverpool,
+  «Número de evento: 60070167».
+- Pass: «Pase personal e intransferible» · «Su lugar ya está apartado.» · «Confírmeme su llegada
+  aquí abajo.»
+- RSVP: «¿Me acompaña?» · «Le agradeceré confirmar antes del viernes 4 de diciembre.» · Steps
+  «¿Contamos con usted?» · «¿Cuántos llegan, contándose usted?» (the count is the party total).
+- Replies: «Su lugar está listo, {nombre}.» · «Me hará falta, {nombre}.»
 - Closing: «Gracias por ser parte de mis quince años. Le espero el 18 de diciembre.» · «Naomi».
 
 ---
@@ -196,15 +200,15 @@ Source label: `source:client-photos` (opaque). Seven photographs from the client
 delivered over WhatsApp (1600×1066 or 1066×1600, about 150–250 KB). The owner declared them final
 (D3); no high-resolution originals exist. Risk: a full-width desktop cover may look soft.
 
-| source | quality            | dims      | orientation | role                        | processing                         | derivative                        |
-| ------ | ------------------ | --------- | ----------- | --------------------------- | ---------------------------------- | --------------------------------- |
-| 01     | `production-ready` | 1280×853  | landscape   | interlude (veil)            | 4:5 crop on the subject, WebP      | `interlude-veil.webp` 682×853     |
-| 02     | `production-ready` | 1280×853  | landscape   | gallery 2 (back, bow)       | 4:5 crop on the subject, WebP      | `gallery-02.webp` 682×853         |
-| 03     | `production-ready` | 1600×1066 | landscape   | gallery 1 (bouquet)         | 4:5 crop on the subject, WebP      | `gallery-01.webp` 853×1066        |
-| 04     | `production-ready` | 1600×1066 | landscape   | gallery 3 (bouquet, close)  | tighter 4:5 crop, WebP             | `gallery-03.webp` 608×760         |
-| 05     | `production-ready` | 1600×1066 | landscape   | interlude (golden door)     | 4:5 crop on the subject, WebP      | `interlude-door.webp` 853×1066    |
-| 06     | `production-ready` | 1066×1600 | portrait    | hero                        | full frame, WebP                   | `hero.webp` 1066×1600             |
-| 07     | `production-ready` | 1600×1066 | landscape   | thank-you portrait; OG card | 4:5 crop; 1200×630 bottom crop q66 | `thank-you.webp`, `og-share.webp` |
+| source | quality            | dims      | orientation | role                        | processing                               | derivative                        |
+| ------ | ------------------ | --------- | ----------- | --------------------------- | ---------------------------------------- | --------------------------------- |
+| 01     | `production-ready` | 1280×853  | landscape   | interlude (veil)            | tight 4:5 crop on Naomi, WebP            | `interlude-veil.webp` 480×600     |
+| 02     | `production-ready` | 1280×853  | landscape   | gallery 2 (back, bow)       | tight 4:5 crop on Naomi, WebP            | `gallery-02.webp` 480×600         |
+| 03     | `production-ready` | 1600×1066 | landscape   | gallery 1 (bouquet)         | tight 4:5 crop on Naomi, WebP            | `gallery-01.webp` 608×760         |
+| 04     | `production-ready` | 1600×1066 | landscape   | gallery 3 (bouquet, close)  | tight 4:5 crop on Naomi, WebP            | `gallery-03.webp` 512×640         |
+| 05     | `production-ready` | 1600×1066 | landscape   | interlude (golden door)     | tight 4:5 crop on Naomi, WebP            | `interlude-door.webp` 640×800     |
+| 06     | `production-ready` | 1066×1600 | portrait    | hero                        | full frame, WebP                         | `hero.webp` 1066×1600             |
+| 07     | `production-ready` | 1600×1066 | landscape   | thank-you portrait; OG card | tight 4:5 crop; 1200×630 bottom crop q66 | `thank-you.webp`, `og-share.webp` |
 
 No derivative is upscaled. All derivatives are within the image delivery budgets.
 

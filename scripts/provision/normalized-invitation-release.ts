@@ -1,5 +1,4 @@
 /** Environment-neutral managed invitation release builder. */
-import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
@@ -43,6 +42,7 @@ import {
 	sourceAssetDigestKey,
 	type SourceAssetDigestCache,
 } from './source-asset-digest-cache.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 export const RELEASE_SCHEMA_VERSION = '2.0.0';
 export const ASSET_KEY_PREFIX = '__INVITATION_ASSET_KEY__:';
@@ -100,12 +100,8 @@ export function canonicalize(value: unknown): string {
 		.join(',')}}`;
 }
 function hash(value: unknown): string {
-	if (Buffer.isBuffer(value) || value instanceof Uint8Array) {
-		return createHash('sha256').update(value).digest('hex');
-	}
-	return createHash('sha256')
-		.update(typeof value === 'string' ? value : canonicalize(value))
-		.digest('hex');
+	if (Buffer.isBuffer(value) || value instanceof Uint8Array) return sha256Hex(value);
+	return sha256Hex(typeof value === 'string' ? value : canonicalize(value));
 }
 
 /** SHA-256 of the package MD5 projection hash. Provenance rows require 64-char hex. */

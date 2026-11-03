@@ -137,12 +137,11 @@ export function buildAbrilPublishedContent(
 	return {
 		eventType: ABRIL_EVENT.eventType,
 		isDemo: false,
-		templateId: 'xv-premiere-floral',
 		visualProfileId: ABRIL_EVENT.visualProfileId,
 		title: ABRIL_EVENT.title,
 		description:
 			'Acompáñenos a celebrar los XV años de Abril Michelle Becerra Rea el 12 de septiembre de 2026 en Lagos de Moreno.',
-		theme: { preset: ABRIL_EVENT.themeId, fontFamily: 'serif' },
+		theme: { preset: ABRIL_EVENT.themeId },
 		music: {
 			url: 'https://media.celebra-me.com/invitations/xv/abril-michelle-becerra-rea/music-09befab7858d5520e2b33077f41aed3221c2695aff96bb2afe54d228a3b59dfd.mp3',
 			title: 'Talking to the moon',

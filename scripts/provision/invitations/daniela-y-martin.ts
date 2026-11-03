@@ -113,7 +113,6 @@ export function buildDanielaPublishedContent(
 	return {
 		eventType: DANIELA_EVENT.eventType,
 		isDemo: false,
-		templateId: 'boda-jewelry-box-wedding',
 		visualProfileId: DANIELA_EVENT.visualProfileId,
 		title: DANIELA_EVENT.title,
 		description:

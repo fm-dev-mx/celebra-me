@@ -3,7 +3,7 @@ import { ICON_NAMES_TUPLE } from '@/lib/icons/icon-catalog';
 import { ITINERARY_VARIANTS } from '@/lib/invitation/section-variants';
 
 /** Pinned scroll scenes the standard itinerary can play (docs/domains/theme/motion.md). */
-export const ITINERARY_SCENES = ['ribbon-route'] as const;
+const ITINERARY_SCENES = ['ribbon-route'] as const;
 export type ItineraryScene = (typeof ITINERARY_SCENES)[number];
 
 const itineraryItemSchema = z.object({

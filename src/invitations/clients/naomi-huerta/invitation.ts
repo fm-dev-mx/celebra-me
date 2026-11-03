@@ -6,8 +6,8 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
  * in the stone castle of the client's photo session. Blush paper and pale mist alternate by
  * section, the countdown is one short rose night between two framed plates, and the closing is
  * the night again. Fine silver butterflies are the only motif. The photographs are the client's
- * final session at their delivered size, cropped per role and never upscaled. The song is
- * omitted until its file is hosted on the media domain. The program, gifts, reply deadline and
+ * final session at their delivered size, cropped per role and never upscaled. The song is the
+ * client's pick, hosted on the media domain. The program, gifts, reply deadline and
  * every guest-facing line are drafts for the client's approval.
  */
 const NAOMI_TIMING = {
@@ -22,10 +22,9 @@ const EVENT_DATE_LABEL = '18 de diciembre de 2026';
 const content: CanonicalEventContentInput = {
 	eventType: 'xv',
 	isDemo: false,
-	templateId: 'xv-storybook-blush',
 	title: `Mis XV Años — ${CELEBRANT_NAME}`,
 	description: `${CELEBRANT_NAME} cumple quince. Viernes ${EVENT_DATE_LABEL}, Guadalajara, Jalisco.`,
-	theme: { preset: 'storybook-blush', fontFamily: 'serif', motion: 'editorial' },
+	theme: { preset: 'storybook-blush', motion: 'editorial' },
 	eventTiming: NAOMI_TIMING,
 	sectionOrder: [
 		'quote',
@@ -96,8 +95,8 @@ const content: CanonicalEventContentInput = {
 		microcopy: 'Abra su invitación',
 	},
 	quote: {
-		text: 'Hay cuentos que se esperan toda la vida.',
-		closingLine: 'El mío comienza el 18 de diciembre, y quiero que usted esté ahí.',
+		text: 'Esperé quince años por esta noche.',
+		closingLine: 'Me haría muy feliz que usted estuviera ahí.',
 	},
 	family: {
 		// No family photograph was delivered, so the names stand alone.
@@ -134,8 +133,9 @@ const content: CanonicalEventContentInput = {
 			// From the church to the hall: a silver butterfly flies the route while the entries swap.
 			scene: 'butterfly-route',
 		},
-		introHeading: 'Dónde y cuándo',
-		introLede: 'Primero daremos gracias en misa y después celebraremos juntos.',
+		introHeading: 'Dos lugares, una noche',
+		introLede:
+			'A las 18:30 daré gracias en misa; a las 21:00 le espero en La Mattea para celebrar.',
 		indicationsHeading: 'De gala',
 		indications: [
 			{
@@ -178,14 +178,14 @@ const content: CanonicalEventContentInput = {
 	itinerary: {
 		// Drafted program; times after the reception await the client's confirmation.
 		variant: 'stacked-cards',
-		title: 'Así será mi noche',
+		title: 'Los capítulos de mi noche',
 		items: [
 			{ time: '18:30', iconName: 'Church', label: 'Misa' },
 			{ time: '21:00', iconName: 'Reception', label: 'Recepción' },
 			{ time: '21:30', iconName: 'Waltz', label: 'Vals' },
 			{ time: '22:30', iconName: 'Dinner', label: 'Cena' },
 			{ time: '23:30', iconName: 'Party', label: 'Baile' },
-			{ time: '02:00', iconName: 'Party', label: 'Cierre' },
+			{ time: '02:00', iconName: 'Party', label: 'Despedida' },
 		],
 	},
 	gallery: {
@@ -197,27 +197,35 @@ const content: CanonicalEventContentInput = {
 			{
 				image: 'gallery01',
 				alt: 'Naomi sonríe con un ramo de rosas frente a la puerta de un castillo.',
-				focalPoint: '55% 60%',
+				focalPoint: '50% 55%',
 			},
 			{
 				image: 'gallery02',
 				alt: 'Naomi de espaldas, con el gran moño de su vestido rosa, ante las torres del castillo.',
-				focalPoint: '50% 70%',
+				focalPoint: '50% 60%',
 			},
 			{
 				image: 'gallery03',
-				alt: 'Naomi con su ramo entre las torres de piedra y el cielo azul.',
-				focalPoint: '50% 65%',
+				alt: 'Naomi con su ramo ante el arco de piedra del castillo.',
+				focalPoint: '50% 50%',
 			},
 		],
 	},
 	gifts: {
-		// A two-line note, as on printed stationery.
+		// Client-supplied Liverpool registry; the note keeps the gift optional.
 		variant: 'standard',
-		title: 'Lluvia de sobres',
-		presentation: 'legend-only',
+		title: 'Mesa de regalos',
+		presentation: 'catalog',
 		subtitle:
-			'Su presencia es mi mejor regalo. Si desea tener un detalle conmigo, habrá lluvia de sobres.',
+			'Verle en mi noche ya es el regalo. Si aun así desea darme algo, mi mesa está en Liverpool; también recibiré con cariño el detalle que usted elija.',
+		items: [
+			{
+				type: 'store',
+				title: 'Liverpool',
+				url: 'https://mesaderegalos.liverpool.com.mx/milistaderegalos/60070167',
+				description: 'Número de evento: 60070167',
+			},
+		],
 	},
 	rsvp: {
 		// Pass and confirmation read as one printed reply card; seats are fixed per guest.
@@ -226,7 +234,7 @@ const content: CanonicalEventContentInput = {
 		// Replies close two weeks before the event; the canonical RSVP block has no deadline field.
 		subcopy: 'Le agradeceré confirmar antes del viernes 4 de diciembre.',
 		lockedMessage:
-			'Esta invitación es personal. Si le llegó directo de mí, abra su enlace para ver su lugar.',
+			'Cada pase de esta noche lleva un nombre. Abra el enlace que le envié para ver el suyo.',
 		guestCap: 2,
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',
@@ -234,24 +242,24 @@ const content: CanonicalEventContentInput = {
 		personalizedAccess: {
 			variant: 'reply-card',
 			title: 'Pase personal e intransferible',
-			subtitle: 'Lleva su nombre.',
-			footerText: 'Confírmelo abajo.',
+			subtitle: 'Su lugar ya está apartado.',
+			footerText: 'Confírmeme su llegada aquí abajo.',
 		},
 		labels: {
 			name: 'Su nombre',
 			guestHint: 'Tiene {count} lugares. Si vienen menos, ajústelo aquí.',
-			stepAttendance: 'Primero lo importante',
-			stepDetails: '¿Quiénes le acompañan?',
+			stepAttendance: '¿Contamos con usted?',
+			stepDetails: '¿Cuántos llegan, contándose usted?',
 		},
-		confirmationMessage: 'Nos vemos el viernes 18 de diciembre.',
+		confirmationMessage: 'Le espero el viernes 18 de diciembre, desde la misa de las 18:30.',
 		responseMessages: {
 			confirmed: {
-				title: 'Ya le espero, {guestName}.',
-				subtitle: 'Si algo cambia, puede modificar su respuesta aquí mismo.',
+				title: 'Su lugar está listo, {guestName}.',
+				subtitle: 'Si sus planes cambian, aquí mismo puede corregir su respuesta.',
 			},
 			declined: {
-				title: 'Le voy a extrañar, {guestName}.',
-				subtitle: 'Gracias por avisarme.',
+				title: 'Me hará falta, {guestName}.',
+				subtitle: 'Gracias por decírmelo a tiempo.',
 			},
 		},
 	},
@@ -259,7 +267,7 @@ const content: CanonicalEventContentInput = {
 		// The castle again, seen from afar: the story closes at the gate where it began.
 		variant: 'portrait-keepsake',
 		image: 'thankYouPortrait',
-		focalPoint: '50% 70%',
+		focalPoint: '50% 75%',
 		message: 'Gracias por ser parte de mis quince años. Le espero el 18 de diciembre.',
 		closingName: CELEBRANT_NAME,
 		closingPhrase: 'Naomi · XV años · Guadalajara · MMXXVI',
@@ -272,15 +280,20 @@ const content: CanonicalEventContentInput = {
 		{ label: 'Regalos', href: '#regalos' },
 		{ label: 'Confirmar', href: '#rsvp' },
 	],
+	music: {
+		url: 'https://media.celebra-me.com/invitations/xv/naomi-huerta/music-2d774ae1246bc0b460b18138b1d7955a35311347a64c3b7db3d00c4359aee2cb.mp3',
+		title: 'So This Is Love — Cinderella',
+		autoPlay: true,
+	},
 	sharing: {
 		ogImage: 'ogShare',
 		ogDescription: `Viernes ${EVENT_DATE_LABEL} · Guadalajara, Jalisco. Misa a las 18:30 y recepción a las 21:00.`,
 		// A custom reminder is sent verbatim to every status, so it never assumes a pending reply.
 		shareMessages: {
 			invitation:
-				'Hola, {{invitado}}: cumplo quince y quiero que usted esté conmigo. Aquí va su invitación, con su pase y la opción para confirmar:\n\n{{enlace}}',
+				'Hola, {{invitado}}: el 18 de diciembre celebro mis quince y quiero verle ahí. En este enlace está su pase y puede confirmar:\n\n{{enlace}}',
 			reminder:
-				'Hola, {{invitado}}: {{hora_evento}} Ya casi llega mi gran noche.\n\nSi aún no confirma, tiene hasta el viernes 4 de diciembre:\n{{enlace}}',
+				'Hola, {{invitado}}: {{hora_evento}} Ya casi es 18 de diciembre.\n\nSi aún no confirma, tiene hasta el viernes 4 de diciembre:\n{{enlace}}',
 		},
 	},
 };

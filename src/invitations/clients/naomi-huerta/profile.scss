@@ -1,3 +1,5 @@
+@use './composition';
+
 // Naomi: the storybook-blush preset as a printed photo album. Two flat day grounds (blush paper
 // and rose mist mist) alternate section by section, the countdown is the one short rose night band,
 // and the closing is the night the story ends in. The photographs lead; fine silver butterflies are
@@ -7,16 +9,16 @@
 // layout stays with the variants.
 
 // The night's horizon: a slow rise, deep on the left, under a silver hairline.
-$naomi-horizon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%2346263C' d='M0 100V90C120 90 200 16 400 8v92z'/%3E%3Cpath fill='none' stroke='%238A8C9A' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 76C120 76 200 4 400 0'/%3E%3C/svg%3E");
+$naomi-horizon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%239C426A' d='M0 100V90C120 90 200 16 400 8v92z'/%3E%3Cpath fill='none' stroke='%23B2B8C8' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 76C120 76 200 4 400 0'/%3E%3C/svg%3E");
 
 // The same horizon turned the other way, for the top of the door plate: the blush of the phrase
 // hangs deep on the right, the rose mist rises on the left, and the silver hairline rides
 // the blush.
-$naomi-mist-rise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%23FAF3F4' d='M0 0H400V94C280 94 200 26 0 20z'/%3E%3Cpath fill='none' stroke='%238A8C9A' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 6C200 12 280 80 400 80'/%3E%3C/svg%3E");
+$naomi-mist-rise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%23FCECF1' d='M0 0H400V94C280 94 200 26 0 20z'/%3E%3Cpath fill='none' stroke='%23B2B8C8' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 6C200 12 280 80 400 80'/%3E%3C/svg%3E");
 
 // A plain silver hairline with a small diamond, for the family and program rules.
-$naomi-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 12' fill='none' stroke='%238A8C9A' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M8 6h38M58 6h38'/%3E%3Cpath d='M52 2l4 4-4 4-4-4z'/%3E%3C/svg%3E");
-$naomi-rule-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 12' fill='none' stroke='%23DEE0EA' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M8 6h38M58 6h38'/%3E%3Cpath d='M52 2l4 4-4 4-4-4z'/%3E%3C/svg%3E");
+$naomi-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 12' fill='none' stroke='%23B2B8C8' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M8 6h38M58 6h38'/%3E%3Cpath d='M52 2l4 4-4 4-4-4z'/%3E%3C/svg%3E");
+$naomi-rule-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 12' fill='none' stroke='%23E4E6F0' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M8 6h38M58 6h38'/%3E%3Cpath d='M52 2l4 4-4 4-4-4z'/%3E%3C/svg%3E");
 
 // Line icons for the venue actions (map pin, calendar, copy), painted as masks in the link ink.
 $naomi-icon-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z'/%3E%3Ccircle cx='12' cy='10' r='2.4'/%3E%3C/svg%3E");
@@ -24,14 +26,14 @@ $naomi-icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
 $naomi-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8.5' y='8.5' width='11' height='11' rx='2'/%3E%3Cpath d='M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5'/%3E%3C/svg%3E");
 
 // A pale-silver butterfly that rests at the head of the dress-code tag.
-$naomi-tag-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='none' stroke='%23DEE0EA' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill='%23DEE0EA' fill-opacity='.18'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' stroke-linecap='round'/%3E%3C/svg%3E");
+$naomi-tag-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='none' stroke='%23E4E6F0' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill='%23E4E6F0' fill-opacity='.18'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' stroke-linecap='round'/%3E%3C/svg%3E");
 
 // Client-requested solid silhouettes: a floor-length gown and a suit with a necktie.
-$naomi-formal-attire: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 88' fill='%23DEE0EA'%3E%3Cpath d='M23 5h6c0 7 4 10 7 10s7-3 7-10h6l-1 21-6 13 20 43H10l20-43-6-13z'/%3E%3Cpath d='M83 6l13 7 13-7 12 9 4 40-9 2-4-28-2 26 5 27H99l-3-25-3 25H77l5-27-2-26-4 28-9-2 4-40z'/%3E%3Cpath fill='%2346263C' d='M85 8l11 8 11-8-6 27-5 5-5-5z'/%3E%3Cpath d='M94 17h4l1 4-3 15-3-15z'/%3E%3C/svg%3E");
+$naomi-formal-attire: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 88' fill='%23E4E6F0'%3E%3Cpath d='M23 5h6c0 7 4 10 7 10s7-3 7-10h6l-1 21-6 13 20 43H10l20-43-6-13z'/%3E%3Cpath d='M83 6l13 7 13-7 12 9 4 40-9 2-4-28-2 26 5 27H99l-3-25-3 25H77l5-27-2-26-4 28-9-2 4-40z'/%3E%3Cpath fill='%239C426A' d='M85 8l11 8 11-8-6 27-5 5-5-5z'/%3E%3Cpath d='M94 17h4l1 4-3 15-3-15z'/%3E%3C/svg%3E");
 
 // The wax seal's press: a ring of leaves closed by a small butterfly, the monogram struck inside.
 // The footer's last butterfly: the tag's outline, filled in pale silver so it reads at pull size.
-$naomi-footer-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='%23DEE0EA' stroke='%23DEE0EA' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill-opacity='.85'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+$naomi-footer-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='%23E4E6F0' stroke='%23E4E6F0' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill-opacity='.85'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
 $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M40.1 84.6A36 36 0 0 1 30.9 19.5M59.9 84.6A36 36 0 0 0 69.1 19.5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/%3E%3Cellipse cx='33.9' cy='86.2' rx='4.6' ry='1.9' transform='rotate%28244 33.9 86.2%29'/%3E%3Cellipse cx='33.3' cy='77.7' rx='4.6' ry='1.9' transform='rotate%28171 33.3 77.7%29'/%3E%3Cellipse cx='22.3' cy='78.3' rx='4.4' ry='1.8' transform='rotate%28264 22.3 78.3%29'/%3E%3Cellipse cx='24.7' cy='70.2' rx='4.4' ry='1.8' transform='rotate%28191 24.7 70.2%29'/%3E%3Cellipse cx='14.2' cy='66.9' rx='4.2' ry='1.7' transform='rotate%28285 14.2 66.9%29'/%3E%3Cellipse cx='19.2' cy='60.1' rx='4.2' ry='1.7' transform='rotate%28212 19.2 60.1%29'/%3E%3Cellipse cx='10.6' cy='53.5' rx='4.0' ry='1.7' transform='rotate%28305 10.6 53.5%29'/%3E%3Cellipse cx='17.6' cy='48.8' rx='4.0' ry='1.7' transform='rotate%28-128 17.6 48.8%29'/%3E%3Cellipse cx='11.8' cy='39.5' rx='3.8' ry='1.6' transform='rotate%28-35 11.8 39.5%29'/%3E%3Cellipse cx='20.1' cy='37.6' rx='3.8' ry='1.6' transform='rotate%28-108 20.1 37.6%29'/%3E%3Cellipse cx='17.8' cy='26.9' rx='3.6' ry='1.5' transform='rotate%28-14 17.8 26.9%29'/%3E%3Cellipse cx='26.2' cy='28.0' rx='3.6' ry='1.5' transform='rotate%28-87 26.2 28.0%29'/%3E%3Cellipse cx='27.9' cy='17.2' rx='3.4' ry='1.4' transform='rotate%286 27.9 17.2%29'/%3E%3Cellipse cx='35.3' cy='21.1' rx='3.4' ry='1.4' transform='rotate%28-67 35.3 21.1%29'/%3E%3Cellipse cx='66.1' cy='86.2' rx='4.6' ry='1.9' transform='rotate%28116 66.1 86.2%29'/%3E%3Cellipse cx='66.7' cy='77.7' rx='4.6' ry='1.9' transform='rotate%28189 66.7 77.7%29'/%3E%3Cellipse cx='77.7' cy='78.3' rx='4.4' ry='1.8' transform='rotate%2896 77.7 78.3%29'/%3E%3Cellipse cx='75.3' cy='70.2' rx='4.4' ry='1.8' transform='rotate%28169 75.3 70.2%29'/%3E%3Cellipse cx='85.8' cy='66.9' rx='4.2' ry='1.7' transform='rotate%2875 85.8 66.9%29'/%3E%3Cellipse cx='80.8' cy='60.1' rx='4.2' ry='1.7' transform='rotate%28148 80.8 60.1%29'/%3E%3Cellipse cx='89.4' cy='53.5' rx='4.0' ry='1.7' transform='rotate%2855 89.4 53.5%29'/%3E%3Cellipse cx='82.4' cy='48.8' rx='4.0' ry='1.7' transform='rotate%28128 82.4 48.8%29'/%3E%3Cellipse cx='88.2' cy='39.5' rx='3.8' ry='1.6' transform='rotate%2835 88.2 39.5%29'/%3E%3Cellipse cx='79.9' cy='37.6' rx='3.8' ry='1.6' transform='rotate%28108 79.9 37.6%29'/%3E%3Cellipse cx='82.2' cy='26.9' rx='3.6' ry='1.5' transform='rotate%2814 82.2 26.9%29'/%3E%3Cellipse cx='73.8' cy='28.0' rx='3.6' ry='1.5' transform='rotate%2887 73.8 28.0%29'/%3E%3Cellipse cx='72.1' cy='17.2' rx='3.4' ry='1.4' transform='rotate%28-6 72.1 17.2%29'/%3E%3Cellipse cx='64.7' cy='21.1' rx='3.4' ry='1.4' transform='rotate%2867 64.7 21.1%29'/%3E%3Cg transform='translate%2841.84 3.12%29 scale%280.34%29'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31Z'/%3E%3Cpath d='M23 32C14 33 8 40 11 46 14 51 21 45 23 37Z'/%3E%3Cpath d='M25 26C34 12 45 12 44 22 43 30 34 33 25 31Z'/%3E%3Cpath d='M25 32C34 33 40 40 37 46 34 51 27 45 25 37Z'/%3E%3Cpath d='M24 20C25.2 20 25.8 25 25.8 32S25.2 44 24 44 22.2 39 22.2 32 22.8 20 24 20Z'/%3E%3C/g%3E%3C/svg%3E");
 
 .event--naomi-huerta.theme-preset--storybook-blush {
@@ -40,7 +42,7 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	--naomi-print-overlap: clamp(5rem, 22vw, 9rem);
 	--naomi-band-padding: clamp(4.5rem, 12vw, 7.5rem);
 	--naomi-gutter: clamp(1.5rem, 6vw, 4rem);
-	--naomi-rule: rgb(var(--color-plum-ink-rgb) / 18%);
+	--naomi-rule: rgb(var(--color-leaf-silver-rgb) / 75%);
 
 	// Flat grounds: the album paper carries no grain.
 	--storybook-paper: var(--color-blush-paper);
@@ -68,8 +70,8 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	// swatch) and one closing line in spaced capitals.
 	--location-enclosure-bg: var(--color-rose-night);
 	--location-enclosure-ink: var(--color-pale-pearl);
-	--location-enclosure-muted: var(--color-night-blush);
-	--location-enclosure-rule: rgb(var(--color-pale-silver-rgb) / 35%);
+	--location-enclosure-muted: var(--color-pale-silver);
+	--location-enclosure-rule: rgb(var(--color-pale-silver-rgb) / 60%);
 	--location-enclosure-shadow: none;
 	--location-enclosure-shape: polygon(
 		1.25rem 0,
@@ -84,7 +86,7 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	--location-enclosure-outline: 0 solid transparent;
 	--location-enclosure-frame-display: block;
 	--location-enclosure-frame-inset: 0.55rem;
-	--location-enclosure-frame: rgb(var(--color-pale-silver-rgb) / 35%);
+	--location-enclosure-frame: rgb(var(--color-pale-silver-rgb) / 60%);
 	--location-enclosure-frame-shape: polygon(
 		0.85rem 0,
 		calc(100% - 0.85rem) 0,
@@ -116,7 +118,7 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	--location-enclosure-heading-color: var(--color-pale-silver);
 	--location-enclosure-note-padding: 0.75rem;
 	--location-enclosure-note-rule-width: 3rem;
-	--location-enclosure-lead-title-color: var(--color-night-blush);
+	--location-enclosure-lead-title-color: var(--color-pale-silver);
 	--location-enclosure-swatch: conic-gradient(
 		from 45deg,
 		var(--color-rose-glow) 0 50%,
@@ -140,7 +142,12 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	// section's ink, the address soft. The map is the primary action, filled in rose; the
 	// calendar and the copy sit beside each other as outlined buttons below it, and wide screens
 	// set the three on one line. Set at the entry so it wins over the route stage's silver remaps.
+	// The drawings are inked in rose: leaf silver alone vanished on the blush ground. Their frame
+	// lives in the composition.
 	.event-location__program-entry {
+		--location-program-drawing: var(--color-rose-deep);
+		--location-program-drawing-stroke: 1.7;
+		--location-program-drawing-size: 10rem;
 		--location-program-label-color: var(--color-silver-ink);
 		--location-program-label-size: 1.05rem;
 		--location-program-time-color: var(--color-plum-ink-soft);
@@ -200,17 +207,17 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 		--hero-portrait-margin: 0 auto;
 		--hero-portrait-max-width: 100%;
 
-		// The arch keeps the portrait's own proportion (1843 × 2560), so the photograph fills it on
+		// The arch keeps the portrait's own 2:3 proportion, so the photograph fills it edge to edge on
 		// every phone; short screens get a taller floor so the portrait never shrinks to a stamp.
 		--naomi-portrait-height: clamp(16rem, min(46svh, calc(100svh - 28rem)), 28rem);
-		--hero-portrait-width-mobile: min(78vw, 19rem, calc(var(--naomi-portrait-height) * 0.72));
-		--hero-portrait-height-mobile: calc(var(--hero-portrait-width-mobile) / 0.72);
+		--hero-portrait-width-mobile: min(78vw, 19rem, calc(var(--naomi-portrait-height) * 2 / 3));
+		--hero-portrait-height-mobile: calc(var(--hero-portrait-width-mobile) * 1.5);
 
 		// On desktop the arch and its hairline clear the fixed menu bar.
 		--hero-section-padding-desktop: 6.5rem 4rem 2rem;
 		--hero-portrait-height-desktop: min(68svh, 38rem);
 		--hero-portrait-radius: 50% 50% 0.375rem 0.375rem / 36% 36% 0.375rem 0.375rem;
-		--hero-portrait-outline: 1px solid rgb(var(--color-leaf-silver-rgb) / 70%);
+		--hero-portrait-outline: 2px solid var(--color-leaf-silver);
 		--hero-portrait-outline-offset: 0.4rem;
 		--hero-title-max-width: none;
 		--hero-title-size: clamp(5.5rem, 26vw, 8.5rem);

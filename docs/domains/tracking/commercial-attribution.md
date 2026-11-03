@@ -478,6 +478,62 @@ workspace enables:
 6. **CAPI Queue Control**: View CAPI outbox ledger logs (status, value, attempts, errors) and
    manually trigger batch processing or retry individual skipped/failed events.
 
+### Past clients and referrals
+
+Migration `20261102180000_past_clients_and_referrals.sql` adds past sales and the referral program.
+It must be applied (owner-authorized, guarded workflow) before the application code that uses it is
+deployed; merging it does not apply it.
+
+**Past sales.** An order created with «Venta anterior» stores `is_past_sale = true` and its real
+`sold_at` date, and flags the linked lead `is_past_sale`. A past sale never reaches Meta:
+
+- `register_commercial_deposit_purchase` returns `conversion_event: null` and inserts no outbox row,
+  so no CAPI `Purchase` is sent when its deposit is marked paid;
+- `enqueueMetaCrmLeadStageEvent` re-reads `leads.is_past_sale` and enqueues no CRM stage event;
+- `enqueueMetaCrmLeadSalesStageEvents` returns early for a past sale;
+- past sales get no friend discount, spend no credit and award no referrer credit.
+
+**Referral link.** Each customer has a `referral_code` (4–16 `A-Z0-9`). The link is
+`https://www.celebra-me.com/?ref=CODE`. The browser keeps the `ref` value with the session, and lead
+capture stores it on the lead as `referral_code_used` together with the referrer's `external_id`.
+When a lead was already attributed, the first referrer wins. A code that resolves to the same
+customer (self-referral) is ignored.
+
+**Rewards.**
+
+| Who      | Reward                                                     | When                                    |
+| -------- | ---------------------------------------------------------- | --------------------------------------- |
+| Friend   | 10 % off the current package price (`discount_amount`)     | Order created with a valid code         |
+| Referrer | $200 MXN credit (`referral_credit_mxn`) per confirmed sale | Friend's deposit is registered          |
+| Referrer | Credit is spent on their own next order, $1 MXN floor      | Order created with «Usar saldo a favor» |
+
+`total_amount` is always the **net** amount after the discount and credit. The CAPI `Purchase` value
+reads `total_amount`, so Meta receives the net amount. The manual lead-record CRM `Purchase` uses
+the `packageValue` the operator types; enter the net amount there too.
+
+**Meta customer list.** `GET /api/dashboard/commercial/customers?export=meta-csv` (strong admin
+session, `no-store`) downloads `celebra-me-clientes-meta.csv` with the columns
+`phone,fn,ln,ct,country`. It lists only customers with a confirmed sale, one row per E.164 phone,
+`country` defaulting to `MX`. RSVP and guest data are never part of it. The file is uploaded to Meta
+by the owner by hand; no code uploads it. The privacy notice (`src/pages/privacidad.astro`, sections
+2, 4, 6 and 7) discloses this use and the opt-out; remove a customer who opts out before the next
+upload.
+
+#### CRM how-to (owner)
+
+1. **Registrar un cliente anterior:** en «Vincular o crear cliente», llene nombre, teléfono, ciudad
+   y país, y marque «Cliente anterior».
+2. **Registrar una venta anterior:** en «Crear una nueva orden», marque «Venta anterior» y escriba
+   la fecha real de la venta. Esa orden no se envía a Meta.
+3. **Compartir el enlace de recomendación:** en la ficha del cliente, «Enlace de recomendación»
+   muestra el código, el enlace y el saldo a favor. «Copiar mensaje de WhatsApp» copia un mensaje en
+   «usted» que menciona los precios actualizados.
+4. **Venta de un recomendado:** si el prospecto llegó con `?ref=`, el código se toma solo; si no,
+   escríbalo en «Código de recomendación». El descuento de 10 % y el saldo de $200 MXN se ven en la
+   tarjeta de la orden.
+5. **Lista para Meta:** «Descargar lista de clientes para Meta (CSV)» descarga el archivo para
+   subirlo a una audiencia personalizada.
+
 ### Order Status Semantics
 
 | Status         | Meaning                                      | CAPI Purchase Triggered                              |

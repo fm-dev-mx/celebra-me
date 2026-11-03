@@ -11,10 +11,9 @@ const ALLISON_TIMING = {
 const content: CanonicalEventContentInput = {
 	eventType: 'xv',
 	isDemo: false,
-	templateId: 'xv-celestial-blue',
 	title: 'Mis XV años — Allison Scarlett',
 	description: 'Le invito a compartir la celebración de mis XV años.',
-	theme: { preset: 'celestial-blue', fontFamily: 'serif' },
+	theme: { preset: 'celestial-blue' },
 	eventTiming: ALLISON_TIMING,
 	sectionOrder: [
 		'family',

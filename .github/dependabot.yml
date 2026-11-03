@@ -24,8 +24,12 @@ updates:
           semver-minor-days: 7
           semver-patch-days: 3
       groups:
+          # `vite` moves with Astro: a root pin older than Astro's own vite installs two copies, and
+          # the Cloudflare plugin's rolldown `esmExternalRequirePlugin` from the other copy is
+          # silently ignored, leaving `require("fs")` in the Worker bundle (HTTP 500).
           astro-platform:
               patterns:
+                  - 'vite'
                   - 'astro'
                   - 'astro-*'
                   - '@astrojs/*'

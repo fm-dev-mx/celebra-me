@@ -568,9 +568,6 @@ export function mapDraftToPublished(input: PublishInput): Record<string, unknown
 	}
 
 	return {
-		...(priorPublished?.templateId !== undefined
-			? { templateId: priorPublished.templateId }
-			: {}),
 		...(priorPublished?.visualProfileId !== undefined
 			? { visualProfileId: priorPublished.visualProfileId }
 			: {}),

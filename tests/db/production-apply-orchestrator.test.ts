@@ -117,6 +117,7 @@ function baseDeps(options?: {
 		revalidateInvitationPlan: async () => undefined,
 		getProductionDbUrl: () => ({ url: PROD_URL }),
 		assertReleaseReadiness: () => ({ sha: 'a'.repeat(40) }),
+		assertWorkerServesRelease: async () => undefined,
 		preparePatch: (file) => ({
 			file,
 			path: file,
@@ -431,9 +432,12 @@ describe('production apply execution', () => {
 			requireOwnerApply,
 			applySchema,
 			applyInvitation,
+			assertWorkerServesRelease: async () => {
+				order.push('worker');
+			},
 		});
 		expect(requireOwnerApply).toHaveBeenCalledTimes(1);
-		expect(order).toEqual(['authorize', 'schema', 'alpha', 'beta']);
+		expect(order).toEqual(['worker', 'authorize', 'schema', 'alpha', 'beta']);
 		expect(result.wrote).toBe(true);
 		expect(result.outcomes.find((row) => row.id === 'schema')?.outcome).toBe(
 			'APPLIED_AND_VERIFIED',
@@ -1016,6 +1020,90 @@ describe('production apply execution', () => {
 		expect(assertReleaseReadiness).toHaveBeenCalledWith({ remote: true });
 		expect(ensureSharedBackup).not.toHaveBeenCalled();
 		expect(requireOwnerApply).not.toHaveBeenCalled();
+	});
+
+	it('refuses invitation content before the owner prompt when the Production Worker lags', async () => {
+		const requireOwnerApply = jest.fn(async () => undefined);
+		const applyInvitation = jest.fn();
+		const assertWorkerServesRelease = jest.fn<
+			(input: { releaseSha: string }) => Promise<unknown>
+		>(async () => {
+			throw new OperatorError({
+				title: 'Worker atrasado',
+				cause: 'Production sirve un commit anterior',
+				code: 'PRODUCTION_WORKER_BEHIND_CONTENT',
+				remediation: [],
+			});
+		});
+		await expect(
+			applyProductionApplyPlan(cli(['--slug', 'demo', '--apply']), {
+				...baseDeps({ pending: [], preflights: { demo: invitationPreflight('demo') } }),
+				requireOwnerApply,
+				applyInvitation:
+					applyInvitation as unknown as ProductionApplyExecuteDeps['applyInvitation'],
+				assertWorkerServesRelease,
+			}),
+		).rejects.toMatchObject({ code: 'PRODUCTION_WORKER_BEHIND_CONTENT' });
+		expect(assertWorkerServesRelease).toHaveBeenCalledWith({ releaseSha: 'a'.repeat(40) });
+		expect(requireOwnerApply).not.toHaveBeenCalled();
+		expect(applyInvitation).not.toHaveBeenCalled();
+	});
+
+	it('does not consult the Production Worker for a schema-only apply', async () => {
+		const assertWorkerServesRelease = jest.fn(async () => undefined);
+		const result = await applyProductionApplyPlan(cli(['--schema', '--apply']), {
+			...baseDeps(),
+			requireOwnerApply: async (input) => {
+				issueProductionWritePermit({
+					projectRef: SUPABASE_PROJECT_REFS.production,
+					operationType: 'production_apply',
+					bindingHex: input.bindingHex,
+				});
+			},
+			applySchema: async () => ({ plan: schemaPlan(), wrote: true }),
+			assertWorkerServesRelease,
+		});
+		expect(result.wrote).toBe(true);
+		expect(assertWorkerServesRelease).not.toHaveBeenCalled();
+	});
+
+	it('refuses an owner patch before its backup when the Production Worker lags', async () => {
+		const assertWorkerServesRelease = jest.fn<
+			(input: { releaseSha: string }) => Promise<unknown>
+		>(async () => {
+			throw new OperatorError({
+				title: 'Worker behind',
+				cause: 'test',
+				code: 'PRODUCTION_WORKER_BEHIND_CONTENT',
+				remediation: [],
+			});
+		});
+		const ensurePatchBackup = jest.fn(() => ({ manifestPath: '.tmp/test-backup.json' }));
+		const applyPatch = jest.fn(async () => ({ state: 'APPLIED_AND_VERIFIED' as const }));
+		await expect(
+			applyProductionApplyPlan(
+				cli([
+					'--patch',
+					'scripts/manual/production-patches/test.sql',
+					'--owner-user-id',
+					'550e8400-e29b-41d4-a716-446655440000',
+					'--apply',
+				]),
+				{
+					...baseDeps({ pending: [] }),
+					preparePatch: (file) => ({
+						...baseDeps().preparePatch!(file),
+						fingerprint: 'patch-reviewed',
+					}),
+					assertWorkerServesRelease,
+					ensurePatchBackup,
+					applyPatch,
+				},
+			),
+		).rejects.toMatchObject({ code: 'PRODUCTION_WORKER_BEHIND_CONTENT' });
+		expect(assertWorkerServesRelease).toHaveBeenCalledWith({ releaseSha: 'a'.repeat(40) });
+		expect(ensurePatchBackup).not.toHaveBeenCalled();
+		expect(applyPatch).not.toHaveBeenCalled();
 	});
 
 	it('requires and revalidates a current critical backup before applying a patch', async () => {
