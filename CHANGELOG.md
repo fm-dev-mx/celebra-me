@@ -10,8 +10,25 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.63.0-beta.1] - 2026-11-03
+
+Registers past clients with customer referral rewards and ships the naomi-huerta invitation updates.
+Includes one additive migration, applied in Preview; apply it in Production before deploying.
+
+### Added
+
+- Commercial: register past clients as sales and reward customers who refer new clients. Adds the
+  referral columns on `customers`, `leads.is_past_sale` and their functions; the privacy notice
+  discloses how referral codes and rewards are processed.
+- Invitations: Liverpool gift registry for naomi-huerta.
+
 ### Changed
 
+- Invitations: naomi-huerta guest copy rewritten, venue drawings framed, pink and silver palette,
+  full-frame hero and the client's song.
+- Demos: the hacienda birthday demo is redesigned as a night portal.
+- Production apply refuses invitation content until the Production Worker serves its commit, and the
+  Production health probe is bounded.
 - Dependencies: `astro` 7.4.4, `@astrojs/cloudflare` 14.4.3 and `vite` 8.3.5. The root `vite` pin
   now moves with Astro; leaving it at 8.3.4 installed two copies of vite and left `require("fs")` in
   the Worker bundle, which answered 500 on invitation routes (#760, #770).
