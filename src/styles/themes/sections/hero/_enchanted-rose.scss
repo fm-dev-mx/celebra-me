@@ -594,16 +594,13 @@
 			margin-inline: auto;
 		}
 
+		// The letter keeps the desktop's leading edge, which leaves the right edge to the scroll cue.
 		.framed-portrait-hero__letter {
-			text-align: center;
+			text-align: start;
 		}
 
 		// Phones set the family names on one line under the first name.
 		--hero-title-size: clamp(2.75rem, 11.5vw, 3.75rem);
-
-		.framed-portrait-hero__details::before {
-			margin-inline: auto;
-		}
 	}
 
 	@include mixins.respond-to(lg) {

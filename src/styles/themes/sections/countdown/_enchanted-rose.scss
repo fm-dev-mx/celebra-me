@@ -1,19 +1,31 @@
 @use '../../../global/mixins' as mixins;
 
 // Numbers set like the quote: no tiles, large burgundy Cormorant numerals divided by small gold
-// diamonds, «Faltan» signed in the gold script, and the date and place once, on one line, under
+// diamonds, «Faltan» in burgundy Cormorant italic (the gold script stays the quote's signature),
+// and the date and place once, on one line, under
 // the quote's diamond hairline. The clock-face variant lays the ivory ground; its silver ring
 // stays hidden (no arches, no dials).
 .theme-preset--enchanted-rose .countdown-section {
-	// Antique gold alone reads 2.2:1 on the ivory; half walnut keeps it gold at about 4.2:1.
-	$signature-gold: color-mix(in srgb, var(--color-action-accent) 50%, var(--color-walnut-brown));
-
 	--countdown-clock-ring-display: none;
+
+	// The ground leaves the quote's ivory and settles into the warmer beige, lit off-centre.
+	--countdown-clock-bg:
+		radial-gradient(
+			ellipse 90% 70% at 22% 64%,
+			rgb(var(--color-blush-pink-rgb) / 16%) 0%,
+			transparent 70%
+		),
+		linear-gradient(
+			180deg,
+			var(--color-surface-primary) 0%,
+			var(--color-surface-secondary) 42%,
+			var(--color-surface-secondary) 100%
+		);
 	--countdown-clock-padding: clamp(4.5rem, 10vw, 7rem) clamp(1rem, 4vw, 2rem);
 	--countdown-clock-color: var(--color-velvet-burgundy);
-	--countdown-clock-title-font: var(--font-calligraphy);
+	--countdown-clock-title-font: var(--font-display);
 	--countdown-clock-title-weight: 400;
-	--countdown-clock-title-size: clamp(2.6rem, 9vw, 3.6rem);
+	--countdown-clock-title-size: clamp(1.75rem, 5.6vw, 2.25rem);
 	--countdown-clock-title-margin: 0 auto clamp(1.25rem, 3vw, 2rem);
 	--countdown-clock-timer-width: min(100%, 34rem);
 	--countdown-clock-timer-gap: 0;
@@ -29,7 +41,9 @@
 
 	// The variant's title inherits the section color at the same specificity; the attribute wins.
 	&[data-variant] .countdown-title {
-		color: #{$signature-gold};
+		color: var(--color-velvet-burgundy);
+		font-style: italic;
+		letter-spacing: 0.02em;
 	}
 
 	.countdown-texture {

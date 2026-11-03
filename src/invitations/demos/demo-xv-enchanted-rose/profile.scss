@@ -12,12 +12,12 @@
 
 	.invitation-hero.framed-portrait-hero {
 		// The arched frame gives way to a square velvet case (structure in the preset hero); the
-		// cue centers so the music pill never covers it, and the name sets in two lines.
+		// cue rises clear of the music pill, and the name sets in two lines.
 		--hero-portrait-radius: 0;
 		--hero-portrait-outline: none;
 		--hero-portrait-height-desktop: min(68svh, 40rem);
 		--hero-title-max-width: 16ch;
-		--hero-scroll-align: center;
+		--hero-scroll-bottom: 6.5rem;
 		--hero-name-font-weight: 400;
 		--hero-name-letter-spacing: -0.02em;
 		--hero-details-font: 500 0.8125rem / 1.6 var(--font-body);
@@ -32,6 +32,67 @@
 		--hero-occasion-font: 400 clamp(2.5rem, 4.4vw, 3.5rem) / 1 var(--font-calligraphy);
 		--hero-occasion-letter-spacing: 0;
 		--hero-occasion-text-transform: none;
+	}
+
+	// The photo after the family dissolves into the location's ivory, so the page runs from the
+	// picture into the paper without a cut edge or a band.
+	.invitation-interlude[data-interlude-index='1'] {
+		--interlude-overlay:
+			linear-gradient(
+				180deg,
+				rgb(var(--color-candle-shadow-rgb) / 18%) 0%,
+				transparent 46%,
+				rgb(var(--color-warm-ivory-rgb) / 70%) 86%,
+				var(--color-warm-ivory) 100%
+			),
+			radial-gradient(
+				circle at var(--interlude-light-x, 50%) var(--interlude-light-y, 34%),
+				rgb(var(--color-candle-gold-rgb) / 18%) 0%,
+				transparent 42%
+			);
+	}
+
+	// Where the paper turns to velvet (itinerary into the gallery) or back (RSVP into the thanks),
+	// the incoming edge ramps through a blush dusk lit off-centre instead of cutting. The ramp sits
+	// over the incoming section's top padding.
+	.invitation-section-wrapper[data-intersection='atmospheric-blend'] {
+		&[data-intersection-source='itinerary'],
+		&[data-intersection-source='rsvp'] {
+			--intersection-depth: clamp(3.5rem, 9vw, 5.5rem);
+			--intersection-blend-layer: 2;
+		}
+
+		&[data-intersection-source='itinerary'] {
+			--intersection-blend:
+				radial-gradient(
+					ellipse 120% 100% at 28% 0%,
+					rgb(var(--color-blush-pink-rgb) / 22%) 0%,
+					transparent 70%
+				),
+				linear-gradient(
+					180deg,
+					var(--color-surface-secondary) 0%,
+					rgb(var(--color-blush-pink-rgb) / 58%) 34%,
+					rgb(var(--color-deep-rose-red-rgb) / 26%) 68%,
+					transparent 100%
+				);
+		}
+
+		&[data-intersection-source='rsvp'] {
+			--intersection-blend:
+				radial-gradient(
+					ellipse 120% 100% at 72% 0%,
+					rgb(var(--color-candle-gold-rgb) / 14%) 0%,
+					transparent 70%
+				),
+				linear-gradient(
+					180deg,
+					var(--color-rose-shadow) 0%,
+					rgb(var(--color-deep-rose-red-rgb) / 42%) 34%,
+					rgb(var(--color-blush-pink-rgb) / 34%) 66%,
+					transparent 100%
+				);
+		}
 	}
 
 	// Dress code and RSVP deadline on the light indications card: the shared ivory emphasis was

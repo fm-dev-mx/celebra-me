@@ -1,6 +1,7 @@
 @use '../../../global/mixins' as mixins;
 
 .theme-preset--enchanted-rose .event-location {
+	--location-card-text-align: start;
 	--location-er-frame-bg: linear-gradient(
 		145deg,
 		rgb(var(--color-midnight-navy-rgb) / 74%),
@@ -197,10 +198,11 @@
 		z-index: 1;
 	}
 
+	// A functional section reads from the leading edge (invitation-rhythm).
 	.event-location__intro {
 		max-width: 44rem;
-		margin: 0 auto clamp(2rem, 4vw, 3.5rem);
-		text-align: center;
+		margin: 0 0 clamp(2rem, 4vw, 3.5rem);
+		text-align: start;
 	}
 
 	.event-location__eyebrow {

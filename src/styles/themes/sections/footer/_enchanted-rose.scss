@@ -3,19 +3,19 @@
 
 	position: relative;
 
-	&::before {
-		content: '';
-		position: absolute;
-		inset: 0 0 auto;
-		height: 20%;
-		background: linear-gradient(180deg, transparent 0%, var(--color-rose-shadow) 100%);
-		pointer-events: none;
-		z-index: -1;
-	}
-
+	// The thanks' ivory ramps through a blush dusk into the velvet instead of cutting (the footer
+	// re-scopes the surface tokens to its dark ground, so the ivory is named).
 	background:
+		linear-gradient(
+				180deg,
+				var(--color-warm-ivory) 0%,
+				rgb(var(--color-blush-pink-rgb) / 52%) 36%,
+				rgb(var(--color-deep-rose-red-rgb) / 24%) 70%,
+				transparent 100%
+			)
+			top / 100% clamp(3.5rem, 9vw, 5.5rem) no-repeat,
 		radial-gradient(
-			ellipse at 50% 0%,
+			ellipse at 30% 0%,
 			rgb(var(--color-candle-gold-rgb) / 10%) 0%,
 			transparent 38%
 		),
@@ -26,7 +26,6 @@
 			var(--color-rose-shadow) 100%
 		);
 	color: var(--footer-text-color);
-	border-top: 1px solid rgb(var(--color-antique-gold-rgb) / 28%);
 
 	.footer__closing-phrase {
 		font-family: var(--font-display);

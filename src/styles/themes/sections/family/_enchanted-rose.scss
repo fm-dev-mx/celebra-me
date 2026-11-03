@@ -27,20 +27,8 @@
 	--family-name-max-width: 26ch;
 	--family-meta-color: var(--color-walnut-brown);
 
-	&::before {
-		content: '';
-		position: absolute;
-		inset: 0 0 auto;
-		height: 4rem;
-		z-index: 0;
-		pointer-events: none;
-		background: linear-gradient(
-			180deg,
-			rgb(var(--color-warm-ivory-rgb) / 92%) 0%,
-			transparent 100%
-		);
-	}
-
+	// The blush glow sits below the folio's edge, so the page that turns over the countdown and the
+	// top of this page are the same ivory.
 	&::after {
 		content: '';
 		position: absolute;
@@ -48,9 +36,9 @@
 		z-index: 0;
 		pointer-events: none;
 		background: radial-gradient(
-			circle at 50% 0%,
-			rgb(var(--color-blush-pink-rgb) / 22%) 0%,
-			transparent 38%
+			ellipse at 50% 42%,
+			rgb(var(--color-blush-pink-rgb) / 20%) 0%,
+			transparent 46%
 		);
 	}
 

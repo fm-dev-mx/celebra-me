@@ -151,12 +151,40 @@
 		background: var(--hero-scroll-cue-bg, none);
 	}
 
+	// Constellation cue (`scrollCue: 'constellation'`): the shared three-sparkle mark stands at the
+	// hero's edge with its label set vertically beside it (motion lives in `invitation/_hero.scss`).
+	.framed-portrait-hero__constellation {
+		position: absolute;
+		right: var(--hero-scroll-right, clamp(1.25rem, 4vw, 3rem));
+		bottom: var(--hero-scroll-bottom, clamp(1.5rem, 5svh, 3rem));
+		z-index: 2;
+		display: flex;
+		align-items: flex-end;
+		gap: 0.6rem;
+		margin: 0;
+		font: var(--hero-scroll-font, 400 0.68rem / 1.5 var(--font-body));
+		letter-spacing: var(--hero-scroll-letter-spacing, 0.32em);
+		text-transform: var(--hero-scroll-text-transform, none);
+		color: var(--hero-scroll-color, var(--color-action-accent));
+		pointer-events: none;
+	}
+
+	.framed-portrait-hero__constellation-label {
+		writing-mode: vertical-rl;
+	}
+
 	@include mixins.motion-safe {
 		.framed-portrait-hero__invitation span {
 			animation: invitation-bounce-down 2.8s ease-in-out infinite;
 		}
 
-		.event-theme-wrapper[data-reveal-state='sealed'] & .framed-portrait-hero__invitation span {
+		.framed-portrait-hero__constellation-label {
+			animation: invitation-constellation-label 3.2s var(--ease-standard, ease-in-out)
+				infinite;
+		}
+
+		.event-theme-wrapper[data-reveal-state='sealed'] & .framed-portrait-hero__invitation span,
+		.event-theme-wrapper[data-reveal-state='sealed'] & .framed-portrait-hero__constellation * {
 			animation-play-state: paused;
 		}
 	}

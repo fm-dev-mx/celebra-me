@@ -342,7 +342,11 @@ $velvet-rest:
 			animation: enchanted-rose-seal-release 650ms $box-ease both;
 		}
 
+		// `translate` percentages resolve against each part's own height; the lid is half the box,
+		// so it travels twice the share to stay on its hinge while the box sinks.
 		.envelope-flap {
+			--er-drop: 68%;
+
 			animation:
 				enchanted-rose-lid-open 1300ms linear 450ms both,
 				enchanted-rose-box-sink 1500ms $box-ease 1700ms forwards,

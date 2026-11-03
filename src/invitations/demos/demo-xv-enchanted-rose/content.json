@@ -37,9 +37,9 @@
                 "family": "overlap",
                 "source": "family"
             },
-            "location": {
-                "family": "pattern-band",
-                "source": "interlude-after-family"
+            "gallery": {
+                "family": "atmospheric-blend",
+                "source": "itinerary"
             },
             "gifts": {
                 "family": "folio",
@@ -56,6 +56,7 @@
         }
     },
     "hero": {
+        "scrollCue": "constellation",
         "presentation": {
             "venueIndex": 1,
             "nameLeadWords": 1

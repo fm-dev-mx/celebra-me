@@ -25,37 +25,12 @@
 		),
 		var(--enchanted-section-dark-bg, var(--rose-velvet-wash));
 
-	&::before,
 	&::after {
 		content: '';
 		position: absolute;
-		pointer-events: none;
-		z-index: -1;
-	}
-
-	&::before {
-		inset: clamp(3.5rem, 8vw, 5rem) max(1rem, calc((100vw - 880px) / 2)) auto;
-		block-size: min(54svh, 34rem);
-		border: 1px solid rgb(var(--color-antique-gold-rgb) / 16%);
-		border-block-end: 0;
-		border-radius: 999px 999px 0 0;
-		background:
-			linear-gradient(
-				90deg,
-				transparent 0%,
-				rgb(var(--color-candle-gold-rgb) / 6%) 50%,
-				transparent 100%
-			),
-			radial-gradient(
-				ellipse at 50% 18%,
-				rgb(var(--color-warm-ivory-rgb) / 6%) 0%,
-				transparent 58%
-			);
-		opacity: 50%;
-	}
-
-	&::after {
 		inset: auto 0 0;
+		z-index: -1;
+		pointer-events: none;
 		block-size: 35%;
 		background:
 			linear-gradient(180deg, transparent 0%, rgb(var(--color-rose-shadow-rgb) / 35%) 100%),
@@ -191,7 +166,10 @@
 		z-index: 1;
 	}
 
+	// A functional section reads from the leading edge (invitation-rhythm): eyebrow, hairline,
+	// title and subcopy start on the form's edge.
 	.rsvp__header {
+		text-align: start;
 		color: var(--color-warm-ivory);
 		text-shadow: 0 8px 24px rgb(var(--color-rose-shadow-rgb) / 44%);
 	}
@@ -207,7 +185,7 @@
 	.rsvp__separator {
 		inline-size: min(13rem, 58%);
 		block-size: 1px;
-		margin: 0.75rem auto 1.1rem;
+		margin: 0.75rem 0 1.1rem;
 		background: var(--rose-gold-divider);
 		color: transparent;
 		opacity: 90%;
@@ -218,7 +196,7 @@
 		content: '';
 		position: absolute;
 		top: 50%;
-		left: calc(50% - 0.21rem);
+		left: 0;
 		inline-size: 0.42rem;
 		block-size: 0.42rem;
 		border: 1px solid rgb(var(--color-candle-gold-rgb) / 72%);
@@ -233,7 +211,7 @@
 		line-height: 0.96;
 		letter-spacing: 0;
 		color: rgb(var(--color-warm-ivory-rgb) / 96%);
-		text-align: center;
+		text-align: start;
 		text-shadow:
 			0 2px 0 rgb(var(--color-antique-gold-rgb) / 18%),
 			0 18px 42px rgb(var(--color-rose-shadow-rgb) / 58%);
@@ -244,6 +222,7 @@
 	}
 
 	.rsvp__subcopy {
+		margin-inline: 0;
 		color: rgb(var(--color-warm-ivory-rgb) / 76%);
 		font-size: 0.92rem;
 		line-height: 1.65;
