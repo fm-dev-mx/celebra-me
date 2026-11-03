@@ -1,28 +1,83 @@
-// Luxury Hacienda cumpleaños demo — the honoree stands centered in a charcoal suit, directly behind
-// the name. A warmer veil darkens the lower half (face and arcade stay clear) and the title keeps a
-// luminous gold so it separates from the suit instead of sinking into it.
+// Luxury Hacienda cumpleaños demo — a hacienda portal at night. The cover sets the honoree inside
+// an arched window ringed in gold on a coffee night; inside, the dark bands (countdown, closing)
+// rise as single portal arches and the ivory cantera answers as a row of arcade arches, so every
+// dark block is followed by a light breath instead of a hard cut. Tokens only; layout stays with
+// the variants.
 
 .event--demo-cumple-luxury-hacienda.theme-preset--luxury-hacienda {
-	--hero-hacienda-veil:
-		radial-gradient(
-			circle at 50% 30%,
-			transparent 0%,
-			rgb(var(--color-surface-dark-rgb) / 16%) 58%,
-			rgb(var(--color-surface-dark-rgb) / 80%) 100%
-		),
-		linear-gradient(
-			to bottom,
-			transparent 0%,
-			transparent 30%,
-			rgb(var(--color-surface-dark-rgb) / 58%) 48%,
-			rgb(var(--color-surface-dark-rgb) / 84%) 66%,
-			rgb(var(--color-surface-dark-rgb) / 96%) 100%
-		);
+	--hacienda-night: rgb(36 26 18);
+	--hacienda-night-deep: rgb(20 15 11);
+	--hacienda-cantera: rgb(251 249 244);
+	--hacienda-gold: rgb(226 190 122);
 
-	// Declared on the hero itself: the shared hero theme base sets these tokens at that level.
-	.invitation-hero {
-		--hero-title-color-start: rgb(226 190 122);
-		--hero-title-color-mid: rgb(248 234 204);
-		--hero-title-color-end: rgb(208 165 94);
+	// Vertical grounds, so each portal arch meets a flat top edge of its own color.
+	--countdown-section-background:
+		radial-gradient(
+			ellipse at 50% 18%,
+			rgb(var(--color-action-accent-rgb) / 12%),
+			transparent 42%
+		),
+		linear-gradient(180deg, var(--hacienda-night) 0%, var(--hacienda-night-deep) 100%);
+
+	// The cover: his photograph in an arched window on a coffee night, ringed in gold.
+	.invitation-hero[data-variant='night-arch'] {
+		--hero-arch-sky:
+			radial-gradient(
+				120% 70% at 50% 0%,
+				rgb(var(--color-action-accent-rgb) / 22%),
+				transparent 70%
+			),
+			linear-gradient(180deg, var(--hacienda-night) 0%, var(--hacienda-night-deep) 100%);
+		--hero-arch-sky-deep: var(--hacienda-night-deep);
+		--hero-arch-ring: rgb(226 190 122 / 85%);
+		--hero-arch-moulding: rgb(226 190 122 / 38%);
+		--hero-arch-accent: var(--hacienda-gold);
+		--hero-arch-ink: var(--color-text-on-dark);
+		--hero-arch-muted: rgb(248 235 205 / 78%);
+		--hero-arch-photo-shade: linear-gradient(0deg, rgb(20 15 11 / 70%) 0%, transparent 38%);
+		--hero-scroll-indicator-color: rgb(248 235 205 / 88%);
+		--hero-scroll-z-index: 1;
+		--hero-heading-paint: none;
+		--hero-heading-fill: currentcolor;
+		--hero-divider-fill: var(--hacienda-gold);
+
+		// «Valenzuela» is a long single word: a phone sets it a step smaller so it keeps its margins.
+		@media (width < 62rem) {
+			--hero-arch-heading-size: clamp(3rem, 13.5vw, 4.75rem);
+		}
+	}
+
+	// Portal arches: the dark bands open as one doorway with a gold moulding.
+	.invitation-section-wrapper[data-intersection='arch'][data-intersection-source='quote'],
+	.invitation-section-wrapper[data-intersection='arch'][data-intersection-source='rsvp'] {
+		--intersection-surface: var(--hacienda-night);
+		--intersection-arch-height: clamp(4.5rem, 11vw, 9rem);
+		--intersection-arch-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0 22H38C38 9.5 43.4 2 50 2C56.6 2 62 9.5 62 22H100V24H0Z'/%3E%3C/svg%3E");
+		--intersection-arch-ink: rgb(226 190 122 / 70%);
+		--intersection-arch-ink-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='1.25' vector-effect='non-scaling-stroke' d='M0 22H38C38 9.5 43.4 2 50 2C56.6 2 62 9.5 62 22H100'/%3E%3C/svg%3E");
+	}
+
+	// Arcade arches: the ivory cantera answers each dark band, the light breath of the palette.
+	.invitation-section-wrapper[data-intersection='arch'][data-intersection-source='countdown'],
+	.invitation-section-wrapper[data-intersection='arch'][data-intersection-source='gifts'] {
+		--intersection-surface: var(--hacienda-cantera);
+		--intersection-arch-height: clamp(2.5rem, 6vw, 5.5rem);
+		--intersection-arch-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0 16C0 9 4.5 4 10 4C15.5 4 20 9 20 16C20 9 24.5 4 30 4C35.5 4 40 9 40 16C40 9 44.5 4 50 4C55.5 4 60 9 60 16C60 9 64.5 4 70 4C75.5 4 80 9 80 16C80 9 84.5 4 90 4C95.5 4 100 9 100 16V24H0Z'/%3E%3C/svg%3E");
+	}
+
+	// The garden photograph lays over the foot of the family letter.
+	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='family'] {
+		--intersection-depth: clamp(2.5rem, 6vw, 5rem);
+	}
+
+	// The cover's night bleeds into the quote's cantera instead of stopping on a line.
+	.invitation-section-wrapper[data-intersection='atmospheric-blend'][data-intersection-source='hero'] {
+		--intersection-blend: linear-gradient(180deg, rgb(36 26 18 / 14%) 0%, transparent 100%);
+	}
+
+	// The closing night: the preset's surface pair, so the portal arch meets its own color.
+	.invitation-section-wrapper[data-section-kind='thankYou'] {
+		--color-surface-elevated: var(--hacienda-night);
+		--color-surface-dark: var(--hacienda-night-deep);
 	}
 }
