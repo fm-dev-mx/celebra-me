@@ -39,6 +39,9 @@ import {
 	getReminderEligibleGuests,
 	shouldShowReminderCta,
 } from '@/components/dashboard/guests/reminder-eligibility';
+import { useGuestMemoriesReminder } from '@/components/dashboard/guests/use-guest-memories-reminder';
+import GuestMemoriesCta from '@/components/dashboard/guests/GuestMemoriesCta';
+import type { ShareFlowMode } from '@/components/dashboard/guests/guest-presenter';
 import type {
 	ReminderSettings,
 	ShareMessagesConfig,
@@ -50,6 +53,12 @@ import '@/styles/dashboard/_guests.scss';
 interface GuestDashboardAppProps {
 	initialEventId: string;
 }
+
+const SEND_FLOW_MODES = {
+	invitation: 'pending-invitation',
+	reminder: 'pending-reminder',
+	memories: 'pending-memories',
+} as const satisfies Record<string, ShareFlowMode>;
 
 function s(count: number) {
 	return count !== 1 ? 's' : '';
@@ -82,6 +91,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		items,
 		loading,
 		loadGuests,
+		memoriesReminder,
 		reminderSettings,
 		setEventId,
 		setItems,
@@ -131,6 +141,13 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		},
 		[setItems],
 	);
+
+	const memories = useGuestMemoriesReminder({
+		items,
+		memoriesReminder,
+		shareDateContext,
+		setItems,
+	});
 
 	// Always the whole event: search and filters only narrow the list below.
 	// Test guests stay in the list but never count toward the event overview.
@@ -204,6 +221,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		openImportModal,
 		openNextGeneratedGuest,
 		openNextReminderGuest,
+		openNextMemoriesGuest,
 		openBatchForGuests,
 		pendingGuests,
 		queueGuestIds,
@@ -253,11 +271,16 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 			);
 		}
 		if (modalOpen && modalMode === 'send-pending') {
-			const editingInviteUrl = editingGuest
+			const isMemoriesFlow = batchFlowKind === 'memories';
+			const queueSources = {
+				invitation: pendingGuests,
+				reminder: reminderEligibleGuests,
+				memories: memories.eligibleGuests,
+			};
+			// The photo request links to the event's photo space, not the guest's invitation.
+			const guestInviteUrl = editingGuest
 				? getGuestInviteUrl(editingGuest, inviteBaseUrl)
 				: '';
-			const flowMode =
-				batchFlowKind === 'reminder' ? 'pending-reminder' : 'pending-invitation';
 			const queuedGuests = queueGuestIds
 				? getBatchCandidates(items, batchFlowKind, queueGuestIds)
 				: null;
@@ -265,21 +288,19 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 				<SendInvitationModal
 					key={editingGuest?.guestId ?? 'empty'}
 					guest={editingGuest}
-					pendingGuests={
-						queuedGuests ??
-						(batchFlowKind === 'reminder' ? reminderEligibleGuests : pendingGuests)
-					}
-					inviteUrl={editingInviteUrl}
+					pendingGuests={queuedGuests ?? queueSources[batchFlowKind]}
+					inviteUrl={isMemoriesFlow ? memories.url : guestInviteUrl}
 					onClose={closeModal}
 					onSave={handleSaveInvitation}
 					onMarkShared={handleMarkShared}
-					onReminderSent={handleReminderSent}
+					onReminderSent={isMemoriesFlow ? memories.handleSent : handleReminderSent}
+					memoriesTemplate={memories.template}
 					onAdvanceFromGuest={handleAdvanceFromGuest}
 					onPostponeGuest={handlePostpone}
 					templates={shareTemplates}
 					shareDateContext={shareDateContext}
 					eventTitle={currentEventTitle}
-					mode={flowMode}
+					mode={SEND_FLOW_MODES[batchFlowKind]}
 				/>
 			);
 		}
@@ -376,6 +397,14 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					activeGroup={group}
 					onSelectGroup={setGroup}
 				/>
+
+				{showOverview && (
+					<GuestMemoriesCta
+						show={memories.showCta}
+						pendingCount={memories.eligibleGuests.length}
+						onStart={openNextMemoriesGuest}
+					/>
+				)}
 
 				<div className="dashboard-guests__toolbar dashboard-guests__toolbar--actions">
 					<button

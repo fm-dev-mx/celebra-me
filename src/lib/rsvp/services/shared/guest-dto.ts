@@ -78,6 +78,7 @@ export function toGuestDto(
 		shortId: guest.shortId,
 		guestCode,
 		lastReminderSentAt: guest.lastReminderSentAt,
+		lastMemoriesReminderSentAt: guest.lastMemoriesReminderSentAt ?? null,
 		isTest: guest.isTest ?? false,
 		openCount: guest.openCount ?? 0,
 		firstOpenedAt: guest.firstOpenedAt ?? null,

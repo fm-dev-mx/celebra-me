@@ -123,9 +123,6 @@ export function defineCanonicalInvitation(
 			if (options.visualProfileId && !published.visualProfileId) {
 				published.visualProfileId = options.visualProfileId;
 			}
-			if (!published.templateId) {
-				published.templateId = `${options.eventType}-${options.content.theme.preset}`;
-			}
 			return published;
 		},
 	});

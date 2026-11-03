@@ -20,7 +20,8 @@ export interface InternalExclusionResult {
 		| null;
 }
 
-function hasIgnoreCookie(cookieHeader?: string | null): boolean {
+/** Client-safe: also read by the browser tracker and the Meta Pixel from `document.cookie`. */
+export function hasIgnoreCookie(cookieHeader?: string | null): boolean {
 	if (!cookieHeader) return false;
 	return cookieHeader
 		.split(';')

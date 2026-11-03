@@ -2,9 +2,71 @@
     "proyecto": "Celebra-me",
     "datos": ".agent/tmp/tablero",
     "puerto": 4320,
-    "nucleo": "c66f9e740c29e01d00270797e0a9562320b1cc11",
     "wipMax": 3,
-    "agentes": [{ "id": "claude" }, { "id": "codex" }, { "id": "gemini" }],
+    "agentes": [
+        {
+            "id": "claude",
+            "reenvio": [
+                "node",
+                "../tablero/src/puente.ts",
+                "claude",
+                "--agente={agente}",
+                "--mensaje={mensaje}",
+                "--tarea={id}",
+                "--archivo={archivo}",
+                "--carpeta={carpeta}",
+                "--datos={datos}",
+                "--",
+                "--allowedTools",
+                "mcp__celebra-board__messages,mcp__celebra-board__msg,mcp__celebra-board__atendido"
+            ],
+            "despacho": [
+                "node",
+                "../tablero/src/puente.ts",
+                "claude",
+                "--agente={agente}",
+                "--tarea={id}",
+                "--archivo={archivo}",
+                "--carpeta={carpeta}",
+                "--datos={datos}",
+                "--",
+                "--allowedTools",
+                "mcp__celebra-board__messages,mcp__celebra-board__msg,mcp__celebra-board__atendido"
+            ]
+        },
+        { "id": "codex" },
+        {
+            "id": "gemini",
+            "reenvio": [
+                "node",
+                "../tablero/src/puente.ts",
+                "gemini",
+                "--agente={agente}",
+                "--mensaje={mensaje}",
+                "--tarea={id}",
+                "--archivo={archivo}",
+                "--carpeta={carpeta}",
+                "--datos={datos}",
+                "--",
+                "--allowed-tools",
+                "mcp_celebra-board_messages,mcp_celebra-board_msg,mcp_celebra-board_atendido"
+            ],
+            "despacho": [
+                "node",
+                "../tablero/src/puente.ts",
+                "gemini",
+                "--agente={agente}",
+                "--tarea={id}",
+                "--archivo={archivo}",
+                "--carpeta={carpeta}",
+                "--datos={datos}",
+                "--",
+                "--allowed-tools",
+                "mcp_celebra-board_messages,mcp_celebra-board_msg,mcp_celebra-board_atendido"
+            ]
+        }
+    ],
+    "vigia": { "escalar": [10, 30] },
     "hechoDias": 7,
     "zonaHoraria": "America/Mexico_City",
     "ordenan": ["coordinador", "dueno"],
@@ -59,6 +121,7 @@
         }
     ],
     "carrilesRetirados": ["f05-plataforma", "f10-libre"],
+    "sesiones": { "sinTarea": "^Despachador\\b" },
     "tiposPrompt": ["codigo", "docs", "operacion", "revision"],
     "github": {
         "repo": "fm-dev-mx/celebra-me"

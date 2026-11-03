@@ -21,8 +21,8 @@ routes matching the touched surfaces.
   tiers
 - [`.agent/rules/git-safety.md`](./rules/git-safety.md) — Task-scoped Git authorization and worktree
   safety
-- [`.agent/rules/board.md`](./rules/board.md) — Coordinator board v4: board core, `pnpm board`,
-  states, claims, review and closing (`pnpm board:verify`)
+- [`.agent/rules/board.md`](./rules/board.md) — Board rule v6: Celebra-me additions to the tablero
+  core rules (where it runs, lanes, git-safety, cross review, prompts, owner preferences)
 - [`.agent/rules/agent-routing.md`](./rules/agent-routing.md) — Provider-neutral role routing and
   subagent boundaries
 - [`.agent/load-skills.md`](./load-skills.md) — Runtime-neutral skill loading protocol
@@ -53,8 +53,8 @@ routes matching the touched surfaces.
   validation procedures (load on demand)
 - [`docs/core/git-safety-session.md`](../docs/core/git-safety-session.md) — Mutable Git Safety
   session lifecycle (load on demand)
-- [`docs/core/coordinator-board.md`](../docs/core/coordinator-board.md) — Coordinator board rules:
-  action cards, timing, ready-to-paste prompts
+- [`docs/core/coordinator-board.md`](../docs/core/coordinator-board.md) — Celebra-me board setup:
+  core checkout, MCP hosts, masters, session lifecycle, scheduled tasks
 
 ### Environments & Database
 

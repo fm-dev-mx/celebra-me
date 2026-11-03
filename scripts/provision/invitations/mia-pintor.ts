@@ -21,10 +21,9 @@ const EVENT_DATE_LABEL = '6 de diciembre de 2026';
 const content: CanonicalEventContentInput = {
 	eventType: 'xv',
 	isDemo: false,
-	templateId: 'xv-celestial-blue',
 	title: `Mis XV años — ${CELEBRANT_NAME}`,
 	description: `Con cariño le invitamos a celebrar los XV años de ${CELEBRANT_NAME} el ${EVENT_DATE_LABEL}.`,
-	theme: { preset: 'celestial-blue', fontFamily: 'serif' },
+	theme: { preset: 'celestial-blue' },
 	eventTiming: MIA_TIMING,
 	sectionOrder: [
 		'quote',

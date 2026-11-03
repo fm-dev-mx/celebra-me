@@ -159,7 +159,6 @@ export function buildRenataPublishedContent(
 	return {
 		eventType: RENATA_EVENT.eventType,
 		isDemo: false,
-		templateId: 'xv-editorial',
 		visualProfileId: RENATA_EVENT.visualProfileId,
 		title: RENATA_EVENT.title,
 		description: 'Invitación a los XV años de Renata el 5 de septiembre de 2026 en Culiacán.',

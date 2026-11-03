@@ -745,18 +745,22 @@ describe('Meta CAPI browser events', () => {
 	});
 
 	it('queues a browser event idempotently by its Pixel eventID', async () => {
-		mockRestRequest.mockResolvedValueOnce([]);
-		await enqueueBrowserConversionEvent({
+		mockRestRequest.mockImplementation(async (request) =>
+			request.method === 'POST' && request.pathWithQuery.startsWith('meta_conversion_events')
+				? [{ id: 'outbox-id' }]
+				: [],
+		);
+		const outboxId = await enqueueBrowserConversionEvent({
 			trigger: 'whatsapp_contact_clicked',
 			eventId: clickEventId,
 			sessionId: 'session-id',
 			eventSourcePath: '/demos/xv',
 		});
 		expect(mockRestRequest).toHaveBeenCalledWith({
-			pathWithQuery: 'meta_conversion_events?on_conflict=event_id',
+			pathWithQuery: 'meta_conversion_events?on_conflict=event_id&select=id',
 			method: 'POST',
 			useServiceRole: true,
-			prefer: 'resolution=ignore-duplicates,return=minimal',
+			prefer: 'resolution=ignore-duplicates,return=representation',
 			body: {
 				event_name: 'Contact',
 				event_id: clickEventId,
@@ -768,6 +772,19 @@ describe('Meta CAPI browser events', () => {
 				status: 'pending',
 			},
 		});
+		expect(outboxId).toBe('outbox-id');
+	});
+
+	it('returns no row id when the Pixel eventID was already queued', async () => {
+		mockRestRequest.mockResolvedValueOnce([]);
+		await expect(
+			enqueueBrowserConversionEvent({
+				trigger: 'page_viewed',
+				eventId: clickEventId,
+				sessionId: 'session-id',
+				eventSourcePath: '/',
+			}),
+		).resolves.toBeNull();
 	});
 
 	it.each([

@@ -4,6 +4,7 @@ import { readConsent, VISITOR_STORAGE_KEY } from '@/lib/tracking/consent-client'
 import type { ConsentSnapshot } from '@/lib/tracking/consent-policy';
 import { initGA4, forwardToGA4 } from '@/lib/tracking/ga4-forwarder';
 import { initMetaPixel, forwardToMetaPixel } from '@/lib/tracking/meta-pixel';
+import { hasIgnoreCookie } from '@/lib/tracking/internal-exclusion';
 import {
 	createMetaAttributionSnapshot,
 	metaAttributionOrUndefined,
@@ -14,6 +15,7 @@ import {
 	type ClientOnlyTrackingEventName,
 	type PublicTrackingEventName,
 } from '@/lib/tracking/event-contract';
+import { normalizeReferralCode, readReferralCodeFromUrl } from '@/lib/commercial/referrals';
 import { readTtclidFromUrl, sanitizeTtclid } from '@/lib/tracking/tiktok-attribution';
 
 type BrowserTrackingEventName = PublicTrackingEventName | ClientOnlyTrackingEventName;
@@ -36,6 +38,7 @@ type TrackingPayload = {
 	referrer?: string;
 	metaAttribution?: MetaAttribution;
 	ttclid?: string;
+	referralCode?: string;
 	eventProperties: Record<string, string | number | boolean>;
 	consentSnapshot: ConsentSnapshot;
 };
@@ -43,7 +46,7 @@ type TrackingPayload = {
 const SESSION_KEY = 'cm_session_id';
 const UTM_KEY = 'cm_utm_snapshot';
 const TTCLID_KEY = 'cm_ttclid';
-const IGNORE_COOKIE = 'cm_ignore_tracking=true';
+const REFERRAL_CODE_KEY = 'cm_referral_code';
 const SCROLL_BUCKETS = [25, 50, 75, 90, 100] as const;
 
 /**
@@ -59,6 +62,12 @@ const WHATSAPP_LEAD_KEY = 'cm_whatsapp_lead_code';
  * per session and not overwritten by subsequent events.
  */
 const SESSION_INIT_KEY = 'cm_session_initialized';
+
+/**
+ * sessionStorage key with the package ids already reported as `package_viewed` in this tab, so
+ * reloads and return visits to pricing send one ViewContent per package per session.
+ */
+const PACKAGE_VIEWS_KEY = 'cm_package_views';
 
 function randomId(prefix: string): string {
 	if (crypto.randomUUID) return `${prefix}_${crypto.randomUUID()}`;
@@ -148,8 +157,27 @@ function getTtclidSnapshot(): string | undefined {
 	}
 }
 
+/**
+ * Customer referral code (`?ref=ANA24`) captured on arrival. First-touch within the session
+ * (first referrer wins), so an existing stored code is kept if the visitor opens another link.
+ */
+function getReferralCodeSnapshot(): string | undefined {
+	const fromUrl = readReferralCodeFromUrl(window.location.href);
+	try {
+		const existing = normalizeReferralCode(sessionStorage.getItem(REFERRAL_CODE_KEY));
+		if (existing) return existing;
+		if (fromUrl) {
+			sessionStorage.setItem(REFERRAL_CODE_KEY, fromUrl);
+			return fromUrl;
+		}
+		return undefined;
+	} catch {
+		return fromUrl;
+	}
+}
+
 function shouldIgnoreTracking(): boolean {
-	return document.cookie.split(';').some((cookie) => cookie.trim() === IGNORE_COOKIE);
+	return hasIgnoreCookie(document.cookie);
 }
 
 function pushDataLayer(
@@ -204,21 +232,22 @@ interface TrackEventOptions {
 	serverStored?: boolean;
 }
 
+/** Returns whether the event was dispatched; false when consent, the ignore flag or the route drop it. */
 function trackEvent(
 	eventName: BrowserTrackingEventName,
 	eventProperties: TrackingPayload['eventProperties'] = {},
 	options: TrackEventOptions = {},
-): void {
-	if (shouldIgnoreTracking()) return;
+): boolean {
+	if (shouldIgnoreTracking()) return false;
 	const consent = getConsentSnapshot();
-	if (!consent.analytics && !consent.marketing) return;
+	if (!consent.analytics && !consent.marketing) return false;
 	eventProperties = {
 		...eventProperties,
 		event_id: options.eventId ?? (crypto.randomUUID ? crypto.randomUUID() : fallbackUuid()),
 	};
 
 	const routeClass = document.body.dataset.trackingRouteClass;
-	if (!routeClass) return;
+	if (!routeClass) return false;
 
 	const publicProperties = { ...eventProperties };
 	delete publicProperties.lead_code;
@@ -232,7 +261,7 @@ function trackEvent(
 	forwardToGA4(eventName, eventProperties);
 	forwardToMetaPixel(eventName, eventProperties);
 
-	if (isClientOnlyEvent(eventName) || options.serverStored) return;
+	if (isClientOnlyEvent(eventName) || options.serverStored) return true;
 
 	const utm = getUtmSnapshot();
 	const metaAttribution = consent.marketing
@@ -255,6 +284,7 @@ function trackEvent(
 		referrer: firstTouchReferrer,
 		metaAttribution,
 		ttclid: consent.marketing ? getTtclidSnapshot() : undefined,
+		referralCode: getReferralCodeSnapshot(),
 		eventProperties,
 		consentSnapshot: consent,
 	};
@@ -283,6 +313,7 @@ function trackEvent(
 	} catch {
 		// Degrade gracefully if keepalive fetch is not supported/throws.
 	}
+	return true;
 }
 
 function isClientOnlyEvent(
@@ -369,7 +400,10 @@ function updateWhatsAppUrl(anchor: HTMLAnchorElement, leadCode: string): void {
 	// Pattern: CM-XXXXXX (6 alphanumeric chars, no price suffix).
 	const CANONICAL_LEAD_CODE_PATTERN = /CM-[A-Z0-9]{6}(?!\d)/i;
 	if (CANONICAL_LEAD_CODE_PATTERN.test(baseMessage)) return;
-	const folioLine = `Folio ${leadCode}`;
+	const referralCode = getReferralCodeSnapshot();
+	const folioLine = referralCode
+		? `Folio ${leadCode} · Recomendación ${referralCode}`
+		: `Folio ${leadCode}`;
 	url.searchParams.set('text', baseMessage ? `${baseMessage}\n${folioLine}` : folioLine);
 	anchor.href = url.toString();
 }
@@ -424,13 +458,35 @@ function getTrackedClickProperties(
 		currency: target.dataset.trackCurrency ?? '',
 		demo_slug: target.dataset.demoSlug ?? '',
 		lead_code: leadCode,
+		...(getReferralCodeSnapshot() ? { referral_code: getReferralCodeSnapshot()! } : {}),
 	};
+}
+
+function readSeenPackageViews(): Set<string> {
+	try {
+		const stored: unknown = JSON.parse(sessionStorage.getItem(PACKAGE_VIEWS_KEY) ?? '[]');
+		return new Set(
+			Array.isArray(stored)
+				? stored.filter((id): id is string => typeof id === 'string')
+				: [],
+		);
+	} catch {
+		return new Set();
+	}
+}
+
+function writeSeenPackageViews(seen: Set<string>): void {
+	try {
+		sessionStorage.setItem(PACKAGE_VIEWS_KEY, JSON.stringify([...seen]));
+	} catch {
+		// sessionStorage unavailable — the in-memory set still dedupes this page.
+	}
 }
 
 function bindPackageViews(): void {
 	if (!('IntersectionObserver' in window)) return;
 
-	const seen = new Set<string>();
+	const seen = readSeenPackageViews();
 	const observer = new IntersectionObserver(
 		(entries) => {
 			entries.forEach((entry) => {
@@ -441,14 +497,17 @@ function bindPackageViews(): void {
 				const packageName = entry.target.dataset.packageName ?? packageId;
 				if (!packageId || seen.has(packageId)) return;
 
-				seen.add(packageId);
-				void trackEvent('package_viewed', {
+				const sent = trackEvent('package_viewed', {
 					package_id: packageId,
 					package_name: packageName,
 					content_name: packageName,
 					content_category: 'package',
 					source_area: entry.target.dataset.sourceArea ?? 'pricing',
 				});
+				// Only a dispatched view counts, so a view dropped before consent can still fire later.
+				if (!sent) return;
+				seen.add(packageId);
+				writeSeenPackageViews(seen);
 			});
 		},
 		{ threshold: [0.4, 0.6] },
@@ -504,6 +563,7 @@ export interface LeadCaptureContext {
 	referrer?: string;
 	metaAttribution?: MetaAttribution;
 	ttclid?: string;
+	referralCode?: string;
 	consentSnapshot: ConsentSnapshot;
 }
 
@@ -513,6 +573,7 @@ export interface LeadCaptureContext {
  */
 export function getLeadCaptureContext(): LeadCaptureContext {
 	const consent = getConsentSnapshot();
+	const referralCode = getReferralCodeSnapshot();
 	const tracked =
 		Boolean(document.body.dataset.trackingRouteClass) &&
 		!shouldIgnoreTracking() &&
@@ -524,6 +585,7 @@ export function getLeadCaptureContext(): LeadCaptureContext {
 			visitorId: randomId('visitor'),
 			leadCode: createLeadCode(),
 			routePath: window.location.pathname,
+			referralCode,
 			consentSnapshot: consent,
 		};
 	}
@@ -543,6 +605,7 @@ export function getLeadCaptureContext(): LeadCaptureContext {
 			? metaAttributionOrUndefined(getMetaAttributionSnapshot())
 			: undefined,
 		ttclid: consent.marketing ? getTtclidSnapshot() : undefined,
+		referralCode,
 		consentSnapshot: consent,
 	};
 }
@@ -592,9 +655,11 @@ export function initCommercialTracking(): void {
 
 	// Attribution only: never adopt a return-link code as the session's lead identity.
 	const returnCode = new URLSearchParams(window.location.search).get('lead_code');
+	const referralCode = getReferralCodeSnapshot();
 	void trackEvent('page_viewed', {
 		page_type: routeClass,
 		...(returnCode && /^CM-[A-Z0-9]{6}$/.test(returnCode) ? { lead_code: returnCode } : {}),
+		...(referralCode ? { referral_code: referralCode } : {}),
 	});
 	if (routeClass === 'demo') {
 		const [, routeType = '', routeSlug = ''] = window.location.pathname.split('/');

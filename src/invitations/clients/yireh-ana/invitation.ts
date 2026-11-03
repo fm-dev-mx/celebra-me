@@ -30,10 +30,9 @@ const EVENT_DATE_LABEL = '23 de octubre de 2027';
 const content: CanonicalEventContentInput = {
 	eventType: 'xv',
 	isDemo: false,
-	templateId: 'xv-storybook-lilac',
 	title: `Mis XV Años — ${CELEBRANT_NAME}`,
 	description: `${CELEBRANT_NAME} celebra sus quince años. Sábado ${EVENT_DATE_LABEL}, Salón Casino Imperial, Ciudad Delicias, Chihuahua.`,
-	theme: { preset: 'storybook-lilac', fontFamily: 'serif', motion: 'editorial' },
+	theme: { preset: 'storybook-lilac', motion: 'editorial' },
 	eventTiming: YIREH_TIMING,
 	// Explicit photo-free celebration per celebrant's request: exempt from required gallery section.
 	structuralExemptions: ['gallery'],

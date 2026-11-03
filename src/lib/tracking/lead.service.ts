@@ -7,6 +7,7 @@ import {
 import {
 	upsertLead,
 	findLeadByCode,
+	resolveLeadReferralAttribution,
 	type StoredLead,
 	type LeadChannel,
 } from '@/lib/tracking/lead.repository';
@@ -49,6 +50,7 @@ export async function createLeadFromTrackingEvent(params: {
 	utmCampaign?: string;
 	utmContent?: string;
 	ttclid?: string;
+	referralCode?: string;
 	metaAttribution?: MetaAttribution;
 }): Promise<StoredLead> {
 	const {
@@ -62,6 +64,7 @@ export async function createLeadFromTrackingEvent(params: {
 		utmCampaign,
 		utmContent,
 		ttclid,
+		referralCode,
 		metaAttribution,
 	} = params;
 
@@ -82,6 +85,10 @@ export async function createLeadFromTrackingEvent(params: {
 		// A lead code is a session-bound continuation token. Never use a code
 		// from another session as an update or disclosure key.
 		const replacementLeadCode = createLeadCode();
+		const referralAttribution = await resolveLeadReferralAttribution({
+			referralCode,
+			existingLead: null,
+		});
 		const replacementLead = await upsertLead({
 			leadCode: replacementLeadCode,
 			sessionId,
@@ -97,6 +104,9 @@ export async function createLeadFromTrackingEvent(params: {
 			ttclid,
 			route: 'landing',
 			metaAttribution: await resolveLeadMetaAttribution({ sessionId, metaAttribution }),
+			referredByCustomerId: referralAttribution?.referredByCustomerId,
+			referralCodeUsed: referralAttribution?.referralCodeUsed,
+			referrerExternalId: referralAttribution?.referrerExternalId,
 		});
 		try {
 			await insertTrackingEvent({
@@ -118,6 +128,10 @@ export async function createLeadFromTrackingEvent(params: {
 		return replacementLead;
 	}
 
+	const referralAttribution = await resolveLeadReferralAttribution({
+		referralCode,
+		existingLead: null,
+	});
 	const lead = await upsertLead({
 		leadCode,
 		sessionId,
@@ -133,6 +147,9 @@ export async function createLeadFromTrackingEvent(params: {
 		ttclid,
 		route: 'landing',
 		metaAttribution: await resolveLeadMetaAttribution({ sessionId, metaAttribution }),
+		referredByCustomerId: referralAttribution?.referredByCustomerId,
+		referralCodeUsed: referralAttribution?.referralCodeUsed,
+		referrerExternalId: referralAttribution?.referrerExternalId,
 	});
 
 	// Fire lead_created event — only for confirmed-new leads (existing === null).

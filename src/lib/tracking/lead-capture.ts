@@ -67,7 +67,7 @@ export function formatLeadEventDate(value: string): string {
 	return `${date.getUTCDate()} de ${SPANISH_MONTHS[date.getUTCMonth()]} de ${date.getUTCFullYear()}`;
 }
 
-export function getLeadCaptureEventTypeLabel(value: string): string {
+function getLeadCaptureEventTypeLabel(value: string): string {
 	return LEAD_CAPTURE_EVENT_TYPES.find((option) => option.value === value)?.label ?? 'Evento';
 }
 

@@ -82,7 +82,7 @@ export interface PreflightSection {
 	items: OpsItem[];
 }
 
-export interface WorktreesSection {
+interface WorktreesSection {
 	section: 'worktrees';
 	generatedAt: string;
 	repoRoot: string;

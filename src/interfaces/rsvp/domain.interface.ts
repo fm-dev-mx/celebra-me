@@ -50,6 +50,7 @@ export interface GuestInvitationRecord {
 	guestCode?: string;
 	hideCelebraMeBranding?: boolean;
 	lastReminderSentAt?: string | null;
+	lastMemoriesReminderSentAt?: string | null;
 	isTest?: boolean;
 	openCount?: number;
 	firstOpenedAt?: string | null;
@@ -85,6 +86,7 @@ export interface GuestInvitationDTO {
 	guestCode?: string;
 	hideCelebraMeBranding?: boolean;
 	lastReminderSentAt?: string | null;
+	lastMemoriesReminderSentAt?: string | null;
 	isTest?: boolean;
 	openCount?: number;
 	firstOpenedAt?: string | null;

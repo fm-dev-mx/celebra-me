@@ -24,10 +24,9 @@ const EVENT_DATE_LABEL = '21 de noviembre de 2026';
 const content: CanonicalEventContentInput = {
 	eventType: 'xv',
 	isDemo: false,
-	templateId: 'xv-storybook-lilac',
 	title: `Mis XV años — ${CELEBRANT_NAME}`,
 	description: `${CELEBRANT_NAME} cumple quince. Sábado ${EVENT_DATE_LABEL}, Los Mochis.`,
-	theme: { preset: 'storybook-lilac', fontFamily: 'serif', motion: 'editorial' },
+	theme: { preset: 'storybook-lilac', motion: 'editorial' },
 	eventTiming: AMERICA_TIMING,
 	sectionOrder: [
 		'quote',

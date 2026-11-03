@@ -31,8 +31,8 @@ import { runAfterResponse, type AfterResponseContext } from '@/lib/server/platfo
 import { safeErr } from '@/lib/server/safe-error';
 
 /** The link stays open this long after it is issued; issuing a new one restarts it. */
-export const INVITATION_DATA_LINK_TTL_DAYS = 60;
-export const INVITATION_DATA_PATH_PREFIX = '/mi-invitacion/';
+const INVITATION_DATA_LINK_TTL_DAYS = 60;
+const INVITATION_DATA_PATH_PREFIX = '/mi-invitacion/';
 
 const LINKABLE_ORDER_STATUSES = new Set(['deposit_paid', 'paid']);
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/u;
@@ -115,7 +115,7 @@ export interface InvitationDataFormState {
 	submittedAt: string | null;
 }
 
-export function buildInvitationDataPrefill(order: InvitationDataOrder): InvitationDataAnswers {
+function buildInvitationDataPrefill(order: InvitationDataOrder): InvitationDataAnswers {
 	const prefill: InvitationDataAnswers = {};
 	const celebrantNames = order.lead?.celebrantNames?.trim();
 	if (celebrantNames) prefill.celebrantNames = celebrantNames;

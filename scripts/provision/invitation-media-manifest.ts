@@ -7,7 +7,6 @@
  * (`<key>-<sha256>.<ext>`); readers download them, verify the sha256, and keep a local copy so the
  * same object is fetched once per machine. The normalizer never runs again on these bytes.
  */
-import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import {
@@ -15,6 +14,7 @@ import {
 	R2_INVITATION_MEDIA,
 } from '../../src/lib/intake/services/r2-invitation-media.ts';
 import { gitCommonPath } from '../shared/git-paths.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 export const MEDIA_MANIFEST_FILE = 'media-manifest.json';
 export const MEDIA_MANIFEST_SCHEMA_VERSION = 1;
@@ -113,10 +113,6 @@ function defaultCacheDir(): string {
 	}
 }
 
-function sha256Of(bytes: Uint8Array): string {
-	return createHash('sha256').update(bytes).digest('hex');
-}
-
 export interface InvitationMediaFetchOptions {
 	cacheDir?: string;
 	fetchImpl?: typeof fetch;
@@ -134,7 +130,7 @@ export async function loadInvitationMediaBytes(
 	const cached = join(cacheDir, entry.sha256);
 	if (existsSync(cached)) {
 		const bytes = new Uint8Array(readFileSync(cached));
-		if (sha256Of(bytes) === entry.sha256) return bytes;
+		if (sha256Hex(bytes) === entry.sha256) return bytes;
 	}
 	const fetchImpl = options.fetchImpl ?? fetch;
 	const origins = options.origins ?? [
@@ -152,7 +148,7 @@ export async function loadInvitationMediaBytes(
 				continue;
 			}
 			const bytes = new Uint8Array(await response.arrayBuffer());
-			const actual = sha256Of(bytes);
+			const actual = sha256Hex(bytes);
 			if (actual !== entry.sha256) {
 				failures.push(`${url} → sha256 ${actual}`);
 				continue;

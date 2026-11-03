@@ -109,7 +109,8 @@ export const ColorTokenSchema = z
 
 const themeSchema = z
 	.object({
-		fontFamily: z.enum(['serif', 'sans']).default('serif'),
+		/** Superseded; read only from rows published before it stopped being written. */
+		fontFamily: z.enum(['serif', 'sans']).optional(),
 		preset: z.enum(THEME_PRESETS),
 		/** Opt-in motion mode; absent keeps the per-section reveal recipes. */
 		motion: z.enum(THEME_MOTION_MODES).optional(),

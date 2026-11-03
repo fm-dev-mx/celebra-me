@@ -12,7 +12,6 @@
  *   pnpm invitation:draft-restore --slug <slug> --section family [--target local|preview|production]
  *   pnpm invitation:draft-restore --slug <slug> --entire --target production --apply --backup-manifest <path>
  */
-import { createHash } from 'node:crypto';
 import { flagValue, requireSlug, requireEnvironmentTarget } from '../lib/cli-args.ts';
 
 import { InvitationEditorSectionKeySchema } from '../../src/lib/intake/schemas/invitation-editor.schema.ts';
@@ -35,6 +34,7 @@ import {
 import { canonicalize } from './normalized-invitation-release.ts';
 import { evaluatePromotionBackupGate } from './invitation-promote.ts';
 import { authorizePreviewWriteApply } from './preview-write-auth.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 const PREVIEW_WRITE_OPERATION = 'draft-restore';
 
@@ -59,7 +59,7 @@ function requireScope(): DraftRestoreScope {
 }
 
 function hash(value: unknown): string {
-	return createHash('sha256').update(canonicalize(value)).digest('hex');
+	return sha256Hex(canonicalize(value));
 }
 
 function sqlJson(value: unknown): string {

@@ -17,10 +17,9 @@ const CELEBRANT_NAME = 'Naydelin Pauleth Paredes Martinez';
 const content: CanonicalEventContentInput = {
 	eventType: 'xv',
 	isDemo: false,
-	templateId: 'xv-jewelry-box',
 	title: `Mis XV años — ${CELEBRANT_NAME}`,
 	description: 'Le invito a celebrar conmigo mis XV años el 17 de octubre de 2026.',
-	theme: { preset: 'jewelry-box', fontFamily: 'serif' },
+	theme: { preset: 'jewelry-box' },
 	music: {
 		url: 'https://media.celebra-me.com/invitations/xv/naydelin-paredes/music-2fcf5879e2f430ea6d5c5564b19083e77568e65c19115ddc0bf1638e3d8aca5c.mp3',
 		title: 'Imagine - John Lennon',
@@ -129,7 +128,6 @@ const content: CanonicalEventContentInput = {
 	},
 	location: {
 		variant: 'stacked-venue-plates',
-		visibility: 'public',
 		accessPolicy: { visibility: 'public' },
 		presentationOptions: { showNavigationButtons: true, showFlourishes: false },
 		introEyebrow: 'Los Mochis, Sinaloa',
