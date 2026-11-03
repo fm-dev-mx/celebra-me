@@ -142,7 +142,12 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	// section's ink, the address soft. The map is the primary action, filled in rose; the
 	// calendar and the copy sit beside each other as outlined buttons below it, and wide screens
 	// set the three on one line. Set at the entry so it wins over the route stage's silver remaps.
+	// The drawings are inked in rose: leaf silver alone vanished on the blush ground. Their frame
+	// lives in the composition.
 	.event-location__program-entry {
+		--location-program-drawing: var(--color-rose-deep);
+		--location-program-drawing-stroke: 1.7;
+		--location-program-drawing-size: 10rem;
 		--location-program-label-color: var(--color-silver-ink);
 		--location-program-label-size: 1.05rem;
 		--location-program-time-color: var(--color-plum-ink-soft);

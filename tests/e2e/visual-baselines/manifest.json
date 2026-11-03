@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-03T06:42:46.388Z",
+    "generatedAt": "2026-11-03T19:15:09.210Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -2319,8 +2319,8 @@
             "preset": "storybook-blush",
             "viewport": "mobile",
             "file": "pages/invitation-xv-naomi-huerta-mobile.png",
-            "sha256": "e5588a8930b739e4282195839bd88a0da6911a07e3ad0c972d83b48090cf6afd",
-            "contentHash": "bc4e8e13e66b57be09f76adb01726551a22197df772bb9ab6791104a263158be",
+            "sha256": "ec1ce4863563d8d7fd7a0fcdc4d98132fa932de8bcf075f6b171b134f0c9a6de",
+            "contentHash": "45d73b4f4817988abb3bb5ab51dbe76eeb8901ed01c6106629fadf4f45182f90",
             "assetHash": "dfd2c0765c5de4e7dcc56e9f74e7ac630c1fb07f3ae4ca61936c19866b06b47d",
             "comparisonResult": "ACCEPTED"
         },
@@ -2331,8 +2331,8 @@
             "preset": "storybook-blush",
             "viewport": "desktop",
             "file": "pages/invitation-xv-naomi-huerta-desktop.png",
-            "sha256": "9d2665bd07e98522785c8f8c8e501c7674278f6e8ce0a3a274787bd8dc730e7b",
-            "contentHash": "bc4e8e13e66b57be09f76adb01726551a22197df772bb9ab6791104a263158be",
+            "sha256": "f40ded4745f7ea80744feeb18c9cf9c06e7a6981ca7c5e28725718dde14d4b68",
+            "contentHash": "45d73b4f4817988abb3bb5ab51dbe76eeb8901ed01c6106629fadf4f45182f90",
             "assetHash": "dfd2c0765c5de4e7dcc56e9f74e7ac630c1fb07f3ae4ca61936c19866b06b47d",
             "comparisonResult": "ACCEPTED"
         },
@@ -2577,9 +2577,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "a414297f0db570189ba6fa624fcc5899ab837070",
+    "referenceSha": "ca7e1f09b0064b36a76194a5a59e17d3e9881d87",
     "variantManifest": {
-        "generatedAt": "2026-11-03T06:42:46.388Z",
+        "generatedAt": "2026-11-03T19:15:09.210Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4509,10 +4509,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "a414297f0db570189ba6fa624fcc5899ab837070"
+        "referenceSha": "ca7e1f09b0064b36a76194a5a59e17d3e9881d87"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-03T06:42:46.392Z",
+        "generatedAt": "2026-11-03T19:15:09.224Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4927,8 +4927,8 @@
                 "preset": "storybook-blush",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-naomi-huerta-mobile.png",
-                "sha256": "e5588a8930b739e4282195839bd88a0da6911a07e3ad0c972d83b48090cf6afd",
-                "contentHash": "bc4e8e13e66b57be09f76adb01726551a22197df772bb9ab6791104a263158be",
+                "sha256": "ec1ce4863563d8d7fd7a0fcdc4d98132fa932de8bcf075f6b171b134f0c9a6de",
+                "contentHash": "45d73b4f4817988abb3bb5ab51dbe76eeb8901ed01c6106629fadf4f45182f90",
                 "assetHash": "dfd2c0765c5de4e7dcc56e9f74e7ac630c1fb07f3ae4ca61936c19866b06b47d",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4939,8 +4939,8 @@
                 "preset": "storybook-blush",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-naomi-huerta-desktop.png",
-                "sha256": "9d2665bd07e98522785c8f8c8e501c7674278f6e8ce0a3a274787bd8dc730e7b",
-                "contentHash": "bc4e8e13e66b57be09f76adb01726551a22197df772bb9ab6791104a263158be",
+                "sha256": "f40ded4745f7ea80744feeb18c9cf9c06e7a6981ca7c5e28725718dde14d4b68",
+                "contentHash": "45d73b4f4817988abb3bb5ab51dbe76eeb8901ed01c6106629fadf4f45182f90",
                 "assetHash": "dfd2c0765c5de4e7dcc56e9f74e7ac630c1fb07f3ae4ca61936c19866b06b47d",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5185,9 +5185,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "a414297f0db570189ba6fa624fcc5899ab837070"
+        "referenceSha": "ca7e1f09b0064b36a76194a5a59e17d3e9881d87"
     },
-    "candidateManifestSha256": "cdc7b19a9b642af9d720bd944ad7d47b8ae4d8307bc6c140cabd3f68e97dee61",
-    "acceptedFromCommit": "a414297f0db570189ba6fa624fcc5899ab837070",
-    "acceptedAt": "2026-11-03T06:43:29.488Z"
+    "candidateManifestSha256": "669f6c96e68dc618c02c2b06a09c893365e415af0de4e0548901d4db1f73e42a",
+    "acceptedFromCommit": "ca7e1f09b0064b36a76194a5a59e17d3e9881d87",
+    "acceptedAt": "2026-11-03T19:16:25.144Z"
 }

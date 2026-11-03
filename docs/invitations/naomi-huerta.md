@@ -64,7 +64,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | rsvpGuestCap          | 2                                                                                            | inferred       | owner-session | Fallback only; per-guest passes govern seats                 |
 | rsvpWhatsappPhone     | —                                                                                            | not_applicable | owner-session | No WhatsApp confirmation flow                                |
 | rsvpDeadline          | 2026-12-04 (viernes 4 de diciembre)                                                          | inferred       | owner-session | 14 days before (D4)                                          |
-| gifts                 | Lluvia de sobres                                                                             | inferred       | owner-session | Agent draft, pending client approval (D4)                    |
+| gifts                 | Liverpool registry, event 60070167                                                           | verified       | owner-session | Client-supplied 2026-11-03; gift stays optional              |
 | itinerary             | Misa 18:30, Recepción 21:00, Vals 21:30, Cena 22:30, Baile 23:30, Cierre 02:00               | inferred       | owner-session | Agent draft, pending client approval (D4)                    |
 | musicUrl              | Client song (YouTube reference)                                                              | verified       | wa-export     | Hosted at 64 kbps on the media domain (So This Is Love)      |
 | checkInQr             | —                                                                                            | not_applicable | wa-export     | Promo package without QR check-in                            |
@@ -140,20 +140,24 @@ Guest-facing copy (agent draft, D4; pending client approval). Voice: Naomi in th
 "usted" register, warm and formal.
 
 - Envelope: «Abra su invitación».
-- Quote: «Hay cuentos que se esperan toda la vida.» · «El mío comienza el 18 de diciembre, y quiero
-  que usted esté ahí.»
+- Quote: «Esperé quince años por esta noche.» · «Me haría muy feliz que usted estuviera ahí.»
 - Family: «Mis padres» · José Humberto Huerta Navarro · Martha Leticia Chávez García · «Mis
   padrinos» · Christina y Anthony Macías.
 - Countdown: «Faltan N días para mi gran noche».
-- Location: «Dónde y cuándo» · «Primero daremos gracias en misa y después celebraremos juntos.»
+- Location: «Dos lugares, una noche» · «A las 18:30 daré gracias en misa; a las 21:00 le espero en
+  La Mattea para celebrar.»
 - Indications: «Vestimenta» · «De gala» · «Rosa — Reservado para la quinceañera».
-- Program: «Así será mi noche» · Misa 18:30 · Recepción 21:00 · Vals 21:30 · Cena 22:30 · Baile
-  23:30 · Cierre 02:00.
-- Gallery: «Antes de mi gran noche».
-- Gifts: «Lluvia de sobres» · «Su presencia es mi mejor regalo. Si desea tener un detalle conmigo,
-  habrá lluvia de sobres.»
-- Pass: «Su lugar ya está apartado» · «Pase personal e intransferible».
-- RSVP: «¿Me acompaña?» · «Le agradeceré confirmar antes del viernes 4 de diciembre.»
+- Program: «Los capítulos de mi noche» · Misa 18:30 · Recepción 21:00 · Vals 21:30 · Cena 22:30 ·
+  Baile 23:30 · Despedida 02:00.
+- Gallery: «Mi cuento de hadas».
+- Gifts: «Mesa de regalos» · «Verle en mi noche ya es el regalo. Si aun así desea darme algo, mi
+  mesa está en Liverpool; también recibiré con cariño el detalle que usted elija.» · Liverpool,
+  «Número de evento: 60070167».
+- Pass: «Pase personal e intransferible» · «Su lugar ya está apartado.» · «Confírmeme su llegada
+  aquí abajo.»
+- RSVP: «¿Me acompaña?» · «Le agradeceré confirmar antes del viernes 4 de diciembre.» · Steps
+  «¿Contamos con usted?» · «¿Cuántos llegan, contándose usted?» (the count is the party total).
+- Replies: «Su lugar está listo, {nombre}.» · «Me hará falta, {nombre}.»
 - Closing: «Gracias por ser parte de mis quince años. Le espero el 18 de diciembre.» · «Naomi».
 
 ---
