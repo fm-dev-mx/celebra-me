@@ -95,8 +95,8 @@ const content: CanonicalEventContentInput = {
 		microcopy: 'Abra su invitación',
 	},
 	quote: {
-		text: 'Hay cuentos que se esperan toda la vida.',
-		closingLine: 'El mío comienza el 18 de diciembre, y quiero que usted esté ahí.',
+		text: 'Esperé quince años por esta noche.',
+		closingLine: 'Me haría muy feliz que usted estuviera ahí.',
 	},
 	family: {
 		// No family photograph was delivered, so the names stand alone.
@@ -133,8 +133,9 @@ const content: CanonicalEventContentInput = {
 			// From the church to the hall: a silver butterfly flies the route while the entries swap.
 			scene: 'butterfly-route',
 		},
-		introHeading: 'Dónde y cuándo',
-		introLede: 'Primero daremos gracias en misa y después celebraremos juntos.',
+		introHeading: 'Dos lugares, una noche',
+		introLede:
+			'A las 18:30 daré gracias en misa; a las 21:00 le espero en La Mattea para celebrar.',
 		indicationsHeading: 'De gala',
 		indications: [
 			{
@@ -177,14 +178,14 @@ const content: CanonicalEventContentInput = {
 	itinerary: {
 		// Drafted program; times after the reception await the client's confirmation.
 		variant: 'stacked-cards',
-		title: 'Así será mi noche',
+		title: 'Los capítulos de mi noche',
 		items: [
 			{ time: '18:30', iconName: 'Church', label: 'Misa' },
 			{ time: '21:00', iconName: 'Reception', label: 'Recepción' },
 			{ time: '21:30', iconName: 'Waltz', label: 'Vals' },
 			{ time: '22:30', iconName: 'Dinner', label: 'Cena' },
 			{ time: '23:30', iconName: 'Party', label: 'Baile' },
-			{ time: '02:00', iconName: 'Party', label: 'Cierre' },
+			{ time: '02:00', iconName: 'Party', label: 'Despedida' },
 		],
 	},
 	gallery: {
@@ -216,7 +217,7 @@ const content: CanonicalEventContentInput = {
 		title: 'Mesa de regalos',
 		presentation: 'catalog',
 		subtitle:
-			'Su presencia es mi mejor regalo. Si desea tener un detalle conmigo, es totalmente opcional: puede elegir de mi mesa en Liverpool o el obsequio que guste.',
+			'Verle en mi noche ya es el regalo. Si aun así desea darme algo, mi mesa está en Liverpool; también recibiré con cariño el detalle que usted elija.',
 		items: [
 			{
 				type: 'store',
@@ -233,7 +234,7 @@ const content: CanonicalEventContentInput = {
 		// Replies close two weeks before the event; the canonical RSVP block has no deadline field.
 		subcopy: 'Le agradeceré confirmar antes del viernes 4 de diciembre.',
 		lockedMessage:
-			'Esta invitación es personal. Si le llegó directo de mí, abra su enlace para ver su lugar.',
+			'Cada pase de esta noche lleva un nombre. Abra el enlace que le envié para ver el suyo.',
 		guestCap: 2,
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',
@@ -241,24 +242,24 @@ const content: CanonicalEventContentInput = {
 		personalizedAccess: {
 			variant: 'reply-card',
 			title: 'Pase personal e intransferible',
-			subtitle: 'Lleva su nombre.',
-			footerText: 'Confírmelo abajo.',
+			subtitle: 'Su lugar ya está apartado.',
+			footerText: 'Confírmeme su llegada aquí abajo.',
 		},
 		labels: {
 			name: 'Su nombre',
 			guestHint: 'Tiene {count} lugares. Si vienen menos, ajústelo aquí.',
-			stepAttendance: 'Primero lo importante',
-			stepDetails: '¿Quiénes le acompañan?',
+			stepAttendance: '¿Contamos con usted?',
+			stepDetails: '¿Cuántos llegan, contándose usted?',
 		},
-		confirmationMessage: 'Nos vemos el viernes 18 de diciembre.',
+		confirmationMessage: 'Le espero el viernes 18 de diciembre, desde la misa de las 18:30.',
 		responseMessages: {
 			confirmed: {
-				title: 'Ya le espero, {guestName}.',
-				subtitle: 'Si algo cambia, puede modificar su respuesta aquí mismo.',
+				title: 'Su lugar está listo, {guestName}.',
+				subtitle: 'Si sus planes cambian, aquí mismo puede corregir su respuesta.',
 			},
 			declined: {
-				title: 'Le voy a extrañar, {guestName}.',
-				subtitle: 'Gracias por avisarme.',
+				title: 'Me hará falta, {guestName}.',
+				subtitle: 'Gracias por decírmelo a tiempo.',
 			},
 		},
 	},
@@ -290,9 +291,9 @@ const content: CanonicalEventContentInput = {
 		// A custom reminder is sent verbatim to every status, so it never assumes a pending reply.
 		shareMessages: {
 			invitation:
-				'Hola, {{invitado}}: cumplo quince y quiero que usted esté conmigo. Aquí va su invitación, con su pase y la opción para confirmar:\n\n{{enlace}}',
+				'Hola, {{invitado}}: el 18 de diciembre celebro mis quince y quiero verle ahí. En este enlace está su pase y puede confirmar:\n\n{{enlace}}',
 			reminder:
-				'Hola, {{invitado}}: {{hora_evento}} Ya casi llega mi gran noche.\n\nSi aún no confirma, tiene hasta el viernes 4 de diciembre:\n{{enlace}}',
+				'Hola, {{invitado}}: {{hora_evento}} Ya casi es 18 de diciembre.\n\nSi aún no confirma, tiene hasta el viernes 4 de diciembre:\n{{enlace}}',
 		},
 	},
 };
