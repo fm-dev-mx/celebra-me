@@ -388,7 +388,7 @@ function applyDisposableMigrations(options: { isBaseline: boolean; maxVersion?: 
 	console.info('Migrations applied successfully via shared disposable migrate policy.');
 }
 
-export function cmdReset(): void {
+function cmdReset(): void {
 	console.info('=== Disposable Test Environment: Reset ===\n');
 
 	if (!isDisposableDbReady()) {

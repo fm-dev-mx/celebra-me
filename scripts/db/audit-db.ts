@@ -624,10 +624,6 @@ export function loadPendingDroppedObjects(
 	return dropped;
 }
 
-export function loadPendingDroppedPolicies(pendingVersions: readonly string[]): Set<string> {
-	return loadPendingDroppedObjects(pendingVersions).policies;
-}
-
 function runSchemaAudit(
 	target: string,
 	dbUrl: string,
