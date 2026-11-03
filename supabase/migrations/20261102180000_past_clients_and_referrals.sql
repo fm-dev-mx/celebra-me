@@ -198,7 +198,7 @@ create index if not exists idx_leads_referred_by_customer_id
   where referred_by_customer_id is not null;
 
 comment on column public.leads.is_past_sale is
-  'True when the lead represents a historical past sale; never sends Meta CAPI events.';
+  'True when the lead represents a historical past sale and never sends Meta CAPI events.';
 comment on column public.leads.referred_by_customer_id is
   'First referring customer who brought this lead before any confirmed sale.';
 comment on column public.leads.referral_code_used is
