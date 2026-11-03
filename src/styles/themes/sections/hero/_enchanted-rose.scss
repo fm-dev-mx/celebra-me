@@ -508,11 +508,11 @@
 @keyframes enchanted-rose-spark-twinkle {
 	0%,
 	100% {
-		opacity: 15%;
+		opacity: 35%;
 	}
 
 	50% {
-		opacity: 100%;
+		opacity: 85%;
 	}
 }
 
@@ -578,42 +578,20 @@
 
 		// The velvet bed: it runs from the case to the screen's edges (the hero clips it) and stops
 		// a short way past the case on the letter's side, where a gold hairline finishes it and its
-		// shadow falls on the ivory. Its top edge sits a viewport above the case, so the sparks are
-		// placed from there.
+		// shadow falls on the ivory.
 		&::before {
-			$spark: rgb(var(--color-candle-gold-rgb) / 90%);
-			$spark-glow: rgb(var(--color-candle-gold-rgb) / 22%);
-
 			content: '';
 			position: absolute;
 			inset: -100vh -100vw -2.5rem;
 			z-index: -1;
 			pointer-events: none;
 			background:
-				radial-gradient(circle, #{$spark} 0 1.5px, #{$spark-glow} 2px, transparent 6px) left
-					calc(100vw - 1.25rem) top calc(100vh - 2rem) / 12px 12px no-repeat,
-				radial-gradient(circle, #{$spark} 0 2px, #{$spark-glow} 3px, transparent 8px) right
-					calc(100vw - 2.25rem) top calc(100vh + 9rem) / 16px 16px no-repeat,
-				radial-gradient(circle, #{$spark} 0 1.5px, #{$spark-glow} 2px, transparent 6px)
-					right calc(100vw - 0.9rem) top calc(100vh + 17rem) / 12px 12px no-repeat,
-				radial-gradient(circle, #{$spark} 0 2px, #{$spark-glow} 3px, transparent 8px) right
-					1.1rem top calc(100vh - 1.5rem) / 16px 16px no-repeat,
-				radial-gradient(circle, #{$spark} 0 1.5px, #{$spark-glow} 2px, transparent 6px)
-					right 0.75rem top calc(100vh + 12rem) / 12px 12px no-repeat,
-				radial-gradient(circle, #{$spark} 0 1.5px, #{$spark-glow} 2px, transparent 6px)
-					right 1.6rem bottom 4.5rem / 12px 12px no-repeat,
 				linear-gradient(
 					115deg,
 					transparent 40%,
 					rgb(var(--color-blush-pink-rgb) / 7%) 50%,
 					transparent 60%
 				),
-				repeating-linear-gradient(
-					45deg,
-					rgb(var(--color-blush-pink-rgb) / 4%) 0 1px,
-					transparent 1px 3px
-				),
-				repeating-linear-gradient(-45deg, rgb(0 0 0 / 14%) 0 1px, transparent 1px 4px),
 				color-mix(in srgb, var(--color-velvet-burgundy) 82%, black);
 			box-shadow:
 				1px 1px 0 #{$gold-soft},
@@ -645,7 +623,7 @@
 		}
 	}
 
-	// Two layers of sparks over the velvet twinkle out of step; under reduced motion they hold.
+	// Four sparks over the velvet twinkle softly in two pairs; under reduced motion they hold.
 	.framed-portrait-hero__layout {
 		position: relative;
 
@@ -655,16 +633,16 @@
 			position: absolute;
 			inset: -5rem -1.5rem 0;
 			pointer-events: none;
-			animation: enchanted-rose-spark-twinkle 4.8s ease-in-out infinite;
+			animation: enchanted-rose-spark-twinkle 6s ease-in-out infinite;
 		}
 
 		&::before {
-			background: enchanted-rose-sparks((5% 6%, 70% 7%, 94% 52%, 6% 60%));
+			background: enchanted-rose-sparks((6% 8%, 94% 48%));
 		}
 
 		&::after {
-			background: enchanted-rose-sparks((30% 3%, 95% 20%, 5% 35%));
-			animation-delay: -2.4s;
+			background: enchanted-rose-sparks((88% 4%, 5% 58%));
+			animation-delay: -3s;
 		}
 	}
 
@@ -757,11 +735,11 @@
 			}
 
 			&::before {
-				background: enchanted-rose-sparks((12% 22%, 8% 82%, 48% 6%, 64% 95%, 97% 40%));
+				background: enchanted-rose-sparks((12% 24%, 64% 95%));
 			}
 
 			&::after {
-				background: enchanted-rose-sparks((22% 58%, 78% 9%, 18% 40%, 36% 97%));
+				background: enchanted-rose-sparks((78% 7%, 16% 76%));
 			}
 		}
 
