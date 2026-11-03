@@ -112,6 +112,12 @@ $velvet-rest:
 	0 0,
 	0 0;
 
+// Cotton paper for the letter: a speckled fibre grain (fractal noise in walnut ink), long fibres,
+// and a deckled edge (a rectangle roughened by displacement), all drawn as SVG so no image ships.
+$paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.22 0 0 0 0 0.13 0.5 0 0 0 -0.17'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+$paper-fibres: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.32' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.27 0 0 0 0 0.16 0.9 0 0 0 -0.52'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+$paper-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 420' preserveAspectRatio='none'%3E%3Cfilter id='d'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.09' numOctaves='2' seed='3'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='5'/%3E%3C/filter%3E%3Crect x='3' y='3' width='294' height='414' filter='url(%23d)'/%3E%3C/svg%3E");
+
 @keyframes enchanted-rose-candle {
 	from {
 		background-position:
@@ -158,8 +164,8 @@ $velvet-rest:
 	--er-drop: 34%;
 	--reveal-card-bg: color-mix(
 		in srgb,
-		var(--color-warm-ivory) 82%,
-		rgb(var(--color-blush-pink-rgb))
+		var(--color-warm-ivory) 88%,
+		rgb(var(--color-antique-gold-rgb))
 	);
 	--reveal-card-sheen: none;
 	--reveal-card-border: transparent;
@@ -168,6 +174,43 @@ $velvet-rest:
 	--reveal-card-width: 88%;
 	--reveal-card-text-primary: var(--color-velvet-burgundy);
 	--reveal-card-text-secondary: var(--color-walnut-brown);
+
+	// A closer eye than the shared 2000px, so the lid swings with real depth.
+	perspective: 1100px;
+	perspective-origin: 50% 30%;
+
+	// The case rests tilted back a little, so its front wall shows under the pochette; it levels
+	// out as the lid opens, so the letter rises flat to the reader.
+	.envelope-container {
+		transform: rotateX(10deg);
+
+		// Front wall of the case: velvet in shadow under a gilded top bevel, a touch narrower at its
+		// foot, like a side seen from above.
+		&::before {
+			content: '';
+			position: absolute;
+			top: calc(100% - 1px);
+			left: 0;
+			right: 0;
+			height: clamp(0.75rem, 4cqi, 1.25rem);
+			background:
+				linear-gradient(
+					180deg,
+					#{$gold-bright} 0 1px,
+					rgb(var(--color-action-accent-rgb)) 1px 2px,
+					color-mix(in srgb, rgb(var(--color-action-accent-rgb)) 50%, black) 2px 3px,
+					transparent 3px
+				),
+				linear-gradient(90deg, rgb(0 0 0 / 30%), transparent 18% 82%, rgb(0 0 0 / 30%)),
+				linear-gradient(
+					180deg,
+					var(--color-velvet-burgundy),
+					color-mix(in srgb, rgb(var(--color-rose-shadow-rgb)) 70%, black)
+				);
+			clip-path: polygon(0 0, 100% 0, calc(100% - 3px) 100%, 3px 100%);
+			transform: translateZ(1px);
+		}
+	}
 
 	// Depth order inside the preserve-3d box: liner, letter (1px), pochette, lid, seal plate. The
 	// letter starts tucked in the pochette, its top hidden by the closed lid.
@@ -179,25 +222,116 @@ $velvet-rest:
 		transform: translateZ(0);
 	}
 
+	// The deckled letter cannot carry a box shadow (its mask would cut it), so the stage casts it.
 	.envelope-reveal-stage {
 		padding: 0;
 		opacity: 100%;
+		filter: drop-shadow(0 1px 1px rgb(var(--color-rose-shadow-rgb) / 35%))
+			drop-shadow(0 1.25rem 1.5rem rgb(var(--color-rose-shadow-rgb) / 45%));
 		transform: translate3d(0, 4%, 1px);
 		transform-origin: 50% 100%;
 	}
 
-	// The letter: blush-ivory card with a gold hairline and jeweler's corner brackets, the same
-	// gold as the lid bevel.
+	// The letter: a sheet of warm cotton laid paper with a deckled edge, folded in three (a mountain
+	// crease, then a valley one), a little foxed at two corners and bowed so its sides fall into
+	// shade. The gold frame and corner brackets match the lid bevel.
 	.invitation-reveal-card {
+		$crease-shade: rgb(var(--color-walnut-brown-rgb) / 9%);
+		$crease-light: rgb(255 255 255 / 60%);
+
 		height: 84%;
 		max-height: none;
 		background:
-			radial-gradient(ellipse 80% 60% at 50% 0%, rgb(255 255 255 / 45%), transparent 70%),
+			linear-gradient(
+				180deg,
+				transparent calc(33.3% - 0.9rem),
+				#{$crease-shade} calc(33.3% - 1px),
+				#{$crease-light} 33.3%,
+				transparent calc(33.3% + 1.1rem)
+			),
+			linear-gradient(
+				180deg,
+				transparent calc(66.6% - 1.1rem),
+				#{$crease-light} calc(66.6% - 1px),
+				#{$crease-shade} 66.6%,
+				transparent calc(66.6% + 0.9rem)
+			),
+			linear-gradient(
+				90deg,
+				rgb(var(--color-walnut-brown-rgb) / 8%),
+				transparent 12% 88%,
+				rgb(var(--color-walnut-brown-rgb) / 10%)
+			),
+			radial-gradient(
+				circle at 4% 96%,
+				rgb(var(--color-antique-gold-rgb) / 16%),
+				transparent 24%
+			),
+			radial-gradient(
+				circle at 97% 3%,
+				rgb(var(--color-antique-gold-rgb) / 12%),
+				transparent 20%
+			),
+			radial-gradient(ellipse 80% 60% at 50% 0%, rgb(255 255 255 / 50%), transparent 70%),
 			var(--reveal-card-bg);
-		border-radius: var(--reveal-card-radius);
-		box-shadow:
-			0 0 0 1px #{$gold-line},
-			0 1.5rem 2.5rem -1rem rgb(var(--color-rose-shadow-rgb) / 65%);
+		border-radius: 0;
+		box-shadow: none;
+		mask: #{$paper-deckle} center / 100% 100% no-repeat;
+
+		// Paper body: speckled grain, long fibres, and laid lines crossed by chain lines.
+		&::before {
+			opacity: 100%;
+			background:
+				#{$paper-grain} 0 0 / 180px 180px,
+				#{$paper-fibres} 0 0 / 240px 240px,
+				repeating-linear-gradient(
+					0deg,
+					transparent 0 2px,
+					rgb(var(--color-walnut-brown-rgb) / 3.5%) 2px 3px
+				),
+				repeating-linear-gradient(
+					90deg,
+					transparent 0 2.25rem,
+					rgb(var(--color-walnut-brown-rgb) / 5%) 2.25rem calc(2.25rem + 1px)
+				);
+			mix-blend-mode: multiply;
+		}
+
+		// Blind-embossed «XV» seal pressed into the top corner: raised rim and letters lit from the
+		// top left, with no ink.
+		&::after {
+			content: 'XV';
+			position: absolute;
+			top: 1.35rem;
+			right: 1.35rem;
+			z-index: 1;
+			display: grid;
+			place-items: center;
+			width: 2.5rem;
+			aspect-ratio: 1;
+			border-radius: 50%;
+			background:
+				radial-gradient(
+					circle,
+					transparent 56%,
+					rgb(var(--color-walnut-brown-rgb) / 10%) 58% 61%,
+					rgb(255 255 255 / 55%) 62% 64%,
+					transparent 66%
+				),
+				radial-gradient(circle at 34% 30%, rgb(255 255 255 / 45%), transparent 62%);
+			box-shadow:
+				inset 1px 1px 1px rgb(255 255 255 / 70%),
+				inset -1px -1px 2px rgb(var(--color-walnut-brown-rgb) / 20%),
+				1px 1px 1px rgb(255 255 255 / 55%),
+				-1px -1px 1px rgb(var(--color-walnut-brown-rgb) / 12%);
+			font: 500 0.75rem / 1 var(--font-display);
+			letter-spacing: 0.08em;
+			color: rgb(var(--color-walnut-brown-rgb) / 16%);
+			text-shadow:
+				1px 1px 0 rgb(255 255 255 / 75%),
+				-0.5px -0.5px 0 rgb(var(--color-walnut-brown-rgb) / 18%);
+			pointer-events: none;
+		}
 	}
 
 	.invitation-reveal-card__inner {
@@ -344,6 +478,10 @@ $velvet-rest:
 
 		// `translate` percentages resolve against each part's own height; the lid is half the box,
 		// so it travels twice the share to stay on its hinge while the box sinks.
+		.envelope-container {
+			animation: enchanted-rose-case-level 1400ms $box-ease 450ms both;
+		}
+
 		.envelope-flap {
 			--er-drop: 68%;
 
@@ -355,6 +493,7 @@ $velvet-rest:
 
 		.envelope-base,
 		.envelope-pocket,
+		.envelope-container::before,
 		.envelope-container::after {
 			animation:
 				enchanted-rose-box-sink 1500ms $box-ease 1700ms forwards,
@@ -369,7 +508,12 @@ $velvet-rest:
 
 	&.is-preview-opened,
 	&.is-letter-held {
+		.envelope-container {
+			transform: none;
+		}
+
 		.envelope-base,
+		.envelope-container::before,
 		.envelope-container::after {
 			opacity: 0%;
 			pointer-events: none;
@@ -535,6 +679,8 @@ $velvet-rest:
 		&.is-opening .envelope-flap,
 		&.is-opening .envelope-base,
 		&.is-opening .envelope-pocket,
+		&.is-opening .envelope-container,
+		&.is-opening .envelope-container::before,
 		&.is-opening .envelope-container::after {
 			animation: none;
 		}
@@ -542,6 +688,16 @@ $velvet-rest:
 		&:not(.is-preview-opened, .is-letter-held) .envelope-reveal-stage {
 			opacity: 0%;
 		}
+	}
+}
+
+@keyframes enchanted-rose-case-level {
+	from {
+		transform: rotateX(10deg);
+	}
+
+	to {
+		transform: rotateX(0deg);
 	}
 }
 
