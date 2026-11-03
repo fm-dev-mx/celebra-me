@@ -36,13 +36,15 @@
 		--hero-occasion-text-transform: none;
 	}
 
-	// The photo after the family dissolves into the location's ivory, so the page runs from the
-	// picture into the paper without a cut edge or a band.
+	// The photo after the family rises out of the family's paper and dissolves into the location's
+	// ivory, so the page runs from paper to picture to paper without a dark band at either edge.
 	.invitation-interlude[data-interlude-index='1'] {
+		--interlude-bg: var(--color-surface-secondary);
 		--interlude-overlay:
 			linear-gradient(
 				180deg,
-				rgb(var(--color-candle-shadow-rgb) / 18%) 0%,
+				var(--color-surface-secondary) 0%,
+				rgb(var(--color-warm-ivory-rgb) / 0%) 16%,
 				transparent 46%,
 				rgb(var(--color-warm-ivory-rgb) / 70%) 86%,
 				var(--color-warm-ivory) 100%

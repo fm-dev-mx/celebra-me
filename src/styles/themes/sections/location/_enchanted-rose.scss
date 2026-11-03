@@ -158,19 +158,11 @@
 
 	&::before {
 		inset: 0;
-		background:
-			linear-gradient(
-				90deg,
-				rgb(var(--color-rose-shadow-rgb) / 24%) 0%,
-				transparent 24%,
-				transparent 76%,
-				rgb(var(--color-rose-shadow-rgb) / 24%) 100%
-			),
-			radial-gradient(
-				circle at 50% 40%,
-				rgb(var(--color-candle-gold-rgb) / 5%),
-				transparent 44%
-			);
+		background: radial-gradient(
+			circle at 50% 40%,
+			rgb(var(--color-candle-gold-rgb) / 5%),
+			transparent 44%
+		);
 	}
 
 	&::after {
