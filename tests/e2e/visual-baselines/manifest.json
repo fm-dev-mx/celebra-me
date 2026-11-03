@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-02T14:02:02.439Z",
+    "generatedAt": "2026-11-03T00:09:36.771Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,8 +11,8 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "d8f90f50fcb48cee50dc5a9f83acd859cc9ba6b5b22f87b9792928dfe9a4e7ca",
-        "cssSha256": "d6a3c2dfd7802eec6b4a1853a8e1238e785afa6cc254c5016aca4eb67834ebfa",
+        "lockfileSha256": "7c84f51b04d62997217843b1d52e5397057cde44194d1349e4e111b7b6e1fc91",
+        "cssSha256": "5a0b3ad9058c076b8b7170e30f314a6f868041a67a27476a8771eefecf89551d",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2319,9 +2319,9 @@
             "preset": "storybook-blush",
             "viewport": "mobile",
             "file": "pages/invitation-xv-naomi-huerta-mobile.png",
-            "sha256": "7c2d0be188cd3a0e3a38ffe8947e9c2cf03b72531c380daf25de0393cf3c5a08",
-            "contentHash": "8fad1016000dfdce7915c3ad4889dd9c3dac90ae167ed6db0c91bf81c8f4df1d",
-            "assetHash": "1f61e101011839819c4732d9ef854bd3a7d6d35e437a145b33606a79200c7288",
+            "sha256": "e5588a8930b739e4282195839bd88a0da6911a07e3ad0c972d83b48090cf6afd",
+            "contentHash": "2cf8bb35856c1e44d5da4f345c426298c6849bcbe477607731b72b7bde14c63a",
+            "assetHash": "dfd2c0765c5de4e7dcc56e9f74e7ac630c1fb07f3ae4ca61936c19866b06b47d",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2331,9 +2331,9 @@
             "preset": "storybook-blush",
             "viewport": "desktop",
             "file": "pages/invitation-xv-naomi-huerta-desktop.png",
-            "sha256": "2730a592cdd4fc0faaf42a95eb8617552ae3db38208c063c4142a2391421fd7d",
-            "contentHash": "8fad1016000dfdce7915c3ad4889dd9c3dac90ae167ed6db0c91bf81c8f4df1d",
-            "assetHash": "1f61e101011839819c4732d9ef854bd3a7d6d35e437a145b33606a79200c7288",
+            "sha256": "9d2665bd07e98522785c8f8c8e501c7674278f6e8ce0a3a274787bd8dc730e7b",
+            "contentHash": "2cf8bb35856c1e44d5da4f345c426298c6849bcbe477607731b72b7bde14c63a",
+            "assetHash": "dfd2c0765c5de4e7dcc56e9f74e7ac630c1fb07f3ae4ca61936c19866b06b47d",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2577,9 +2577,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "0663e157c69197eef675155d2ddbea96065fda74",
+    "referenceSha": "af1c88964c914131d3d69e7da0bc36f36c85e140",
     "variantManifest": {
-        "generatedAt": "2026-11-02T14:02:02.439Z",
+        "generatedAt": "2026-11-03T00:09:36.771Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2591,8 +2591,8 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "d8f90f50fcb48cee50dc5a9f83acd859cc9ba6b5b22f87b9792928dfe9a4e7ca",
-            "cssSha256": "d6a3c2dfd7802eec6b4a1853a8e1238e785afa6cc254c5016aca4eb67834ebfa",
+            "lockfileSha256": "7c84f51b04d62997217843b1d52e5397057cde44194d1349e4e111b7b6e1fc91",
+            "cssSha256": "5a0b3ad9058c076b8b7170e30f314a6f868041a67a27476a8771eefecf89551d",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4509,10 +4509,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "0663e157c69197eef675155d2ddbea96065fda74"
+        "referenceSha": "af1c88964c914131d3d69e7da0bc36f36c85e140"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-02T14:02:02.472Z",
+        "generatedAt": "2026-11-03T00:09:36.778Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4524,8 +4524,8 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "d8f90f50fcb48cee50dc5a9f83acd859cc9ba6b5b22f87b9792928dfe9a4e7ca",
-            "cssSha256": "d6a3c2dfd7802eec6b4a1853a8e1238e785afa6cc254c5016aca4eb67834ebfa",
+            "lockfileSha256": "7c84f51b04d62997217843b1d52e5397057cde44194d1349e4e111b7b6e1fc91",
+            "cssSha256": "5a0b3ad9058c076b8b7170e30f314a6f868041a67a27476a8771eefecf89551d",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4927,9 +4927,9 @@
                 "preset": "storybook-blush",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-naomi-huerta-mobile.png",
-                "sha256": "7c2d0be188cd3a0e3a38ffe8947e9c2cf03b72531c380daf25de0393cf3c5a08",
-                "contentHash": "8fad1016000dfdce7915c3ad4889dd9c3dac90ae167ed6db0c91bf81c8f4df1d",
-                "assetHash": "1f61e101011839819c4732d9ef854bd3a7d6d35e437a145b33606a79200c7288",
+                "sha256": "e5588a8930b739e4282195839bd88a0da6911a07e3ad0c972d83b48090cf6afd",
+                "contentHash": "2cf8bb35856c1e44d5da4f345c426298c6849bcbe477607731b72b7bde14c63a",
+                "assetHash": "dfd2c0765c5de4e7dcc56e9f74e7ac630c1fb07f3ae4ca61936c19866b06b47d",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -4939,9 +4939,9 @@
                 "preset": "storybook-blush",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-naomi-huerta-desktop.png",
-                "sha256": "2730a592cdd4fc0faaf42a95eb8617552ae3db38208c063c4142a2391421fd7d",
-                "contentHash": "8fad1016000dfdce7915c3ad4889dd9c3dac90ae167ed6db0c91bf81c8f4df1d",
-                "assetHash": "1f61e101011839819c4732d9ef854bd3a7d6d35e437a145b33606a79200c7288",
+                "sha256": "9d2665bd07e98522785c8f8c8e501c7674278f6e8ce0a3a274787bd8dc730e7b",
+                "contentHash": "2cf8bb35856c1e44d5da4f345c426298c6849bcbe477607731b72b7bde14c63a",
+                "assetHash": "dfd2c0765c5de4e7dcc56e9f74e7ac630c1fb07f3ae4ca61936c19866b06b47d",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -5185,9 +5185,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "0663e157c69197eef675155d2ddbea96065fda74"
+        "referenceSha": "af1c88964c914131d3d69e7da0bc36f36c85e140"
     },
-    "candidateManifestSha256": "8df4cee866569a528406908f461d117a31cc26da9f4d181fe498b8837f7c509d",
-    "acceptedFromCommit": "0663e157c69197eef675155d2ddbea96065fda74",
-    "acceptedAt": "2026-11-02T14:02:54.328Z"
+    "candidateManifestSha256": "4797c8df75e6dde9e641fc47cc12bf65f19520a417df626c298b90b1f3b39b47",
+    "acceptedFromCommit": "af1c88964c914131d3d69e7da0bc36f36c85e140",
+    "acceptedAt": "2026-11-03T00:12:12.905Z"
 }

@@ -6,8 +6,8 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
  * in the stone castle of the client's photo session. Blush paper and pale mist alternate by
  * section, the countdown is one short rose night between two framed plates, and the closing is
  * the night again. Fine silver butterflies are the only motif. The photographs are the client's
- * final session at their delivered size, cropped per role and never upscaled. The song is
- * omitted until its file is hosted on the media domain. The program, gifts, reply deadline and
+ * final session at their delivered size, cropped per role and never upscaled. The song is the
+ * client's pick, hosted on the media domain. The program, gifts, reply deadline and
  * every guest-facing line are drafts for the client's approval.
  */
 const NAOMI_TIMING = {
@@ -197,17 +197,17 @@ const content: CanonicalEventContentInput = {
 			{
 				image: 'gallery01',
 				alt: 'Naomi sonríe con un ramo de rosas frente a la puerta de un castillo.',
-				focalPoint: '55% 60%',
+				focalPoint: '50% 55%',
 			},
 			{
 				image: 'gallery02',
 				alt: 'Naomi de espaldas, con el gran moño de su vestido rosa, ante las torres del castillo.',
-				focalPoint: '50% 70%',
+				focalPoint: '50% 60%',
 			},
 			{
 				image: 'gallery03',
-				alt: 'Naomi con su ramo entre las torres de piedra y el cielo azul.',
-				focalPoint: '50% 65%',
+				alt: 'Naomi con su ramo ante el arco de piedra del castillo.',
+				focalPoint: '50% 50%',
 			},
 		],
 	},
@@ -259,7 +259,7 @@ const content: CanonicalEventContentInput = {
 		// The castle again, seen from afar: the story closes at the gate where it began.
 		variant: 'portrait-keepsake',
 		image: 'thankYouPortrait',
-		focalPoint: '50% 70%',
+		focalPoint: '50% 75%',
 		message: 'Gracias por ser parte de mis quince años. Le espero el 18 de diciembre.',
 		closingName: CELEBRANT_NAME,
 		closingPhrase: 'Naomi · XV años · Guadalajara · MMXXVI',
@@ -272,6 +272,11 @@ const content: CanonicalEventContentInput = {
 		{ label: 'Regalos', href: '#regalos' },
 		{ label: 'Confirmar', href: '#rsvp' },
 	],
+	music: {
+		url: 'https://media.celebra-me.com/invitations/xv/naomi-huerta/music-2d774ae1246bc0b460b18138b1d7955a35311347a64c3b7db3d00c4359aee2cb.mp3',
+		title: 'So This Is Love — Cinderella',
+		autoPlay: true,
+	},
 	sharing: {
 		ogImage: 'ogShare',
 		ogDescription: `Viernes ${EVENT_DATE_LABEL} · Guadalajara, Jalisco. Misa a las 18:30 y recepción a las 21:00.`,
