@@ -66,18 +66,33 @@
 			--intersection-blend-layer: 2;
 		}
 
+		// Into the gallery the paper darkens through walnut into the gallery's own dark brown over a
+		// longer ramp, so it no longer ends on a pink band.
 		&[data-intersection-source='itinerary'] {
+			--intersection-depth: clamp(7rem, 16vw, 9rem);
 			--intersection-blend:
 				radial-gradient(
 					ellipse 120% 100% at 28% 0%,
-					rgb(var(--color-blush-pink-rgb) / 22%) 0%,
+					rgb(var(--color-blush-pink-rgb) / 12%) 0%,
 					transparent 70%
 				),
 				linear-gradient(
 					180deg,
 					var(--color-surface-secondary) 0%,
-					rgb(var(--color-blush-pink-rgb) / 58%) 34%,
-					rgb(var(--color-deep-rose-red-rgb) / 26%) 68%,
+					color-mix(
+							in srgb,
+							var(--color-surface-secondary) 78%,
+							var(--color-walnut-brown)
+						)
+						16%,
+					color-mix(
+							in srgb,
+							var(--color-walnut-brown) 62%,
+							var(--color-surface-secondary)
+						)
+						34%,
+					color-mix(in srgb, var(--color-walnut-brown) 55%, black) 58%,
+					rgb(var(--color-walnut-brown-rgb) / 20%) 82%,
 					transparent 100%
 				);
 		}
