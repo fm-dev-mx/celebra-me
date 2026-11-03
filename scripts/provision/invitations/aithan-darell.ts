@@ -76,11 +76,10 @@ const hasMusic = MUSIC_URL.trim().length > 0;
 const content: CanonicalEventContentInput = {
 	eventType: AITHAN_EVENT.eventType,
 	isDemo: false,
-	templateId: 'cumple-editorial-magazine',
 	title: AITHAN_EVENT.title,
 	description:
 		'Invitación al Gran Premio de los 3 años de Aithan Darell: sábado 24 de octubre de 2026 en Jardín de Teresita, Atizapán.',
-	theme: { preset: AITHAN_EVENT.themeId, fontFamily: 'serif' },
+	theme: { preset: AITHAN_EVENT.themeId },
 	eventTiming: {
 		localDateTime: AITHAN_EVENT.localDateTime,
 		timeZone: AITHAN_EVENT.timeZone,

@@ -25,10 +25,9 @@ const EVENT_DATE_LABEL = '3 de julio de 2027';
 const content: CanonicalEventContentInput = {
 	eventType: 'xv',
 	isDemo: false,
-	templateId: 'xv-storybook-emerald',
 	title: `Mis XV Años — ${CELEBRANT_NAME}`,
 	description: `${CELEBRANT_NAME} cumple quince. Sábado ${EVENT_DATE_LABEL}, Guadalupe, Nuevo León.`,
-	theme: { preset: 'storybook-emerald', fontFamily: 'serif', motion: 'editorial' },
+	theme: { preset: 'storybook-emerald', motion: 'editorial' },
 	eventTiming: ANDREA_TIMING,
 	sectionOrder: [
 		'quote',

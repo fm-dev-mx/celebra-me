@@ -100,7 +100,7 @@ describe('Boda Victoria y Roberto provision contract', () => {
 	it('builds published content with Victoria structural contracts', () => {
 		const content = buildVictoriaPublishedContent(buildTestAssets(VICTORIA_ASSET_SPECS));
 		expect(content.isDemo).toBe(false);
-		expect(content.templateId).toBe('boda-jewelry-box-wedding');
+		expect(content.templateId).toBeUndefined();
 		expect(content._assetSlug).toBe('victoria-y-roberto');
 		expect(content._assetSlug).not.toBe('demo-brisa');
 		expect((content.theme as { preset: string }).preset).toBe('jewelry-box-wedding');
