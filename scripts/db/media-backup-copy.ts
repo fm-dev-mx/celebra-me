@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import { getSecretFromEnvOrFiles, PROD_SECRET_FILES } from './db-target-config.ts';
 import {
 	listR2Objects,
@@ -9,6 +8,7 @@ import {
 	type OffsiteObject,
 	type R2Location,
 } from './offsite-backup.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 /**
  * Nightly incremental copy of Production media originals into a separate R2 backup bucket.
@@ -155,10 +155,6 @@ export function planMediaCopy(
 	return plan;
 }
 
-function sha256(bytes: Uint8Array): string {
-	return createHash('sha256').update(bytes).digest('hex');
-}
-
 /** Downloads one object; the body is buffered (originals are at most 80 MB). */
 async function downloadR2Object(
 	location: R2Location,
@@ -215,7 +211,7 @@ async function copyMediaObject(
 		throw error;
 	}
 	const { body, contentType, cacheControl } = source;
-	const digest = sha256(body);
+	const digest = sha256Hex(body);
 	const expected = keyDigest(item.sourceKey);
 	if (expected && expected !== digest) {
 		throw new Error(
@@ -377,12 +373,12 @@ export async function drillMediaRestore(
 		targetKey,
 		fetchImpl,
 	);
-	const digest = sha256(body);
+	const digest = sha256Hex(body);
 	const expectedDigest = keyDigest(key) ?? recordedSha256;
 	let matchesSource: boolean | null = null;
 	try {
 		const original = await downloadR2Object(sourceLocation(config, bucket), key, fetchImpl);
-		matchesSource = sha256(original.body) === digest;
+		matchesSource = sha256Hex(original.body) === digest;
 	} catch (error: unknown) {
 		// A memories original deleted by its guest legitimately exists only in the backup.
 		if (!isNotFound(error)) throw error;

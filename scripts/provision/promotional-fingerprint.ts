@@ -2,7 +2,6 @@
  * Canonical promotional fingerprint for managed invitation status.
  * Equality evidence is live/canonical content + asset digests only.
  */
-import { createHash } from 'node:crypto';
 import {
 	buildSemanticAssetMap,
 	canonicalize,
@@ -25,6 +24,7 @@ import {
 import type { EnvironmentPromotionState } from '../../src/lib/status/types.ts';
 import { InvitationContentDraftContentSchema } from '../../src/lib/intake/schemas/invitation-content-draft.schema.ts';
 import { mapNestedToDraftContent } from '../../src/lib/intake/services/draft-content-mapper.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 export { rewriteUploadedAssetReferences };
 export type { EnvironmentPromotionState };
@@ -89,7 +89,7 @@ export type LiveFingerprintResult =
 	| { ok: false };
 
 function sha256Canonical(value: unknown): string {
-	return createHash('sha256').update(canonicalize(value)).digest('hex');
+	return sha256Hex(canonicalize(value));
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

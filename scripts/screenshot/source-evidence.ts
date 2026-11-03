@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { sha256Hex } from '../shared/hash.ts';
 
 export interface CaptureSourceEvidence {
 	status: 'recorded' | 'unavailable';
@@ -15,7 +15,7 @@ export interface CaptureSourceEvidence {
 }
 
 export function evidenceHash(value: string | Buffer): string {
-	return createHash('sha256').update(value).digest('hex');
+	return sha256Hex(value);
 }
 
 /** Fingerprint code without persisting patches, credentials, file contents or machine paths. */
