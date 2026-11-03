@@ -467,3 +467,21 @@
 		}
 	}
 }
+
+// Concave (cut-in) corners on the framed portrait, the die-cut window of a printed XV card. The
+// mask sits on the image, so the square hairline outline on the frame stays a clean rectangle.
+.theme-preset--enchanted-rose
+	.invitation-hero.framed-portrait-hero
+	.framed-portrait-hero__photograph
+	img {
+	$r: 1.5rem;
+	$fill:
+		transparent #{$r},
+		black calc(#{$r} + 0.5px);
+
+	mask:
+		radial-gradient(circle at 0 0, $fill) top left / 51% 51% no-repeat,
+		radial-gradient(circle at 100% 0, $fill) top right / 51% 51% no-repeat,
+		radial-gradient(circle at 0 100%, $fill) bottom left / 51% 51% no-repeat,
+		radial-gradient(circle at 100% 100%, $fill) bottom right / 51% 51% no-repeat;
+}

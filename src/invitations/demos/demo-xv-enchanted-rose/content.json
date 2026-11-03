@@ -38,7 +38,7 @@
                 "source": "family"
             },
             "location": {
-                "family": "arch",
+                "family": "pattern-band",
                 "source": "interlude-after-family"
             },
             "gifts": {
@@ -50,7 +50,7 @@
                 "source": "gifts"
             },
             "thankYou": {
-                "family": "arch",
+                "family": "atmospheric-blend",
                 "source": "rsvp"
             }
         }
@@ -102,7 +102,7 @@
                 "address": "Camino Real a la Cañada km 4, Hacienda San José, 76246 El Marqués, Qro.",
                 "city": "El Marqués",
                 "date": "20 de noviembre de 2027",
-                "time": "5:30 PM",
+                "time": "5:30 p. m.",
                 "mapUrl": "https://maps.app.goo.gl/example-capilla-san-jose",
                 "image": "mapCeremony",
                 "type": "ceremony",
@@ -114,7 +114,7 @@
                 "address": "Camino Real a la Cañada km 4, Hacienda San José, 76246 El Marqués, Qro.",
                 "city": "El Marqués",
                 "date": "20 de noviembre de 2027",
-                "time": "7:00 PM",
+                "time": "7:00 p. m.",
                 "mapUrl": "https://maps.app.goo.gl/example-jardin-de-las-rosas",
                 "image": "mapReception",
                 "type": "reception",
@@ -159,18 +159,22 @@
         "items": [
             {
                 "image": "gallery01",
+                "layoutRole": "wide",
                 "caption": "Rosas de jardín"
             },
             {
                 "image": "gallery02",
+                "layoutRole": "wide",
                 "caption": "Los detalles del día"
             },
             {
                 "image": "gallery06",
+                "layoutRole": "wide",
                 "caption": "El vals con papá"
             },
             {
                 "image": "gallery03",
+                "layoutRole": "wide",
                 "caption": "Entre setos y cantera"
             },
             {
@@ -183,6 +187,12 @@
         "title": "Un detalle especial",
         "subtitle": "Su presencia será el regalo más valioso. Para quienes deseen compartir un detalle adicional, habrá un espacio reservado durante la recepción.",
         "items": [
+            {
+                "type": "store",
+                "title": "Mesa de regalos",
+                "description": "Isabella eligió algunos detalles para su nueva etapa.",
+                "url": "https://www.elpalaciodehierro.com/mesa-de-regalos"
+            },
             {
                 "type": "cash",
                 "title": "Sobre de felicitación",
@@ -239,25 +249,25 @@
             {
                 "iconName": "Church",
                 "label": "Misa de acción de gracias",
-                "time": "5:30 PM",
+                "time": "5:30 p. m.",
                 "description": "Capilla de San José."
             },
             {
                 "iconName": "Reception",
                 "label": "Recepción",
-                "time": "7:00 PM",
+                "time": "7:00 p. m.",
                 "description": "Bienvenida en el jardín de las rosas."
             },
             {
                 "iconName": "Waltz",
                 "label": "Vals",
-                "time": "8:00 PM",
+                "time": "8:00 p. m.",
                 "description": "Bajo las luces del jardín, al caer la tarde."
             },
             {
                 "iconName": "Party",
                 "label": "Celebración",
-                "time": "9:00 PM",
+                "time": "9:00 p. m.",
                 "description": "Cena, baile y brindis."
             }
         ],
@@ -295,8 +305,12 @@
     "envelope": {
         "disabled": false,
         "sealStyle": "wax",
-        "sealIcon": "flower",
+        "sealIcon": "wax-organic",
         "sealInitials": "I·R",
+        "envelopeName": "Isabella Rose",
+        "teaserDetails": "20 de noviembre · Querétaro",
+        "stampText": "XV",
+        "stampYear": "2027",
         "microcopy": "Abra su invitación",
         "closedPalette": {
             "primary": "surfacePrimary",

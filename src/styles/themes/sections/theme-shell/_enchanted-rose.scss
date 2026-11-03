@@ -1,0 +1,171 @@
+// Enchanted Rose closed envelope — the lid of a velvet jewelry box: a burgundy velvet flap crossed
+// by a fine gold lattice and edged in gold, laid over a blush pochette; a melted rose-wax seal
+// pins it. The stamp sits on the velvet in a gold-ruled cartouche, and the front carries a
+// cut-corner gold frame around the name with a small diamond between the name and the date.
+
+.theme-preset--enchanted-rose .envelope-wrapper[data-variant='enchanted-rose'] {
+	$gold: rgb(var(--color-action-accent-rgb) / 78%);
+	$gold-soft: rgb(var(--color-action-accent-rgb) / 18%);
+	$blush-deep: color-mix(in srgb, rgb(var(--color-blush-pink-rgb)) 52%, var(--color-warm-ivory));
+
+	// The card is skipped: seal to hero in one step.
+	.envelope-reveal-stage {
+		visibility: hidden;
+	}
+
+	// Blush liner with a gold trellis, seen only while the flap turns.
+	.envelope-base {
+		background:
+			repeating-linear-gradient(45deg, transparent 0 10px, #{$gold-soft} 10px 11px),
+			repeating-linear-gradient(-45deg, transparent 0 10px, #{$gold-soft} 10px 11px),
+			#{$blush-deep};
+	}
+
+	// The front reaches above the flap shoulders, so the closed pochette reads as one sheet.
+	.envelope-pocket {
+		clip-path: polygon(0 30%, 100% 30%, 100% 100%, 0 100%);
+		box-shadow: none;
+
+		&::after {
+			display: none;
+		}
+	}
+
+	// Faceted flap: the gold edge is the flap's own background, showing around a slightly inset
+	// velvet face painted by `::after`. A soft shadow under the point lifts it off the pochette.
+	.envelope-flap {
+		background: #{$gold};
+		clip-path: polygon(0 0, 100% 0, 100% 62%, 64% 100%, 36% 100%, 0 62%);
+		filter: drop-shadow(0 6px 10px rgb(var(--color-rose-shadow-rgb) / 30%));
+
+		&::after {
+			inset: 0;
+			z-index: 0;
+			height: auto;
+			background:
+				radial-gradient(
+					ellipse 80% 70% at 50% 30%,
+					rgb(var(--color-deep-rose-red-rgb) / 38%),
+					transparent 75%
+				),
+				repeating-linear-gradient(45deg, transparent 0 13px, #{$gold-soft} 13px 14px),
+				repeating-linear-gradient(-45deg, transparent 0 13px, #{$gold-soft} 13px 14px),
+				linear-gradient(
+					180deg,
+					var(--color-velvet-burgundy),
+					rgb(var(--color-rose-shadow-rgb))
+				);
+			clip-path: polygon(
+				0 0,
+				100% 0,
+				calc(100% - 2px) calc(62% - 1px),
+				calc(64% - 1px) calc(100% - 2px),
+				calc(36% + 1px) calc(100% - 2px),
+				2px calc(62% - 1px)
+			);
+		}
+	}
+
+	// Gold cartouche on the velvet: «— XV · 2027 —».
+	.envelope-stamp {
+		gap: 0.6rem;
+		padding: 0.4rem 0;
+		color: rgb(var(--color-candle-gold-rgb));
+		opacity: 100%;
+
+		&::before,
+		&::after {
+			content: '';
+			width: 1.75rem;
+			height: 1px;
+			background: currentcolor;
+			opacity: 70%;
+		}
+
+		span {
+			font-size: 0.9em;
+			letter-spacing: 0.42em;
+		}
+
+		small {
+			font-size: 0.85em;
+			letter-spacing: 0.24em;
+			opacity: 100%;
+
+			&::before {
+				content: '·';
+				margin-right: 0.6rem;
+				opacity: 80%;
+			}
+		}
+	}
+
+	// Cut-corner hairline frame around the name, under the seal; it fades with the tease.
+	.envelope-tease::before {
+		$r: 14px;
+		$ring:
+			transparent calc(#{$r} - 0.5px),
+			#{$gold} calc(#{$r} - 0.5px) calc(#{$r} + 0.5px),
+			transparent calc(#{$r} + 0.5px);
+
+		content: '';
+		position: absolute;
+		inset: 58% 14px 14px;
+		pointer-events: none;
+		background:
+			linear-gradient(#{$gold}, #{$gold}) top / calc(100% - #{2 * $r}) 1px no-repeat,
+			linear-gradient(#{$gold}, #{$gold}) bottom / calc(100% - #{2 * $r}) 1px no-repeat,
+			linear-gradient(#{$gold}, #{$gold}) left / 1px calc(100% - #{2 * $r}) no-repeat,
+			linear-gradient(#{$gold}, #{$gold}) right / 1px calc(100% - #{2 * $r}) no-repeat,
+			radial-gradient(circle at 0 0, #{$ring}) top left / #{$r} #{$r} no-repeat,
+			radial-gradient(circle at 100% 0, #{$ring}) top right / #{$r} #{$r} no-repeat,
+			radial-gradient(circle at 0 100%, #{$ring}) bottom left / #{$r} #{$r} no-repeat,
+			radial-gradient(circle at 100% 100%, #{$ring}) bottom right / #{$r} #{$r} no-repeat;
+	}
+
+	// Two hairlines meeting a small gold diamond, instead of a single faded rule.
+	.tease-divider {
+		position: relative;
+		width: 6rem;
+		margin-block: 0.15rem 0.35rem;
+		background: linear-gradient(
+			to right,
+			transparent,
+			#{$gold} 38%,
+			transparent 38% 62%,
+			#{$gold} 62%,
+			transparent
+		);
+
+		&::after {
+			content: '';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 5px;
+			height: 5px;
+			border: 1px solid #{$gold};
+			transform: translate(-50%, -50%) rotate(45deg);
+		}
+	}
+
+	// The date read at about 3:1 through the shared 62% fade; walnut at full strength.
+	.envelope-details {
+		color: var(--color-walnut-brown);
+		opacity: 100%;
+	}
+
+	.envelope-details__accent {
+		color: var(--color-deep-rose-red);
+	}
+}
+
+// Phones: the quote pill shares the bottom row with the music button instead of floating over
+// the copy a row higher; it is compact enough to clear the short "Reproducir música" hint.
+@media (width <= 600px) {
+	.theme-preset--enchanted-rose .demo-floating-quote {
+		bottom: calc(1rem + env(safe-area-inset-bottom));
+		gap: 8px;
+		padding: 0 12px;
+	}
+}

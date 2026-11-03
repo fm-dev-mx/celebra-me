@@ -74,3 +74,28 @@
 		opacity: 48%;
 	}
 }
+
+// Desktop: the text-only family card opens like a two-page folio, blessing on the left and
+// godparents on the right, split by a vertical gold hairline instead of a narrow single column.
+@media (width >= 62rem) {
+	.theme-preset--enchanted-rose {
+		.family__panel--no-media {
+			max-width: 60rem;
+		}
+
+		.family__groups {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			align-items: center;
+			column-gap: clamp(2.5rem, 5vw, 4.5rem);
+		}
+
+		.family__group + .family__group::before {
+			top: 50%;
+			left: calc(clamp(2.5rem, 5vw, 4.5rem) / -2);
+			width: 1px;
+			height: 70%;
+			transform: translateY(-50%);
+		}
+	}
+}

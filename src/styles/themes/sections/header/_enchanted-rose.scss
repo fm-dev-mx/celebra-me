@@ -90,3 +90,20 @@
 		backdrop-filter: blur(12px) saturate(120%);
 	}
 }
+
+// The drawer's "CELEBRA-ME © 2026" signature fell just below the fold of a 844px phone behind the
+// return button; tighter spacing keeps it on the first screen of the menu.
+.theme-preset--enchanted-rose {
+	.mobile-nav-links {
+		margin-block: 2.5rem;
+	}
+
+	.mobile-nav-return {
+		margin-bottom: 0.5rem;
+	}
+
+	.mobile-nav-signature {
+		gap: 0.5rem;
+		margin-top: 1rem;
+	}
+}
