@@ -3,6 +3,13 @@
 // die-cut shape of a printed XV card; quiet, widely tracked caps carry the small type. No arches.
 
 .event--demo-xv-enchanted-rose.theme-preset--enchanted-rose {
+	// Velvet and gold for the quiet equalizer control.
+	--music-player-button-bg: rgb(var(--color-velvet-burgundy-rgb) / 94%);
+	--music-player-button-color: rgb(var(--color-candle-gold-rgb));
+	--music-player-button-border: 1px solid rgb(var(--color-action-accent-rgb) / 55%);
+	--music-player-ring-color: rgb(var(--color-candle-gold-rgb) / 40%);
+	--music-player-prompt-accent: rgb(var(--color-candle-gold-rgb));
+
 	.invitation-hero.framed-portrait-hero {
 		// The arched frame gives way to a square velvet case (structure in the preset hero); the
 		// cue centers so the music pill never covers it, and the name sets in two lines.
@@ -19,6 +26,12 @@
 		--hero-scroll-font: 500 0.6875rem / 1.5 var(--font-body);
 		--hero-scroll-letter-spacing: 0.28em;
 		--hero-scroll-text-transform: uppercase;
+
+		// Jewelry-box calligraphy: the occasion signs in gold script above the name (the name's
+		// weights live in the preset hero).
+		--hero-occasion-font: 400 clamp(2.5rem, 4.4vw, 3.5rem) / 1 var(--font-calligraphy);
+		--hero-occasion-letter-spacing: 0;
+		--hero-occasion-text-transform: none;
 	}
 
 	// Dress code and RSVP deadline on the light indications card: the shared ivory emphasis was
