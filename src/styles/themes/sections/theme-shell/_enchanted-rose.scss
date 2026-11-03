@@ -1,12 +1,28 @@
-// Enchanted Rose closed envelope — the lid of a velvet jewelry box: a burgundy velvet flap crossed
-// by a fine gold lattice and edged in gold, laid over a blush pochette; a melted rose-wax seal
-// pins it. The stamp sits on the velvet in a gold-ruled cartouche, and the front carries a
-// cut-corner gold frame around the name with a small diamond between the name and the date.
+// Enchanted Rose closed envelope — the lid of a velvet jewelry box: a tufted (capitoné) burgundy
+// velvet flap with gold studs at each button, edged in a two-tone gilded bevel, laid over a blush
+// paper pochette ruled with an inner gold hairline; a matte rose-wax seal pins it. The stamp is a
+// small gold-framed plaque on the velvet, and a double cut-corner gold frame holds the name.
 
 .theme-preset--enchanted-rose .envelope-wrapper[data-variant='enchanted-rose'] {
 	$gold: rgb(var(--color-action-accent-rgb) / 78%);
+	$gold-bright: rgb(var(--color-candle-gold-rgb));
 	$gold-soft: rgb(var(--color-action-accent-rgb) / 18%);
+	$gold-line: rgb(var(--color-action-accent-rgb) / 55%);
+	$paper: var(--env-paper-bg);
 	$blush-deep: color-mix(in srgb, rgb(var(--color-blush-pink-rgb)) 52%, var(--color-warm-ivory));
+	$tuft: 34px;
+	$seam: rgb(var(--color-rose-shadow-rgb) / 70%);
+	$puff: rgb(var(--color-deep-rose-red-rgb) / 30%);
+	$stud: radial-gradient(
+		circle,
+		#{$gold-bright} 0 1.25px,
+		rgb(var(--color-action-accent-rgb) / 60%) 1.75px,
+		transparent 2.5px
+	);
+	$cut:
+		transparent calc(50% - 0.75px),
+		#{$seam} calc(50% - 0.75px) calc(50% + 0.75px),
+		transparent calc(50% + 0.75px);
 
 	// The card is skipped: seal to hero in one step.
 	.envelope-reveal-stage {
@@ -21,35 +37,73 @@
 			#{$blush-deep};
 	}
 
-	// The front reaches above the flap shoulders, so the closed pochette reads as one sheet.
+	// The front reaches above the flap shoulders, so the closed pochette reads as one sheet: laid
+	// paper (faint horizontal chain lines) inside a gold edge.
 	.envelope-pocket {
 		clip-path: polygon(0 30%, 100% 30%, 100% 100%, 0 100%);
-		box-shadow: none;
+		background:
+			repeating-linear-gradient(
+				0deg,
+				transparent 0 3px,
+				rgb(var(--color-rose-shadow-rgb) / 3%) 3px 4px
+			),
+			linear-gradient(180deg, rgb(255 255 255 / 18%), transparent 60%),
+			#{$paper};
+		box-shadow: inset 0 0 0 1px #{$gold-line};
 
 		&::after {
 			display: none;
 		}
 	}
 
-	// Faceted flap: the gold edge is the flap's own background, showing around a slightly inset
-	// velvet face painted by `::after`. A soft shadow under the point lifts it off the pochette.
+	// Gilded bevel: a bright gold hairline (the flap's own background), a deeper gold band
+	// (`::before`) and the velvet face (`::after`), each a slightly smaller copy of the flap shape.
 	.envelope-flap {
-		background: #{$gold};
+		background: #{$gold-bright};
 		clip-path: polygon(0 0, 100% 0, 100% 62%, 64% 100%, 36% 100%, 0 62%);
-		filter: drop-shadow(0 6px 10px rgb(var(--color-rose-shadow-rgb) / 30%));
+		filter: drop-shadow(0 8px 12px rgb(var(--color-rose-shadow-rgb) / 38%));
 
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			z-index: 0;
+			background: linear-gradient(
+				180deg,
+				rgb(var(--color-action-accent-rgb)),
+				color-mix(in srgb, rgb(var(--color-action-accent-rgb)) 70%, black)
+			);
+			clip-path: polygon(
+				0 0,
+				100% 0,
+				calc(100% - 1px) calc(62% - 0.5px),
+				calc(64% - 0.5px) calc(100% - 1px),
+				calc(36% + 0.5px) calc(100% - 1px),
+				1px calc(62% - 0.5px)
+			);
+		}
+
+		// Capitoné velvet: diagonal seams cross at gold studs; each diamond carries a soft puff of
+		// rose light, and a top sheen gives the pile its direction.
 		&::after {
 			inset: 0;
 			z-index: 0;
 			height: auto;
 			background:
+				linear-gradient(172deg, rgb(255 255 255 / 7%), transparent 38%),
+				#{$stud} 0 0 / #{$tuft} #{$tuft},
+				#{$stud} #{$tuft * 0.5} #{$tuft * 0.5} / #{$tuft} #{$tuft},
+				linear-gradient(45deg, #{$cut}) #{$tuft * 0.5} #{$tuft * 0.5} / #{$tuft} #{$tuft},
+				linear-gradient(-45deg, #{$cut}) #{$tuft * 0.5} #{$tuft * 0.5} / #{$tuft} #{$tuft},
+				radial-gradient(circle, #{$puff}, transparent 48%) #{$tuft * 0.5} 0 / #{$tuft}
+					#{$tuft},
+				radial-gradient(circle, #{$puff}, transparent 48%) 0 #{$tuft * 0.5} / #{$tuft}
+					#{$tuft},
 				radial-gradient(
-					ellipse 80% 70% at 50% 30%,
-					rgb(var(--color-deep-rose-red-rgb) / 38%),
-					transparent 75%
+					ellipse 70% 60% at 50% 35%,
+					rgb(var(--color-deep-rose-red-rgb) / 22%),
+					transparent 80%
 				),
-				repeating-linear-gradient(45deg, transparent 0 13px, #{$gold-soft} 13px 14px),
-				repeating-linear-gradient(-45deg, transparent 0 13px, #{$gold-soft} 13px 14px),
 				linear-gradient(
 					180deg,
 					var(--color-velvet-burgundy),
@@ -58,37 +112,43 @@
 			clip-path: polygon(
 				0 0,
 				100% 0,
-				calc(100% - 2px) calc(62% - 1px),
-				calc(64% - 1px) calc(100% - 2px),
-				calc(36% + 1px) calc(100% - 2px),
-				2px calc(62% - 1px)
+				calc(100% - 4px) calc(62% - 2px),
+				calc(64% - 2px) calc(100% - 4px),
+				calc(36% + 2px) calc(100% - 4px),
+				4px calc(62% - 2px)
 			);
 		}
 	}
 
-	// Gold cartouche on the velvet: «— XV · 2027 —».
+	// Gold-framed plaque on the velvet: «— XV · 2027 —» on a solid burgundy ground, so the
+	// quilting never runs through the letters; a second hairline sits just outside the frame.
 	.envelope-stamp {
 		gap: 0.6rem;
-		padding: 0.4rem 0;
-		color: rgb(var(--color-candle-gold-rgb));
+		padding: 0.45rem 1.1rem;
+		color: #{$gold-bright};
+		background: var(--color-velvet-burgundy);
+		border: 1px solid #{$gold};
+		outline: 1px solid #{$gold-soft};
+		outline-offset: 3px;
+		box-shadow: 0 4px 10px rgb(var(--color-rose-shadow-rgb) / 45%);
 		opacity: 100%;
 
 		&::before,
 		&::after {
 			content: '';
-			width: 1.75rem;
+			width: 1.25rem;
 			height: 1px;
 			background: currentcolor;
 			opacity: 70%;
 		}
 
 		span {
-			font-size: 0.9em;
+			font-size: 1em;
 			letter-spacing: 0.42em;
 		}
 
 		small {
-			font-size: 0.85em;
+			font-size: 0.9em;
 			letter-spacing: 0.24em;
 			opacity: 100%;
 
@@ -100,27 +160,48 @@
 		}
 	}
 
-	// Cut-corner hairline frame around the name, under the seal; it fades with the tease.
+	// Double cut-corner gold frame around the name: the outer line runs behind the seal, the
+	// inner one is concentric with it, 5px in. It fades with the tease.
 	.envelope-tease::before {
-		$r: 14px;
+		$r: 22px;
+		$g: 5px;
+		$ri: $r + $g;
 		$ring:
 			transparent calc(#{$r} - 0.5px),
 			#{$gold} calc(#{$r} - 0.5px) calc(#{$r} + 0.5px),
 			transparent calc(#{$r} + 0.5px);
+		$ring-in:
+			transparent calc(#{$ri} - 0.5px),
+			#{$gold-line} calc(#{$ri} - 0.5px) calc(#{$ri} + 0.5px),
+			transparent calc(#{$ri} + 0.5px);
+		$side: calc(100% - #{2 * $r});
+		$side-in: calc(100% - #{2 * $ri});
 
 		content: '';
 		position: absolute;
-		inset: 58% 14px 14px;
+		inset: 56% clamp(12px, 3.5cqi, 24px) clamp(12px, 3.5cqi, 22px);
 		pointer-events: none;
 		background:
-			linear-gradient(#{$gold}, #{$gold}) top / calc(100% - #{2 * $r}) 1px no-repeat,
-			linear-gradient(#{$gold}, #{$gold}) bottom / calc(100% - #{2 * $r}) 1px no-repeat,
-			linear-gradient(#{$gold}, #{$gold}) left / 1px calc(100% - #{2 * $r}) no-repeat,
-			linear-gradient(#{$gold}, #{$gold}) right / 1px calc(100% - #{2 * $r}) no-repeat,
+			linear-gradient(#{$gold}, #{$gold}) top / #{$side} 1px no-repeat,
+			linear-gradient(#{$gold}, #{$gold}) bottom / #{$side} 1px no-repeat,
+			linear-gradient(#{$gold}, #{$gold}) left / 1px #{$side} no-repeat,
+			linear-gradient(#{$gold}, #{$gold}) right / 1px #{$side} no-repeat,
 			radial-gradient(circle at 0 0, #{$ring}) top left / #{$r} #{$r} no-repeat,
 			radial-gradient(circle at 100% 0, #{$ring}) top right / #{$r} #{$r} no-repeat,
 			radial-gradient(circle at 0 100%, #{$ring}) bottom left / #{$r} #{$r} no-repeat,
-			radial-gradient(circle at 100% 100%, #{$ring}) bottom right / #{$r} #{$r} no-repeat;
+			radial-gradient(circle at 100% 100%, #{$ring}) bottom right / #{$r} #{$r} no-repeat,
+			linear-gradient(#{$gold-line}, #{$gold-line}) center top #{$g} / #{$side-in} 1px
+				no-repeat,
+			linear-gradient(#{$gold-line}, #{$gold-line}) center bottom #{$g} / #{$side-in} 1px
+				no-repeat,
+			linear-gradient(#{$gold-line}, #{$gold-line}) left #{$g} center / 1px #{$side-in}
+				no-repeat,
+			linear-gradient(#{$gold-line}, #{$gold-line}) right #{$g} center / 1px #{$side-in}
+				no-repeat,
+			radial-gradient(circle at 0 0, #{$ring-in}) top left / #{$ri} #{$ri} no-repeat,
+			radial-gradient(circle at 100% 0, #{$ring-in}) top right / #{$ri} #{$ri} no-repeat,
+			radial-gradient(circle at 0 100%, #{$ring-in}) bottom left / #{$ri} #{$ri} no-repeat,
+			radial-gradient(circle at 100% 100%, #{$ring-in}) bottom right / #{$ri} #{$ri} no-repeat;
 	}
 
 	// Two hairlines meeting a small gold diamond, instead of a single faded rule.
@@ -149,9 +230,11 @@
 		}
 	}
 
-	// The date read at about 3:1 through the shared 62% fade; walnut at full strength.
+	// The date read at about 3:1 through the shared 62% fade; walnut at full strength, tracked a
+	// little tighter on phones so it stays inside the name frame.
 	.envelope-details {
 		color: var(--color-walnut-brown);
+		letter-spacing: clamp(0.12em, 0.5cqi, 0.2em);
 		opacity: 100%;
 	}
 
