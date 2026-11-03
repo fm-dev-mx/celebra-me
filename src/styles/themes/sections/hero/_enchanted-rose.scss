@@ -472,8 +472,8 @@
 
 // Candle sparks for the velvet bed, one small gold point per (x, y) position.
 @function enchanted-rose-sparks($points) {
-	$spark: rgb(var(--color-candle-gold-rgb) / 90%);
-	$glow: rgb(var(--color-candle-gold-rgb) / 22%);
+	$spark: rgb(var(--color-candle-gold-rgb) / 75%);
+	$glow: rgb(var(--color-candle-gold-rgb) / 14%);
 	$layers: ();
 
 	@each $x, $y in $points {
@@ -493,15 +493,15 @@
 @mixin enchanted-rose-seam-diamond($fill, $ring) {
 	content: '';
 	position: absolute;
-	width: 0.75rem;
-	height: 0.75rem;
+	width: 0.5rem;
+	height: 0.5rem;
 	background: #{$fill};
 	translate: -50% -50%;
 	rotate: 45deg;
 	box-shadow:
-		0 0 0 3px color-mix(in srgb, var(--color-velvet-burgundy) 82%, black),
-		0 0 0 4px #{$ring},
-		0 0 18px 4px rgb(var(--color-candle-gold-rgb) / 45%);
+		0 0 0 2px color-mix(in srgb, var(--color-velvet-burgundy) 82%, black),
+		0 0 0 3px #{$ring},
+		0 0 10px 2px rgb(var(--color-candle-gold-rgb) / 18%);
 	pointer-events: none;
 }
 
@@ -512,7 +512,7 @@
 	}
 
 	50% {
-		opacity: 85%;
+		opacity: 60%;
 	}
 }
 
@@ -522,15 +522,14 @@
 .theme-preset--enchanted-rose
 	.invitation-hero.framed-portrait-hero[data-variant='framed-portrait'] {
 	$gold: rgb(var(--color-action-accent-rgb));
-	$gold-soft: rgb(var(--color-action-accent-rgb) / 75%);
+	$gold-soft: rgb(var(--color-action-accent-rgb) / 55%);
 	$velvet: var(--color-velvet-burgundy);
 	$bracket: linear-gradient(
-		135deg,
-		rgb(var(--color-candle-gold-rgb)),
-		rgb(var(--color-action-accent-rgb))
+		rgb(var(--color-action-accent-rgb) / 80%),
+		rgb(var(--color-action-accent-rgb) / 80%)
 	);
-	$arm: clamp(1.5rem, 3.2vw, 2.25rem);
-	$bar: 3px;
+	$arm: clamp(1rem, 2.2vw, 1.5rem);
+	$bar: 1.5px;
 
 	&::before {
 		inset: 0;
@@ -567,18 +566,18 @@
 
 		// Outer gold hairline on the case edge, a velvet gap, then the inner bezel around the photo.
 		box-shadow:
-			inset 0 0 0 1.5px #{$gold},
+			inset 0 0 0 1px #{$gold-soft},
 			inset 0 0 0 5px #{$velvet},
 			inset 0 0 0 6px #{$gold-soft},
 			inset 0 1px 10px rgb(0 0 0 / 30%),
 			0 28px 56px -18px rgb(var(--color-rose-shadow-rgb) / 52%),
 			0 10px 22px -10px rgb(var(--color-rose-shadow-rgb) / 36%),
 			0 0 90px 24px rgb(var(--color-deep-rose-red-rgb) / 42%),
-			0 0 170px 60px rgb(var(--color-candle-gold-rgb) / 26%);
+			0 0 170px 60px rgb(var(--color-candle-gold-rgb) / 14%);
 
 		// The velvet bed: it runs from the case to the screen's edges (the hero clips it) and stops
 		// a short way past the case on the letter's side, where a gold hairline finishes it and its
-		// shadow falls on the ivory.
+		// shadow falls on the ivory. A fine crossed weave gives it the pile of velvet.
 		&::before {
 			content: '';
 			position: absolute;
@@ -592,6 +591,12 @@
 					rgb(var(--color-blush-pink-rgb) / 7%) 50%,
 					transparent 60%
 				),
+				repeating-linear-gradient(
+					45deg,
+					rgb(var(--color-blush-pink-rgb) / 4%) 0 1px,
+					transparent 1px 3px
+				),
+				repeating-linear-gradient(-45deg, rgb(0 0 0 / 14%) 0 1px, transparent 1px 4px),
 				color-mix(in srgb, var(--color-velvet-burgundy) 82%, black);
 			box-shadow:
 				1px 1px 0 #{$gold-soft},
@@ -600,10 +605,10 @@
 		}
 
 		img {
-			box-shadow: 0 0 0 1px rgb(var(--color-action-accent-rgb) / 70%);
+			box-shadow: 0 0 0 1px rgb(var(--color-action-accent-rgb) / 40%);
 		}
 
-		// Gold corner brackets, the metal guards of a jewelry case, clasp the four corners.
+		// Fine gold corner brackets, the metal guards of a jewelry case, clasp the four corners.
 		&::after {
 			content: '';
 			position: absolute;
@@ -619,7 +624,6 @@
 				#{$bracket} bottom left / #{$bar} #{$arm} no-repeat,
 				#{$bracket} bottom right / #{$arm} #{$bar} no-repeat,
 				#{$bracket} bottom right / #{$bar} #{$arm} no-repeat;
-			filter: drop-shadow(0 1px 1px rgb(0 0 0 / 35%));
 		}
 	}
 
@@ -660,12 +664,12 @@
 	}
 
 	.framed-portrait-hero__name-lead {
-		font-weight: 500;
+		font-weight: 600;
 	}
 
 	.framed-portrait-hero__name-rest {
 		font-style: italic;
-		font-weight: 300;
+		font-weight: 400;
 		letter-spacing: -0.01em;
 	}
 
@@ -677,10 +681,10 @@
 		&::before {
 			content: '';
 			display: block;
-			width: 6rem;
+			width: 4.5rem;
 			height: 9px;
 			margin: 1.125rem 0 1rem;
-			background: #{$gold};
+			background: #{$gold-soft};
 			mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 9'%3E%3Cpath d='M0 4h42v1H0zM54 4h42v1H54zM48 0l4.5 4.5L48 9l-4.5-4.5z'/%3E%3C/svg%3E")
 				center / 100% 100% no-repeat;
 		}

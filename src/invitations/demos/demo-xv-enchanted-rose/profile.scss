@@ -23,13 +23,14 @@
 		--hero-details-font: 500 0.8125rem / 1.6 var(--font-body);
 		--hero-details-letter-spacing: 0.22em;
 		--hero-details-text-transform: uppercase;
-		--hero-scroll-font: 500 0.6875rem / 1.5 var(--font-body);
-		--hero-scroll-letter-spacing: 0.28em;
+		--hero-scroll-font: 500 0.5625rem / 1.5 var(--font-body);
+		--hero-scroll-letter-spacing: 0.24em;
 		--hero-scroll-text-transform: uppercase;
 
-		// Jewelry-box calligraphy: the occasion signs in gold script above the name (the name's
-		// weights live in the preset hero).
-		--hero-occasion-font: 400 clamp(2.5rem, 4.4vw, 3.5rem) / 1 var(--font-calligraphy);
+		// Jewelry-box calligraphy: the occasion signs in deep rose script above the name, so the
+		// gold stays on the case (the name's weights live in the preset hero).
+		--hero-occasion-font: 400 clamp(2.875rem, 5vw, 4rem) / 1 var(--font-calligraphy);
+		--hero-occasion-color: var(--color-deep-rose-red);
 		--hero-occasion-letter-spacing: 0;
 		--hero-occasion-text-transform: none;
 	}
