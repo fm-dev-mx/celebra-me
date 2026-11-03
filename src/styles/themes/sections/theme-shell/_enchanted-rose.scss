@@ -1,7 +1,145 @@
-// Enchanted Rose closed envelope — the lid of a velvet jewelry box: a tufted (capitoné) burgundy
-// velvet flap with gold studs at each button, edged in a two-tone gilded bevel, laid over a blush
-// paper pochette ruled with an inner gold hairline; a matte rose-wax seal pins it. The stamp is a
-// small gold-framed plaque on the velvet, and a double cut-corner gold frame holds the name.
+@use '../../../global/a11y' as a11y;
+
+// Enchanted Rose closed envelope — the lid of a velvet jewelry box, lit by a candle: a tufted
+// (capitoné) burgundy velvet flap whose gold studs sink into the pile and whose cushions swell
+// toward the light, edged in a gilded bevel and casting a real shadow onto a blush laid-paper
+// pochette; a matte rose-wax seal breathes softly to invite the tap. The stamp is a recessed
+// gold-framed plaque, and a double cut-corner gold frame with a rivet in each notch holds the name.
+// A warm glow drifts across the lid and a sheen sweeps it; both stop under reduced motion.
+
+$tuft: 44px;
+$half: $tuft * 0.5;
+$seam: rgb(var(--color-rose-shadow-rgb) / 85%);
+$lip: rgb(255 255 255 / 7%);
+$stud-a: 50% 0;
+$stud-b: calc(50% + #{$half}) #{$half};
+
+// Capitoné velvet, top layer first. The first two layers (candle glow and sheen) are the only ones
+// the animation moves; the lattice is centred so a stud sits on the lid's axis.
+$velvet-image:
+	radial-gradient(closest-side, rgb(var(--color-candle-gold-rgb) / 18%), transparent),
+	linear-gradient(105deg, transparent 30%, rgb(255 255 255 / 8%) 50%, transparent 70%),
+	linear-gradient(172deg, rgb(255 255 255 / 7%), transparent 40%),
+	radial-gradient(
+		circle at calc(50% - 0.8px) calc(50% - 0.8px),
+		rgb(255 255 255 / 75%) 0 0.6px,
+		transparent 1.2px
+	),
+	radial-gradient(
+		circle at calc(50% - 0.8px) calc(50% - 0.8px),
+		rgb(255 255 255 / 75%) 0 0.6px,
+		transparent 1.2px
+	),
+	radial-gradient(
+		circle,
+		rgb(var(--color-candle-gold-rgb)) 0 1.6px,
+		rgb(var(--color-action-accent-rgb)) 2.2px,
+		color-mix(in srgb, rgb(var(--color-action-accent-rgb)) 55%, black) 2.8px,
+		transparent 3.2px
+	),
+	radial-gradient(
+		circle,
+		rgb(var(--color-candle-gold-rgb)) 0 1.6px,
+		rgb(var(--color-action-accent-rgb)) 2.2px,
+		color-mix(in srgb, rgb(var(--color-action-accent-rgb)) 55%, black) 2.8px,
+		transparent 3.2px
+	),
+	radial-gradient(circle, rgb(0 0 0 / 50%) 0 2px, rgb(0 0 0 / 18%) 6px, transparent 11px),
+	radial-gradient(circle, rgb(0 0 0 / 50%) 0 2px, rgb(0 0 0 / 18%) 6px, transparent 11px),
+	linear-gradient(
+		45deg,
+		transparent calc(50% - 1.5px),
+		#{$lip} calc(50% - 1.5px) calc(50% - 0.5px),
+		#{$seam} calc(50% - 0.5px) calc(50% + 0.75px),
+		transparent calc(50% + 0.75px)
+	),
+	linear-gradient(
+		-45deg,
+		transparent calc(50% - 1.5px),
+		#{$lip} calc(50% - 1.5px) calc(50% - 0.5px),
+		#{$seam} calc(50% - 0.5px) calc(50% + 0.75px),
+		transparent calc(50% + 0.75px)
+	),
+	radial-gradient(
+		circle at 42% 38%,
+		rgb(var(--color-deep-rose-red-rgb) / 42%) 0,
+		rgb(var(--color-deep-rose-red-rgb) / 14%) 40%,
+		transparent 68%
+	),
+	radial-gradient(
+		circle at 42% 38%,
+		rgb(var(--color-deep-rose-red-rgb) / 42%) 0,
+		rgb(var(--color-deep-rose-red-rgb) / 14%) 40%,
+		transparent 68%
+	),
+	radial-gradient(
+		ellipse 70% 60% at 50% 35%,
+		rgb(var(--color-deep-rose-red-rgb) / 22%),
+		transparent 80%
+	),
+	linear-gradient(180deg, var(--color-velvet-burgundy), rgb(var(--color-rose-shadow-rgb)));
+$velvet-size:
+	55% 150%,
+	45% 100%,
+	100% 100%,
+	$tuft $tuft,
+	$tuft $tuft,
+	$tuft $tuft,
+	$tuft $tuft,
+	$tuft $tuft,
+	$tuft $tuft,
+	$tuft $tuft,
+	$tuft $tuft,
+	$tuft $tuft,
+	$tuft $tuft,
+	100% 100%,
+	100% 100%;
+$velvet-repeat:
+	no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat,
+	repeat, repeat, no-repeat, no-repeat;
+$velvet-rest:
+	0 0,
+	$stud-a,
+	$stud-b,
+	$stud-a,
+	$stud-b,
+	$stud-a,
+	$stud-b,
+	$stud-a,
+	$stud-a,
+	calc(50% + #{$half}) 0,
+	50% #{$half},
+	0 0,
+	0 0;
+
+@keyframes enchanted-rose-candle {
+	from {
+		background-position:
+			-30% 30%,
+			-80% 0,
+			$velvet-rest;
+	}
+
+	to {
+		background-position:
+			130% 70%,
+			180% 0,
+			$velvet-rest;
+	}
+}
+
+@keyframes enchanted-rose-seal-breathe {
+	0%,
+	100% {
+		filter: drop-shadow(0 0 0 rgb(var(--color-candle-gold-rgb) / 0%));
+		transform: scale(1);
+	}
+
+	50% {
+		filter: drop-shadow(0 0 10px rgb(var(--color-candle-gold-rgb) / 38%));
+		transform: scale(1.035);
+	}
+}
 
 .theme-preset--enchanted-rose .envelope-wrapper[data-variant='enchanted-rose'] {
 	$gold: rgb(var(--color-action-accent-rgb) / 78%);
@@ -10,58 +148,142 @@
 	$gold-line: rgb(var(--color-action-accent-rgb) / 55%);
 	$paper: var(--env-paper-bg);
 	$blush-deep: color-mix(in srgb, rgb(var(--color-blush-pink-rgb)) 52%, var(--color-warm-ivory));
-	$tuft: 34px;
-	$seam: rgb(var(--color-rose-shadow-rgb) / 70%);
-	$puff: rgb(var(--color-deep-rose-red-rgb) / 30%);
-	$stud: radial-gradient(
-		circle,
-		#{$gold-bright} 0 1.25px,
-		rgb(var(--color-action-accent-rgb) / 60%) 1.75px,
-		transparent 2.5px
+	$box-ease: cubic-bezier(0.45, 0, 0.25, 1);
+
+	// Letter travel, as a share of the card: it slides up out of the pocket (`--er-lift`), steps in
+	// front of the opened box and settles a little above center while the box sinks away.
+	--er-lift: -54%;
+	--er-rest-y: -6%;
+	--er-rest-scale: 1.05;
+	--er-drop: 34%;
+	--reveal-card-bg: color-mix(
+		in srgb,
+		var(--color-warm-ivory) 82%,
+		rgb(var(--color-blush-pink-rgb))
 	);
-	$cut:
-		transparent calc(50% - 0.75px),
-		#{$seam} calc(50% - 0.75px) calc(50% + 0.75px),
-		transparent calc(50% + 0.75px);
+	--reveal-card-sheen: none;
+	--reveal-card-border: transparent;
+	--reveal-card-grain-opacity: 0;
+	--reveal-card-radius: 2px;
+	--reveal-card-width: 88%;
+	--reveal-card-text-primary: var(--color-velvet-burgundy);
+	--reveal-card-text-secondary: var(--color-walnut-brown);
 
-	// The card is skipped: seal to hero in one step.
-	.envelope-reveal-stage {
-		visibility: hidden;
-	}
-
-	// Blush liner with a gold trellis, seen only while the flap turns.
+	// Depth order inside the preserve-3d box: liner, letter (1px), pochette, lid, seal plate. The
+	// letter starts tucked in the pochette, its top hidden by the closed lid.
 	.envelope-base {
 		background:
 			repeating-linear-gradient(45deg, transparent 0 10px, #{$gold-soft} 10px 11px),
 			repeating-linear-gradient(-45deg, transparent 0 10px, #{$gold-soft} 10px 11px),
 			#{$blush-deep};
+		transform: translateZ(0);
+	}
+
+	.envelope-reveal-stage {
+		padding: 0;
+		opacity: 100%;
+		transform: translate3d(0, 4%, 1px);
+		transform-origin: 50% 100%;
+	}
+
+	// The letter: blush-ivory card with a gold hairline and jeweler's corner brackets, the same
+	// gold as the lid bevel.
+	.invitation-reveal-card {
+		height: 84%;
+		max-height: none;
+		background:
+			radial-gradient(ellipse 80% 60% at 50% 0%, rgb(255 255 255 / 45%), transparent 70%),
+			var(--reveal-card-bg);
+		border-radius: var(--reveal-card-radius);
+		box-shadow:
+			0 0 0 1px #{$gold-line},
+			0 1.5rem 2.5rem -1rem rgb(var(--color-rose-shadow-rgb) / 65%);
+	}
+
+	.invitation-reveal-card__inner {
+		$bracket: linear-gradient(#{$gold}, #{$gold});
+
+		position: relative;
+		height: 100%;
+		min-height: 0;
+		justify-content: center;
+		gap: 0.35rem;
+		padding: 1.75rem 1.5rem;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0.6rem;
+			border: 1px solid #{$gold-soft};
+			background:
+				#{$bracket} top left / 1.25rem 1px,
+				#{$bracket} top left / 1px 1.25rem,
+				#{$bracket} top right / 1.25rem 1px,
+				#{$bracket} top right / 1px 1.25rem,
+				#{$bracket} bottom left / 1.25rem 1px,
+				#{$bracket} bottom left / 1px 1.25rem,
+				#{$bracket} bottom right / 1.25rem 1px,
+				#{$bracket} bottom right / 1px 1.25rem;
+			background-repeat: no-repeat;
+			pointer-events: none;
+		}
+	}
+
+	.invitation-reveal-card__label,
+	.invitation-reveal-card__date {
+		margin: 0;
+		font-family: var(--font-body);
+		font-size: 0.66rem;
+		font-weight: 500;
+		letter-spacing: 0.28em;
+		text-transform: uppercase;
+		color: var(--reveal-card-text-secondary);
+	}
+
+	.invitation-reveal-card__name {
+		margin-block: 0.15rem;
+		font-size: clamp(1.8rem, 8cqw, 2.6rem);
+		font-weight: 400;
+		line-height: 1.1;
+		color: var(--reveal-card-text-primary);
+	}
+
+	.invitation-reveal-card__divider {
+		width: 3rem;
+		height: 1px;
+		background: #{$gold};
 	}
 
 	// The front reaches above the flap shoulders, so the closed pochette reads as one sheet: laid
-	// paper (faint horizontal chain lines) inside a gold edge.
+	// paper inside a gold edge, warmed under the seal by the candle and shaded toward the hem.
 	.envelope-pocket {
 		clip-path: polygon(0 30%, 100% 30%, 100% 100%, 0 100%);
 		background:
+			radial-gradient(ellipse 60% 38% at 50% 52%, rgb(255 255 255 / 34%), transparent 70%),
+			linear-gradient(0deg, rgb(var(--color-rose-shadow-rgb) / 10%), transparent 38%),
 			repeating-linear-gradient(
 				0deg,
 				transparent 0 3px,
-				rgb(var(--color-rose-shadow-rgb) / 3%) 3px 4px
+				rgb(var(--color-rose-shadow-rgb) / 4%) 3px 4px
 			),
-			linear-gradient(180deg, rgb(255 255 255 / 18%), transparent 60%),
 			#{$paper};
 		box-shadow: inset 0 0 0 1px #{$gold-line};
+		transform: translateZ(2px);
 
 		&::after {
 			display: none;
 		}
 	}
 
-	// Gilded bevel: a bright gold hairline (the flap's own background), a deeper gold band
-	// (`::before`) and the velvet face (`::after`), each a slightly smaller copy of the flap shape.
+	// The flap carries no clip of its own, so its drop shadow follows the V of the lid onto the
+	// pochette. Gilded bevel: a gold band (`::before`, the full lid shape) under the velvet face
+	// (`::after`, 4px in).
 	.envelope-flap {
-		background: #{$gold-bright};
-		clip-path: polygon(0 0, 100% 0, 100% 62%, 64% 100%, 36% 100%, 0 62%);
-		filter: drop-shadow(0 8px 12px rgb(var(--color-rose-shadow-rgb) / 38%));
+		background: none;
+		border: 0;
+		clip-path: none;
+		filter: drop-shadow(0 2px 2px rgb(0 0 0 / 35%))
+			drop-shadow(0 14px 18px rgb(var(--color-rose-shadow-rgb) / 42%));
 
 		&::before {
 			content: '';
@@ -70,45 +292,24 @@
 			z-index: 0;
 			background: linear-gradient(
 				180deg,
-				rgb(var(--color-action-accent-rgb)),
-				color-mix(in srgb, rgb(var(--color-action-accent-rgb)) 70%, black)
+				#{$gold-bright},
+				rgb(var(--color-action-accent-rgb)) 55%,
+				color-mix(in srgb, rgb(var(--color-action-accent-rgb)) 62%, black)
 			);
-			clip-path: polygon(
-				0 0,
-				100% 0,
-				calc(100% - 1px) calc(62% - 0.5px),
-				calc(64% - 0.5px) calc(100% - 1px),
-				calc(36% + 0.5px) calc(100% - 1px),
-				1px calc(62% - 0.5px)
-			);
+			clip-path: polygon(0 0, 100% 0, 100% 62%, 64% 100%, 36% 100%, 0 62%);
 		}
 
-		// Capitoné velvet: diagonal seams cross at gold studs; each diamond carries a soft puff of
-		// rose light, and a top sheen gives the pile its direction.
 		&::after {
 			inset: 0;
 			z-index: 0;
 			height: auto;
-			background:
-				linear-gradient(172deg, rgb(255 255 255 / 7%), transparent 38%),
-				#{$stud} 0 0 / #{$tuft} #{$tuft},
-				#{$stud} #{$tuft * 0.5} #{$tuft * 0.5} / #{$tuft} #{$tuft},
-				linear-gradient(45deg, #{$cut}) #{$tuft * 0.5} #{$tuft * 0.5} / #{$tuft} #{$tuft},
-				linear-gradient(-45deg, #{$cut}) #{$tuft * 0.5} #{$tuft * 0.5} / #{$tuft} #{$tuft},
-				radial-gradient(circle, #{$puff}, transparent 48%) #{$tuft * 0.5} 0 / #{$tuft}
-					#{$tuft},
-				radial-gradient(circle, #{$puff}, transparent 48%) 0 #{$tuft * 0.5} / #{$tuft}
-					#{$tuft},
-				radial-gradient(
-					ellipse 70% 60% at 50% 35%,
-					rgb(var(--color-deep-rose-red-rgb) / 22%),
-					transparent 80%
-				),
-				linear-gradient(
-					180deg,
-					var(--color-velvet-burgundy),
-					rgb(var(--color-rose-shadow-rgb))
-				);
+			background-image: $velvet-image;
+			background-position:
+				-30% 30%,
+				-80% 0,
+				$velvet-rest;
+			background-size: $velvet-size;
+			background-repeat: $velvet-repeat;
 			clip-path: polygon(
 				0 0,
 				100% 0,
@@ -117,20 +318,89 @@
 				calc(36% + 2px) calc(100% - 4px),
 				4px calc(62% - 2px)
 			);
+			animation: enchanted-rose-candle 9s ease-in-out infinite alternate;
 		}
 	}
 
-	// Gold-framed plaque on the velvet: «— XV · 2027 —» on a solid burgundy ground, so the
+	&:not(.is-opening) .envelope-flap {
+		transform: translateZ(3px) rotateX(0deg);
+	}
+
+	.envelope-tease {
+		transform: translateZ(4px);
+	}
+
+	.envelope-flap-shadow {
+		display: none;
+	}
+
+	// Opening: the seal lets go, the lid swings back on its hinge and drops behind the letter at
+	// edge-on, the letter slides up out of the pochette with a slight sway, and the box sinks and
+	// fades while the letter comes forward to rest.
+	&.is-opening {
+		.envelope-seal-button__visual {
+			animation: enchanted-rose-seal-release 650ms $box-ease both;
+		}
+
+		.envelope-flap {
+			animation:
+				enchanted-rose-lid-open 1300ms linear 450ms both,
+				enchanted-rose-box-sink 1500ms $box-ease 1700ms forwards,
+				enchanted-rose-box-away 1100ms $box-ease 3100ms forwards;
+		}
+
+		.envelope-base,
+		.envelope-pocket,
+		.envelope-container::after {
+			animation:
+				enchanted-rose-box-sink 1500ms $box-ease 1700ms forwards,
+				enchanted-rose-box-away 1100ms $box-ease 3100ms forwards;
+		}
+
+		// Keeps the `envCardRise` prefix: EnvelopeReveal hands over on that animationend.
+		.envelope-reveal-stage {
+			animation: envCardRiseEnchantedRose 2700ms linear 1350ms both;
+		}
+	}
+
+	&.is-preview-opened,
+	&.is-letter-held {
+		.envelope-base,
+		.envelope-container::after {
+			opacity: 0%;
+			pointer-events: none;
+		}
+
+		.envelope-reveal-stage {
+			pointer-events: auto;
+			opacity: 100%;
+			transform: translate3d(0, var(--er-rest-y), 40px) scale(var(--er-rest-scale));
+		}
+	}
+
+	// The seal breathes until it is opened.
+	&:not(.is-opening) .envelope-seal-button__visual {
+		animation: enchanted-rose-seal-breathe 3.6s ease-in-out infinite;
+	}
+
+	// Recessed gold-framed plaque on the velvet: «— XV · 2027 —» on a solid burgundy ground, so the
 	// quilting never runs through the letters; a second hairline sits just outside the frame.
 	.envelope-stamp {
 		gap: 0.6rem;
 		padding: 0.45rem 1.1rem;
 		color: #{$gold-bright};
-		background: var(--color-velvet-burgundy);
+		background: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--color-velvet-burgundy) 80%, black),
+			var(--color-velvet-burgundy) 40%
+		);
 		border: 1px solid #{$gold};
 		outline: 1px solid #{$gold-soft};
 		outline-offset: 3px;
-		box-shadow: 0 4px 10px rgb(var(--color-rose-shadow-rgb) / 45%);
+		box-shadow:
+			inset 0 1px 4px rgb(0 0 0 / 55%),
+			0 1px 0 rgb(255 255 255 / 6%),
+			0 4px 10px rgb(var(--color-rose-shadow-rgb) / 45%);
 		opacity: 100%;
 
 		&::before,
@@ -145,11 +415,13 @@
 		span {
 			font-size: 1em;
 			letter-spacing: 0.42em;
+			text-shadow: 0 1px 0 rgb(0 0 0 / 45%);
 		}
 
 		small {
 			font-size: 0.9em;
 			letter-spacing: 0.24em;
+			text-shadow: 0 1px 0 rgb(0 0 0 / 45%);
 			opacity: 100%;
 
 			&::before {
@@ -161,7 +433,8 @@
 	}
 
 	// Double cut-corner gold frame around the name: the outer line runs behind the seal, the
-	// inner one is concentric with it, 5px in. It fades with the tease.
+	// inner one is concentric with it, 5px in, and a small gold rivet sits in each notch. It fades
+	// with the tease.
 	.envelope-tease::before {
 		$r: 22px;
 		$g: 5px;
@@ -174,6 +447,12 @@
 			transparent calc(#{$ri} - 0.5px),
 			#{$gold-line} calc(#{$ri} - 0.5px) calc(#{$ri} + 0.5px),
 			transparent calc(#{$ri} + 0.5px);
+		$rivet: radial-gradient(
+			circle,
+			#{$gold-bright} 0 1.5px,
+			rgb(var(--color-action-accent-rgb)) 2px,
+			transparent 2.5px
+		);
 		$side: calc(100% - #{2 * $r});
 		$side-in: calc(100% - #{2 * $ri});
 
@@ -182,6 +461,10 @@
 		inset: 56% clamp(12px, 3.5cqi, 24px) clamp(12px, 3.5cqi, 22px);
 		pointer-events: none;
 		background:
+			#{$rivet} top 2px left 2px / 10px 10px no-repeat,
+			#{$rivet} top 2px right 2px / 10px 10px no-repeat,
+			#{$rivet} bottom 2px left 2px / 10px 10px no-repeat,
+			#{$rivet} bottom 2px right 2px / 10px 10px no-repeat,
 			linear-gradient(#{$gold}, #{$gold}) top / #{$side} 1px no-repeat,
 			linear-gradient(#{$gold}, #{$gold}) bottom / #{$side} 1px no-repeat,
 			linear-gradient(#{$gold}, #{$gold}) left / 1px #{$side} no-repeat,
@@ -240,6 +523,110 @@
 
 	.envelope-details__accent {
 		color: var(--color-deep-rose-red);
+	}
+
+	@include a11y.reduced-motion {
+		.envelope-flap::after,
+		.envelope-seal-button__visual,
+		&.is-opening .envelope-flap,
+		&.is-opening .envelope-base,
+		&.is-opening .envelope-pocket,
+		&.is-opening .envelope-container::after {
+			animation: none;
+		}
+
+		&:not(.is-preview-opened, .is-letter-held) .envelope-reveal-stage {
+			opacity: 0%;
+		}
+	}
+}
+
+@keyframes enchanted-rose-seal-release {
+	0% {
+		opacity: 100%;
+		transform: none;
+	}
+
+	30% {
+		opacity: 100%;
+		transform: scale(0.94);
+	}
+
+	100% {
+		opacity: 0%;
+		transform: translateY(-1rem) scale(1.12) rotate(-6deg);
+	}
+}
+
+// The lid turns past edge-on, steps behind the letter, and settles back a few degrees on its
+// hinge like a jewelry-box lid.
+@keyframes enchanted-rose-lid-open {
+	0% {
+		transform: translateZ(3px) rotateX(0deg);
+		animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0.45);
+	}
+
+	46% {
+		transform: translateZ(3px) rotateX(90deg);
+		animation-timing-function: step-end;
+	}
+
+	46.5% {
+		transform: translateZ(-30px) rotateX(91deg);
+		animation-timing-function: cubic-bezier(0.2, 0.55, 0.3, 1);
+	}
+
+	84% {
+		transform: translateZ(-30px) rotateX(182deg);
+		animation-timing-function: ease-in-out;
+	}
+
+	100% {
+		transform: translateZ(-30px) rotateX(176deg);
+	}
+}
+
+@keyframes enchanted-rose-box-sink {
+	to {
+		translate: 0 var(--er-drop);
+	}
+}
+
+@keyframes enchanted-rose-box-away {
+	from {
+		translate: 0 var(--er-drop);
+	}
+
+	to {
+		opacity: 0%;
+		translate: 0 calc(var(--er-drop) + 2.5rem);
+	}
+}
+
+// Rises from the pochette with a slight sway, steps in front of the box, then settles at rest.
+@keyframes envCardRiseEnchantedRose {
+	0% {
+		transform: translate3d(0, 4%, 1px) rotate(0deg);
+		animation-timing-function: cubic-bezier(0.45, 0, 0.35, 1);
+	}
+
+	28% {
+		transform: translate3d(0, -22%, 1px) rotate(-1.2deg);
+		animation-timing-function: cubic-bezier(0.3, 0, 0.4, 1);
+	}
+
+	54% {
+		transform: translate3d(0, var(--er-lift), 1px) rotate(0.5deg);
+		animation-timing-function: step-end;
+	}
+
+	55% {
+		transform: translate3d(0, var(--er-lift), 40px) rotate(0.5deg);
+		animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1);
+	}
+
+	100% {
+		transform: translate3d(0, var(--er-rest-y), 40px) scale(var(--er-rest-scale)) rotate(0deg);
 	}
 }
 

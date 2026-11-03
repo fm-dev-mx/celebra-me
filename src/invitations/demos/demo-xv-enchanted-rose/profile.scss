@@ -33,17 +33,15 @@
 		}
 	}
 
-	// Seal to hero in about one second: a shorter flap turn, no letter card, and a quick wrapper
-	// fade. The card still runs its short rise so EnvelopeReveal completes on `envCardRise`
-	// animationend. The jewelry-box structure (velvet flap, cartouche, name frame) lives in the
-	// preset shell; these are its colors, timing and scale.
+	// The letter rises out of the jewelry box in about four seconds and rests for a short reading
+	// beat before the invitation opens, with a quick wrapper fade. The jewelry-box structure and
+	// its choreography (velvet lid, pochette, letter) live in the preset shell; these are its
+	// colors, timing and scale.
 	.envelope-wrapper {
 		$blush: color-mix(in srgb, rgb(var(--color-blush-pink-rgb)) 34%, var(--color-warm-ivory));
 
-		--duration-reveal: 0.85s;
 		--duration-long: 0.4s;
-		--env-card-rise-delay: 0.85s;
-		--env-card-rise-duration: 0.15s;
+		--env-letter-hold: 1300ms;
 
 		// Plain velvet under a soft spotlight: the quilting lives on the lid only.
 		--env-bg:
@@ -76,11 +74,11 @@
 			0 32px 64px rgb(var(--color-rose-shadow-rgb) / 55%),
 			0 8px 18px rgb(var(--color-rose-shadow-rgb) / 35%);
 
-		// Matte rose wax with a gold monogram: the highlight stays in the rose family, so the seal
-		// reads as poured wax, not a glossy bead.
+		// Matte rose wax with a gold monogram: a lighter rose crest and a darker pooled rim give the
+		// poured wax its body while the highlight stays in the rose family, never a glossy bead.
 		--wax-seal-highlight: color-mix(
 			in srgb,
-			var(--color-deep-rose-red) 72%,
+			var(--color-deep-rose-red) 55%,
 			rgb(var(--color-blush-pink-rgb))
 		);
 		--wax-seal-mid: color-mix(
@@ -88,7 +86,7 @@
 			var(--color-deep-rose-red) 82%,
 			var(--color-velvet-burgundy)
 		);
-		--wax-seal-deep: var(--color-velvet-burgundy);
+		--wax-seal-deep: color-mix(in srgb, var(--color-velvet-burgundy) 70%, black);
 		--wax-seal-letter: rgb(var(--color-candle-gold-rgb));
 		--wax-seal-shadow: var(--color-rose-shadow);
 		--wax-seal-emboss-shadow: var(--color-velvet-burgundy);
