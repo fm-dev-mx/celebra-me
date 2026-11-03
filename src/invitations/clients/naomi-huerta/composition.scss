@@ -1,3 +1,5 @@
+@use '../../../styles/tools/motion';
+
 // Naomi: the few rules her tokens cannot express. Everything else lives in the profile.
 
 // The cover arrives slowly as the envelope lifts: the portrait settles first, the letter follows.
@@ -94,5 +96,133 @@
 		.event-location__program-drawing
 		path {
 		animation-range: contain 50% contain 64%;
+	}
+}
+
+// Phones, while the route stage is pinned, the intro, the route and one venue share a single
+// screen. The window shrinks to a small arch beside the venue, the lede steps aside (each entry
+// repeats it), and the three actions share one row, with copy shown as an icon. The button keeps
+// its aria-label, and its check-mark feedback still shows. The mixin lives inside the slug scope.
+.event--naomi-huerta {
+	@mixin pinned-phone {
+		.event-location__heading {
+			font-size: clamp(1.85rem, 8vw, 2.4rem);
+		}
+
+		.event-location__lede {
+			display: none;
+		}
+
+		.event-location__program-entry {
+			--location-route-entry-drawing-size: 4.75rem;
+		}
+
+		.event-location__program-drawing {
+			height: 6.25rem;
+			padding: 2rem 0.45rem 0.7rem;
+		}
+
+		.event-location__program-place {
+			font-size: clamp(1.45rem, 6vw, 1.8rem);
+		}
+
+		.event-location__program-actions {
+			flex-wrap: nowrap;
+			gap: 0.5rem;
+
+			> *,
+			> :first-child {
+				flex: 1 1 0;
+				min-width: 0;
+			}
+
+			> .copy-button {
+				flex: 0 0 2.75rem;
+				justify-content: center;
+				padding: 0;
+				font-size: 0;
+				letter-spacing: 0;
+			}
+		}
+
+		.event-location__program-actions > .copy-button::before {
+			width: 1.1rem;
+			height: 1.1rem;
+		}
+
+		.event-location__program-actions > .copy-button .copy-success {
+			font-size: 1rem;
+		}
+
+		.event-location__program-calendar > .event-location__program-link {
+			width: 100%;
+		}
+	}
+
+	@media (width < 992px) {
+		@supports (animation-timeline: view()) {
+			@include motion.motion-safe {
+				&[data-motion='editorial']
+					.event-location[data-variant='program-sheet']
+					.scroll-scene {
+					@include pinned-phone;
+				}
+			}
+		}
+
+		@include motion.motion-safe {
+			.event-location[data-variant='program-sheet']
+				.scroll-scene[data-scene-engine='script'] {
+				@include pinned-phone;
+			}
+		}
+	}
+}
+
+// Phones: the registry reads as one screen below the header, so its heading, rules and card sit
+// a little tighter than the shared defaults.
+@media (width < 768px) {
+	.event--naomi-huerta .gifts-section {
+		.gifts-section__title {
+			margin-top: 0;
+			margin-bottom: 0.75rem;
+		}
+
+		.gifts-section__flourish {
+			margin-block: 0.6rem;
+		}
+
+		.gifts-section__subtitle {
+			font-size: 1.125rem;
+			line-height: 1.5;
+		}
+
+		.gifts-section__separator {
+			margin-bottom: 1.5rem;
+		}
+
+		.gift-card {
+			padding: 2rem 1.5rem;
+		}
+	}
+}
+
+// Readable floor: the small print the shared components hard-code (labels, hints, menu lines)
+// never drops under 14 px, and running text and actions sit at 15–16 px. The doubled scope
+// outranks the header and envelope variants.
+.event--naomi-huerta.event-theme-wrapper {
+	.event-header__title-initials,
+	.framed-portrait-hero__occasion,
+	.location-route__stop-label,
+	.gift-card__store-label {
+		font-size: 1rem;
+	}
+
+	.mobile-nav-actions__cta,
+	.family__group-title,
+	.gift-card__button,
+	.envelope-external-instruction__button,
+	.invitation-reveal-card__label {
+		font-size: 0.9375rem;
 	}
 }

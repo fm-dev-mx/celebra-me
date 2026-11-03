@@ -133,7 +133,7 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	--location-enclosure-reserved-title-tracking: 0.08em;
 	--location-enclosure-reserved-title-color: var(--color-night-blush);
 	--location-enclosure-last-text-font: var(--font-label);
-	--location-enclosure-last-text-size: 0.8125rem;
+	--location-enclosure-last-text-size: 1rem;
 	--location-enclosure-last-text-transform: uppercase;
 	--location-enclosure-last-text-tracking: 0.14em;
 	--location-enclosure-last-text-color: var(--color-night-blush);
@@ -165,7 +165,7 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 		--location-program-link-bg: rgb(var(--color-story-pearl-rgb) / 55%);
 		--location-program-link-radius: 999px;
 		--location-program-link-decoration: none;
-		--location-program-link-size: 0.95rem;
+		--location-program-link-size: 1rem;
 		--location-program-link-tracking: 0.1em;
 		--location-program-link-primary-bg: var(--color-rose-deep);
 		--location-program-link-primary-color: var(--color-story-pearl);
@@ -281,15 +281,16 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	.countdown-section {
 		--naomi-band-padding: 7rem;
 		--countdown-type-section-padding-block: calc(var(--naomi-band-padding) + var(--naomi-cut));
-		--countdown-type-title-size: 0.8125rem;
+		--countdown-type-title-size: 0.9375rem;
 		--countdown-type-title-weight: 400;
 		--countdown-type-title-tracking: 0.14em;
 		--countdown-type-title-ink: var(--color-pale-silver);
 		--countdown-type-value-size: clamp(2rem, 8vw, 4rem);
 		--countdown-type-value-weight: 400;
+		--countdown-date-size: 1rem;
 		--countdown-type-value-tracking: 0;
 		--countdown-type-label-font: var(--font-label);
-		--countdown-type-label-size: 0.625rem;
+		--countdown-type-label-size: 0.875rem;
 		--countdown-type-label-tracking: 0.06em;
 		--countdown-type-label-ink: var(--color-pale-silver);
 		--countdown-type-label-opacity: 100%;
@@ -376,6 +377,7 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	// The album page keeps the page gutter and a narrow gap between prints; the first print is
 	// already falling as the page scrolls in.
 	.gallery-section {
+		--gallery-album-hint-size: 0.9375rem;
 		--gallery-title-style: normal;
 		--gallery-title-color: var(--color-plum-ink);
 		--gallery-title-weight: 400;
@@ -478,15 +480,21 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	);
 	--footer-pull-label: 'Deslice hacia arriba para dejar volar la última mariposa';
 	--footer-pull-label-color: rgb(var(--color-pale-silver-rgb) / 85%);
-	--footer-pull-label-size: 0.8125rem;
+	--footer-pull-label-size: 0.9375rem;
 	--footer-pull-breathe: footer-pull-breathe;
 
-	// No text under 12 px; the footer links keep a 44 px tap height.
-	--footer-rights-size: 0.75rem;
-	--footer-powered-size: 0.75rem;
-	--footer-replay-font-size: 0.75rem;
-	--footer-control-font-size: 0.75rem;
+	// No footer text under 14 px; the footer links keep a 44 px tap height.
+	--footer-rights-size: 0.875rem;
+	--footer-powered-size: 0.875rem;
+	--footer-replay-font-size: 0.875rem;
+	--footer-control-font-size: 0.875rem;
 	--footer-link-tap-padding: 0.875rem;
+
+	// The header, its menu and the envelope card keep the same floor.
+	--header-action-size: 0.875rem;
+	--mobile-nav-subtitle-size: 0.875rem;
+	--mobile-nav-copy-size: 0.875rem;
+	--reveal-card-meta-size: 0.875rem;
 
 	// The footer waits below the closing: the invitation stops on the night, and a second scroll
 	// at the bottom lets a quiet strip of the same night rise, with the reply first.
@@ -510,7 +518,8 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 		--footer-reply-ink: var(--color-story-pearl);
 		--footer-reply-muted: var(--color-night-blush);
 		--footer-reply-accent: var(--color-pale-silver);
-		--footer-reply-eyebrow-size: 0.8125rem;
+		--footer-reply-eyebrow-size: 0.9375rem;
+		--footer-reply-button-size: 0.9375rem;
 		--footer-reply-question-size: clamp(1.6rem, 6.5vw, 2rem);
 		--footer-reply-button-bg: var(--color-pale-silver);
 		--footer-reply-button-ink: var(--color-rose-night);

@@ -227,7 +227,9 @@ $lantern-sky:
 				display: block;
 				flex: 1;
 				width: 100%;
-				min-height: 0;
+
+				// The route always keeps a readable share of the stage.
+				min-height: var(--location-route-map-min, clamp(8rem, 24svh, 12rem));
 				overflow: visible;
 			}
 
@@ -259,6 +261,51 @@ $lantern-sky:
 
 		.location-route__note {
 			display: none;
+		}
+
+		// Stop names beside the two dots. The stop the guest is at stays lit and the other one dims,
+		// so the route reads as "from the mass to the party".
+		.location-route__stop-label {
+			position: absolute;
+			margin: 0;
+
+			// Left of the dot: the note rides the route on its right.
+			translate: calc(-100% - 0.85rem) -50%;
+			color: var(--location-route-ink);
+			font-family: var(--font-label, var(--font-body));
+			font-size: var(--location-route-stop-label-size, 1rem);
+			font-variant-caps: all-small-caps;
+			letter-spacing: 0.14em;
+			line-height: 1.2;
+			white-space: nowrap;
+			pointer-events: none;
+
+			@include scene.timeline {
+				animation: route-stop-dim linear both;
+				animation-timeline: --scroll-scene;
+				animation-range: contain 42% contain 50%;
+			}
+
+			@include scene.scripted {
+				opacity: calc(45% + 55% * var(--route-out));
+			}
+		}
+
+		.location-route__stop-label--from {
+			inset: 8% auto auto 17.9487%;
+		}
+
+		.location-route__stop-label--to {
+			inset: 94% auto auto 30.7692%;
+
+			@include scene.timeline {
+				animation-name: route-stop-lit;
+				animation-range: contain 50% contain 60%;
+			}
+
+			@include scene.scripted {
+				opacity: calc(45% + 55% * var(--route-in));
+			}
 		}
 
 		// Follow the very same route/timeline as the lantern; HTML text keeps its readable size
@@ -437,6 +484,37 @@ $lantern-sky:
 				}
 			}
 
+			// Phones: the drawing sits beside the venue and the actions run below both, so the
+			// entry stays short and the route keeps room to fly.
+			@include m.respond-below(lg) {
+				@include scene.pinned {
+					display: grid;
+					grid-template-columns: var(--location-route-entry-drawing-size, 5.5rem) minmax(
+							0,
+							1fr
+						);
+					column-gap: 1rem;
+					align-content: start;
+
+					> * {
+						grid-column: 2;
+					}
+
+					.event-location__program-drawing {
+						grid-row: 1 / span 4;
+						grid-column: 1;
+						align-self: start;
+						width: 100%;
+						margin: 0;
+					}
+
+					.event-location__program-actions {
+						grid-column: 1 / -1;
+						margin-top: 0.75rem;
+					}
+				}
+			}
+
 			&:first-child {
 				@include scene.timeline {
 					animation: route-entry-out linear both;
@@ -516,6 +594,26 @@ $lantern-sky:
 	@keyframes route-note-out {
 		to {
 			opacity: 0%;
+		}
+	}
+
+	@keyframes route-stop-dim {
+		from {
+			opacity: 100%;
+		}
+
+		to {
+			opacity: 45%;
+		}
+	}
+
+	@keyframes route-stop-lit {
+		from {
+			opacity: 45%;
+		}
+
+		to {
+			opacity: 100%;
 		}
 	}
 
