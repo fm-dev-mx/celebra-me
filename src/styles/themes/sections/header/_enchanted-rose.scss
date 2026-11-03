@@ -126,35 +126,19 @@
 		backdrop-filter: blur(12px) saturate(120%);
 	}
 
-	// Over the ivory cover the dark scrim read as a band and the ivory links nearly vanished; the
-	// resting header drops the scrim and sets its links, initials and controls in burgundy. The
+	// The resting header drops the scrim. Its links sit on the hero's ivory page (burgundy), while
+	// the initials and the phone latch sit on the velvet bed, so they keep the candle gold. The
 	// scrolled bar keeps its ivory on midnight.
 	&.header-base--transparent {
 		--nav-transparent-scrim: none;
 		--header-nav-color-transparent: rgb(var(--color-velvet-burgundy-rgb) / 84%);
-		--header-nav-title-color: var(--color-velvet-burgundy);
 		--header-nav-shadow-transparent: none;
 		--header-nav-filter-transparent: none;
 		--header-nav-cta-bg: var(--color-velvet-burgundy);
 		--header-nav-cta-color: var(--color-warm-ivory);
 
-		// Over the ivory cover the latch turns to deep gold brackets and burgundy lines.
-		--hamburger-color: var(--color-velvet-burgundy);
-
-		.header-base__mobile-toggle {
-			$gold: var(--color-action-accent);
-			$bracket: linear-gradient(#{$gold}, #{$gold});
-
-			border-color: rgb(var(--color-action-accent-rgb) / 42%);
-			background-image:
-				#{$bracket},
-				#{$bracket},
-				#{$bracket},
-				#{$bracket},
-				#{$bracket},
-				#{$bracket},
-				#{$bracket},
-				#{$bracket};
+		.event-header__title {
+			color: var(--color-candle-gold);
 		}
 	}
 }

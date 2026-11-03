@@ -503,6 +503,10 @@
 	}
 
 	.framed-portrait-hero__photograph {
+		// Square case, so nothing needs clipping; without its own stacking context the velvet bed
+		// below paints under the case and over the ivory ground.
+		isolation: auto;
+		overflow: visible;
 		padding: clamp(0.75rem, 2.2vw, 1.375rem);
 		background:
 			radial-gradient(
@@ -521,7 +525,47 @@
 			inset 0 1px 10px rgb(0 0 0 / 30%),
 			0 28px 56px -18px rgb(var(--color-rose-shadow-rgb) / 52%),
 			0 10px 22px -10px rgb(var(--color-rose-shadow-rgb) / 36%),
-			0 0 70px rgb(var(--color-candle-gold-rgb) / 18%);
+			0 0 90px 24px rgb(var(--color-deep-rose-red-rgb) / 42%),
+			0 0 140px 40px rgb(var(--color-candle-gold-rgb) / 14%);
+
+		// The velvet bed: it runs from the case to the screen's edges (the hero clips it) and stops
+		// a short way past the case on the letter's side, where a gold hairline finishes it and its
+		// shadow falls on the ivory. Its top edge sits a viewport above the case, so the sparks are
+		// placed from there.
+		&::before {
+			$spark: rgb(var(--color-candle-gold-rgb) / 90%);
+			$spark-glow: rgb(var(--color-candle-gold-rgb) / 22%);
+
+			content: '';
+			position: absolute;
+			inset: -100vh -100vw -2.5rem;
+			z-index: -1;
+			pointer-events: none;
+			background:
+				radial-gradient(circle, #{$spark} 0 1.5px, #{$spark-glow} 2px, transparent 6px) left
+					calc(100vw - 1.25rem) top calc(100vh - 2rem) / 12px 12px no-repeat,
+				radial-gradient(circle, #{$spark} 0 2px, #{$spark-glow} 3px, transparent 8px) right
+					calc(100vw - 2.25rem) top calc(100vh + 9rem) / 16px 16px no-repeat,
+				radial-gradient(circle, #{$spark} 0 1.5px, #{$spark-glow} 2px, transparent 6px)
+					right calc(100vw - 0.9rem) top calc(100vh + 17rem) / 12px 12px no-repeat,
+				radial-gradient(circle, #{$spark} 0 2px, #{$spark-glow} 3px, transparent 8px) right
+					1.1rem top calc(100vh - 1.5rem) / 16px 16px no-repeat,
+				radial-gradient(circle, #{$spark} 0 1.5px, #{$spark-glow} 2px, transparent 6px)
+					right 0.75rem top calc(100vh + 12rem) / 12px 12px no-repeat,
+				radial-gradient(circle, #{$spark} 0 1.5px, #{$spark-glow} 2px, transparent 6px)
+					right 1.6rem bottom 4.5rem / 12px 12px no-repeat,
+				linear-gradient(
+					115deg,
+					transparent 40%,
+					rgb(var(--color-blush-pink-rgb) / 7%) 50%,
+					transparent 60%
+				),
+				color-mix(in srgb, var(--color-velvet-burgundy) 82%, black);
+			box-shadow:
+				1px 1px 0 #{$gold-soft},
+				0 22px 40px -18px rgb(var(--color-rose-shadow-rgb) / 55%),
+				22px 0 40px -18px rgb(var(--color-rose-shadow-rgb) / 55%);
+		}
 
 		img {
 			box-shadow: 0 0 0 1px rgb(var(--color-action-accent-rgb) / 70%);
@@ -594,8 +638,14 @@
 			margin-inline: auto;
 		}
 
+		// The velvet stops just under the case, so the title opens on the ivory page.
+		.framed-portrait-hero__photograph::before {
+			inset-block-end: -1rem;
+		}
+
 		// The letter keeps the desktop's leading edge, which leaves the right edge to the scroll cue.
 		.framed-portrait-hero__letter {
+			margin-top: 2rem;
 			text-align: start;
 		}
 
@@ -607,18 +657,27 @@
 		// Sized so "Rose Valenzuela" holds one line in the letter column.
 		--hero-title-size: clamp(3.75rem, 5.6vw, 5.25rem);
 
+		// The candle glow warms the letter's ivory beside the velvet.
 		&::before {
 			background:
 				radial-gradient(
-					ellipse 34% 60% at 30% 46%,
-					rgb(var(--color-candle-gold-rgb) / 18%),
+					ellipse 34% 60% at 66% 46%,
+					rgb(var(--color-candle-gold-rgb) / 14%),
 					transparent 72%
 				),
 				radial-gradient(
-					ellipse 46% 70% at 32% 50%,
-					rgb(var(--color-blush-pink-rgb) / 24%),
+					ellipse 46% 70% at 62% 50%,
+					rgb(var(--color-blush-pink-rgb) / 22%),
 					transparent 74%
 				);
+		}
+
+		// The bed runs the full height and stops halfway across the gap to the letter.
+		.framed-portrait-hero__photograph::before {
+			inset: -100vh -2.5rem -100vh -100vw;
+			box-shadow:
+				1px 0 0 #{$gold-soft},
+				22px 0 40px -18px rgb(var(--color-rose-shadow-rgb) / 55%);
 		}
 	}
 }
