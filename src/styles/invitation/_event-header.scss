@@ -200,7 +200,9 @@
 .event-theme-wrapper[data-reveal-state='sealed'] #event-header {
 	opacity: 0%;
 	pointer-events: none;
-	transition: opacity var(--duration-slower) var(--ease-in-out);
+	transition:
+		var(--header-transition-list),
+		opacity var(--duration-slower) var(--ease-in-out);
 }
 
 .event-theme-wrapper[data-reveal-state='revealed'] #event-header {

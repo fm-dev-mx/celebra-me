@@ -6,6 +6,7 @@ jest.mock('@/lib/tracking/repository', () => ({
 jest.mock('@/lib/tracking/lead.repository', () => ({
 	findLeadByCode: jest.fn(),
 	upsertLead: jest.fn(),
+	resolveLeadReferralAttribution: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('@/lib/commercial/customer.service', () => ({
@@ -84,9 +85,17 @@ beforeEach(() => {
 	}));
 	mockCreateCustomer.mockResolvedValue({
 		outcome: 'created',
-		customer: { id: 'customer-id', displayName: 'Gloria Garza', phoneE164: '+526681112233' },
+		customer: {
+			id: 'customer-id',
+			displayName: 'Gloria Garza',
+			phoneE164: '+526681112233',
+			referralCode: 'ANA24',
+			country: 'MX',
+			isPastClient: false,
+			referralCreditMxn: 0,
+		},
 	});
-	mockEnqueue.mockResolvedValue(undefined);
+	mockEnqueue.mockResolvedValue(null);
 });
 
 describe('submitLeadCapture', () => {

@@ -1,4 +1,5 @@
 import {
+	deliverMetaConversionEvent,
 	enqueueBrowserConversionEvent,
 	isBrowserConversionTrigger,
 } from '@/lib/commercial/meta-capi/service';
@@ -16,13 +17,19 @@ import { findSessionLeadCustomerId } from '@/lib/tracking/lead.repository';
 import { createLeadFromTrackingEvent } from '@/lib/tracking/lead.service';
 import { insertTrackingEvent, upsertVisitorSession } from '@/lib/tracking/repository';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
-import { getClientIp } from '@/lib/server/platform-request';
+import {
+	getClientIp,
+	runAfterResponse,
+	type AfterResponseContext,
+} from '@/lib/server/platform-request';
 import { safeErr } from '@/lib/server/safe-error';
 
 export interface IngestTrackingEventInput {
 	request: Request;
 	deployEnvironment?: HostedDeployEnvironment | null;
 	payload: unknown;
+	/** Request context that keeps the first Meta delivery alive after the response. */
+	after?: AfterResponseContext | null;
 }
 
 export type IngestTrackingEventResult =
@@ -31,7 +38,8 @@ export type IngestTrackingEventResult =
 /**
  * Mirror the Pixel: only Production, a Meta-allowed route and marketing consent queue a row. After
  * the «Aparta su fecha» form the row carries the lead's customer, so delivery adds the hashed
- * phone as the Pixel does.
+ * phone as the Pixel does. With a request context the new row is delivered after the response, so
+ * Meta receives it within seconds instead of on the next 15-minute cron run.
  */
 async function queueServerMetaEvent(input: {
 	eventName: string;
@@ -41,6 +49,7 @@ async function queueServerMetaEvent(input: {
 	marketingConsent: boolean;
 	metaAllowed: boolean;
 	deployEnvironment?: HostedDeployEnvironment | null;
+	after?: AfterResponseContext | null;
 }): Promise<void> {
 	if (
 		!isBrowserConversionTrigger(input.eventName) ||
@@ -56,13 +65,18 @@ async function queueServerMetaEvent(input: {
 		return null;
 	});
 	try {
-		await enqueueBrowserConversionEvent({
+		const outboxId = await enqueueBrowserConversionEvent({
 			trigger: input.eventName,
 			eventId: input.eventId,
 			sessionId: input.sessionId,
 			eventSourcePath: input.routePath,
 			...(customerId ? { customerId } : {}),
 		});
+		if (outboxId && input.after) {
+			runAfterResponse(input.after, () => deliverMetaConversionEvent(outboxId), {
+				label: `tracking:capi:${outboxId}`,
+			});
+		}
 	} catch (enqueueError) {
 		console.error('[tracking] Failed to queue the Meta server event:', safeErr(enqueueError));
 	}
@@ -76,6 +90,48 @@ function parseTrackingPayload(payload: unknown): PublicTrackingEvent {
 		});
 	}
 	return result.data;
+}
+
+function readStringProperty(
+	eventProperties: Record<string, unknown>,
+	key: string,
+): string | undefined {
+	const value = eventProperties[key];
+	return typeof value === 'string' && value.trim().length > 0 ? value : undefined;
+}
+
+/**
+ * Auto-creates a WhatsApp channel lead when a whatsapp_contact_clicked event carries a non-empty
+ * lead_code. This bridges the attribution gap between anonymous visitor/session and identifiable
+ * commercial intent. A failure is logged and never rejects the tracking event.
+ */
+async function createWhatsAppLeadFromEvent(
+	payload: PublicTrackingEvent,
+	eventProperties: Record<string, unknown>,
+	sourceEventId: string,
+): Promise<void> {
+	const leadCode = readStringProperty(eventProperties, 'lead_code');
+	if (!leadCode) return;
+	const marketing = payload.consentSnapshot.marketing;
+	try {
+		await createLeadFromTrackingEvent({
+			leadCode,
+			sessionId: payload.sessionId,
+			sourceEventId,
+			channel: 'whatsapp',
+			visitorId: payload.visitorId,
+			utmSource: payload.source,
+			utmMedium: payload.medium,
+			utmCampaign: payload.campaign,
+			utmContent: payload.utmContent,
+			ttclid: marketing ? payload.ttclid : undefined,
+			referralCode:
+				payload.referralCode ?? readStringProperty(eventProperties, 'referral_code'),
+			metaAttribution: marketing ? payload.metaAttribution : undefined,
+		});
+	} catch (leadError) {
+		console.error('[tracking] Failed to auto-create WhatsApp lead:', safeErr(leadError));
+	}
 }
 
 export async function ingestTrackingEvent(
@@ -162,41 +218,11 @@ export async function ingestTrackingEvent(
 		marketingConsent: consentSnapshot.marketing === true,
 		metaAllowed: routePolicy.metaAllowed,
 		deployEnvironment: input.deployEnvironment,
+		after: input.after,
 	});
 
-	// Auto-create a WhatsApp channel lead when a whatsapp_contact_clicked
-	// event carries a non-empty lead_code. This bridges the attribution gap
-	// between anonymous visitor/session and identifiable commercial intent.
 	if (payload.eventName === 'whatsapp_contact_clicked') {
-		const leadCode =
-			typeof eventProperties['lead_code'] === 'string' &&
-			eventProperties['lead_code'].trim().length > 0
-				? eventProperties['lead_code']
-				: undefined;
-		if (leadCode) {
-			try {
-				await createLeadFromTrackingEvent({
-					leadCode,
-					sessionId: payload.sessionId,
-					sourceEventId: event.id,
-					channel: 'whatsapp',
-					visitorId: payload.visitorId,
-					utmSource: payload.source,
-					utmMedium: payload.medium,
-					utmCampaign: payload.campaign,
-					utmContent: payload.utmContent,
-					ttclid: consentSnapshot.marketing ? payload.ttclid : undefined,
-					metaAttribution: consentSnapshot.marketing
-						? payload.metaAttribution
-						: undefined,
-				});
-			} catch (leadError) {
-				console.error(
-					'[tracking] Failed to auto-create WhatsApp lead:',
-					safeErr(leadError),
-				);
-			}
-		}
+		await createWhatsAppLeadFromEvent(payload, eventProperties, event.id);
 	}
 
 	return { accepted: true, eventId: event.id };

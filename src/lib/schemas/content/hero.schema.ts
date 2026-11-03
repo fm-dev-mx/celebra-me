@@ -4,7 +4,7 @@ import { HERO_TIME_FORMATS } from '@/lib/invitation/hero-presentation';
 import { HERO_VARIANTS } from '@/lib/invitation/section-variants';
 
 /** Pinned scroll scenes the standard cover can play (docs/domains/theme/motion.md). */
-export const HERO_SCENES = ['cover-approach'] as const;
+const HERO_SCENES = ['cover-approach'] as const;
 export type HeroScene = (typeof HERO_SCENES)[number];
 
 export const heroSchema = z

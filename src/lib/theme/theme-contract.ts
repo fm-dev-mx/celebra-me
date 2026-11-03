@@ -59,6 +59,7 @@ export const THEME_PRESET_METADATA = {
 	'angelic-presence': { portrait: true, eventTypes: ['bautizo', 'primera-comunion'] },
 	'storybook-lilac': { portrait: false, eventTypes: ['xv'] },
 	'storybook-emerald': { portrait: false, eventTypes: ['xv'] },
+	'storybook-blush': { portrait: false, eventTypes: ['xv'] },
 	'sage-champagne': { portrait: false, eventTypes: ['xv'] },
 } as const satisfies Record<string, ThemePresetMetadata>;
 

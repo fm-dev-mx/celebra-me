@@ -91,13 +91,6 @@ const shareImage =
 		target.classList.add('is-visible');
 	}, observerOptions);
 
-	const html = document.documentElement;
-
-	const syncScrollPadding = () => {
-		const currentHeight = getComputedStyle(html).getPropertyValue('--nav-current-height').trim();
-		html.style.scrollPaddingTop = currentHeight || '100px';
-	};
-
-	syncScrollPadding();
-	window.addEventListener('scroll', syncScrollPadding, { passive: true });
+	// The header script owns --nav-current-height; reading it per scroll forced a style recalc.
+	document.documentElement.style.scrollPaddingTop = 'var(--nav-current-height, 100px)';
 </script>

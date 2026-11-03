@@ -97,6 +97,7 @@ erDiagram
         boolean hide_celebra_me_branding
         timestamptz first_shared_at
         timestamptz last_reminder_sent_at
+        timestamptz last_memories_reminder_sent_at
         boolean is_test
         int open_count
         timestamptz first_opened_at

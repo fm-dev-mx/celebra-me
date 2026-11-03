@@ -153,14 +153,12 @@ export function buildValentinaPublishedContent(
 	return {
 		eventType: VALENTINA_EVENT.eventType,
 		isDemo: false,
-		templateId: 'xv-editorial-magazine',
 		visualProfileId: VALENTINA_EVENT.visualProfileId,
 		title: VALENTINA_EVENT.title,
 		description:
 			'Invitación editorial para los XV años de Valentina Hernández Almaguer, con una estética inspirada en revista de moda en tonos rosa, blanco y plata.',
 		_assetSlug: VALENTINA_EVENT.assetSlug,
 		theme: {
-			fontFamily: 'serif',
 			preset: VALENTINA_EVENT.themeId,
 		},
 		music: {

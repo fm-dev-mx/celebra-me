@@ -189,6 +189,16 @@
 		--family-name-color: var(--olivia-navy);
 		--family-godparent-role-name-size: 1.0625rem;
 		--family-godparent-role-separator-color: var(--olivia-champagne);
+		--family-godparent-role-lead-padding-bottom: 1.25rem;
+		--family-godparent-role-lead-border: 1px solid rgb(var(--olivia-dusty-rgb) / 45%);
+		--family-godparent-role-offset: 1.75rem;
+		--family-godparent-roles-gap: 1.25rem 1.5rem;
+		--family-godparent-role-rule: 1px solid rgb(var(--olivia-dusty-rgb) / 45%);
+		--family-godparent-role-rule-gap: 1rem;
+		--family-godparent-role-name-white-space: nowrap;
+		--family-godparent-roles-columns-mobile: minmax(0, 1fr);
+		--family-godparent-role-offset-mobile: 0;
+		--family-godparent-role-indent-mobile: 2rem;
 	}
 
 	// Gallery: a pinned track on ivory; at rest, features full width at 4:5 and the rest paired at

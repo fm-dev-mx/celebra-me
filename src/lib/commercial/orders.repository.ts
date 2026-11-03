@@ -22,6 +22,12 @@ export interface SalesOrderInput {
 	totalAmount: number;
 	depositAmount?: number;
 	createdBy?: string;
+	isPastSale?: boolean;
+	soldAt?: string;
+	referredByCustomerId?: string;
+	referralCodeUsed?: string;
+	discountAmount?: number;
+	referrerCreditRedeemed?: number;
 }
 
 export interface SalesOrder {
@@ -44,6 +50,13 @@ export interface SalesOrder {
 	idempotencyKey?: string | null;
 	depositIdempotencyKey?: string | null;
 	wasCreated?: boolean;
+	isPastSale: boolean;
+	soldAt?: string | null;
+	referredByCustomerId?: string | null;
+	referralCodeUsed?: string | null;
+	discountAmount: number;
+	referrerCreditAwarded: number;
+	referrerCreditRedeemed: number;
 }
 
 export interface MetaConversionEvent {
@@ -75,6 +88,13 @@ interface SalesOrderRow {
 	paid_at?: string | null;
 	idempotency_key?: string | null;
 	deposit_idempotency_key?: string | null;
+	is_past_sale?: boolean | null;
+	sold_at?: string | null;
+	referred_by_customer_id?: string | null;
+	referral_code_used?: string | null;
+	discount_amount?: number | string | null;
+	referrer_credit_awarded?: number | string | null;
+	referrer_credit_redeemed?: number | string | null;
 }
 
 interface MetaConversionEventRow {
@@ -88,7 +108,7 @@ interface MetaConversionEventRow {
 }
 
 const ORDER_SELECT =
-	'id,order_number,customer_id,lead_id,session_id,source_event_id,status,event_type,package_id,package_name,currency,total_amount,deposit_amount,amount_paid,deposit_paid_at,paid_at,idempotency_key,deposit_idempotency_key';
+	'id,order_number,customer_id,lead_id,session_id,source_event_id,status,event_type,package_id,package_name,currency,total_amount,deposit_amount,amount_paid,deposit_paid_at,paid_at,idempotency_key,deposit_idempotency_key,is_past_sale,sold_at,referred_by_customer_id,referral_code_used,discount_amount,referrer_credit_awarded,referrer_credit_redeemed';
 
 function emptyToUndefined(value: string | undefined | null): string | undefined {
 	const trimmed = value?.trim();
@@ -121,6 +141,13 @@ function toSalesOrder(row: SalesOrderRow): SalesOrder {
 		paidAt: row.paid_at,
 		idempotencyKey: row.idempotency_key,
 		depositIdempotencyKey: row.deposit_idempotency_key,
+		isPastSale: row.is_past_sale === true,
+		soldAt: row.sold_at,
+		referredByCustomerId: row.referred_by_customer_id,
+		referralCodeUsed: row.referral_code_used,
+		discountAmount: toNumber(row.discount_amount),
+		referrerCreditAwarded: toNumber(row.referrer_credit_awarded),
+		referrerCreditRedeemed: toNumber(row.referrer_credit_redeemed),
 	};
 }
 
@@ -134,6 +161,31 @@ function toMetaConversionEvent(row: MetaConversionEventRow): MetaConversionEvent
 		value: toNumber(row.value),
 		currency: row.currency,
 	};
+}
+
+export async function findSalesOrderByIdempotencyKey(
+	idempotencyKey: string,
+): Promise<SalesOrder | null> {
+	const rows = await supabaseRestRequest<SalesOrderRow[]>({
+		pathWithQuery: `sales_orders?idempotency_key=eq.${encodeURIComponent(idempotencyKey)}&select=${ORDER_SELECT}&limit=1`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	return rows[0] ? toSalesOrder(rows[0]) : null;
+}
+
+/** Atomically spends a customer's referral credit; false when the balance no longer covers it. */
+export async function redeemCustomerReferralCredit(
+	customerId: string,
+	amount: number,
+): Promise<boolean> {
+	const result = await supabaseRestRequest<boolean>({
+		pathWithQuery: 'rpc/redeem_customer_referral_credit',
+		method: 'POST',
+		useServiceRole: true,
+		body: { p_customer_id: customerId, p_amount: amount },
+	});
+	return result === true;
 }
 
 export async function createSalesOrder(input: SalesOrderInput): Promise<SalesOrder> {
@@ -158,6 +210,12 @@ export async function createSalesOrder(input: SalesOrderInput): Promise<SalesOrd
 			deposit_amount: input.depositAmount,
 			created_by: emptyToUndefined(input.createdBy),
 			confirmed_at: input.status === 'confirmed' ? new Date().toISOString() : undefined,
+			is_past_sale: input.isPastSale === true,
+			sold_at: emptyToUndefined(input.soldAt),
+			referred_by_customer_id: emptyToUndefined(input.referredByCustomerId),
+			referral_code_used: emptyToUndefined(input.referralCodeUsed),
+			discount_amount: input.discountAmount ?? 0,
+			referrer_credit_redeemed: input.referrerCreditRedeemed ?? 0,
 		},
 	});
 	const wasCreated = Boolean(rows[0]);
@@ -225,10 +283,14 @@ export async function registerSalesOrderDepositPurchase(input: {
 	paidAt: string;
 	actorId: string;
 	idempotencyKey: string;
-}): Promise<{ order: SalesOrder; conversionEvent: MetaConversionEvent; idempotent: boolean }> {
+}): Promise<{
+	order: SalesOrder;
+	conversionEvent: MetaConversionEvent | null;
+	idempotent: boolean;
+}> {
 	interface DepositRpcRow {
 		order: SalesOrderRow;
-		conversion_event: MetaConversionEventRow;
+		conversion_event: MetaConversionEventRow | null;
 		idempotent: boolean;
 	}
 	const result = await supabaseRestRequest<DepositRpcRow>({
@@ -243,12 +305,14 @@ export async function registerSalesOrderDepositPurchase(input: {
 			p_idempotency_key: input.idempotencyKey,
 		},
 	});
-	if (!result?.order || !result.conversion_event) {
+	if (!result?.order) {
 		throw new Error('Deposit Purchase transaction did not return its authoritative result.');
 	}
 	return {
 		order: toSalesOrder(result.order),
-		conversionEvent: toMetaConversionEvent(result.conversion_event),
+		conversionEvent: result.conversion_event
+			? toMetaConversionEvent(result.conversion_event)
+			: null,
 		idempotent: result.idempotent,
 	};
 }

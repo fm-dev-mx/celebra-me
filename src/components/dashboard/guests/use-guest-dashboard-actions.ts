@@ -4,7 +4,10 @@ import { isDebugMode } from '@/utils/debug';
 import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { UpdateGuestDTO } from '@/lib/dashboard/dto/guests';
-import { getReminderEligibleGuests } from '@/components/dashboard/guests/reminder-eligibility';
+import {
+	getMemoriesReminderEligibleGuests,
+	getReminderEligibleGuests,
+} from '@/components/dashboard/guests/reminder-eligibility';
 import { isSystemTag } from '@/lib/guests/guest-tags';
 import { getBatchCandidates, isGuestToSend } from '@/components/dashboard/guests/guest-presenter';
 import type {
@@ -14,7 +17,8 @@ import type {
 
 type ModalMode = 'create' | 'edit' | 'send-pending';
 
-export type BatchFlowKind = 'invitation' | 'reminder';
+/** `memories` is the post-event ask to upload photos; it walks guests like a reminder. */
+export type BatchFlowKind = 'invitation' | 'reminder' | 'memories';
 
 function findNextPendingGuest(
 	items: DashboardGuestItem[],
@@ -30,6 +34,11 @@ function findNextPendingGuest(
 	}
 	if (batchFlowKind === 'reminder') {
 		return getReminderEligibleGuests(items, reminderAudience ?? 'unconfirmed').find(
+			(item) => item.guestId !== currentGuestId,
+		);
+	}
+	if (batchFlowKind === 'memories') {
+		return getMemoriesReminderEligibleGuests(items).find(
 			(item) => item.guestId !== currentGuestId,
 		);
 	}
@@ -116,6 +125,17 @@ export const useGuestDashboardActions = ({
 		setModalMode('send-pending');
 		setBatchFlowKind('reminder');
 		setEditingGuest(eligible[0]);
+		setIsNextActionActive(true);
+		setModalOpen(true);
+	}, []);
+
+	const openNextMemoriesGuest = useCallback(() => {
+		const [first] = getMemoriesReminderEligibleGuests(itemsRef.current);
+		if (!first) return;
+		setQueueGuestIds(null);
+		setModalMode('send-pending');
+		setBatchFlowKind('memories');
+		setEditingGuest(first);
 		setIsNextActionActive(true);
 		setModalOpen(true);
 	}, []);
@@ -250,11 +270,13 @@ export const useGuestDashboardActions = ({
 			} else {
 				setModalOpen(false);
 				setIsNextActionActive(false);
-				const isReminder = batchFlowKind === 'reminder';
 				setNotification({
-					message: isReminder
-						? 'Ya no hay más invitados pendientes por recordar.'
-						: 'No hay más invitaciones pendientes.',
+					message:
+						batchFlowKind === 'memories'
+							? 'Ya no hay más invitados pendientes por pedirles fotos.'
+							: batchFlowKind === 'reminder'
+								? 'Ya no hay más invitados pendientes por recordar.'
+								: 'No hay más invitaciones pendientes.',
 					type: 'info',
 				});
 			}
@@ -324,7 +346,7 @@ export const useGuestDashboardActions = ({
 
 			if (next) {
 				setEditingGuest(next);
-				const isReminder = batchFlowKind === 'reminder';
+				const isReminder = batchFlowKind !== 'invitation';
 				setNotification({
 					message: isReminder
 						? `Recordatorio pospuesto. Siguiente: ${next.fullName}`
@@ -334,11 +356,13 @@ export const useGuestDashboardActions = ({
 			} else {
 				setModalOpen(false);
 				setIsNextActionActive(false);
-				const isReminder = batchFlowKind === 'reminder';
 				setNotification({
-					message: isReminder
-						? 'Ya no hay más invitados pendientes por recordar.'
-						: 'No hay más invitados pendientes en la cola.',
+					message:
+						batchFlowKind === 'memories'
+							? 'Ya no hay más invitados pendientes por pedirles fotos.'
+							: batchFlowKind === 'reminder'
+								? 'Ya no hay más invitados pendientes por recordar.'
+								: 'No hay más invitados pendientes en la cola.',
 					type: 'info',
 				});
 			}
@@ -575,6 +599,7 @@ export const useGuestDashboardActions = ({
 		openImportModal,
 		openNextGeneratedGuest,
 		openNextReminderGuest,
+		openNextMemoriesGuest,
 		openBatchForGuests,
 		pendingGuests,
 		queueGuestIds,

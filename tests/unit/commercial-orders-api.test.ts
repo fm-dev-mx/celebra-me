@@ -79,6 +79,10 @@ beforeEach(() => {
 			amountPaid: 0,
 			depositPaidAt: null,
 			paidAt: null,
+			isPastSale: false,
+			discountAmount: 0,
+			referrerCreditAwarded: 0,
+			referrerCreditRedeemed: 0,
 		},
 	]);
 });
@@ -102,6 +106,10 @@ describe('/api/dashboard/commercial/orders', () => {
 			amountPaid: 0,
 			depositPaidAt: null,
 			paidAt: null,
+			isPastSale: false,
+			discountAmount: 0,
+			referrerCreditAwarded: 0,
+			referrerCreditRedeemed: 0,
 		});
 	});
 
@@ -183,6 +191,10 @@ describe('/api/dashboard/commercial/orders/[orderId]/deposit-paid', () => {
 				amountPaid: 899,
 				depositPaidAt: '2026-07-08T12:30:00.000Z',
 				paidAt: null,
+				isPastSale: false,
+				discountAmount: 0,
+				referrerCreditAwarded: 0,
+				referrerCreditRedeemed: 0,
 			},
 			conversionEvent: {
 				id: 'conversion-id',

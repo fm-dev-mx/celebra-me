@@ -77,9 +77,7 @@ describe('createSalesOrder idempotency', () => {
 			{ ...baseRow, total_amount: 999, status: 'deposit_paid' },
 		] as never);
 
-		await expect(createSalesOrder(baseInput)).rejects.toThrow(
-			'ORDER_IDEMPOTENCY_CONFLICT',
-		);
+		await expect(createSalesOrder(baseInput)).rejects.toThrow('ORDER_IDEMPOTENCY_CONFLICT');
 	});
 
 	it('does not create a duplicate order on retry', async () => {

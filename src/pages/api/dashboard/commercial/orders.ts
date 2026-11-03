@@ -27,6 +27,11 @@ const CreateCommercialOrderSchema = z.object({
 	totalAmount: z.number().positive(),
 	depositAmount: z.number().nonnegative().optional(),
 	idempotencyKey: z.uuid(),
+	isPastSale: z.boolean().optional(),
+	soldAt: z.iso.date().optional(),
+	referralCode: z.string().trim().max(32).optional(),
+	applyReferralDiscount: z.boolean().optional(),
+	applyReferrerCredit: z.boolean().optional(),
 });
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
@@ -55,6 +60,11 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 				depositAmount: parsed.depositAmount,
 				createdBy: session.userId,
 				idempotencyKey: parsed.idempotencyKey,
+				isPastSale: parsed.isPastSale,
+				soldAt: parsed.soldAt ? `${parsed.soldAt}T12:00:00.000Z` : undefined,
+				referralCodeUsed: parsed.referralCode || undefined,
+				applyReferralDiscount: parsed.applyReferralDiscount,
+				applyReferrerCredit: parsed.applyReferrerCredit,
 			},
 			{ after: resolveAfterResponseContext(locals) },
 		);

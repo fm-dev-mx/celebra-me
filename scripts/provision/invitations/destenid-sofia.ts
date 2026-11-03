@@ -198,14 +198,12 @@ export function buildDestenidPublishedContent(
 	return {
 		eventType: DESTENID_EVENT.eventType,
 		isDemo: false,
-		templateId: 'xv-editorial-magazine',
 		visualProfileId: DESTENID_EVENT.visualProfileId,
 		title: DESTENID_EVENT.title,
 		description:
 			'Invitación editorial para los XV años de Destenid Sofía, en tonos negro, beige y dorado.',
 		_assetSlug: DESTENID_EVENT.assetSlug,
 		theme: {
-			fontFamily: 'serif',
 			preset: DESTENID_EVENT.themeId,
 		},
 		eventTiming: {

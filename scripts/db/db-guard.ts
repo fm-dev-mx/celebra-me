@@ -178,7 +178,7 @@ export function guardPersistentLocal(
  * Guard against destructive operations on the preview database.
  * Preview allows migrations and audits but blocks direct resets and cascaded drops.
  */
-export function guardPreview(classification: ClassificationResult, operation: string): GuardResult {
+function guardPreview(classification: ClassificationResult, operation: string): GuardResult {
 	const errors: string[] = [];
 
 	if (classification.target !== 'preview') {

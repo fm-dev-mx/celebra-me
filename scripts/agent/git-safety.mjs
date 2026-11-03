@@ -12,13 +12,13 @@
  * to the detector for one invocation; it is never persisted and never proves human consent.
  */
 
-import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import process from 'node:process';
 import { evaluateLaneGuard } from './lane-guard.mjs';
+import { sha256Hex } from '../shared/hash.ts';
 
 export const BASELINE_VERSION = 3;
 export const BASELINE_FILE_NAME = 'git-safety-baseline.json';
@@ -124,13 +124,6 @@ export function git(repoRoot, args, options = {}) {
 }
 
 /**
- * @param {string} text
- */
-function sha256(text) {
-	return createHash('sha256').update(text, 'utf8').digest('hex');
-}
-
-/**
  * Fingerprint of staged changes relative to HEAD (`git diff --cached --raw`), so a
  * branch switch or commit that leaves nothing staged does not read as index drift.
  * Uses blob OIDs / modes / paths — never buffers staged binary contents.
@@ -145,7 +138,7 @@ export function indexFingerprint(repoRoot) {
 				.sort((a, b) => a.localeCompare(b))
 		: [];
 	return {
-		fingerprint: sha256(lines.join('\n')),
+		fingerprint: sha256Hex(lines.join('\n')),
 		entries: lines,
 	};
 }
@@ -196,9 +189,9 @@ export function captureDiagnosticRefs(repoRoot) {
 			: '';
 
 	return {
-		localHeadsFingerprint: sha256(sortLines(heads.status === 0 ? heads.stdout : '')),
-		tagsFingerprint: sha256(sortLines(tags.status === 0 ? tags.stdout : '')),
-		stashFingerprint: sha256(stash.status === 0 ? stash.stdout.trim() : ''),
+		localHeadsFingerprint: sha256Hex(sortLines(heads.status === 0 ? heads.stdout : '')),
+		tagsFingerprint: sha256Hex(sortLines(tags.status === 0 ? tags.stdout : '')),
+		stashFingerprint: sha256Hex(stash.status === 0 ? stash.stdout.trim() : ''),
 	};
 }
 

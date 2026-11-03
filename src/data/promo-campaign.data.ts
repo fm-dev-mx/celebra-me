@@ -257,7 +257,7 @@ export function getActiveCampaign(now: Date = new Date()): PromoCampaign | null 
 }
 
 /** Price list charged under a campaign, or the regular one outside every row. */
-export function getCampaignPrices(campaign: PromoCampaign | null): PackagePrices {
+function getCampaignPrices(campaign: PromoCampaign | null): PackagePrices {
 	return PRICE_TIERS[campaign ? campaign.tier : 'regular'];
 }
 
@@ -405,7 +405,7 @@ export function parsePromoPreviewDate(search: string): Date | null {
 	return isRealDate ? date : null;
 }
 
-export function isPromoTheme(value: string): value is PromoTheme {
+function isPromoTheme(value: string): value is PromoTheme {
 	return (PROMO_THEMES as readonly string[]).includes(value);
 }
 

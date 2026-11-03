@@ -13,13 +13,13 @@
  *   1 — invalid input, technical failure, or identity violation that prevents trust
  */
 
-import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import {
 	detectDatabaseSensitiveChanges,
 	type DatabaseSensitiveDetectionResult,
 } from './database-sensitive-paths.ts';
 import { createFinding, type Finding } from './branch-lane-status.ts';
+import { sha256Hex } from '../shared/hash.ts';
 
 export const MIGRATION_FILENAME_PATTERN = /^(\d{14})_([a-zA-Z0-9_-]+)\.sql$/;
 export const MIGRATIONS_TREE_PREFIX = 'supabase/migrations/';
@@ -99,7 +99,7 @@ export function defaultGitRunner(args: string[]): {
 }
 
 export function hashContent(content: string): string {
-	return createHash('sha256').update(content, 'utf8').digest('hex');
+	return sha256Hex(content);
 }
 
 export function parseMigrationTree(

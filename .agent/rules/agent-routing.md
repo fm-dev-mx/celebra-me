@@ -155,12 +155,13 @@ Model/provider selection is runtime-owned and must not be encoded in repository 
 Claude, Codex and Gemini coordinate through the local board, not through each other's conversations.
 The coordination contract in `docs/core/coordinator-board.md` owns the roles (one principal
 coordinator, one dispatcher per app that never reassigns, one worker session per task), the common
-rules, and the Spanish prompt template; `.agent/rules/board.md` owns the board commands, fields,
-session names and `T<n> <id>` task references. This file's roles and delegation rules apply inside
-one agent's session; they never assign work to another agent. Assignment across agents happens only
-on the board, by verified capability (`requiere`). Hand-over between agents or sessions also lives
-only on the board: the task's `cierre` (`pnpm board close`), its review rounds (`pnpm board review`)
-and `pnpm board msg`. There is no handoff file directory and no separate status vocabulary for
+rules, and the Spanish prompt template; the tablero core (`docs/agent-rules.md`) owns the board
+commands, fields and session-name format, and `.agent/rules/board.md` owns the Celebra-me additions
+and `T<n> <id>` task references. This file's roles and delegation rules apply inside one agent's
+session; they never assign work to another agent. Assignment across agents happens only on the
+board, by verified capability (`requiere`). Hand-over between agents or sessions also lives only on
+the board: the task's `cierre` (`pnpm board close`), its review rounds (`pnpm board review`) and
+`pnpm board msg`. There is no handoff file directory and no separate status vocabulary for
 handed-over work.
 
 ## Routing Conflict Resolution

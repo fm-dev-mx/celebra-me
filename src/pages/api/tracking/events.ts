@@ -3,9 +3,10 @@ import { ApiError } from '@/lib/rsvp/core/errors';
 import { errorResponse, getIp, parseJsonBody, successResponse } from '@/lib/rsvp/core/http';
 import { checkRateLimit } from '@/lib/rsvp/security/rate-limit-provider';
 import { readHostedDeployEnvironment } from '@/lib/server/deploy-identity';
+import { resolveAfterResponseContext } from '@/lib/server/platform-request';
 import { ingestTrackingEvent } from '@/lib/tracking/ingestion.service';
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
 	try {
 		const allowed = await checkRateLimit({
 			namespace: 'tracking',
@@ -26,6 +27,7 @@ export const POST: APIRoute = async ({ request }) => {
 			request,
 			deployEnvironment: readHostedDeployEnvironment(),
 			payload,
+			after: resolveAfterResponseContext(locals),
 		});
 
 		return successResponse(result, result.accepted ? 201 : 202);
