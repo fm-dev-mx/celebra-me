@@ -40,6 +40,11 @@
 		--hero-heading-paint: none;
 		--hero-heading-fill: currentcolor;
 		--hero-divider-fill: var(--hacienda-gold);
+
+		// «Valenzuela» is a long single word: a phone sets it a step smaller so it keeps its margins.
+		@media (width < 62rem) {
+			--hero-arch-heading-size: clamp(3rem, 13.5vw, 4.75rem);
+		}
 	}
 
 	// Portal arches: the dark bands open as one doorway with a gold moulding.
