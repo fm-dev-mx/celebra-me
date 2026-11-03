@@ -89,6 +89,24 @@
 		border-bottom: var(--header-border-scrolled);
 		backdrop-filter: blur(12px) saturate(120%);
 	}
+
+	// Over the ivory cover the dark scrim read as a band and the ivory links nearly vanished; the
+	// resting header drops the scrim and sets its links, initials and controls in burgundy. The
+	// scrolled bar keeps its ivory on midnight.
+	&.header-base--transparent {
+		--nav-transparent-scrim: none;
+		--header-nav-color-transparent: rgb(var(--color-velvet-burgundy-rgb) / 84%);
+		--header-nav-title-color: var(--color-velvet-burgundy);
+		--header-nav-shadow-transparent: none;
+		--header-nav-filter-transparent: none;
+		--header-nav-cta-bg: var(--color-velvet-burgundy);
+		--header-nav-cta-color: var(--color-warm-ivory);
+
+		.header-base__mobile-toggle {
+			background: rgb(var(--color-velvet-burgundy-rgb) / 92%);
+			border-color: rgb(var(--color-antique-gold-rgb) / 48%);
+		}
+	}
 }
 
 // The drawer's "CELEBRA-ME © 2026" signature fell just below the fold of a 844px phone behind the

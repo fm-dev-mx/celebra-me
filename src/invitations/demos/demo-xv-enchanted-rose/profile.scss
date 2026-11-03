@@ -5,11 +5,13 @@
 
 .event--demo-xv-enchanted-rose.theme-preset--enchanted-rose {
 	.invitation-hero.framed-portrait-hero {
-		// The shared quarter-circle wash and the arched frame give way to a square hairline mat.
-		--hero-arc-opacity: 0%;
+		// The arched frame gives way to a square velvet case (structure in the preset hero); the
+		// cue centers so the music pill never covers it, and the name sets in two lines.
 		--hero-portrait-radius: 0;
-		--hero-portrait-outline: 1px solid rgb(var(--color-action-accent-rgb) / 72%);
-		--hero-portrait-outline-offset: 10px;
+		--hero-portrait-outline: none;
+		--hero-portrait-height-desktop: min(68svh, 40rem);
+		--hero-title-max-width: 16ch;
+		--hero-scroll-align: center;
 		--hero-name-font-weight: 400;
 		--hero-name-letter-spacing: -0.02em;
 		--hero-details-font: 500 0.8125rem / 1.6 var(--font-body);
