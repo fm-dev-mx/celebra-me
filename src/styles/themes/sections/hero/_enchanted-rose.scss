@@ -656,25 +656,15 @@
 		position: relative;
 	}
 
-	// The name reads in two lines: the first name stands upright, then the family names follow in
-	// a lighter italic.
+	// The name reads in two lines of one upright serif: the first name, then the family names.
 	.framed-portrait-hero__name-lead,
 	.framed-portrait-hero__name-rest {
 		display: block;
-	}
-
-	.framed-portrait-hero__name-lead {
-		font-weight: 600;
-	}
-
-	.framed-portrait-hero__name-rest {
-		font-style: italic;
-		font-weight: 400;
-		letter-spacing: -0.01em;
+		font-weight: 500;
 	}
 
 	// A gold rule with a small diamond sets the date apart from the name, echoing the case's
-	// hairline; the venue follows the date.
+	// hairline; the venue follows the date in the same small capitals.
 	.framed-portrait-hero__details {
 		--hero-details-venue-display: block;
 
@@ -691,10 +681,7 @@
 	}
 
 	.framed-portrait-hero__details-venue {
-		margin-top: 0.375rem;
-		font: italic 400 clamp(1.0625rem, 1.6vw, 1.25rem) / 1.4 var(--font-display);
-		letter-spacing: 0.01em;
-		text-transform: none;
+		margin-top: 0.25rem;
 		color: rgb(var(--color-velvet-burgundy-rgb) / 82%);
 	}
 
@@ -728,7 +715,7 @@
 
 	@include mixins.respond-to(lg) {
 		// Sized so "Rose Valenzuela" fills one line of the letter column.
-		--hero-title-size: clamp(4.25rem, 7vw, 6.375rem);
+		--hero-title-size: clamp(3.75rem, 6.1vw, 5.5rem);
 
 		// The sparks frame the case: the layer covers the velvet column from the screen edge.
 		.framed-portrait-hero__layout {
