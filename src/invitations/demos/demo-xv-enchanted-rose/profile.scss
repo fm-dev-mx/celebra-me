@@ -1,0 +1,45 @@
+// Enchanted Rose demo — jewelry-box garden: Isabella's sunset portraits sit in fine gold-hairline
+// frames on warm ivory, with a rose-gold glow behind the portrait and quiet, widely tracked caps
+// for the small type. The opening and the closing share the finish so the demo ends where it began.
+
+.event--demo-xv-enchanted-rose.theme-preset--enchanted-rose {
+	.invitation-hero.framed-portrait-hero {
+		--hero-arc-opacity: 42%;
+		--hero-portrait-outline: 1px solid rgb(var(--color-action-accent-rgb) / 72%);
+		--hero-portrait-outline-offset: 10px;
+		--hero-name-font-weight: 400;
+		--hero-name-letter-spacing: -0.02em;
+		--hero-details-font: 500 0.8125rem / 1.6 var(--font-body);
+		--hero-details-letter-spacing: 0.22em;
+		--hero-details-text-transform: uppercase;
+		--hero-scroll-font: 500 0.6875rem / 1.5 var(--font-body);
+		--hero-scroll-letter-spacing: 0.28em;
+		--hero-scroll-text-transform: uppercase;
+	}
+
+	// The keepsake echoes the hero's arch, and a double gold hairline frames the closing like the
+	// lid of a jewelry box; the frame is painted on the ambient layer, so it never touches the copy.
+	.thank-you-section {
+		$gold: rgb(var(--color-action-accent-rgb) / 60%);
+		$gold-soft: rgb(var(--color-action-accent-rgb) / 32%);
+		$glow: radial-gradient(ellipse 60% 55% at 30% 50%, rgb(214 160 150 / 24%), transparent 70%);
+
+		--thank-you-keepsake-image-radius: 50% 50% 0.75rem 0.75rem / 32% 32% 0.75rem 0.75rem;
+		--thank-you-keepsake-ambient:
+			linear-gradient(#{$gold}, #{$gold}) top / 100% 1px no-repeat,
+			linear-gradient(#{$gold}, #{$gold}) bottom / 100% 1px no-repeat,
+			linear-gradient(#{$gold}, #{$gold}) left / 1px 100% no-repeat,
+			linear-gradient(#{$gold}, #{$gold}) right / 1px 100% no-repeat,
+			linear-gradient(#{$gold-soft}, #{$gold-soft}) center top 8px / calc(100% - 16px) 1px
+				no-repeat,
+			linear-gradient(#{$gold-soft}, #{$gold-soft}) center bottom 8px / calc(100% - 16px) 1px
+				no-repeat,
+			linear-gradient(#{$gold-soft}, #{$gold-soft}) left 8px center / 1px calc(100% - 16px)
+				no-repeat,
+			linear-gradient(#{$gold-soft}, #{$gold-soft}) right 8px center / 1px calc(100% - 16px)
+				no-repeat,
+			#{$glow};
+		--thank-you-keepsake-ambient-inset: clamp(-3.5rem, -4vw, -2rem);
+		--thank-you-keepsake-ambient-inset-stacked: -1.75rem -0.25rem;
+	}
+}

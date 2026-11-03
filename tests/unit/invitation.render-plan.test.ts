@@ -80,10 +80,10 @@ describe('buildInvitationRenderPlan', () => {
 
 		expect(plan.map((item) => (item.type === 'section' ? item.section : item.type))).toEqual([
 			'quote',
-			'location',
 			'countdown',
 			'family',
 			'interlude',
+			'location',
 			'itinerary',
 			'gallery',
 			'interlude',
