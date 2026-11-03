@@ -20,9 +20,16 @@
 	// The keepsake echoes the hero's arch, and a double gold hairline frames the closing like the
 	// lid of a jewelry box; the frame is painted on the ambient layer, so it never touches the copy.
 	.thank-you-section {
+		// Dusty-rose glow behind the keepsake portrait; stays decorative, under 25% alpha.
+		--rose-keepsake-glow-rgb: 214 160 150;
+
 		$gold: rgb(var(--color-action-accent-rgb) / 60%);
 		$gold-soft: rgb(var(--color-action-accent-rgb) / 32%);
-		$glow: radial-gradient(ellipse 60% 55% at 30% 50%, rgb(214 160 150 / 24%), transparent 70%);
+		$glow: radial-gradient(
+			ellipse 60% 55% at 30% 50%,
+			rgb(var(--rose-keepsake-glow-rgb) / 24%),
+			transparent 70%
+		);
 
 		--thank-you-keepsake-image-radius: 50% 50% 0.75rem 0.75rem / 32% 32% 0.75rem 0.75rem;
 		--thank-you-keepsake-ambient:
