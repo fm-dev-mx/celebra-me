@@ -1,3 +1,5 @@
+@use 'sass:list';
+@use 'sass:string';
 @use '../../../global/mixins' as mixins;
 
 // ---------------------------------------------------------------------------
@@ -468,6 +470,52 @@
 	}
 }
 
+// Candle sparks for the velvet bed, one small gold point per (x, y) position.
+@function enchanted-rose-sparks($points) {
+	$spark: rgb(var(--color-candle-gold-rgb) / 90%);
+	$glow: rgb(var(--color-candle-gold-rgb) / 22%);
+	$layers: ();
+
+	@each $x, $y in $points {
+		$layers: list.append(
+			$layers,
+			string.unquote(
+				'radial-gradient(circle, #{$spark} 0 1.5px, #{$glow} 2px, transparent 6px) #{$x} #{$y} / 12px 12px no-repeat'
+			),
+			$separator: comma
+		);
+	}
+
+	@return $layers;
+}
+
+// A small gold diamond ringed in velvet, set on the seam between the velvet bed and the ivory.
+@mixin enchanted-rose-seam-diamond($fill, $ring) {
+	content: '';
+	position: absolute;
+	width: 0.75rem;
+	height: 0.75rem;
+	background: #{$fill};
+	translate: -50% -50%;
+	rotate: 45deg;
+	box-shadow:
+		0 0 0 3px color-mix(in srgb, var(--color-velvet-burgundy) 82%, black),
+		0 0 0 4px #{$ring},
+		0 0 18px 4px rgb(var(--color-candle-gold-rgb) / 45%);
+	pointer-events: none;
+}
+
+@keyframes enchanted-rose-spark-twinkle {
+	0%,
+	100% {
+		opacity: 15%;
+	}
+
+	50% {
+		opacity: 100%;
+	}
+}
+
 // Velvet case: the opening's jewelry box carries into the cover. The portrait sits on a burgundy
 // velvet bed inside a double gold hairline, like a jewel set in its case, and a candle glow warms
 // the ivory ground around it.
@@ -526,7 +574,7 @@
 			0 28px 56px -18px rgb(var(--color-rose-shadow-rgb) / 52%),
 			0 10px 22px -10px rgb(var(--color-rose-shadow-rgb) / 36%),
 			0 0 90px 24px rgb(var(--color-deep-rose-red-rgb) / 42%),
-			0 0 140px 40px rgb(var(--color-candle-gold-rgb) / 14%);
+			0 0 170px 60px rgb(var(--color-candle-gold-rgb) / 26%);
 
 		// The velvet bed: it runs from the case to the screen's edges (the hero clips it) and stops
 		// a short way past the case on the letter's side, where a gold hairline finishes it and its
@@ -560,6 +608,12 @@
 					rgb(var(--color-blush-pink-rgb) / 7%) 50%,
 					transparent 60%
 				),
+				repeating-linear-gradient(
+					45deg,
+					rgb(var(--color-blush-pink-rgb) / 4%) 0 1px,
+					transparent 1px 3px
+				),
+				repeating-linear-gradient(-45deg, rgb(0 0 0 / 14%) 0 1px, transparent 1px 4px),
 				color-mix(in srgb, var(--color-velvet-burgundy) 82%, black);
 			box-shadow:
 				1px 1px 0 #{$gold-soft},
@@ -589,6 +643,35 @@
 				#{$bracket} bottom right / #{$bar} #{$arm} no-repeat;
 			filter: drop-shadow(0 1px 1px rgb(0 0 0 / 35%));
 		}
+	}
+
+	// Two layers of sparks over the velvet twinkle out of step; under reduced motion they hold.
+	.framed-portrait-hero__layout {
+		position: relative;
+
+		&::before,
+		&::after {
+			content: '';
+			position: absolute;
+			inset: -5rem -1.5rem 0;
+			pointer-events: none;
+			animation: enchanted-rose-spark-twinkle 4.8s ease-in-out infinite;
+		}
+
+		&::before {
+			background: enchanted-rose-sparks((5% 6%, 70% 7%, 94% 52%, 6% 60%));
+		}
+
+		&::after {
+			background: enchanted-rose-sparks((30% 3%, 95% 20%, 5% 35%));
+			animation-delay: -2.4s;
+		}
+	}
+
+	// A gold diamond pins the seam where the velvet meets the ivory page.
+	.framed-portrait-hero__letter,
+	.framed-portrait-hero__name {
+		position: relative;
 	}
 
 	// The name reads in two lines: the first name stands upright, then the family names follow in
@@ -647,15 +730,48 @@
 		.framed-portrait-hero__letter {
 			margin-top: 2rem;
 			text-align: start;
+
+			// The seam runs 1.75rem above the letter (the grid gap plus its margin), under the case.
+			&::before {
+				@include enchanted-rose-seam-diamond($bracket, $gold-soft);
+
+				top: -1.75rem;
+				left: 50%;
+			}
 		}
 
-		// Phones set the family names on one line under the first name.
-		--hero-title-size: clamp(2.75rem, 11.5vw, 3.75rem);
+		// Phones set the family names on one line under the first name, clear of the scroll cue.
+		--hero-title-size: clamp(2.75rem, 12.25vw, 4rem);
 	}
 
 	@include mixins.respond-to(lg) {
-		// Sized so "Rose Valenzuela" holds one line in the letter column.
-		--hero-title-size: clamp(3.75rem, 5.6vw, 5.25rem);
+		// Sized so "Rose Valenzuela" fills one line of the letter column.
+		--hero-title-size: clamp(4.25rem, 7vw, 6.375rem);
+
+		// The sparks frame the case: the layer covers the velvet column from the screen edge.
+		.framed-portrait-hero__layout {
+			&::before,
+			&::after {
+				inset: -8rem auto -6rem -12rem;
+				width: calc(12rem + 45%);
+			}
+
+			&::before {
+				background: enchanted-rose-sparks((12% 22%, 8% 82%, 48% 6%, 64% 95%, 97% 40%));
+			}
+
+			&::after {
+				background: enchanted-rose-sparks((22% 58%, 78% 9%, 18% 40%, 36% 97%));
+			}
+		}
+
+		// The seam sits halfway across the 5rem gap, level with the name.
+		.framed-portrait-hero__name::before {
+			@include enchanted-rose-seam-diamond($bracket, $gold-soft);
+
+			top: 50%;
+			left: -2.5rem;
+		}
 
 		// The candle glow warms the letter's ivory beside the velvet.
 		&::before {
@@ -678,6 +794,18 @@
 			box-shadow:
 				1px 0 0 #{$gold-soft},
 				22px 0 40px -18px rgb(var(--color-rose-shadow-rgb) / 55%);
+		}
+	}
+}
+
+@include mixins.reduced-motion {
+	.theme-preset--enchanted-rose
+		.invitation-hero.framed-portrait-hero[data-variant='framed-portrait']
+		.framed-portrait-hero__layout {
+		&::before,
+		&::after {
+			animation: none;
+			opacity: 70%;
 		}
 	}
 }
