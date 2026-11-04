@@ -239,8 +239,8 @@ swapped for the professional session later.
 | source filename            | dims      | format | orientation | weight | quality          | role      | duplicate   | processing                                     | derivative                              |
 | -------------------------- | --------- | ------ | ----------- | ------ | ---------------- | --------- | ----------- | ---------------------------------------------- | --------------------------------------- |
 | 01-ficha-rostro.png        | 1122×1402 | PNG    | portrait    | 2.1 MB | production-ready | gallery   | no          | Lanczos 2× + light unsharp; WebP q80           | gallery-01.webp 1441×1800 151 KiB       |
-| 02-ficha-cuerpo-entero.png | 1122×1402 | PNG    | portrait    | 2.2 MB | production-ready | gallery   | no          | Lanczos 2× + light unsharp; WebP q72           | gallery-02.webp 1441×1800 131 KiB       |
-| 03-portada.png             | 941×1672  | PNG    | portrait    | 2.2 MB | production-ready | hero      | no          | Lanczos 2×, arch crop; WebP q84                | hero-arch.webp 1843×2560 290 KiB        |
+| 02-ficha-cuerpo-entero.png | 1122×1402 | PNG    | portrait    | 2.2 MB | production-ready | gallery   | no          | Lanczos 2× + light unsharp; WebP q72           | gallery-02.webp 1441×1800 119 KiB       |
+| 03-portada.png             | 941×1672  | PNG    | portrait    | 2.2 MB | production-ready | hero      | no          | Lanczos 2×, arch crop; WebP q84                | hero-arch.webp 1843×2560 298 KiB        |
 | 03-portada.png             | 941×1672  | PNG    | portrait    | 2.2 MB | production-ready | og-share  | intentional | 1200×630 crop of the cover                     | og-share.webp 1200×630 27 KiB           |
 | 04-familia.png             | 1536×1024 | PNG    | landscape   | 2.1 MB | production-ready | family    | no          | Lanczos 2× + light unsharp; WebP               | family.webp 2200×1467 158 KiB           |
 | 05-cierre.png              | 1122×1402 | PNG    | portrait    | 2.1 MB | production-ready | thank-you | no          | Lanczos 2× + light unsharp; WebP q80           | thank-you.webp 1761×2200 211 KiB        |
@@ -307,7 +307,10 @@ repository.
 - Photos: localized edits of the nine existing photographs, preserving their original roles and
   identities. Warm-gold earrings, including their reflections, match the tiara; visible nails
   receive a perceptible milky rose-nude polish. The cover and its social crop share one edited
-  source. The family edit places the father's outer hand gently on Andrea's upper arm.
+  source. The family edit places the father's outer hand gently on Andrea's upper arm. A thin gold
+  chain bracelet with a small bezel-set charm sits on Andrea's left wrist in every photo where that
+  wrist shows, partly hidden by the bouquet on the cover and full body; the social crop stops above
+  the wrist, so it does not show it.
 - Owner visual acceptance: **ACCEPTED** on 2026-10-27 for the certified candidate at
   `522369399124bb72ddb64dc651238da00b0f1fe8`. Its exact approval identity is recorded in
   `tests/e2e/visual-baselines/manifest.json`. Client approval from Gloria remains **PENDING**; this
@@ -345,9 +348,9 @@ live in `src/invitations/clients/andrea/`; the shared `storybook-emerald` preset
   line only: «…y quiero que estés ahí.» All other copy stays in «usted».
 - A7 — gifts title `Lluvia de sobres o regalo` with a gift header mark; «completamente opcional»
   sits in the subtitle.
-- Pending outside the code: photo edits B1–B3 (dress sparkle to gold, gold bracelet, light makeup
-  polish; edit, never regenerate), the 5×7 table card with the photo-upload QR built in (C1, under
-  the $399 QR service C2), Production re-enable, Preview and client approval.
+- Pending outside the code: photo edits B1 and B3 (dress sparkle to gold, light makeup polish; edit,
+  never regenerate), the 5×7 table card with the photo-upload QR built in (C1, under the $399 QR
+  service C2), Production re-enable, Preview and client approval.
 
 ### Design refinements — 2026-11-04
 
