@@ -409,16 +409,25 @@ function buildBrowserKeys(detail: OutboxDetail, session: SessionDetail | null): 
 	return userData;
 }
 
+/**
+ * Every customer is served in Mexico. Meta asks for the country on every event, even when all
+ * customers share it, as an ISO 3166-1 alpha-2 code in lowercase, hashed.
+ */
+const META_CUSTOMER_COUNTRY = 'mx';
+const META_CUSTOMER_COUNTRY_HASH = hashSha256(META_CUSTOMER_COUNTRY);
+
 function buildUserData(detail: OutboxDetail, session: SessionDetail | null): UserData {
+	const country = [META_CUSTOMER_COUNTRY_HASH];
 	if (getMetaCrmLeadStageFromTriggerStatus(detail.trigger_status)) {
 		const userData: UserData = {};
 		const phoneHash = normalizeAndHashPhone(detail.leads?.phone_e164);
 		if (phoneHash) userData.ph = [phoneHash];
 		if (detail.leads?.fbp) userData.fbp = detail.leads.fbp;
 		if (detail.leads?.fbc) userData.fbc = detail.leads.fbc;
+		userData.country = country;
 		return userData;
 	}
-	return { ...buildIdentityKeys(detail, session), ...buildBrowserKeys(detail, session) };
+	return { ...buildIdentityKeys(detail, session), ...buildBrowserKeys(detail, session), country };
 }
 
 function resolveEventSourceUrl(path: string | null | undefined): string {

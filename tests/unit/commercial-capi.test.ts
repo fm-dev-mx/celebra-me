@@ -378,6 +378,11 @@ describe('deliverMetaConversionEvent', () => {
 		expect(body.data[0].user_data.client_ip_address).toBe('203.0.113.7');
 		expect(body.data[0].user_data.client_user_agent).toBe('Mozilla/5.0 (iPhone)');
 		expect(body.data[0].user_data.external_id).toEqual([hashSha256('visitor-id')]);
+		// Meta's documented SHA-256 of the normalized country "us" pins the hashing format.
+		expect(hashSha256('us')).toBe(
+			'79adb2a2fce5c6ba215fe5f27f532d4e7edbac4b6a5e09e1ef3a08084a904621',
+		);
+		expect(body.data[0].user_data.country).toEqual([hashSha256('mx')]);
 		expect(JSON.stringify(body.data)).not.toContain('mock-access-token');
 		expect(mockRestRequest).toHaveBeenCalledWith(
 			expect.objectContaining({
@@ -872,6 +877,7 @@ describe('Meta CAPI browser events', () => {
 			fbp: 'fb.1.12345',
 			client_ip_address: '203.0.113.7',
 			client_user_agent: 'Mozilla/5.0 (iPhone)',
+			country: [hashSha256('mx')],
 		});
 	});
 
@@ -985,6 +991,7 @@ describe('Meta CAPI browser events', () => {
 				ph: [normalizeAndHashPhone('+526681112233')],
 				fbp: 'fb.1.lead-browser',
 				fbc: 'fb.1.lead-click',
+				country: [hashSha256('mx')],
 			},
 		});
 		expect(event.event_source_url).toBeUndefined();

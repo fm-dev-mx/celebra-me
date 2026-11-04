@@ -381,11 +381,11 @@ stage; `action_source` is `system_generated`.
 
 The queue checks `leads.consent_marketing` before inserting. Delivery checks it again and, when the
 lead has a session, also requires that session's latest marketing-consent snapshot. Only a
-digits-only SHA-256 hash of the lead phone and the lead's stored `fbp`/`fbc` are sent as user data;
-no email, raw phone, IP address or user agent is included. CRM stage rows use the outbox creation
-time as `event_time`, do not include `event_source_url`, and follow the same retry lifecycle and
-30-day terminal-row retention as browser events. In the current workspace, `paid` is emitted when
-the deposit is registered; there is no separate full-payment transition API.
+digits-only SHA-256 hash of the lead phone, the lead's stored `fbp`/`fbc` and the hashed country
+(`mx`) are sent as user data; no email, raw phone, IP address or user agent is included. CRM stage
+rows use the outbox creation time as `event_time`, do not include `event_source_url`, and follow the
+same retry lifecycle and 30-day terminal-row retention as browser events. In the current workspace,
+`paid` is emitted when the deposit is registered; there is no separate full-payment transition API.
 
 ### CRM sales-stage events
 
@@ -426,6 +426,10 @@ another reason leaves that lead without a Purchase.
 The Pixel and CAPI send the same `external_id`: the SHA-256 hex of the first-party visitor ID
 (`cm_visitor_id`, trimmed and lowercased). The Pixel passes it to `fbq('init', id, { external_id })`
 with `autoConfig` off; it initializes without it when no visitor ID is stored.
+
+Both sides also send the customer country, because Meta asks for it on every event even when all
+customers share one country: the Pixel always initializes with `country: 'mx'` (it hashes the value
+itself), and every CAPI event, browser or CRM, carries `country` as the SHA-256 of `mx`.
 
 After a successful «Aparta su fecha» submission with marketing consent, `lead-capture-client.ts`
 calls `rememberMetaPhoneMatchKey()`, which stores only `ph` (the SHA-256 hex of the phone's E.164
