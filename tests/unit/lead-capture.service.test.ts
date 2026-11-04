@@ -62,6 +62,7 @@ function makePayload(overrides: Record<string, unknown> = {}) {
 		eventDate: futureDate(),
 		contactName: 'Gloria Garza',
 		celebrantNames: 'Andrea',
+		city: '  los mochis, Sinaloa ',
 		phone: '668 111 2233',
 		demoSlug: 'demo-xv-celestial-blue',
 		sourceArea: 'hero',
@@ -147,6 +148,7 @@ describe('submitLeadCapture', () => {
 		expect(mockCreateCustomer).toHaveBeenCalledWith({
 			displayName: 'Gloria Garza',
 			phone: '668 111 2233',
+			city: 'Los Mochis',
 			createdFromLeadId: 'lead-id',
 		});
 		expect(mockInsertTrackingEvent).toHaveBeenCalledWith(
