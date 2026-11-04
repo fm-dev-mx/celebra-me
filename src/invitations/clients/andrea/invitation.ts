@@ -100,7 +100,7 @@ const content: CanonicalEventContentInput = {
 	},
 	quote: {
 		text: 'Hay noches que se esperan toda la vida.',
-		closingLine: 'La mía llega el 3 de julio, y quiero que usted esté ahí.',
+		closingLine: 'La mía llega el 3 de julio, y quiero que estés ahí.',
 	},
 	family: {
 		variant: 'standard',
@@ -151,7 +151,7 @@ const content: CanonicalEventContentInput = {
 				title: 'Verde esmeralda y dorado',
 				text: 'Reservados para la quinceañera',
 			},
-			{ iconName: 'Forbidden', styleVariant: 'default', text: 'NO NIÑOS' },
+			{ iconName: 'Forbidden', styleVariant: 'default', text: 'NO NIÑOS (sin excepción)' },
 		],
 		venues: [
 			{
@@ -223,10 +223,10 @@ const content: CanonicalEventContentInput = {
 	gifts: {
 		// A two-line note, as on printed stationery.
 		variant: 'standard',
-		title: 'Lluvia de sobres',
+		title: 'Lluvia de sobres o regalo',
 		presentation: 'legend-only',
 		subtitle:
-			'Su presencia es mi mejor regalo. Si desea tener un detalle conmigo, habrá lluvia de sobres.',
+			'Su presencia es mi mejor regalo. Si desea tener un detalle conmigo, puede ser en sobre o con un regalo; es completamente opcional.',
 	},
 	rsvp: {
 		// Pass and confirmation read as one printed reply card; seats are fixed per guest.
