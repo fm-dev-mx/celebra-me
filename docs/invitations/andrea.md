@@ -238,15 +238,15 @@ swapped for the professional session later.
 
 | source filename            | dims      | format | orientation | weight | quality          | role      | duplicate   | processing                                     | derivative                              |
 | -------------------------- | --------- | ------ | ----------- | ------ | ---------------- | --------- | ----------- | ---------------------------------------------- | --------------------------------------- |
-| 01-ficha-rostro.png        | 1122×1402 | PNG    | portrait    | 2.1 MB | production-ready | gallery   | no          | Lanczos 2× + light unsharp; WebP q80           | gallery-01.webp 1441×1800 151 KiB       |
+| 01-ficha-rostro.png        | 1122×1402 | PNG    | portrait    | 2.1 MB | production-ready | gallery   | no          | Lanczos 2× + light unsharp; WebP q80           | gallery-01.webp 1441×1800 159 KiB       |
 | 02-ficha-cuerpo-entero.png | 1122×1402 | PNG    | portrait    | 2.2 MB | production-ready | gallery   | no          | Lanczos 2× + light unsharp; WebP q72           | gallery-02.webp 1441×1800 131 KiB       |
 | 03-portada.png             | 941×1672  | PNG    | portrait    | 2.2 MB | production-ready | hero      | no          | Lanczos 2×, arch crop; WebP q84                | hero-arch.webp 1843×2560 290 KiB        |
 | 03-portada.png             | 941×1672  | PNG    | portrait    | 2.2 MB | production-ready | og-share  | intentional | 1200×630 crop of the cover                     | og-share.webp 1200×630 27 KiB           |
-| 04-familia.png             | 1536×1024 | PNG    | landscape   | 2.1 MB | production-ready | family    | no          | Lanczos 2× + light unsharp; WebP               | family.webp 2200×1467 158 KiB           |
+| 04-familia.png             | 1536×1024 | PNG    | landscape   | 2.1 MB | production-ready | family    | no          | Lanczos 2× + light unsharp; WebP               | family.webp 2200×1467 163 KiB           |
 | 05-cierre.png              | 1122×1402 | PNG    | portrait    | 2.1 MB | production-ready | thank-you | no          | Lanczos 2× + light unsharp; WebP q80           | thank-you.webp 1761×2200 211 KiB        |
-| 06-lamina-jardin.png       | 1122×1402 | PNG    | portrait    | 2.4 MB | production-ready | interlude | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | interlude-garden.webp 1440×1800 165 KiB |
-| 07-lamina-detalle.png      | 1122×1402 | PNG    | portrait    | 2.4 MB | production-ready | interlude | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | interlude-detail.webp 1440×1800 177 KiB |
-| 08-album-escalera.png      | 1122×1402 | PNG    | portrait    | 2.3 MB | production-ready | gallery   | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | album-staircase.webp 1440×1800 133 KiB  |
+| 06-lamina-jardin.png       | 1122×1402 | PNG    | portrait    | 2.4 MB | production-ready | interlude | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | interlude-garden.webp 1440×1800 168 KiB |
+| 07-lamina-detalle.png      | 1122×1402 | PNG    | portrait    | 2.4 MB | production-ready | interlude | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | interlude-detail.webp 1440×1800 184 KiB |
+| 08-album-escalera.png      | 1122×1402 | PNG    | portrait    | 2.3 MB | production-ready | gallery   | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | album-staircase.webp 1440×1800 139 KiB  |
 | 09-album-ventanal.png      | 1122×1402 | PNG    | portrait    | 2.6 MB | production-ready | gallery   | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q76 | album-window.webp 960×1200 130 KiB      |
 
 The upscale is a plain resampling filter (Lanczos 2× with a light unsharp mask); it adds no detail
@@ -307,11 +307,14 @@ repository.
 - Photos: localized edits of the nine existing photographs, preserving their original roles and
   identities. Warm-gold earrings, including their reflections, match the tiara; visible nails
   receive a perceptible milky rose-nude polish. The cover and its social crop share one edited
-  source. The family edit places the father's outer hand gently on Andrea's upper arm. A thin gold
-  chain bracelet with a small bezel-set charm sits on Andrea's left wrist in seven of the nine
-  photos. It is intentionally absent from the cover (`hero-arch`, and so `og-share`) and the full
-  body (`gallery-02`): there the wrist sits behind the bouquet and the bracelet would show only as a
-  dot between the flowers (owner decision, 2026-11-04).
+  source. The family edit places the father's outer hand gently on Andrea's upper arm. A gold
+  bracelet with a small bezel-set charm sits on Andrea's left wrist in seven of the nine photos. In
+  `gallery-01`, `family`, `interlude-garden`, `interlude-detail` and `album-staircase` it is a
+  warm-gold link bracelet with a soft highlight, about four times as thick as the first thin chain,
+  so it reads at phone width; the closing photo (`thank-you`) keeps the thin chain (owner decision,
+  2026-11-04). It is intentionally absent from the cover (`hero-arch`, and so `og-share`) and the
+  full body (`gallery-02`): there the wrist sits behind the bouquet and the bracelet would show only
+  as a dot between the flowers (owner decision, 2026-11-04).
 - Owner visual acceptance: **ACCEPTED** on 2026-10-27 for the certified candidate at
   `522369399124bb72ddb64dc651238da00b0f1fe8`. Its exact approval identity is recorded in
   `tests/e2e/visual-baselines/manifest.json`. Client approval from Gloria remains **PENDING**; this
