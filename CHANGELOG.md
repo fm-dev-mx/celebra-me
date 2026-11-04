@@ -10,6 +10,22 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.65.0-beta.1] - 2026-11-04
+
+Sends more customer data to Meta, hashed, to raise the event match quality. No database migrations.
+
+### Added
+
+- Tracking: Meta CAPI events carry the hashed customer country, name and city; lead cities are
+  canonicalized against the INEGI 2020 census list, with accent variants.
+- Tracking: the Meta customer list CSV adds the state (`st`) and the canonical city.
+- Landing: the lead form asks for the city (optional, with suggestions) instead of the celebrant
+  names.
+
+### Changed
+
+- Privacy notice: discloses the hashed country and Meta on-device measurement.
+
 ## [0.64.0-beta.1] - 2026-11-03
 
 Refines the naomi-huerta invitation scenes. No database migrations.
