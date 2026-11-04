@@ -94,11 +94,13 @@
 	}
 }
 
-// Envelope (round 1): yellow ribbons fly in the envelope sky instead of butterflies. The shared
-// butterfly markup stays; only its drawing is swapped here, inside the event scope.
+// Envelope (round 1): yellow ribbons fly in the envelope sky and in the send-off instead of
+// butterflies. The shared butterfly markup stays; only its drawing is swapped here. The send-off
+// layer lands on <body> carrying the event scope class, hence the compound selector.
 $yireh-ribbon-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64'%3E%3Cpath d='M24 16C14 4 3 10 8 18c3 4 11 1 16-2zM24 16c10-12 21-6 16 2-3 4-11 1-16-2z'/%3E%3Ccircle cx='24' cy='16' r='3.6'/%3E%3Cpath d='M23 18c-6 12 3 22-8 40M25 18c7 13-2 25 9 42' fill='none' stroke='black' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E");
 
-.event--yireh-ana .envelope-wrapper .storybook-sky__butterfly {
+.event--yireh-ana .envelope-wrapper .storybook-sky__butterfly,
+.event--yireh-ana.lantern-send-off .storybook-sky__butterfly {
 	svg {
 		visibility: hidden;
 	}
@@ -129,6 +131,58 @@ $yireh-ribbon-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000
 
 		to {
 			transform: rotate(8deg) scaleX(0.82);
+		}
+	}
+}
+
+// Send-off: the ribbons leave from across the bottom edge rather than one point, each a little
+// different in size and swaying side to side as it rises. `translate` and `scale` compose with
+// the transform the envelope script animates, so the climb itself is untouched.
+.event--yireh-ana.lantern-send-off .lantern-flight__lantern {
+	animation: yireh-ribbon-sway 1.7s ease-in-out infinite alternate;
+
+	&:nth-child(1) {
+		left: calc(8% - 1rem);
+		scale: 0.9;
+	}
+
+	&:nth-child(2) {
+		left: calc(66% - 1rem);
+		scale: 1.15;
+		animation-duration: 2.1s;
+	}
+
+	&:nth-child(3) {
+		left: calc(30% - 1rem);
+		scale: 1.05;
+		animation-duration: 1.4s;
+	}
+
+	&:nth-child(4) {
+		left: calc(88% - 1rem);
+		scale: 0.85;
+		animation-duration: 1.9s;
+	}
+
+	&:nth-child(5) {
+		left: calc(48% - 1rem);
+		scale: 1.2;
+		animation-duration: 2.3s;
+	}
+
+	&:nth-child(6) {
+		left: calc(20% - 1rem);
+		scale: 0.95;
+		animation-duration: 1.5s;
+	}
+
+	@keyframes yireh-ribbon-sway {
+		from {
+			translate: -1.4rem 0;
+		}
+
+		to {
+			translate: 1.4rem 0;
 		}
 	}
 }
