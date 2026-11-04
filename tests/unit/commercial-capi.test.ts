@@ -161,6 +161,11 @@ describe('Meta CAPI service helpers', () => {
 			hashSha256('nuevoleón'),
 			hashSha256('nuevoleon'),
 		]);
+		expect(normalizeAndHashStateForCity('Saltillo')).toEqual([
+			hashSha256('coahuila'),
+			hashSha256('coahuiladezaragoza'),
+		]);
+		expect(normalizeAndHashStateForCity('Guadalupe, Zac.')).toEqual([hashSha256('zacatecas')]);
 		expect(normalizeAndHashStateForCity('Pueblo Inventado')).toEqual([]);
 	});
 });

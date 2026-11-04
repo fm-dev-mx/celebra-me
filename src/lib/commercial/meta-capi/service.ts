@@ -5,7 +5,11 @@ import { createHash, randomUUID } from 'node:crypto';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 import { safeErr } from '@/lib/server/safe-error';
 import { getEstimatedLeadValue } from './estimated-lead-value';
-import { canonicalizeMexicanCity, findMexicanCity } from '@/lib/commercial/mexican-cities';
+import {
+	canonicalizeMexicanCity,
+	findMexicanCity,
+	getMexicanStateNames,
+} from '@/lib/commercial/mexican-cities';
 import {
 	getMetaCrmLeadStageFromTriggerStatus,
 	META_CHAT_EVENT_MAX_AGE_MS,
@@ -289,10 +293,12 @@ export function normalizeAndHashCity(city?: string | null): string[] {
 	return hashMetaLetterVariants(city ? [city] : []);
 }
 
-/** Hashed `st` candidates for a listed Mexican city («Ciudad Juárez» → `chihuahua`). */
+/**
+ * Hashed `st` candidates for a listed Mexican city: its state's common and INEGI official names,
+ * accented and plain («Saltillo» → `coahuila`, `coahuiladezaragoza`).
+ */
 export function normalizeAndHashStateForCity(city?: string | null): string[] {
-	const state = findMexicanCity(city)?.state;
-	return hashMetaLetterVariants(state ? [state] : []);
+	return hashMetaLetterVariants(getMexicanStateNames(findMexicanCity(city)));
 }
 
 export type BrowserConversionEventName = 'PageView' | 'ViewContent' | 'Contact' | 'Lead';

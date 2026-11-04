@@ -18,7 +18,17 @@ const demoOptions = [...DEMO_SHOWROOM_ITEMS]
 	.filter((item) => item.reviewStatus === 'approved')
 	.sort((a, b) => a.sortOrder - b.sortOrder)
 	.map((item) => ({ slug: item.slug, name: item.styleName, eventType: item.eventType }));
-const cityOptions = MEXICAN_CITIES.map((city) => city.name).sort((a, b) => a.localeCompare(b, 'es'));
+// Every suggestion shows its state. A name shared by two states («Guadalupe») also carries the
+// state in its value so the server can tell them apart («Guadalupe, Zacatecas»).
+const cityNameCounts = new Map<string, number>();
+for (const city of MEXICAN_CITIES) {
+	cityNameCounts.set(city.name, (cityNameCounts.get(city.name) ?? 0) + 1);
+}
+const cityOptions = MEXICAN_CITIES.map((city) =>
+	(cityNameCounts.get(city.name) ?? 0) > 1
+		? { value: `${city.name}, ${city.state}`, state: undefined }
+		: { value: city.name, state: city.state },
+).sort((a, b) => a.value.localeCompare(b.value, 'es'));
 ---
 
 {
@@ -119,8 +129,8 @@ const cityOptions = MEXICAN_CITIES.map((city) => city.name).sort((a, b) => a.loc
 							list="lead-capture-city-options"
 						/>
 						<datalist id="lead-capture-city-options">
-							{cityOptions.map((name) => (
-								<option value={name} />
+							{cityOptions.map((option) => (
+								<option value={option.value} label={option.state} />
 							))}
 						</datalist>
 					</div>
