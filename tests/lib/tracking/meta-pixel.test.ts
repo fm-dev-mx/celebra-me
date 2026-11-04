@@ -1051,15 +1051,15 @@ describe('external_id on Pixel init', () => {
 		);
 		expect(fbqMock).toHaveBeenCalledWith('set', 'autoConfig', false, '191973769040678');
 		expect(fbqMock).toHaveBeenCalledWith('init', '191973769040678', {
+			country: 'mx',
 			external_id: serverExternalId,
 		});
 	});
 
-	it('initializes without match keys when no visitor ID is stored', () => {
+	it('initializes with only the country when no visitor ID is stored', () => {
 		const fbqMock = initFreshPixel();
-		expect(fbqMock).toHaveBeenCalledWith('init', '191973769040678');
 		expect(fbqMock.mock.calls.filter((call) => call[0] === 'init')).toEqual([
-			['init', '191973769040678'],
+			['init', '191973769040678', { country: 'mx' }],
 		]);
 	});
 });

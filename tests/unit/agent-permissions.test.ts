@@ -214,9 +214,13 @@ describe('native permission adapters', () => {
                 other: ['pnpm test && arbitrary-command', 'git status $(arbitrary-command)', 'pnpm testing'].map(decision),
                 read: rules.filter(r => Array.isArray(r.toolName)).every(r =>
                     new RegExp(r.argsPattern).test(JSON.stringify({file_path: 'nested/.env.local'}))),
+                allows: rules.filter(r => r.decision === 'allow' && r.commandRegex).map(r => r.commandRegex),
                 codex: compiled.codex, antigravity: compiled.antigravity, claude: compiled.claude,
             }));`,
 		);
+		expect(out.allows.length).toBeGreaterThan(0);
+		// A quantified group (`(...)*`, `(...)+`) is what static ReDoS scanners flag; allow rules stay flat.
+		expect(out.allows.filter((r: string) => /\)[*+]/.test(r))).toEqual([]);
 		expect(out.safe).toEqual(['allow', 'allow', 'allow']);
 		expect(out.blocked).toEqual(Array(6).fill('deny'));
 		expect(out.other).toEqual(Array(3).fill('ask_user'));

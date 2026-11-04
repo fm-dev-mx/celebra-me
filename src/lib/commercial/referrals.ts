@@ -1,3 +1,4 @@
+import { findMexicanCity } from '@/lib/commercial/mexican-cities';
 import { normalizeCommercialPhone } from '@/lib/commercial/phone';
 
 /** Friend discount rate when ordering through a customer referral link (?ref=CODE). */
@@ -168,11 +169,12 @@ function escapeCsvCell(value: string): string {
 }
 
 /**
- * Builds a Meta Ads Customer List CSV (`phone,fn,ln,ct,country`) containing only rows with a valid
- * E.164 phone number (`+52...` or `+1...`), deduplicated by E.164 phone.
+ * Builds a Meta Ads Customer List CSV (`phone,fn,ln,ct,st,country`) containing only rows with a
+ * valid E.164 phone number (`+52...` or `+1...`), deduplicated by E.164 phone. A Mexican city is
+ * written under its canonical name with its state; any other city is kept as stored, without state.
  */
 export function buildMetaCustomerListCsv(rows: MetaCustomerCsvInputRow[]): string {
-	const header = 'phone,fn,ln,ct,country';
+	const header = 'phone,fn,ln,ct,st,country';
 	const seenPhones = new Set<string>();
 	const lines: string[] = [header];
 
@@ -183,8 +185,10 @@ export function buildMetaCustomerListCsv(rows: MetaCustomerCsvInputRow[]): strin
 		seenPhones.add(normalizedPhone.e164);
 
 		const { firstName, lastName } = splitCustomerNameForMetaCsv(row.displayName);
-		const city = row.city?.trim() ?? '';
 		const country = (row.country?.trim() || 'MX').toUpperCase();
+		const mexicanCity = country === 'MX' ? findMexicanCity(row.city) : undefined;
+		const city = mexicanCity?.name ?? row.city?.trim() ?? '';
+		const state = mexicanCity?.state ?? '';
 
 		lines.push(
 			[
@@ -192,6 +196,7 @@ export function buildMetaCustomerListCsv(rows: MetaCustomerCsvInputRow[]): strin
 				escapeCsvCell(firstName),
 				escapeCsvCell(lastName),
 				escapeCsvCell(city),
+				escapeCsvCell(state),
 				escapeCsvCell(country),
 			].join(','),
 		);
