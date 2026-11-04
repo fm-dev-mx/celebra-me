@@ -38,11 +38,12 @@ const content: CanonicalEventContentInput = {
 	structuralExemptions: ['gallery'],
 	sectionOrder: [
 		'quote',
+		'family',
+		'itinerary',
+		'gifts',
+		// Round 1: the count, the venue and the map now sit together with the pass and the reply.
 		'countdown',
 		'location',
-		'itinerary',
-		'family',
-		'gifts',
 		'personalizedAccess',
 		'rsvp',
 		'thankYou',
@@ -51,7 +52,7 @@ const content: CanonicalEventContentInput = {
 		intersections: {
 			// Three intentional joins across the whole narrative arc (Bridge, Bridge, Climax),
 			// preserving clean neutral paper-mist cuts everywhere else.
-			countdown: { family: 'overlap', source: 'quote' },
+			countdown: { family: 'overlap', source: 'gifts' },
 			'interlude-after-countdown': { family: 'overlap', source: 'countdown' },
 			thankYou: { family: 'arch', source: 'rsvp' },
 		},
@@ -66,9 +67,9 @@ const content: CanonicalEventContentInput = {
 			presentation: 'framed',
 		},
 		{
-			// Bespoke still 2: the invitation itself, a sealed lilac envelope, before the reply.
+			// Bespoke still 2: the invitation itself, a sealed lilac envelope, before the pass.
 			image: 'interludeEnvelope',
-			afterSection: 'gifts',
+			afterSection: 'location',
 			alt: 'Sobre lila cerrado con un ramito de flores y un moño amarillo, en acuarela.',
 			height: 'medium',
 			presentation: 'framed',
@@ -98,8 +99,7 @@ const content: CanonicalEventContentInput = {
 		microcopy: 'Toque el sello para abrir',
 	},
 	quote: {
-		text: 'Quince años se cuentan, sobre todo, en las personas que han estado cerca.',
-		closingLine: 'Por eso quiero compartir esta noche con usted.',
+		text: 'Dando gracias a Dios por estos quince años, le invito a celebrar conmigo esta bendición.',
 	},
 	countdown: {
 		variant: 'written-days',
@@ -207,10 +207,16 @@ const content: CanonicalEventContentInput = {
 		parents: {
 			mother: 'Nichme Margarita Urueta Hermosillo',
 		},
+		// Groups replace the parents block in the render; the title reads into them:
+		// «Con la bendición de Dios y de mi» → Mamá / Hermano. No godparents.
+		groups: [
+			{ title: 'Mamá', items: [{ name: 'Nichme Margarita Urueta Hermosillo' }] },
+			{ title: 'Hermano', items: [{ name: 'Raúl Solis' }] },
+		],
 		labels: {
-			sectionTitle: 'A mi lado',
+			sectionTitle: 'Con la bendición de Dios y de mi',
 			sectionSubtitle: '',
-			parentsTitle: 'Mi mamá',
+			parentsTitle: 'Mamá',
 			sectionMessage:
 				'Mamá: de usted aprendí a mantenerme firme y a cuidar a quienes quiero. Llego a mis quince de su mano.',
 		},
@@ -218,7 +224,9 @@ const content: CanonicalEventContentInput = {
 	rsvp: {
 		variant: 'reply-card',
 		title: '¿Me acompaña?',
-		subcopy: 'Su respuesta me ayuda a preparar su lugar. Le agradeceré confirmarla con tiempo.',
+		// Deadline proposed three weeks before the event; pending client approval.
+		subcopy:
+			'Su respuesta me ayuda a preparar su lugar. Le agradeceremos confirmar antes del 2 de octubre de 2027.',
 		lockedMessage:
 			'Esta invitación es personal. Abra el enlace que le envié para ver su pase y confirmar.',
 		guestCap: 1,
@@ -263,9 +271,9 @@ const content: CanonicalEventContentInput = {
 	},
 	navigation: [
 		{ label: 'Momento', href: '#quote-section' },
-		{ label: 'Lugar', href: '#event-location' },
-		{ label: 'Programa', href: '#itinerary' },
 		{ label: 'Familia', href: '#family-section' },
+		{ label: 'Programa', href: '#itinerary' },
+		{ label: 'Lugar', href: '#event-location' },
 		{ label: 'Confirmar', href: '#rsvp' },
 	],
 	music: {

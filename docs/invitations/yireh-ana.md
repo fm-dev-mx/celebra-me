@@ -42,31 +42,34 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 
 ## Fact Register
 
-| field                | value                                                                      | classification | source        | notes                                                         |
-| -------------------- | -------------------------------------------------------------------------- | -------------- | ------------- | ------------------------------------------------------------- |
-| slug                 | yireh-ana                                                                  | verified       | owner-session | Canonical slug without eventType prefix                       |
-| celebrantName        | Yireh Ana                                                                  | verified       | wa-export     | First and second name of the quinceañera                      |
-| motherName           | Nichme Margarita Urueta Hermosillo                                         | verified       | wa-export     | Mother of the celebrant                                       |
-| fatherName           | —                                                                          | not_applicable | wa-export     | Not provided by client; explicitly left out                   |
-| godparents           | —                                                                          | not_applicable | wa-export     | Not provided by client; explicitly left out                   |
-| eventLabel           | Mis XV Años                                                                | inferred       | wa-export     | XV celebration title                                          |
-| eventDate            | 2027-10-23                                                                 | verified       | wa-export     | Saturday, October 23, 2027                                    |
-| eventTime            | 19:00                                                                      | verified       | wa-export     | Reception start time (19:00)                                  |
-| receptionTime        | 19:00                                                                      | verified       | wa-export     | Reception at Salón Casino Imperial                            |
-| ceremonyTime         | 19:30                                                                      | verified       | wa-export     | Thanksgiving by Pastor Jesús Manuel Ozaeta Pérez, same hall   |
-| timeZone             | America/Chihuahua                                                          | inferred       | wa-export     | Ciudad Delicias, Chihuahua (UTC−6)                            |
-| sourceAssetPath      | source:watercolor-session                                                  | verified       | owner-session | Opaque label; watercolor illustrations                        |
-| sectionOrder         | quote, countdown, location, itinerary, family, gifts, pass, rsvp, thankYou | verified       | owner-session | Gallery omitted (no photos)                                   |
-| primaryVenueName     | Salón Casino Imperial                                                      | verified       | wa-export     | Ceremony and reception in the same venue                      |
-| primaryVenueAddress  | Carr. Delicias–Ortiz km 1, Centro, Ciudad Delicias, Chihuahua              | verified       | wa-export     | Highway Delicias-Ortiz km 1                                   |
-| distinctVenues       | false                                                                      | verified       | wa-export     | Both moments take place in the same hall                      |
-| dressCode            | Formal                                                                     | verified       | wa-export     | Formal dress code                                             |
-| dressColor           | —                                                                          | not_applicable | wa-export     | Client chose not to reserve a gown color (2026-10-29)         |
-| musicUrl             | Tie a Yellow Ribbon Round the Ole Oak Tree — Tony Orlando & Dawn           | verified       | wa-export     | Hosted on Cloudflare R2 at 64 kbps MP3 (YouTube: 8N1UutuYlL0) |
-| noPhotosConsent      | true                                                                       | verified       | wa-export     | Celebrant explicitly requested no personal photos/gallery     |
-| rsvpConfirmationMode | api                                                                        | verified       | owner-session | Digital confirmation flow with personalized passes            |
-| rsvpGuestCap         | 1                                                                          | inferred       | owner-session | Documented default pass cap                                   |
-| gifts                | Legend only                                                                | verified       | wa-export     | «Lo que disponga su corazón será bien recibido»               |
+| field                | value                                                                                      | classification | source        | notes                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------ | -------------- | ------------- | ------------------------------------------------------------- |
+| slug                 | yireh-ana                                                                                  | verified       | owner-session | Canonical slug without eventType prefix                       |
+| celebrantName        | Yireh Ana                                                                                  | verified       | wa-export     | First and second name of the quinceañera                      |
+| motherName           | Nichme Margarita Urueta Hermosillo                                                         | verified       | wa-export     | Mother of the celebrant                                       |
+| brotherName          | Raúl Solis                                                                                 | verified       | wa-export     | Brother; family block round 1 (2026-11-04)                    |
+| fatherName           | —                                                                                          | not_applicable | wa-export     | Not provided by client; explicitly left out                   |
+| godparents           | —                                                                                          | not_applicable | wa-export     | Not provided by client; explicitly left out                   |
+| eventLabel           | Mis XV Años                                                                                | inferred       | wa-export     | XV celebration title                                          |
+| eventDate            | 2027-10-23                                                                                 | verified       | wa-export     | Saturday, October 23, 2027                                    |
+| eventTime            | 19:00                                                                                      | verified       | wa-export     | Reception start time (19:00)                                  |
+| receptionTime        | 19:00                                                                                      | verified       | wa-export     | Reception at Salón Casino Imperial                            |
+| ceremonyTime         | 19:30                                                                                      | verified       | wa-export     | Thanksgiving by Pastor Jesús Manuel Ozaeta Pérez, same hall   |
+| timeZone             | America/Chihuahua                                                                          | inferred       | wa-export     | Ciudad Delicias, Chihuahua (UTC−6)                            |
+| sourceAssetPath      | source:watercolor-session                                                                  | verified       | owner-session | Opaque label; watercolor illustrations                        |
+| sectionOrder         | quote, family, itinerary, gifts, countdown, location, pass, rsvp, thankYou                 | verified       | wa-export     | Round 1: countdown and venue moved next to the pass and reply |
+| primaryVenueName     | Salón Casino Imperial                                                                      | verified       | wa-export     | Ceremony and reception in the same venue                      |
+| primaryVenueAddress  | Carr. Delicias–Ortiz km 1, Centro, Ciudad Delicias, Chihuahua                              | verified       | wa-export     | Highway Delicias-Ortiz km 1                                   |
+| distinctVenues       | false                                                                                      | verified       | wa-export     | Both moments take place in the same hall                      |
+| dressCode            | Formal                                                                                     | verified       | wa-export     | Formal dress code                                             |
+| dressColor           | —                                                                                          | not_applicable | wa-export     | Client chose not to reserve a gown color (2026-10-29)         |
+| musicUrl             | Tie a Yellow Ribbon Round the Ole Oak Tree — Tony Orlando & Dawn                           | verified       | wa-export     | Hosted on Cloudflare R2 at 64 kbps MP3 (YouTube: 8N1UutuYlL0) |
+| noPhotosConsent      | true                                                                                       | verified       | wa-export     | Celebrant explicitly requested no personal photos/gallery     |
+| rsvpConfirmationMode | api                                                                                        | verified       | owner-session | Digital confirmation flow with personalized passes            |
+| rsvpGuestCap         | 1                                                                                          | inferred       | owner-session | Documented default pass cap                                   |
+| quote                | «Dando gracias a Dios por estos quince años, le invito a celebrar conmigo esta bendición.» | verified       | wa-export     | Round 1 quote, no closing line                                |
+| rsvpDeadline         | 2027-10-02                                                                                 | inferred       | owner-session | Proposal (3 weeks before); pending client approval            |
+| gifts                | Legend only                                                                                | verified       | wa-export     | «Lo que disponga su corazón será bien recibido»               |
 
 ---
 
@@ -83,7 +86,10 @@ and one oak with a yellow ribbon on the cover) serve as production-authoritative
 
 ### Non-blocking gaps
 
-- Father and godparents (not provided in intake; left out unless supplied later).
+- Father and godparents (not provided; the client asked for no godparents in round 1).
+- Virtues text: pending from the client. It goes in the family `sectionMessage` slot
+  (`invitation.ts`, family block), replacing the current message; do not invent it.
+- RSVP deadline «2 de octubre de 2027» is a proposal awaiting client approval.
 - Program hours are client estimates (19:00 Recepción, 19:30 Acción de gracias, 21:00 Vals and
   toast, 21:30 Bocadillos y aguas frescas and dance, 24:00 Cierre); the copy says so. No alcohol.
 - Final art: the owner kept the v3 cover and the flower wax seal without initials (2026-10-30); the
@@ -115,13 +121,14 @@ None. Cover v4 and the oak seal were dropped by the owner on 2026-10-30.
 
 ## Agent Recommendations
 
-| topic  | recommendation                                                                       | basis                       | status                |
-| ------ | ------------------------------------------------------------------------------------ | --------------------------- | --------------------- |
-| preset | `storybook-lilac`: pale lilac paper, candle gold, and violet ink                     | client requested pale lilac | accepted (2026-10-27) |
-| motifs | Watercolor lilac and purple florals, tiny yellow blossoms, subtle golden-yellow bows | client family story context | accepted (2026-10-27) |
-| hero   | Ref 40 without books: corners on top, name on clean paper, one oak with a ribbon     | ref 40, owner review v3     | accepted (2026-10-29) |
-| roble  | Oak only on the cover; flower wax seal; interludes and closing have none             | owner review v3, 2026-10-30 | accepted (2026-10-30) |
-| music  | 64 kbps MP3 loop, hosted on media domain                                             | canonical standard R8       | accepted (2026-10-27) |
+| topic  | recommendation                                                                                                       | basis                       | status                |
+| ------ | -------------------------------------------------------------------------------------------------------------------- | --------------------------- | --------------------- |
+| preset | `storybook-lilac`: pale lilac paper, candle gold, and violet ink                                                     | client requested pale lilac | accepted (2026-10-27) |
+| motifs | Watercolor lilac and purple florals, tiny yellow blossoms, subtle golden-yellow bows                                 | client family story context | accepted (2026-10-27) |
+| hero   | Ref 40 without books: corners on top, name on clean paper, one oak with a ribbon                                     | ref 40, owner review v3     | accepted (2026-10-29) |
+| round1 | Cover: name first, «Mis XV años» below with a paper veil, no date/venue; yellow ribbons replace envelope butterflies | client round 1              | applied (2026-11-04)  |
+| roble  | Oak only on the cover; flower wax seal; interludes and closing have none                                             | owner review v3, 2026-10-30 | accepted (2026-10-30) |
+| music  | 64 kbps MP3 loop, hosted on media domain                                                                             | canonical standard R8       | accepted (2026-10-27) |
 
 ---
 
@@ -129,7 +136,7 @@ None. Cover v4 and the oak seal were dropped by the owner on 2026-10-30.
 
 ```text
 // Cadence map — non-neutral boundaries only (3 joins, Bridge/Bridge/Climax)
-countdown: overlap from quote (Bridge)
+countdown: overlap from gifts (Bridge)
 interlude-after-countdown: overlap from countdown (Bridge)
 thankYou: arch from rsvp (Climax)
 ```
@@ -139,18 +146,19 @@ surface appears only for contrast, on the countdown and the closing.
 
 ### Scene plan (D9–D11)
 
-| section        | movement with scroll                                                       |
-| -------------- | -------------------------------------------------------------------------- |
-| hero           | **Pinned scene:** the cover closes in on the oak's ribbon; the text leaves |
-| quote          | The words appear one by one on clean paper                                 |
-| interludes 1/2 | Framed bouquet settles flat; envelope unfolds                              |
-| countdown      | The count unfolds into place                                               |
-| location       | The dress-code tag swings on its cord                                      |
-| itinerary      | **Pinned scene:** a yellow ribbon draws past each moment and ends in a bow |
-| family         | The divider draws from the centre                                          |
-| gifts          | The gift line rises                                                        |
-| pass / rsvp    | The pass settles flat; the reply card rises                                |
-| thankYou       | The wreath unfolds into the night                                          |
+| section     | movement with scroll                                                       |
+| ----------- | -------------------------------------------------------------------------- |
+| hero        | **Pinned scene:** the cover closes in on the oak's ribbon; the text leaves |
+| quote       | The words appear one by one on clean paper                                 |
+| family      | The divider draws from the centre                                          |
+| itinerary   | **Pinned scene:** a yellow ribbon draws past each moment and ends in a bow |
+| gifts       | The gift line rises                                                        |
+| countdown   | The count unfolds into place                                               |
+| interlude 1 | Framed bouquet settles flat (after countdown)                              |
+| location    | The dress-code tag swings on its cord                                      |
+| interlude 2 | Envelope unfolds (after location)                                          |
+| pass / rsvp | The pass settles flat; the reply card rises                                |
+| thankYou    | The wreath unfolds into the night                                          |
 
 Two pinned scenes, never adjacent, about 28 % of the page height at 390×844 and 26 % at 1440×900.
 Reduced motion and browsers without scroll timelines show the resting layout. Motif roles: the bow
@@ -161,13 +169,13 @@ envelope stills and the closing wreath.
 
 ## Sections
 
-| bucket                 | section keys                                                                         |
-| ---------------------- | ------------------------------------------------------------------------------------ |
-| requested              | location, itinerary (estimated hours), family (mother only), gifts line, dress code  |
-| inferred / recommended | envelope, hero, quote, interludes (2), countdown, personalizedAccess, rsvp, thankYou |
-| client-provided        | music track: «Tie a Yellow Ribbon Round the Ole Oak Tree — Tony Orlando & Dawn»      |
-| omitted                | gallery (celebrant refusal of photos), father/godparents (unsupplied), gown color    |
-| unresolved             | none                                                                                 |
+| bucket                 | section keys                                                                            |
+| ---------------------- | --------------------------------------------------------------------------------------- |
+| requested              | location, itinerary (estimated hours), family (mother, brother), gifts line, dress code |
+| inferred / recommended | envelope, hero, quote, interludes (2), countdown, personalizedAccess, rsvp, thankYou    |
+| client-provided        | music track: «Tie a Yellow Ribbon Round the Ole Oak Tree — Tony Orlando & Dawn»         |
+| omitted                | gallery (celebrant refusal of photos), father, godparents (client request), gown color  |
+| unresolved             | none                                                                                    |
 
 Guest-facing copy: Voice in first person, «usted» register, formal and emotive.
 

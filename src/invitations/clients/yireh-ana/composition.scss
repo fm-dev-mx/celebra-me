@@ -1,3 +1,5 @@
+@use '../../../styles/tools/motion';
+
 // Yireh Ana: the few rules her tokens cannot express. Everything else lives in the profile.
 
 // Letter: a second gold hairline inside the preset's rule, so the card reads as stationery.
@@ -48,6 +50,85 @@
 			line-height: 1;
 			color: var(--color-gold-ink);
 			pointer-events: none;
+		}
+	}
+}
+
+// Cover (round 1): her name first and «Mis XV años» beneath it, centred; the date and venue leave
+// the cover (they live in the location section). A paper halo keeps both lines off the flowers.
+.event--yireh-ana .invitation-hero[data-variant='standard'] {
+	.invitation-hero__content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+
+	.invitation-hero__title-wrapper {
+		order: 1;
+	}
+
+	.invitation-hero__title {
+		-webkit-text-stroke: 0.018em var(--color-violet-ink);
+		filter: drop-shadow(0 0 0.35rem var(--color-lilac-paper))
+			drop-shadow(0 0 1.1rem rgb(var(--color-lilac-paper-rgb) / 85%));
+	}
+
+	.invitation-hero__label {
+		order: 2;
+		margin-top: 0.35rem;
+		padding: 0.45em 1.4em;
+		border-radius: 999px;
+		background: radial-gradient(
+			closest-side,
+			rgb(var(--color-lilac-paper-rgb) / 92%) 55%,
+			rgb(var(--color-lilac-paper-rgb) / 0%)
+		);
+		font-weight: 600;
+		text-shadow: 0 0 0.6rem var(--color-lilac-paper);
+	}
+
+	.invitation-hero__divider,
+	.invitation-hero__details {
+		display: none;
+	}
+}
+
+// Envelope (round 1): yellow ribbons fly in the envelope sky instead of butterflies. The shared
+// butterfly markup stays; only its drawing is swapped here, inside the event scope.
+$yireh-ribbon-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64'%3E%3Cpath d='M24 16C14 4 3 10 8 18c3 4 11 1 16-2zM24 16c10-12 21-6 16 2-3 4-11 1-16-2z'/%3E%3Ccircle cx='24' cy='16' r='3.6'/%3E%3Cpath d='M23 18c-6 12 3 22-8 40M25 18c7 13-2 25 9 42' fill='none' stroke='black' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E");
+
+.event--yireh-ana .envelope-wrapper .storybook-sky__butterfly {
+	svg {
+		visibility: hidden;
+	}
+
+	// The warm bloom turns yellow with the ribbons.
+	&::before {
+		background: radial-gradient(closest-side, rgb(252 222 104 / 35%), transparent);
+	}
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(165deg, rgb(252 222 104), rgb(232 182 40));
+		mask: $yireh-ribbon-mask center / contain no-repeat;
+		transform-origin: 50% 25%;
+		animation: yireh-ribbon-flutter 1.1s ease-in-out infinite alternate;
+
+		@include motion.reduced-motion {
+			animation: none;
+		}
+	}
+
+	@keyframes yireh-ribbon-flutter {
+		from {
+			transform: rotate(-9deg) scaleX(1);
+		}
+
+		to {
+			transform: rotate(8deg) scaleX(0.82);
 		}
 	}
 }
