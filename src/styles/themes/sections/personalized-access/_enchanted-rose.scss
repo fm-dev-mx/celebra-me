@@ -1,84 +1,74 @@
+@use '../theme-shell/enchanted-rose-paper' as paper;
+
+// The pass is a card of heavy cotton stock with gilded edges: the section paints no ground of its
+// own, so only the card rises over the page (the stack pins the gifts behind it), and the ink turns
+// to burgundy and rose on the ivory.
 .theme-preset--enchanted-rose .personalized-access {
-	background:
-		linear-gradient(180deg, rgb(var(--color-rose-shadow-rgb) / 7%) 0%, transparent 12%),
-		linear-gradient(180deg, transparent 76%, rgb(var(--color-midnight-navy-rgb) / 12%) 100%),
-		var(--enchanted-section-ivory-bg);
-	position: relative;
+	$gold: rgb(var(--color-action-accent-rgb));
 
-	&::before {
-		content: '';
-		position: absolute;
-		inset: 0 0 auto;
-		height: 1px;
-		width: min(16rem, 60%);
-		margin-inline: auto;
-		background: var(--rose-gold-divider);
-		opacity: 72%;
-		pointer-events: none;
-	}
-
-	&::after {
-		content: '';
-		position: absolute;
-		inset: auto 0 0;
-		height: 30%;
-		background: linear-gradient(
-			180deg,
-			transparent 50%,
-			rgb(var(--color-rose-shadow-rgb) / 7%) 100%
+	--pa-card-bg-color: color-mix(
+		in srgb,
+		var(--color-warm-ivory) 90%,
+		rgb(var(--color-antique-gold-rgb))
+	);
+	--pa-card-bg-image:
+		#{paper.$grain}, #{paper.$fibres},
+		radial-gradient(ellipse 90% 55% at 50% 0%, rgb(255 255 255 / 55%), transparent 70%),
+		radial-gradient(
+			ellipse 120% 80% at 50% 100%,
+			rgb(var(--color-blush-pink-rgb) / 14%),
+			transparent 70%
+		),
+		linear-gradient(
+			90deg,
+			rgb(var(--color-walnut-brown-rgb) / 7%),
+			transparent 10% 90%,
+			rgb(var(--color-walnut-brown-rgb) / 9%)
 		);
-		pointer-events: none;
+	--pa-card-bg-position: 0 0;
+	--pa-card-bg-size: 180px 180px, 240px 240px, auto, auto, auto;
+	--pa-card-border-radius: 0.875rem;
+
+	// Gilded edge: a bright foil line, a darker bevel under it, then the card's lift off the page.
+	--pa-card-border: 1px solid #{$gold};
+	--pa-card-shadow:
+		inset 0 0 0 2px rgb(var(--color-candle-gold-rgb) / 55%),
+		inset 0 0 0 3px rgb(var(--color-walnut-brown-rgb) / 12%),
+		inset 0 0 36px rgb(var(--color-walnut-brown-rgb) / 9%),
+		0 1px 2px rgb(var(--color-rose-shadow-rgb) / 18%),
+		0 28px 56px -24px rgb(var(--color-rose-shadow-rgb) / 45%);
+	--pa-card-inner-border: 1px solid rgb(var(--color-action-accent-rgb) / 45%);
+	--pa-card-glow: none;
+	--pa-corner-color: #{$gold};
+	--pa-corner-opacity: 90%;
+	--pa-corner-glow-blur: 0;
+	--pa-seal-color: #{$gold};
+	--pa-eyebrow-color: var(--color-deep-rose-red);
+	--pa-title-color: var(--color-velvet-burgundy);
+	--pa-subtitle-color: var(--color-walnut-brown);
+	--pa-label-color: var(--color-deep-rose-red);
+	--pa-guest-color: var(--color-velvet-burgundy);
+	--pa-divider-diamond-bg: var(--pa-card-bg-color);
+	--pa-divider-diamond-border-color: #{$gold};
+	--pa-divider-diamond-shadow: none;
+	--pa-count-frame-border: 1px solid rgb(var(--color-action-accent-rgb) / 70%);
+	--pa-count-frame-bg: rgb(255 255 255 / 35%);
+	--pa-count-frame-shadow:
+		inset 0 1px 6px rgb(var(--color-walnut-brown-rgb) / 12%), 0 1px 0 rgb(255 255 255 / 70%);
+	--pa-count-frame-inner-border: 0.5px solid rgb(var(--color-action-accent-rgb) / 40%);
+	--pa-count-color: var(--color-velvet-burgundy);
+	--pa-footer-border-top: 1px solid rgb(var(--color-action-accent-rgb) / 35%);
+	--pa-footer-text-color: var(--color-walnut-brown);
+
+	position: relative;
+	background: transparent;
+
+	.access-card__divider::after {
+		background: var(--pa-card-bg-color);
+		border-color: #{$gold};
 	}
 
-	.access-card {
-		&::before {
-			border-color: rgb(var(--color-antique-gold-rgb) / 10%);
-		}
-
-		&::after {
-			background:
-				radial-gradient(
-					circle at 24% 12%,
-					rgb(var(--color-candle-gold-rgb) / 12%) 0%,
-					transparent 38%
-				),
-				radial-gradient(
-					circle at 76% 84%,
-					rgb(var(--color-blush-pink-rgb) / 8%) 0%,
-					transparent 34%
-				);
-		}
-
-		&__corner {
-			border-color: rgb(var(--color-candle-gold-rgb) / 58%);
-			opacity: 68%;
-
-			&::before {
-				background: var(--color-candle-gold);
-				box-shadow: 0 0 10px rgb(var(--color-candle-gold-rgb) / 42%);
-			}
-		}
-
-		&__title {
-			text-shadow: 0 8px 24px rgb(var(--color-rose-shadow-rgb) / 36%);
-		}
-
-		&__subtitle,
-		&__guest,
-		&__footer p {
-			text-shadow: 0 8px 22px rgb(var(--color-rose-shadow-rgb) / 28%);
-		}
-
-		&__divider::after {
-			background: var(--color-velvet-burgundy);
-			border-color: var(--color-candle-gold);
-			box-shadow: 0 0 12px rgb(var(--color-candle-gold-rgb) / 32%);
-		}
-
-		&__count-frame {
-			&::before {
-				border: 1px solid rgb(var(--color-candle-gold-rgb) / 10%);
-			}
-		}
+	.access-card__footer a {
+		color: var(--color-deep-rose-red);
 	}
 }

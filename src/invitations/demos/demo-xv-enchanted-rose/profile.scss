@@ -186,8 +186,16 @@
 
 	// The gifts folio stays pinned while the access pass rises over it; the sections after the pass
 	// (RSVP and the clear thank-you blend) would show it again, so it fades out as it is covered.
+	// The pass brings no ground of its own: only its paper card slides over the folio, and the
+	// folio fades onto a floor of the same ivory, so nothing behind the card ever cuts.
 	.invitation-section-wrapper[data-intersection-anchor='stack'] {
 		--intersection-stack-recede-fade: 0%;
+		--intersection-stack-floor: var(--color-surface-secondary);
+	}
+
+	.invitation-section-wrapper[data-intersection='stack'] {
+		--intersection-stack-surface: transparent;
+		--intersection-stack-shadow: none;
 	}
 
 	// The keepsake sits in a cut-corner window, and one soft gold hairline frames the closing like

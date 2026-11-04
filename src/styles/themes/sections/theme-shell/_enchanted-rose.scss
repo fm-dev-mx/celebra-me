@@ -801,11 +801,26 @@ $velvet-rest:
 		font-family: var(--font-label);
 	}
 
-	// The closing signature signs in burgundy script on one line, clear of the music control; the
-	// gold stays on the frame.
+	// The thanks keep an opaque ivory to their last pixel: the shared ground fades to a 10% gold
+	// tint, which let the page's dark body show through as a line above the footer. It ends on the
+	// gilded ivory the footer ramp starts from.
+	.thank-you-section {
+		background: linear-gradient(
+			180deg,
+			var(--color-surface-primary) 0%,
+			color-mix(in srgb, var(--color-warm-ivory) 90%, rgb(var(--color-action-accent-rgb)))
+				100%
+		);
+	}
+
+	// The closing signature signs in burgundy script, clear of the music control; the gold stays on
+	// the frame. The full name is wider than a phone, so it breaks into balanced lines there and
+	// keeps one line only where the column fits it.
 	.thank-you-section .closing-name {
+		max-width: 100%;
 		font-size: var(--rose-closing-name-size);
-		white-space: nowrap;
+		text-wrap: balance;
+		overflow-wrap: anywhere;
 		background: none;
 		color: var(--color-velvet-burgundy);
 		-webkit-text-fill-color: var(--color-velvet-burgundy);

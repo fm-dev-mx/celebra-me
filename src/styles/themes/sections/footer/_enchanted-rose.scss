@@ -1,30 +1,31 @@
 .theme-preset--enchanted-rose .invitation-footer {
 	--footer-text-color: rgb(var(--color-warm-ivory-rgb) / 84%);
 
-	position: relative;
+	// The thanks' gilded ivory ramps through opaque rose into the velvet the footer starts on, so no
+	// translucent blush ever sits over a darker ground (the footer re-scopes the surface tokens to
+	// its dark ground, so the ivory is named). The ramp starts at the border edge: the shared
+	// transparent top border would otherwise show the velvet as a dark line above it.
+	$ivory: color-mix(in srgb, var(--color-warm-ivory) 90%, rgb(var(--color-action-accent-rgb)));
 
-	// The thanks' ivory ramps through a blush dusk into the velvet instead of cutting (the footer
-	// re-scopes the surface tokens to its dark ground, so the ivory is named).
+	position: relative;
 	background:
 		linear-gradient(
 				180deg,
-				var(--color-warm-ivory) 0%,
-				rgb(var(--color-blush-pink-rgb) / 52%) 36%,
-				rgb(var(--color-deep-rose-red-rgb) / 24%) 70%,
-				transparent 100%
+				#{$ivory} 0%,
+				color-mix(in srgb, #{$ivory} 55%, rgb(var(--color-blush-pink-rgb))) 22%,
+				color-mix(in srgb, rgb(var(--color-blush-pink-rgb)) 40%, var(--color-deep-rose-red))
+					48%,
+				color-mix(in srgb, var(--color-deep-rose-red) 50%, var(--color-velvet-burgundy)) 74%,
+				var(--color-velvet-burgundy) 100%
 			)
-			top / 100% clamp(3.5rem, 9vw, 5.5rem) no-repeat,
+			top / 100% clamp(4.5rem, 12vw, 6.5rem) no-repeat,
 		radial-gradient(
 			ellipse at 30% 0%,
 			rgb(var(--color-candle-gold-rgb) / 10%) 0%,
 			transparent 38%
 		),
-		linear-gradient(
-			180deg,
-			var(--color-midnight-navy) 0%,
-			var(--color-velvet-burgundy) 56%,
-			var(--color-rose-shadow) 100%
-		);
+		linear-gradient(180deg, var(--color-velvet-burgundy) 0%, var(--color-rose-shadow) 100%);
+	background-origin: border-box;
 	color: var(--footer-text-color);
 
 	.footer__closing-phrase {

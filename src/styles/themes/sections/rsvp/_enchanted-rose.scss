@@ -1,17 +1,30 @@
 @use '../../../global/a11y' as a11y;
 
 .theme-preset--enchanted-rose .rsvp-section:has(.rsvp) {
+	// The form sits on a short velvet band: no full-screen height, room above for the ramp and a
+	// shorter foot before the thank-you blend.
+	--rsvp-section-min-height: auto;
+	--rsvp-shell-padding-block: clamp(8.5rem, 18vw, 10rem) clamp(4rem, 9vw, 5.5rem);
+
 	position: relative;
 	isolation: isolate;
 	overflow: hidden;
+
+	// The pass above is clear, so the RSVP rises out of the same ivory floor: the paper deepens
+	// through a rose dusk into the velvet over the top padding instead of starting on a cut.
 	background:
 		linear-gradient(
 			180deg,
-			rgb(var(--color-warm-ivory-rgb) / 12%) 0%,
-			transparent 11%,
-			transparent 87%,
-			rgb(var(--color-midnight-navy-rgb) / 48%) 100%
+			var(--color-surface-secondary) 0,
+			color-mix(in srgb, var(--color-surface-secondary) 80%, rgb(var(--color-blush-pink-rgb)))
+				1.5rem,
+			color-mix(in srgb, rgb(var(--color-blush-pink-rgb)) 45%, var(--color-deep-rose-red))
+				3.5rem,
+			rgb(var(--color-deep-rose-red-rgb) / 55%) 5.5rem,
+			rgb(var(--color-deep-rose-red-rgb) / 18%) 7.5rem,
+			transparent 9.5rem
 		),
+		linear-gradient(180deg, transparent 87%, rgb(var(--color-midnight-navy-rgb) / 48%) 100%),
 		radial-gradient(
 			ellipse at 50% 0%,
 			rgb(var(--color-candle-gold-rgb) / 24%) 0%,
@@ -27,6 +40,8 @@
 
 	// The section shell nests a second one; only the outer one paints the velvet.
 	.rsvp-section {
+		--rsvp-shell-padding-block: 0;
+
 		background: none;
 
 		&::after {
