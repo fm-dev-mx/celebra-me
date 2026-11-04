@@ -185,7 +185,7 @@ const content: CanonicalEventContentInput = {
 			{ time: '21:30', iconName: 'Waltz', label: 'Vals' },
 			{ time: '22:30', iconName: 'Dinner', label: 'Cena' },
 			{ time: '23:30', iconName: 'Party', label: 'Baile' },
-			{ time: '02:00', iconName: 'Party', label: 'Despedida' },
+			{ time: '02:00', iconName: 'Sparkles', label: 'Despedida' },
 		],
 	},
 	gallery: {
@@ -197,17 +197,22 @@ const content: CanonicalEventContentInput = {
 			{
 				image: 'gallery01',
 				alt: 'Naomi sonríe con un ramo de rosas frente a la puerta de un castillo.',
-				focalPoint: '50% 55%',
+				focalPoint: '50% 50%',
 			},
 			{
 				image: 'gallery02',
 				alt: 'Naomi de espaldas, con el gran moño de su vestido rosa, ante las torres del castillo.',
-				focalPoint: '50% 60%',
+				focalPoint: '50% 55%',
 			},
 			{
 				image: 'gallery03',
 				alt: 'Naomi con su ramo ante el arco de piedra del castillo.',
 				focalPoint: '50% 50%',
+			},
+			{
+				image: 'gallery04',
+				alt: 'Naomi de perfil, con su tiara y su ramo de rosas, bajo la luz cálida del castillo.',
+				focalPoint: '50% 40%',
 			},
 		],
 	},
@@ -216,14 +221,13 @@ const content: CanonicalEventContentInput = {
 		variant: 'standard',
 		title: 'Mesa de regalos',
 		presentation: 'catalog',
-		subtitle:
-			'Verle en mi noche ya es el regalo. Si aun así desea darme algo, mi mesa está en Liverpool; también recibiré con cariño el detalle que usted elija.',
+		subtitle: 'Verle en mi noche ya es el regalo. Si desea darme algo, aquí está mi mesa.',
 		items: [
 			{
 				type: 'store',
 				title: 'Liverpool',
 				url: 'https://mesaderegalos.liverpool.com.mx/milistaderegalos/60070167',
-				description: 'Número de evento: 60070167',
+				tableNumber: '60070167',
 			},
 		],
 	},
@@ -283,6 +287,7 @@ const content: CanonicalEventContentInput = {
 	music: {
 		url: 'https://media.celebra-me.com/invitations/xv/naomi-huerta/music-2d774ae1246bc0b460b18138b1d7955a35311347a64c3b7db3d00c4359aee2cb.mp3',
 		title: 'So This Is Love — Cinderella',
+		control: 'equalizer',
 		autoPlay: true,
 	},
 	sharing: {
@@ -320,6 +325,8 @@ export default defineCanonicalInvitation({
 		gallery01: 'gallery-01.webp',
 		gallery02: 'gallery-02.webp',
 		gallery03: 'gallery-03.webp',
+		// A detail of the hero photograph: the tiara, the profile and the bouquet.
+		gallery04: 'gallery-04.webp',
 		interludeDoor: 'interlude-door.webp',
 		interludeVeil: 'interlude-veil.webp',
 		ogShare: 'og-share.webp',

@@ -10,6 +10,17 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.64.0-beta.1] - 2026-11-03
+
+Refines the naomi-huerta invitation scenes. No database migrations.
+
+### Changed
+
+- Invitations: naomi-huerta adds the castle clock, program motifs and paper stock, and fits each
+  section to the phone viewport; on phones each venue drawing sits beside its venue.
+- Invitations: the shared route map keeps stop labels and the phone entry grid opt-in, so other
+  route invitations render as before.
+
 ## [0.63.0-beta.1] - 2026-11-03
 
 Registers past clients with customer referral rewards and ships the naomi-huerta invitation updates.
