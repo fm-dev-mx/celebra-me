@@ -185,8 +185,13 @@ function clearIdleSessionCookies(cookies: CookieStore) {
 
 function isIdleSessionExpired(cookies: CookieStore, now: number) {
 	const idleSeenRaw = cookies.get('sb-idle-seen')?.value || '';
-	const idleSeenAt = Number.parseInt(idleSeenRaw, 10);
-	return Number.isFinite(idleSeenAt) && idleSeenAt > 0 && now - idleSeenAt > IDLE_TIMEOUT_SECONDS;
+	const idleSeenAt = Number(idleSeenRaw);
+	return (
+		!Number.isFinite(idleSeenAt) ||
+		idleSeenAt <= 0 ||
+		idleSeenAt > now ||
+		now - idleSeenAt > IDLE_TIMEOUT_SECONDS
+	);
 }
 
 async function refreshUserSession(cookies: CookieStore, refreshToken: string) {
@@ -554,8 +559,13 @@ async function handleProtectedAuthRequest(
 		return null;
 	}
 
-	if (!isApiRoute && isIdleSessionExpired(cookies, now)) {
+	if (isIdleSessionExpired(cookies, now)) {
 		clearIdleSessionCookies(cookies);
+		if (isApiRoute) {
+			return errorResponse(
+				new ApiError(401, 'unauthorized', 'Su sesión ha expirado. Inicie sesión de nuevo.'),
+			);
+		}
 		return privateRedirect(redirect, '/login');
 	}
 

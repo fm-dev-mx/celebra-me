@@ -15,7 +15,7 @@ export type HeaderEntry = readonly [name: string, value: string];
 export const SECURITY_HEADERS: readonly HeaderEntry[] = [
 	['X-Content-Type-Options', 'nosniff'],
 	['X-Frame-Options', 'DENY'],
-	['X-XSS-Protection', '1; mode=block'],
+	['X-XSS-Protection', '0'],
 	['Referrer-Policy', 'strict-origin-when-cross-origin'],
 	['Permissions-Policy', 'camera=(), microphone=(), geolocation=()'],
 	['Strict-Transport-Security', 'max-age=31536000; includeSubDomains'],
@@ -30,7 +30,7 @@ export const INVITATION_PREVIEW_SECURITY_HEADERS: readonly HeaderEntry[] = [
 	['X-Content-Type-Options', 'nosniff'],
 	['X-Frame-Options', 'SAMEORIGIN'],
 	['Content-Security-Policy', "frame-ancestors 'self'"],
-	['X-XSS-Protection', '1; mode=block'],
+	['X-XSS-Protection', '0'],
 	['Referrer-Policy', 'strict-origin-when-cross-origin'],
 	['Permissions-Policy', 'camera=(), microphone=(), geolocation=()'],
 	['Strict-Transport-Security', 'max-age=31536000; includeSubDomains'],
