@@ -151,6 +151,12 @@ None. Cover v4 and the oak seal were dropped by the owner on 2026-10-30.
     section
   - **basis:** client reference 181, owner decision 2026-11-04
   - **status:** applied (2026-11-04)
+- **topic:** hierarchy
+  - **recommendation:** One script title voice for every section (RSVP included); itinerary and
+    location read from the leading edge; no body text under 16px; countdown and closing padding
+    within the rhythm ceiling
+  - **basis:** owner request 2026-11-04, rhythm doc
+  - **status:** applied (2026-11-04)
 - **topic:** roble
   - **recommendation:** Oak only on the cover; flower wax seal; interludes and closing have none
   - **basis:** owner review v3, 2026-10-30

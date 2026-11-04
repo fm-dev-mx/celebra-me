@@ -46,6 +46,9 @@
 }
 
 .event--yireh-ana .thank-you-section {
+	// Hierarchy (round 1c): the closing stays within the rhythm doc's section ceiling.
+	padding-block: clamp(4.5rem, 8vw, 6.5rem);
+
 	.thank-you-message .drop-cap {
 		color: inherit;
 	}
@@ -304,4 +307,24 @@ $yireh-ribbon-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000
 		margin: 1.2rem auto 0;
 		text-align: center;
 	}
+}
+
+// Hierarchy (round 1c): one title voice for every section, and the functional sections read from
+// the leading edge so the page alternates centred narrative with aligned information. Quote,
+// family, gifts and the closing stay centred (rhythm doc §2).
+.event--yireh-ana .rsvp[data-variant='reply-card'] .rsvp__title {
+	font-family: var(--yireh-title-font);
+	font-size: clamp(2.5rem, 9vw, 3.4rem);
+	font-weight: 400;
+	line-height: 1.2;
+	color: var(--yireh-title-color);
+}
+
+.event--yireh-ana .itinerary__title {
+	text-align: start;
+}
+
+.event--yireh-ana .event-location[data-variant] .event-location__intro {
+	margin-inline: 0;
+	text-align: start;
 }

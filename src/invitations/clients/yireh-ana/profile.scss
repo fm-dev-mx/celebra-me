@@ -314,12 +314,12 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	}
 
 	.countdown-section {
-		--yireh-band-padding: 7rem;
+		--yireh-band-padding: clamp(3.5rem, 6vw, 6.5rem);
 		--countdown-written-bg: transparent;
 		--countdown-written-padding-block: calc(var(--yireh-band-padding) + var(--yireh-cut))
 			calc(var(--yireh-band-padding) + var(--yireh-print-overlap));
 		--countdown-written-muted: var(--color-night-lilac);
-		--countdown-written-title-size: 0.8125rem;
+		--countdown-written-title-size: 1rem;
 		--countdown-written-title-tracking: 0.14em;
 		--countdown-written-title-caps: normal;
 		--countdown-written-title-transform: uppercase;
@@ -478,14 +478,14 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--location-enclosure-reserved-title-tracking: 0;
 	--location-enclosure-reserved-title-color: var(--color-gold-ink);
 	--location-enclosure-last-text-font: var(--font-label);
-	--location-enclosure-last-text-size: 0.95rem;
-	--location-enclosure-last-text-transform: uppercase;
-	--location-enclosure-last-text-tracking: 0.22em;
+	--location-enclosure-last-text-size: 1.0625rem;
+	--location-enclosure-last-text-transform: none;
+	--location-enclosure-last-text-tracking: 0.02em;
 	--location-enclosure-last-text-color: var(--color-violet-ink-soft);
 
 	.event-location {
 		--location-program-label-color: var(--color-gold-ink);
-		--location-program-label-size: 1.05rem;
+		--location-program-label-size: 1.125rem;
 		--location-program-time-color: var(--color-violet-ink-soft);
 		--location-program-address-color: var(--color-violet-ink-soft);
 		--location-program-link: var(--color-lilac-deep);
@@ -501,8 +501,8 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--location-program-link-bg: rgb(var(--color-story-cream-rgb) / 55%);
 		--location-program-link-radius: 999px;
 		--location-program-link-decoration: none;
-		--location-program-link-size: 0.95rem;
-		--location-program-link-tracking: 0.1em;
+		--location-program-link-size: 1rem;
+		--location-program-link-tracking: 0.06em;
 		--location-program-link-primary-bg: var(--color-lilac-deep);
 		--location-program-link-primary-color: var(--color-story-cream);
 		--location-program-link-primary-border: 1px solid var(--color-lilac-deep);
@@ -616,6 +616,8 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--itinerary-ribbon-knot: var(--color-leaf-gold);
 	--itinerary-ribbon-time: var(--color-gold-ink);
 	--itinerary-ribbon-ink: var(--color-violet-ink);
+	--itinerary-ribbon-time-size: 1rem;
+	--itinerary-ribbon-desc-size: 1.0625rem;
 	--itinerary-ribbon-muted: var(--color-violet-ink-soft);
 	--itinerary-ribbon-bow-art: #{$yireh-bow};
 	--itinerary-ribbon-bow-drawing: none;
