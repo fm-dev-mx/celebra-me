@@ -157,8 +157,11 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	// Family: the thanks to her mother, signed, over a place card with her name.
 	--family-bg: var(--color-lilac-mist);
 	--family-padding-block: clamp(3.5rem, 8vw, 5.5rem);
-	--family-title-font: var(--yireh-title-font);
-	--family-title-size: var(--yireh-title-size);
+
+	// Family (round 1, as in the client's reference): the blessing line in plain serif, the
+	// group titles in her script hand, the names in serif.
+	--family-title-font: var(--font-display);
+	--family-title-size: clamp(1.45rem, 5vw, 1.85rem);
 	--family-title-style: normal;
 	--family-title-letter-spacing: 0;
 	--family-title-line-height: 1.2;
@@ -588,6 +591,12 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	// Short labels use a dark gold ink on paper; pale gold is reserved for the night.
 	--quote-closing-line-color: var(--color-gold-ink);
 	--family-group-title-color: var(--color-gold-ink);
+	--family-group-title-font: var(--font-calligraphy);
+	--family-group-title-size: clamp(2.1rem, 8vw, 2.6rem);
+	--family-group-title-weight: 400;
+	--family-group-title-letter-spacing: 0;
+	--family-group-title-text-transform: none;
+	--family-group-title-opacity: 100%;
 	--location-program-art-display: none;
 	--location-program-art: none;
 	--location-intro-lede-color: var(--color-violet-ink-soft);

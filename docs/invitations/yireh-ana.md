@@ -121,14 +121,38 @@ None. Cover v4 and the oak seal were dropped by the owner on 2026-10-30.
 
 ## Agent Recommendations
 
-| topic  | recommendation                                                                                                       | basis                       | status                |
-| ------ | -------------------------------------------------------------------------------------------------------------------- | --------------------------- | --------------------- |
-| preset | `storybook-lilac`: pale lilac paper, candle gold, and violet ink                                                     | client requested pale lilac | accepted (2026-10-27) |
-| motifs | Watercolor lilac and purple florals, tiny yellow blossoms, subtle golden-yellow bows                                 | client family story context | accepted (2026-10-27) |
-| hero   | Ref 40 without books: corners on top, name on clean paper, one oak with a ribbon                                     | ref 40, owner review v3     | accepted (2026-10-29) |
-| round1 | Cover: name first, «Mis XV años» below with a paper veil, no date/venue; yellow ribbons replace envelope butterflies | client round 1              | applied (2026-11-04)  |
-| roble  | Oak only on the cover; flower wax seal; interludes and closing have none                                             | owner review v3, 2026-10-30 | accepted (2026-10-30) |
-| music  | 64 kbps MP3 loop, hosted on media domain                                                                             | canonical standard R8       | accepted (2026-10-27) |
+- **topic:** preset
+  - **recommendation:** `storybook-lilac`: pale lilac paper, candle gold, and violet ink
+  - **basis:** client requested pale lilac
+  - **status:** accepted (2026-10-27)
+- **topic:** motifs
+  - **recommendation:** Watercolor lilac and purple florals, tiny yellow blossoms, subtle
+    golden-yellow bows
+  - **basis:** client family story context
+  - **status:** accepted (2026-10-27)
+- **topic:** hero
+  - **recommendation:** Ref 40 without books: corners on top, name on clean paper, one oak with a
+    ribbon
+  - **basis:** ref 40, owner review v3
+  - **status:** accepted (2026-10-29)
+- **topic:** round1
+  - **recommendation:** Cover: name first, «Mis XV años» below with a paper veil, no date/venue;
+    yellow ribbons replace envelope butterflies
+  - **basis:** client round 1
+  - **status:** applied (2026-11-04)
+- **topic:** round1b
+  - **recommendation:** Letter: name first, «Mis XV años» below, no date; family group titles in
+    script, blessing line in serif; RSVP in first person
+  - **basis:** client round 1 (owner-approved)
+  - **status:** applied (2026-11-04)
+- **topic:** roble
+  - **recommendation:** Oak only on the cover; flower wax seal; interludes and closing have none
+  - **basis:** owner review v3, 2026-10-30
+  - **status:** accepted (2026-10-30)
+- **topic:** music
+  - **recommendation:** 64 kbps MP3 loop, hosted on media domain
+  - **basis:** canonical standard R8
+  - **status:** accepted (2026-10-27)
 
 ---
 

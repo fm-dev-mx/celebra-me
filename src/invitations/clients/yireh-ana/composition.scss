@@ -11,6 +11,32 @@
 		border: 1px solid rgb(var(--color-leaf-gold-rgb) / 30%);
 		pointer-events: none;
 	}
+
+	// Round 1: the letter reads like the cover, her name first and «Mis XV años» beneath it,
+	// without the date.
+	.invitation-reveal-card__inner {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+
+		> * {
+			order: 3;
+		}
+	}
+
+	.invitation-reveal-card__name {
+		order: 1;
+	}
+
+	.invitation-reveal-card__label {
+		order: 2;
+		margin: 0.45rem 0 0;
+	}
+
+	.invitation-reveal-card__date {
+		display: none;
+	}
 }
 
 // The meadow sits under the scroll cue; the cover reads as a page to turn without it. Removed from

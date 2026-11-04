@@ -226,7 +226,7 @@ const content: CanonicalEventContentInput = {
 		title: '¿Me acompaña?',
 		// Deadline proposed three weeks before the event; pending client approval.
 		subcopy:
-			'Su respuesta me ayuda a preparar su lugar. Le agradeceremos confirmar antes del 2 de octubre de 2027.',
+			'Su respuesta me ayuda a preparar su lugar. Le agradeceré confirmar antes del 2 de octubre de 2027.',
 		lockedMessage:
 			'Esta invitación es personal. Abra el enlace que le envié para ver su pase y confirmar.',
 		guestCap: 1,
