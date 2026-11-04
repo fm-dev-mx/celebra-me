@@ -7,7 +7,7 @@ $yireh-icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
 $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8.5' y='8.5' width='11' height='11' rx='2'/%3E%3Cpath d='M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5'/%3E%3C/svg%3E");
 
 // Yireh Ana: the storybook-lilac preset as illustrated watercolor stationery. Ultra-pale lilac
-// paper, frameless watercolor stills between sections, and the night kept only as contrast for the
+// paper, matted watercolor stills between sections, and the night kept only as contrast for the
 // countdown and the closing. Each motif has one job: the oak on the cover, flowers only on the
 // cover, the bouquet and envelope stills and the closing wreath, and the small yellow bow tying off
 // the program ribbon (the only bow besides the oak's). Two pinned scenes (the cover closing in on the
@@ -157,8 +157,11 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	// Family: the thanks to her mother, signed, over a place card with her name.
 	--family-bg: var(--color-lilac-mist);
 	--family-padding-block: clamp(3.5rem, 8vw, 5.5rem);
-	--family-title-font: var(--yireh-title-font);
-	--family-title-size: var(--yireh-title-size);
+
+	// Family (round 1, as in the client's reference): the blessing line in plain serif, the
+	// group titles in her script hand, the names in serif.
+	--family-title-font: var(--font-display);
+	--family-title-size: clamp(1.45rem, 5vw, 1.85rem);
 	--family-title-style: normal;
 	--family-title-letter-spacing: 0;
 	--family-title-line-height: 1.2;
@@ -256,11 +259,11 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--hero-badge-text: var(--color-violet-ink);
 		--hero-label-color: var(--color-gold-ink);
 		--hero-eyebrow-font: var(--font-body);
-		--hero-eyebrow-size: 0.95rem;
+		--hero-eyebrow-size: 1.1rem;
 		--hero-eyebrow-weight: 500;
 		--hero-eyebrow-tracking: 0.32em;
 		--hero-heading-paint: linear-gradient(var(--color-violet-ink), var(--color-violet-ink));
-		--hero-heading-size: clamp(4rem, 18vw, 7.5rem);
+		--hero-heading-size: clamp(4.75rem, 21vw, 8.75rem);
 		--hero-heading-weight: 400;
 		--hero-heading-line-height: 1.15;
 		--hero-divider-fill: rgb(var(--color-leaf-gold-rgb) / 80%);
@@ -287,19 +290,20 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--header-nav-cta-border: var(--color-leaf-gold);
 	}
 
-	.invitation-interlude[data-presentation='framed'][data-interlude-index='2'] {
+	// The bouquet rests on the story paper as a matted print, a pause between the program and
+	// the practical pages.
+	.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
 		--section-band-paper: var(--color-lilac-paper);
 		--interlude-framed-bg: var(--color-lilac-paper);
-		--interlude-framed-padding: clamp(0.5rem, 3vw, 1.5rem) var(--yireh-gutter)
-			clamp(2rem, 6vw, 3.5rem);
-		--interlude-framed-max-width: 34rem;
-		--interlude-framed-radius: 0;
-		--interlude-framed-image-radius: 0;
-		--interlude-framed-mat: 0;
-		--interlude-framed-mat-bg: transparent;
+		--interlude-framed-padding: clamp(1rem, 4vw, 2rem) var(--yireh-gutter)
+			clamp(3.5rem, 9vw, 6rem);
+		--interlude-framed-max-width: 22.5rem;
+		--interlude-framed-mat: 0.875rem 0.875rem 2.75rem;
+		--interlude-framed-mat-bg: var(--color-story-cream);
 		--interlude-framed-border: 0;
 		--interlude-framed-outline: 0;
-		--interlude-framed-shadow: none;
+		--interlude-framed-shadow:
+			0 1px 0 var(--yireh-rule), 0 18px 40px -24px rgb(var(--color-violet-ink-rgb) / 45%);
 	}
 
 	.invitation-section-wrapper[data-section-kind='countdown'] {
@@ -311,12 +315,12 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	}
 
 	.countdown-section {
-		--yireh-band-padding: 7rem;
+		--yireh-band-padding: clamp(3.5rem, 6vw, 6.5rem);
 		--countdown-written-bg: transparent;
 		--countdown-written-padding-block: calc(var(--yireh-band-padding) + var(--yireh-cut))
 			calc(var(--yireh-band-padding) + var(--yireh-print-overlap));
 		--countdown-written-muted: var(--color-night-lilac);
-		--countdown-written-title-size: 0.8125rem;
+		--countdown-written-title-size: 1rem;
 		--countdown-written-title-tracking: 0.14em;
 		--countdown-written-title-caps: normal;
 		--countdown-written-title-transform: uppercase;
@@ -350,7 +354,8 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--intersection-depth: var(--yireh-print-overlap);
 	}
 
-	.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
+	// The envelope hangs from the night of the count onto the mist of the pass.
+	.invitation-interlude[data-presentation='framed'][data-interlude-index='2'] {
 		--section-band-paper: none;
 		--interlude-framed-bg: linear-gradient(
 			transparent 0 var(--yireh-print-overlap),
@@ -475,14 +480,14 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--location-enclosure-reserved-title-tracking: 0;
 	--location-enclosure-reserved-title-color: var(--color-gold-ink);
 	--location-enclosure-last-text-font: var(--font-label);
-	--location-enclosure-last-text-size: 0.95rem;
-	--location-enclosure-last-text-transform: uppercase;
-	--location-enclosure-last-text-tracking: 0.22em;
+	--location-enclosure-last-text-size: 1.0625rem;
+	--location-enclosure-last-text-transform: none;
+	--location-enclosure-last-text-tracking: 0.02em;
 	--location-enclosure-last-text-color: var(--color-violet-ink-soft);
 
 	.event-location {
 		--location-program-label-color: var(--color-gold-ink);
-		--location-program-label-size: 1.05rem;
+		--location-program-label-size: 1.125rem;
 		--location-program-time-color: var(--color-violet-ink-soft);
 		--location-program-address-color: var(--color-violet-ink-soft);
 		--location-program-link: var(--color-lilac-deep);
@@ -498,8 +503,8 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--location-program-link-bg: rgb(var(--color-story-cream-rgb) / 55%);
 		--location-program-link-radius: 999px;
 		--location-program-link-decoration: none;
-		--location-program-link-size: 0.95rem;
-		--location-program-link-tracking: 0.1em;
+		--location-program-link-size: 1rem;
+		--location-program-link-tracking: 0.06em;
 		--location-program-link-primary-bg: var(--color-lilac-deep);
 		--location-program-link-primary-color: var(--color-story-cream);
 		--location-program-link-primary-border: 1px solid var(--color-lilac-deep);
@@ -588,6 +593,12 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	// Short labels use a dark gold ink on paper; pale gold is reserved for the night.
 	--quote-closing-line-color: var(--color-gold-ink);
 	--family-group-title-color: var(--color-gold-ink);
+	--family-group-title-font: var(--font-calligraphy);
+	--family-group-title-size: clamp(2.1rem, 8vw, 2.6rem);
+	--family-group-title-weight: 400;
+	--family-group-title-letter-spacing: 0;
+	--family-group-title-text-transform: none;
+	--family-group-title-opacity: 100%;
 	--location-program-art-display: none;
 	--location-program-art: none;
 	--location-intro-lede-color: var(--color-violet-ink-soft);
@@ -607,6 +618,8 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--itinerary-ribbon-knot: var(--color-leaf-gold);
 	--itinerary-ribbon-time: var(--color-gold-ink);
 	--itinerary-ribbon-ink: var(--color-violet-ink);
+	--itinerary-ribbon-time-size: 1rem;
+	--itinerary-ribbon-desc-size: 1.0625rem;
 	--itinerary-ribbon-muted: var(--color-violet-ink-soft);
 	--itinerary-ribbon-bow-art: #{$yireh-bow};
 	--itinerary-ribbon-bow-drawing: none;
