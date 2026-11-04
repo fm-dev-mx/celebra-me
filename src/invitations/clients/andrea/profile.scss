@@ -231,7 +231,12 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 			--location-program-link-size: 0.9rem;
 			--location-program-link-tracking: 0.06em;
 			--location-program-link-padding: 0.3rem 0.75rem;
-			--location-program-drawing-size: 4rem;
+		}
+
+		// Below the route's grid breakpoint the drawing sits in its own 4rem column beside the
+		// venue, so it takes that width at every height instead of the scene's 6rem.
+		@media (width < 992px) {
+			--location-program-drawing-size: var(--location-route-entry-drawing-size, 4rem);
 		}
 
 		@media (width >= 768px) {
