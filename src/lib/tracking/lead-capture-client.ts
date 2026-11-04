@@ -241,6 +241,7 @@ export function initLeadCapture(): void {
 			eventType: readValue(form, 'eventType'),
 			eventDate: readValue(form, 'eventDate'),
 			celebrantNames: readValue(form, 'celebrantNames') || undefined,
+			city: readValue(form, 'city') || undefined,
 			phone: readValue(form, 'phone'),
 			demoSlug: readValue(form, 'demoSlug') || undefined,
 		};

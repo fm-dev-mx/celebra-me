@@ -115,7 +115,7 @@ and then:
 - **Step:** Meta
   - **Detail:** With marketing consent on a Meta-allowed route in Production: a `Lead` outbox row
     with the same event ID, `session_id`, `customer_id` and `lead_id`, so delivery adds the hashed
-    phone
+    phone, name and city (the form's optional «Su ciudad», stored as the customer `city`)
 
 The browser fires the Pixel `Lead` with the same event ID but does not post `form_submitted` to
 `/api/tracking`; the capture API already stored it. Outside Production the lead and customer are
@@ -430,6 +430,12 @@ with `autoConfig` off; it initializes without it when no visitor ID is stored.
 Both sides also send the customer country, because Meta asks for it on every event even when all
 customers share one country: the Pixel always initializes with `country: 'mx'` (it hashes the value
 itself), and every CAPI event, browser or CRM, carries `country` as the SHA-256 of `mx`.
+
+Browser-triggered CAPI events that carry a `customer_id` also send the customer's name and city,
+hashed with SHA-256 after Meta's normalization (lowercase Roman letters only: accents, spaces and
+punctuation removed). `fn` is the first word of `display_name`; `ln` lists the last one or two
+remaining words, so a Mexican double surname sends both candidates. `ct` is the normalized `city`
+(for example «Ciudad Juárez» → `ciudadjuarez`). CRM lead-stage events do not send them.
 
 After a successful «Aparta su fecha» submission with marketing consent, `lead-capture-client.ts`
 calls `rememberMetaPhoneMatchKey()`, which stores only `ph` (the SHA-256 hex of the phone's E.164

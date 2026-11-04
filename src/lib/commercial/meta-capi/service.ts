@@ -31,7 +31,12 @@ interface OutboxDetail {
 	created_at?: string | null;
 	value: number | null;
 	currency: string;
-	customers: { email?: string | null; phone_e164?: string | null } | null;
+	customers: {
+		email?: string | null;
+		phone_e164?: string | null;
+		display_name?: string | null;
+		city?: string | null;
+	} | null;
 	sales_orders: {
 		session_id?: string | null;
 		deposit_paid_at?: string | null;
@@ -228,6 +233,39 @@ export function normalizeAndHashPhone(phoneE164?: string | null): string | undef
 	return createHash('sha256').update(digits).digest('hex');
 }
 
+/**
+ * Meta's name and city normalization: lowercase Roman letters only, so accents, spaces and
+ * punctuation are dropped («Ciudad Juárez» → `ciudadjuarez`).
+ */
+function normalizeMetaLetters(value: string): string {
+	return value
+		.normalize('NFD')
+		.replace(/\p{M}/gu, '')
+		.toLowerCase()
+		.replace(/[^a-z]/g, '');
+}
+
+/**
+ * Hashed `fn` and `ln` from a full name. The first word is the first name; the last name may be
+ * one or two surnames, so the last two words are both sent as `ln` candidates
+ * («María Fernanda López García» → fn `maria`, ln `lopez` and `garcia`).
+ */
+export function normalizeAndHashName(fullName?: string | null): { fn?: string[]; ln?: string[] } {
+	const words = (fullName ?? '')
+		.split(/\s+/)
+		.map(normalizeMetaLetters)
+		.filter((word) => word.length > 0);
+	if (words.length === 0) return {};
+	const fn = [hashSha256(words[0])];
+	const surnames = [...new Set(words.slice(1).slice(-2))];
+	return surnames.length > 0 ? { fn, ln: surnames.map(hashSha256) } : { fn };
+}
+
+export function normalizeAndHashCity(city?: string | null): string | undefined {
+	const normalized = normalizeMetaLetters(city ?? '');
+	return normalized ? hashSha256(normalized) : undefined;
+}
+
 export type BrowserConversionEventName = 'PageView' | 'ViewContent' | 'Contact' | 'Lead';
 
 /** First-party tracking events whose Pixel standard event the server also delivers. */
@@ -340,7 +378,7 @@ export async function processPendingMetaConversionEvents(): Promise<ProcessResul
 
 async function fetchEventDetails(outboxId: string): Promise<OutboxDetail | null> {
 	const details = await supabaseRestRequest<OutboxDetail[]>({
-		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&select=id,event_name,event_id,trigger_status,customer_id,lead_id,session_id,event_source_path,created_at,value,currency,customers(email,phone_e164),sales_orders(session_id,deposit_paid_at,created_at),leads(consent_marketing,session_id,phone_e164,fbp,fbc,fbclid)`,
+		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&select=id,event_name,event_id,trigger_status,customer_id,lead_id,session_id,event_source_path,created_at,value,currency,customers(email,phone_e164,display_name,city),sales_orders(session_id,deposit_paid_at,created_at),leads(consent_marketing,session_id,phone_e164,fbp,fbc,fbclid)`,
 		method: 'GET',
 		useServiceRole: true,
 	});
@@ -358,7 +396,7 @@ async function fetchSessionDetails(sessionId: string): Promise<SessionDetail | n
 
 type UserData = Record<string, string | string[]>;
 
-/** Hashed customer keys: email, phone and the external ID. */
+/** Hashed customer keys: email, phone, first and last name, city and the external ID. */
 function buildIdentityKeys(detail: OutboxDetail, session: SessionDetail | null): UserData {
 	const userData: UserData = {};
 
@@ -370,6 +408,13 @@ function buildIdentityKeys(detail: OutboxDetail, session: SessionDetail | null):
 	const phoneHash = normalizeAndHashPhone(detail.customers?.phone_e164);
 	if (phoneHash) {
 		userData.ph = [phoneHash];
+	}
+
+	Object.assign(userData, normalizeAndHashName(detail.customers?.display_name));
+
+	const cityHash = normalizeAndHashCity(detail.customers?.city);
+	if (cityHash) {
+		userData.ct = [cityHash];
 	}
 
 	// The first-party visitor ID is shared by every event of the same browser; the customer ID

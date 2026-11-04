@@ -64,6 +64,7 @@ const LeadCaptureSchema = TrackingEventSchema.pick({
 		.refine((value) => isLeadEventDateInRange(value), 'Fecha fuera de rango.'),
 	contactName: z.string().trim().min(2).max(80),
 	celebrantNames: optionalText(120),
+	city: optionalText(60),
 	phone: z
 		.string()
 		.trim()
@@ -266,6 +267,7 @@ export async function submitLeadCapture(
 	const customerResult = await createCommercialCustomer({
 		displayName: input.contactName,
 		phone: input.phone,
+		city: input.city,
 		createdFromLeadId: lead.id,
 	});
 	const customerId =

@@ -117,6 +117,20 @@ const demoOptions = [...DEMO_SHOWROOM_ITEMS]
 					</div>
 
 					<div class="lead-capture__field">
+						<label for="lead-capture-city">
+							Su ciudad <span class="lead-capture__optional">(opcional)</span>
+						</label>
+						<input
+							id="lead-capture-city"
+							name="city"
+							type="text"
+							autocomplete="address-level2"
+							maxlength="60"
+							placeholder="Ej. Ciudad Juárez"
+						/>
+					</div>
+
+					<div class="lead-capture__field">
 						<label for="lead-capture-phone">Su WhatsApp</label>
 						<input
 							id="lead-capture-phone"

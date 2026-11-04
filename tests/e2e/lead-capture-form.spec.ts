@@ -47,6 +47,7 @@ async function fillValidForm(page: Page) {
 	await dialog.getByLabel('Tipo de evento').selectOption('xv');
 	await dialog.getByLabel('Fecha del evento').fill(futureIsoDate());
 	await dialog.getByLabel(/Nombre\(s\) de quien celebra/).fill('Andrea');
+	await dialog.getByLabel(/Su ciudad/).fill('Los Mochis');
 	await dialog.getByLabel('Su WhatsApp').fill('668 111 2233');
 	// The honeypot timer drops submissions faster than a person could type.
 	await page.waitForTimeout(2_100);
