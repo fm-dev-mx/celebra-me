@@ -3,6 +3,10 @@ import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import { prepareDashboardAdminPageData } from '@/lib/dashboard/admin-page-data';
 import { safeErr } from '@/lib/server/safe-error';
 
+if (!Astro.locals.session?.isSuperAdmin) {
+	return Astro.redirect('/dashboard/invitados');
+}
+
 let pageData = null;
 let errorMsg = null;
 

@@ -39,8 +39,31 @@ const TRUST_DEVICE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 const ADMIN_ONLY_PATHS = ['/dashboard/admin', '/dashboard/usuarios', '/dashboard/invitaciones'];
 
+/**
+ * Normalize a URL pathname for safe prefix comparison: decode percent-encoding,
+ * collapse consecutive slashes, resolve `.`/`..` segments, and lowercase.
+ */
+function normalizePathname(raw: string): string {
+	let decoded: string;
+	try {
+		decoded = decodeURIComponent(raw);
+	} catch {
+		decoded = raw;
+	}
+	const collapsed = decoded.replace(/\/\/+/g, '/');
+	const segments: string[] = [];
+	for (const seg of collapsed.split('/')) {
+		if (seg === '..') segments.pop();
+		else if (seg !== '.') segments.push(seg);
+	}
+	return segments.join('/').toLowerCase() || '/';
+}
+
 function isAdminOnlyPath(pathname: string): boolean {
-	return ADMIN_ONLY_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+	const normalized = normalizePathname(pathname);
+	return ADMIN_ONLY_PATHS.some(
+		(path) => normalized === path || normalized.startsWith(`${path}/`),
+	);
 }
 
 function shouldHandleAuth(pathname: string): boolean {

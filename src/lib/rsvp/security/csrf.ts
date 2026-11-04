@@ -119,10 +119,12 @@ export function validateCsrfToken(request: Request, cookies: AstroCookies): void
 
 /**
  * Returns true when a path should bypass CSRF validation.
+ *
+ * Currently no paths bypass CSRF. The former dead bypass list
+ * (/api/webhook, /api/stripe, /api/supabase) was removed because
+ * those routes do not exist and the list could silently disable
+ * CSRF for a future route that happens to share a prefix.
  */
-export function shouldSkipCsrfValidation(pathname: string): boolean {
-	// Webhooks and externally authenticated integrations do not use CSRF.
-	const skipPaths = ['/api/webhook', '/api/stripe', '/api/supabase'];
-
-	return skipPaths.some((path) => pathname.startsWith(path));
+export function shouldSkipCsrfValidation(_pathname: string): boolean {
+	return false;
 }
