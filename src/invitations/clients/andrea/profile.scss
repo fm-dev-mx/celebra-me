@@ -1,3 +1,5 @@
+@use './composition';
+
 // Andrea: the storybook-emerald preset as a printed photo album. Two flat day grounds (ivory paper
 // and sage mist) alternate section by section, the countdown is the one short emerald night band,
 // and the closing is the night the story ends in. The photographs lead; fine gold butterflies are
@@ -11,11 +13,11 @@ $andrea-horizon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 
 // The same horizon turned the other way, for the top of the garden plate: the ivory of the phrase
 // hangs deep on the right, the sage rises on the left, and the gold hairline rides the ivory.
-$andrea-mist-rise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%23F8F5EC' d='M0 0H400V94C280 94 200 26 0 20z'/%3E%3Cpath fill='none' stroke='%23A8843F' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 6C200 12 280 80 400 80'/%3E%3C/svg%3E");
+$andrea-mist-rise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%23F1E6D0' d='M0 0H400V94C280 94 200 26 0 20z'/%3E%3Cpath fill='none' stroke='%23A8843F' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 6C200 12 280 80 400 80'/%3E%3C/svg%3E");
 
 // A plain gold hairline with a small diamond, for the family and program rules.
 $andrea-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 12' fill='none' stroke='%23A8843F' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M8 6h38M58 6h38'/%3E%3Cpath d='M52 2l4 4-4 4-4-4z'/%3E%3C/svg%3E");
-$andrea-rule-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 12' fill='none' stroke='%23E8D6A2' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M8 6h38M58 6h38'/%3E%3Cpath d='M52 2l4 4-4 4-4-4z'/%3E%3C/svg%3E");
+$andrea-rule-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 12' fill='none' stroke='%23E6C678' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M8 6h38M58 6h38'/%3E%3Cpath d='M52 2l4 4-4 4-4-4z'/%3E%3C/svg%3E");
 
 // Line icons for the venue actions (map pin, calendar, copy), painted as masks in the link ink.
 $andrea-icon-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z'/%3E%3Ccircle cx='12' cy='10' r='2.4'/%3E%3C/svg%3E");
@@ -23,15 +25,18 @@ $andrea-icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2
 $andrea-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8.5' y='8.5' width='11' height='11' rx='2'/%3E%3Cpath d='M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5'/%3E%3C/svg%3E");
 
 // A pale-gold butterfly that rests at the head of the dress-code tag.
-$andrea-tag-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='none' stroke='%23E8D6A2' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill='%23E8D6A2' fill-opacity='.18'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' stroke-linecap='round'/%3E%3C/svg%3E");
+$andrea-tag-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='none' stroke='%23E6C678' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill='%23E6C678' fill-opacity='.18'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' stroke-linecap='round'/%3E%3C/svg%3E");
 
 // Client-requested solid silhouettes: a floor-length gown and a suit with a necktie.
-$andrea-formal-attire: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 88' fill='%23E8D6A2'%3E%3Cpath d='M23 5h6c0 7 4 10 7 10s7-3 7-10h6l-1 21-6 13 20 43H10l20-43-6-13z'/%3E%3Cpath d='M83 6l13 7 13-7 12 9 4 40-9 2-4-28-2 26 5 27H99l-3-25-3 25H77l5-27-2-26-4 28-9-2 4-40z'/%3E%3Cpath fill='%2311382C' d='M85 8l11 8 11-8-6 27-5 5-5-5z'/%3E%3Cpath d='M94 17h4l1 4-3 15-3-15z'/%3E%3C/svg%3E");
+$andrea-formal-attire: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 88' fill='%23E6C678'%3E%3Cpath d='M23 5h6c0 7 4 10 7 10s7-3 7-10h6l-1 21-6 13 20 43H10l20-43-6-13z'/%3E%3Cpath d='M83 6l13 7 13-7 12 9 4 40-9 2-4-28-2 26 5 27H99l-3-25-3 25H77l5-27-2-26-4 28-9-2 4-40z'/%3E%3Cpath fill='%2311382C' d='M85 8l11 8 11-8-6 27-5 5-5-5z'/%3E%3Cpath d='M94 17h4l1 4-3 15-3-15z'/%3E%3C/svg%3E");
 
 // The wax seal's press: a ring of leaves closed by a small butterfly, the monogram struck inside.
 // The footer's last butterfly: the tag's outline, filled in pale gold so it reads at pull size.
-$andrea-footer-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='%23E8D6A2' stroke='%23E8D6A2' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill-opacity='.85'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+$andrea-footer-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='%23E6C678' stroke='%23E6C678' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill-opacity='.85'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
 $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M40.1 84.6A36 36 0 0 1 30.9 19.5M59.9 84.6A36 36 0 0 0 69.1 19.5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/%3E%3Cellipse cx='33.9' cy='86.2' rx='4.6' ry='1.9' transform='rotate%28244 33.9 86.2%29'/%3E%3Cellipse cx='33.3' cy='77.7' rx='4.6' ry='1.9' transform='rotate%28171 33.3 77.7%29'/%3E%3Cellipse cx='22.3' cy='78.3' rx='4.4' ry='1.8' transform='rotate%28264 22.3 78.3%29'/%3E%3Cellipse cx='24.7' cy='70.2' rx='4.4' ry='1.8' transform='rotate%28191 24.7 70.2%29'/%3E%3Cellipse cx='14.2' cy='66.9' rx='4.2' ry='1.7' transform='rotate%28285 14.2 66.9%29'/%3E%3Cellipse cx='19.2' cy='60.1' rx='4.2' ry='1.7' transform='rotate%28212 19.2 60.1%29'/%3E%3Cellipse cx='10.6' cy='53.5' rx='4.0' ry='1.7' transform='rotate%28305 10.6 53.5%29'/%3E%3Cellipse cx='17.6' cy='48.8' rx='4.0' ry='1.7' transform='rotate%28-128 17.6 48.8%29'/%3E%3Cellipse cx='11.8' cy='39.5' rx='3.8' ry='1.6' transform='rotate%28-35 11.8 39.5%29'/%3E%3Cellipse cx='20.1' cy='37.6' rx='3.8' ry='1.6' transform='rotate%28-108 20.1 37.6%29'/%3E%3Cellipse cx='17.8' cy='26.9' rx='3.6' ry='1.5' transform='rotate%28-14 17.8 26.9%29'/%3E%3Cellipse cx='26.2' cy='28.0' rx='3.6' ry='1.5' transform='rotate%28-87 26.2 28.0%29'/%3E%3Cellipse cx='27.9' cy='17.2' rx='3.4' ry='1.4' transform='rotate%286 27.9 17.2%29'/%3E%3Cellipse cx='35.3' cy='21.1' rx='3.4' ry='1.4' transform='rotate%28-67 35.3 21.1%29'/%3E%3Cellipse cx='66.1' cy='86.2' rx='4.6' ry='1.9' transform='rotate%28116 66.1 86.2%29'/%3E%3Cellipse cx='66.7' cy='77.7' rx='4.6' ry='1.9' transform='rotate%28189 66.7 77.7%29'/%3E%3Cellipse cx='77.7' cy='78.3' rx='4.4' ry='1.8' transform='rotate%2896 77.7 78.3%29'/%3E%3Cellipse cx='75.3' cy='70.2' rx='4.4' ry='1.8' transform='rotate%28169 75.3 70.2%29'/%3E%3Cellipse cx='85.8' cy='66.9' rx='4.2' ry='1.7' transform='rotate%2875 85.8 66.9%29'/%3E%3Cellipse cx='80.8' cy='60.1' rx='4.2' ry='1.7' transform='rotate%28148 80.8 60.1%29'/%3E%3Cellipse cx='89.4' cy='53.5' rx='4.0' ry='1.7' transform='rotate%2855 89.4 53.5%29'/%3E%3Cellipse cx='82.4' cy='48.8' rx='4.0' ry='1.7' transform='rotate%28128 82.4 48.8%29'/%3E%3Cellipse cx='88.2' cy='39.5' rx='3.8' ry='1.6' transform='rotate%2835 88.2 39.5%29'/%3E%3Cellipse cx='79.9' cy='37.6' rx='3.8' ry='1.6' transform='rotate%28108 79.9 37.6%29'/%3E%3Cellipse cx='82.2' cy='26.9' rx='3.6' ry='1.5' transform='rotate%2814 82.2 26.9%29'/%3E%3Cellipse cx='73.8' cy='28.0' rx='3.6' ry='1.5' transform='rotate%2887 73.8 28.0%29'/%3E%3Cellipse cx='72.1' cy='17.2' rx='3.4' ry='1.4' transform='rotate%28-6 72.1 17.2%29'/%3E%3Cellipse cx='64.7' cy='21.1' rx='3.4' ry='1.4' transform='rotate%2867 64.7 21.1%29'/%3E%3Cg transform='translate%2841.84 3.12%29 scale%280.34%29'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31Z'/%3E%3Cpath d='M23 32C14 33 8 40 11 46 14 51 21 45 23 37Z'/%3E%3Cpath d='M25 26C34 12 45 12 44 22 43 30 34 33 25 31Z'/%3E%3Cpath d='M25 32C34 33 40 40 37 46 34 51 27 45 25 37Z'/%3E%3Cpath d='M24 20C25.2 20 25.8 25 25.8 32S25.2 44 24 44 22.2 39 22.2 32 22.8 20 24 20Z'/%3E%3C/g%3E%3C/svg%3E");
+
+// A gift box tied with a bow, for the head of the gifts note (envelopes or a gift, both optional).
+$andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 40' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='6' y='15' width='36' height='8' rx='1.5'/%3E%3Cpath d='M9 23v13.5h30V23M24 15v21.5'/%3E%3Cpath d='M24 15c-3-6-11-10-12-5s7 5 12 5zM24 15c3-6 11-10 12-5s-7 5-12 5z'/%3E%3C/svg%3E");
 
 .event--andrea.theme-preset--storybook-emerald {
 	// Depths of the three joins, each reserved as padding on the side it enters.
@@ -41,6 +46,28 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	--andrea-gutter: clamp(1.5rem, 6vw, 4rem);
 	--andrea-rule: rgb(var(--color-forest-ink-rgb) / 18%);
 
+	// Client round 2: every letter in gold and the white grounds in warm beige. Day inks become
+	// dark golds that keep AA on beige (7.6:1, 6:1, 5:1); the night inks that read as beige or
+	// sage become one strong gold (7.4:1 on the emerald night).
+	--color-ivory-paper: rgb(241 230 208);
+	--color-ivory-paper-rgb: 241 230 208;
+	--color-story-cream: rgb(247 239 222);
+	--color-story-cream-rgb: 247 239 222;
+	--color-sage-mist: rgb(236 224 200);
+	--color-sage-mist-rgb: 236 224 200;
+	--color-sage-veil: rgb(226 212 184);
+	--color-sage-veil-rgb: 226 212 184;
+	--color-forest-ink: rgb(92 66 16);
+	--color-forest-ink-rgb: 92 66 16;
+	--color-forest-ink-soft: rgb(110 80 22);
+	--color-forest-ink-soft-rgb: 110 80 22;
+	--color-pale-cream: rgb(226 192 108);
+	--color-pale-cream-rgb: 226 192 108;
+	--color-night-sage: rgb(214 178 96);
+	--color-night-sage-rgb: 214 178 96;
+	--color-pale-gold: rgb(230 198 120);
+	--color-pale-gold-rgb: 230 198 120;
+
 	// Flat grounds: the album paper carries no grain.
 	--storybook-paper: var(--color-ivory-paper);
 	--storybook-paper-mist: var(--color-sage-mist);
@@ -49,7 +76,7 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	// Family as a dedication page: the message reads as an epigraph in the display italic, with a
 	// gold hairline for the rules.
 	--family-message-font: var(--font-display);
-	--family-message-size: clamp(1.25rem, 4.6vw, 1.45rem);
+	--family-message-size: clamp(1.4rem, 5.2vw, 1.6rem);
 	--family-message-style: italic;
 	--family-message-line-height: 1.4;
 	--family-divider: #{$andrea-rule} center / contain no-repeat;
@@ -130,7 +157,7 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	--location-enclosure-reserved-title-tracking: 0.08em;
 	--location-enclosure-reserved-title-color: var(--color-night-sage);
 	--location-enclosure-last-text-font: var(--font-label);
-	--location-enclosure-last-text-size: 0.8125rem;
+	--location-enclosure-last-text-size: 0.9375rem;
 	--location-enclosure-last-text-transform: uppercase;
 	--location-enclosure-last-text-tracking: 0.14em;
 	--location-enclosure-last-text-color: var(--color-night-sage);
@@ -141,11 +168,11 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	// set the three on one line. Set at the entry so it wins over the route stage's gold remaps.
 	.event-location__program-entry {
 		--location-program-label-color: var(--color-gold-ink);
-		--location-program-label-size: 1.05rem;
+		--location-program-label-size: 1.15rem;
 		--location-program-time-color: var(--color-forest-ink-soft);
 		--location-program-address-color: var(--color-forest-ink-soft);
-		--location-program-link: var(--color-emerald-deep);
-		--location-program-link-ink: var(--color-story-cream);
+		--location-program-link: var(--color-gold-ink);
+		--location-program-link-ink: var(--color-pale-gold);
 		--location-program-action-flex: 1 1 0;
 		--location-program-action-primary-flex: 1 1 100%;
 		--location-program-links-gap: 0.625rem;
@@ -153,14 +180,14 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		--location-program-link-width: 100%;
 		--location-program-link-justify: center;
 		--location-program-link-padding: 0.35rem 1rem;
-		--location-program-link-border: 1px solid rgb(var(--color-emerald-deep-rgb) / 45%);
+		--location-program-link-border: 1px solid rgb(var(--color-gold-ink-rgb) / 45%);
 		--location-program-link-bg: rgb(var(--color-story-cream-rgb) / 55%);
 		--location-program-link-radius: 999px;
 		--location-program-link-decoration: none;
-		--location-program-link-size: 0.95rem;
+		--location-program-link-size: 1.05rem;
 		--location-program-link-tracking: 0.1em;
 		--location-program-link-primary-bg: var(--color-emerald-deep);
-		--location-program-link-primary-color: var(--color-story-cream);
+		--location-program-link-primary-color: var(--color-pale-gold);
 		--location-program-link-primary-border: 1px solid var(--color-emerald-deep);
 		--location-program-link-icon: '';
 		--location-program-map-icon: #{$andrea-icon-pin};
@@ -191,7 +218,7 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	}
 
 	.invitation-hero[data-variant='framed-portrait'] {
-		--color-text-primary: var(--color-emerald-deep);
+		--color-text-primary: var(--color-gold-ink);
 		--color-action-accent: var(--color-gold-ink);
 		--hero-arc-opacity: 0;
 		--hero-letter-align: center;
@@ -224,14 +251,14 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	// once scrolled, the solid emerald bar keeps the preset's light text.
 	#event-header {
 		--nav-transparent-scrim: none;
-		--header-nav-color-transparent: var(--color-emerald-deep);
+		--header-nav-color-transparent: var(--color-gold-ink);
 		--header-nav-shadow-transparent: none;
 	}
 
 	#event-header.header-base--transparent {
-		--hamburger-color: var(--color-emerald-deep);
-		--header-nav-title-color: var(--color-emerald-deep);
-		--header-nav-cta-color: var(--color-emerald-deep);
+		--hamburger-color: var(--color-gold-ink);
+		--header-nav-title-color: var(--color-gold-ink);
+		--header-nav-cta-color: var(--color-gold-ink);
 		--header-nav-cta-border: var(--color-leaf-gold);
 	}
 
@@ -273,7 +300,7 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		--countdown-type-section-padding-block: calc(
 			var(--andrea-band-padding) + var(--andrea-cut)
 		);
-		--countdown-type-title-size: 0.8125rem;
+		--countdown-type-title-size: 0.9375rem;
 		--countdown-type-title-weight: 400;
 		--countdown-type-title-tracking: 0.14em;
 		--countdown-type-title-ink: var(--color-pale-gold);
@@ -281,7 +308,7 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		--countdown-type-value-weight: 400;
 		--countdown-type-value-tracking: 0;
 		--countdown-type-label-font: var(--font-label);
-		--countdown-type-label-size: 0.625rem;
+		--countdown-type-label-size: 0.8125rem;
 		--countdown-type-label-tracking: 0.06em;
 		--countdown-type-label-ink: var(--color-pale-gold);
 		--countdown-type-label-opacity: 100%;
@@ -399,6 +426,11 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		--family-bg: var(--andrea-ground);
 		--gallery-section-bg: var(--andrea-ground);
 		--gifts-bg: var(--andrea-ground);
+		--gifts-header-mark: #{$andrea-gift};
+		--gifts-header-mark-display: block;
+		--gifts-header-mark-width: 3.5rem;
+		--gifts-header-mark-ratio: 6 / 5;
+		--gifts-header-mark-color: var(--color-leaf-gold);
 		--intersection-surface: var(--andrea-ground);
 		--intersection-surface-fill: var(--andrea-ground);
 		--intersection-blend: none;
@@ -407,8 +439,8 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		--color-surface-secondary: var(--color-sage-mist);
 		--color-surface-secondary-rgb: var(--color-sage-mist-rgb);
 		--color-surface-soft: var(--color-sage-veil);
-		--color-action-accent: var(--color-emerald-deep);
-		--color-action-accent-rgb: var(--color-emerald-deep-rgb);
+		--color-action-accent: var(--color-gold-ink);
+		--color-action-accent-rgb: var(--color-gold-ink-rgb);
 		--color-text-primary: var(--color-forest-ink);
 		--color-text-primary-rgb: var(--color-forest-ink-rgb);
 		--color-text-secondary: var(--color-forest-ink-soft);
@@ -470,14 +502,14 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	);
 	--footer-pull-label: 'Deslice hacia arriba para dejar volar la última mariposa';
 	--footer-pull-label-color: rgb(var(--color-pale-gold-rgb) / 85%);
-	--footer-pull-label-size: 0.8125rem;
+	--footer-pull-label-size: 0.9375rem;
 	--footer-pull-breathe: footer-pull-breathe;
 
 	// No text under 12 px; the footer links keep a 44 px tap height.
-	--footer-rights-size: 0.75rem;
-	--footer-powered-size: 0.75rem;
-	--footer-replay-font-size: 0.75rem;
-	--footer-control-font-size: 0.75rem;
+	--footer-rights-size: 0.875rem;
+	--footer-powered-size: 0.875rem;
+	--footer-replay-font-size: 0.875rem;
+	--footer-control-font-size: 0.875rem;
 	--footer-link-tap-padding: 0.875rem;
 
 	// The footer waits below the closing: the invitation stops on the night, and a second scroll
@@ -502,7 +534,7 @@ $andrea-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		--footer-reply-ink: var(--color-story-cream);
 		--footer-reply-muted: var(--color-night-sage);
 		--footer-reply-accent: var(--color-pale-gold);
-		--footer-reply-eyebrow-size: 0.8125rem;
+		--footer-reply-eyebrow-size: 0.9375rem;
 		--footer-reply-question-size: clamp(1.6rem, 6.5vw, 2rem);
 		--footer-reply-button-bg: var(--color-pale-gold);
 		--footer-reply-button-ink: var(--color-emerald-night);

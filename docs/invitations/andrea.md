@@ -318,3 +318,28 @@ repository.
   leads, the silhouettes illustrate the attire, the requested courtesy note appears once, and the
   reserved colors and adults-only notice remain secondary. No new client-adjustment round is
   consumed by correcting these details.
+
+## Second client adjustment round — 2026-11-04
+
+Source: Gloria's WhatsApp list of 2026-11-03 (paid; she stated it is her final list). All changes
+live in `src/invitations/clients/andrea/`; the shared `storybook-emerald` preset is untouched.
+
+- A1/A3 — every text reads gold: the profile maps `forest-ink`, `forest-ink-soft`, `pale-cream`,
+  `night-sage` and `pale-gold` to stronger golds, and the former emerald text uses (hero name and
+  date, header initial and nav, location program links) now use `gold-ink`. Emerald stays only as a
+  ground (primary program button, dress). The RSVP reply card inherits the same inks, so it renders
+  on beige with gold text instead of white with dark text.
+- A2 — white grounds become beige: `ivory-paper`, `story-cream`, `sage-mist`, `sage-veil` and the
+  inline SVG fills.
+- A4 — larger type for older guests: the profile raises several rem sizes, and `composition.scss`
+  zooms `.event--andrea.event-theme-wrapper` by 1.125. A root `font-size` rule is not allowed in a
+  profile (`invitation-profile-boundary` test), and rem sizes ignore element font sizes, so the
+  scoped zoom is the one-step scale.
+- A5 — `NO NIÑOS (sin excepción)`.
+- A6 — client exception to the «usted» register, approved by the owner on 2026-11-04 for this one
+  line only: «…y quiero que estés ahí.» All other copy stays in «usted».
+- A7 — gifts title `Lluvia de sobres o regalo` with a gift header mark; «completamente opcional»
+  sits in the subtitle.
+- Pending outside the code: photo edits B1–B3 (dress sparkle to gold, gold bracelet, light makeup
+  polish; edit, never regenerate), the 5×7 table card with the photo-upload QR built in (C1, under
+  the $399 QR service C2), Production re-enable, Preview and client approval.

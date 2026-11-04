@@ -1,0 +1,7 @@
+// Andrea: the few rules her tokens cannot express. Everything else lives in the profile.
+
+// Client round 2: many guests are older adults, so the invitation reads one step larger. Every
+// size in it is set in rem, which no element font-size can scale, so the wrapper zooms one step.
+.event--andrea.event-theme-wrapper {
+	zoom: 1.125;
+}
