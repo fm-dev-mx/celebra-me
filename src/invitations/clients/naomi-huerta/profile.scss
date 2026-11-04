@@ -727,7 +727,7 @@ $naomi-paper-grain-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 	}
 
 	// The registry's gift tag: pearl stock in a silver edge with an inner silver filet.
-	.gifts-section[data-variant='standard'] {
+	.gifts-section[data-variant='gift-tag'] {
 		--gifts-card-radius: 1rem;
 		--gifts-title-color: var(--color-plum-ink);
 		--gifts-card-border: 1px solid var(--color-pale-silver);
@@ -742,11 +742,24 @@ $naomi-paper-grain-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 			0 1.25rem 2rem -1.25rem rgb(var(--color-rose-midnight-rgb) / 40%);
 		--gifts-card-title-size: clamp(1.75rem, 7vw, 2.1rem);
 		--gifts-card-title-tracking: 0.06em;
+		--gifts-title-transform: none;
+		--gifts-title-letter-spacing: 0.02em;
+		--gifts-card-padding: clamp(1.25rem, 3.5svh, 2rem) 1.25rem;
+		--gifts-tag-button-bg: var(--color-rose-deep);
+		--gifts-tag-button-color: var(--color-story-pearl);
+		--gifts-tag-shadow-rgb: var(--color-rose-midnight-rgb);
+		--gifts-tag-pill-border: rgb(var(--color-leaf-silver-rgb) / 60%);
+		--gifts-tag-number-color: var(--color-plum-ink);
+		--gifts-tag-copy-color: var(--color-silver-ink);
 
 		@media (width < 768px) {
-			--gifts-card-padding: 2rem 1.5rem;
 			--gifts-subtitle-size: 1.125rem;
 			--gifts-subtitle-line-height: 1.5;
+		}
+
+		@media (height < 760px) {
+			--gifts-subtitle-size: 1rem;
+			--gifts-subtitle-line-height: 1.4;
 		}
 	}
 

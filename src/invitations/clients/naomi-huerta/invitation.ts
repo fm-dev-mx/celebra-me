@@ -98,7 +98,7 @@ const content: CanonicalEventContentInput = {
 	},
 	quote: {
 		text: 'Esperé quince años por esta noche.',
-		closingLine: 'Me haría muy feliz que usted estuviera ahí.',
+		closingLine: 'Sería un verdadero honor y una gran alegría contar con su presencia.',
 	},
 	family: {
 		// No family photograph was delivered, so the names stand alone.
@@ -220,7 +220,7 @@ const content: CanonicalEventContentInput = {
 	},
 	gifts: {
 		// Client-supplied Liverpool registry plus a cash box; the subtitle adapts the client's own wording.
-		variant: 'standard',
+		variant: 'gift-tag',
 		title: 'Mesa de regalos',
 		presentation: 'catalog',
 		subtitle:
