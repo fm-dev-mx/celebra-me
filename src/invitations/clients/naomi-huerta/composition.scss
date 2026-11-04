@@ -389,9 +389,9 @@ $naomi-motifs: (
 
 	.mobile-nav-actions__cta,
 	.family__group-title,
-	.gift-card__button,
 	.envelope-external-instruction__button,
-	.invitation-reveal-card__label {
+	.invitation-reveal-card__label,
+	.gift-card__table-number-label {
 		font-size: 0.9375rem;
 	}
 
@@ -556,6 +556,7 @@ $naomi-motifs: (
 
 		.gift-card__button {
 			min-height: 3rem;
+			font-size: 1rem;
 			border: 0;
 			border-radius: 999px;
 			background: var(--color-rose-deep);

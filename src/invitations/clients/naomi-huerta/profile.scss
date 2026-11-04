@@ -55,6 +55,17 @@ $naomi-paper-grain-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 	--storybook-paper-mist: var(--color-rose-mist);
 	--invitation-paper: var(--color-blush-paper);
 
+	// The «Continúe» labels read at full ink: 80% opacity left them at 4.3:1.
+	--section-nav-label-opacity: 100%;
+
+	// The date under the name reads in the deeper rose: rose deep read at 4:1 on the cover's paper.
+	--hero-details-color: var(--color-rose-night);
+
+	// The «Continúe» link under the venues reads in plum: the silver emphasis read at 4.3:1.
+	.section-nav-button--event-location {
+		--color-text-emphasis: var(--color-plum-ink-soft);
+	}
+
 	// Family as a dedication page: the mesrose mist reads as an epigraph in the display italic, with a
 	// silver hairline for the rules.
 	--family-message-font: var(--font-display);
@@ -136,8 +147,10 @@ $naomi-paper-grain-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 	--location-enclosure-swatch-size: 0.85rem;
 	--location-enclosure-swatch-ring: 0 0 0 1px rgb(var(--color-pale-silver-rgb) / 70%);
 	--location-enclosure-reserved-title-font: var(--font-display);
-	--location-enclosure-reserved-title-size: 1rem;
-	--location-enclosure-reserved-title-caps: all-small-caps;
+	--location-enclosure-reserved-title-size: 1.375rem;
+
+	// Full caps: small caps at this size read smaller than the italic line below.
+	--location-enclosure-reserved-title-caps: normal;
 	--location-enclosure-reserved-title-line-height: 1.4;
 	--location-enclosure-reserved-title-tracking: 0.08em;
 	--location-enclosure-reserved-title-color: var(--color-night-blush);
@@ -200,8 +213,10 @@ $naomi-paper-grain-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 		--location-program-drawing: var(--color-rose-deep);
 		--location-program-drawing-stroke: 1.7;
 		--location-program-drawing-size: 10rem;
-		--location-program-label-color: var(--color-silver-ink);
-		--location-program-label-size: 1.05rem;
+
+		// Labels name the stop, so they carry the strongest ink (silver read at 4.3:1).
+		--location-program-label-color: var(--color-plum-ink);
+		--location-program-label-size: 1.125rem;
 		--location-program-time-color: var(--color-plum-ink-soft);
 		--location-program-address-color: var(--color-plum-ink-soft);
 		--location-program-link: var(--color-rose-deep);
@@ -248,6 +263,7 @@ $naomi-paper-grain-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 		// On phones each drawing sits beside its venue so the entry stays short.
 		--location-route-entry-display: grid;
 		--location-route-entry-drawing-size: 4.75rem;
+		--location-route-note-ink: var(--color-rose-night);
 		--location-route-sky:
 			radial-gradient(
 				120% 60% at 50% 100%,
@@ -340,7 +356,7 @@ $naomi-paper-grain-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 	.countdown-section {
 		--naomi-band-padding: 7rem;
 		--countdown-type-section-padding-block: calc(var(--naomi-band-padding) + var(--naomi-cut));
-		--countdown-type-title-size: 0.9375rem;
+		--countdown-type-title-size: clamp(1.25rem, 5vw, 1.5rem);
 		--countdown-type-title-weight: 400;
 		--countdown-type-title-tracking: 0.14em;
 		--countdown-type-title-ink: var(--color-pale-silver);
@@ -447,7 +463,8 @@ $naomi-paper-grain-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 	// The album page keeps the page gutter and a narrow gap between prints; the first print is
 	// already falling as the page scrolls in.
 	.gallery-section {
-		--gallery-album-hint-size: 0.9375rem;
+		--gallery-album-hint-size: 1rem;
+		--gallery-album-ink: var(--color-rose-night);
 		--gallery-title-style: normal;
 		--gallery-title-color: var(--color-plum-ink);
 		--gallery-title-weight: 400;
@@ -712,6 +729,7 @@ $naomi-paper-grain-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 	// The registry's gift tag: pearl stock in a silver edge with an inner silver filet.
 	.gifts-section[data-variant='standard'] {
 		--gifts-card-radius: 1rem;
+		--gifts-title-color: var(--color-plum-ink);
 		--gifts-card-border: 1px solid var(--color-pale-silver);
 		--gifts-card-bg: linear-gradient(
 			165deg,
