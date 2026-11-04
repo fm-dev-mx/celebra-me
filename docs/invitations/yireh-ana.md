@@ -145,6 +145,12 @@ None. Cover v4 and the oak seal were dropped by the owner on 2026-10-30.
     script, blessing line in serif; RSVP in first person
   - **basis:** client round 1 (owner-approved)
   - **status:** applied (2026-11-04)
+- **topic:** family
+  - **recommendation:** Reference 181 layout on plain paper, no card: blessing line, Mamá (script)
+    and her name in serif caps, «y de mi», Hermano and his name; the letter to Mamá closes the
+    section
+  - **basis:** client reference 181, owner decision 2026-11-04
+  - **status:** applied (2026-11-04)
 - **topic:** roble
   - **recommendation:** Oak only on the cover; flower wax seal; interludes and closing have none
   - **basis:** owner review v3, 2026-10-30

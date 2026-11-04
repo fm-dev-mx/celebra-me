@@ -212,3 +212,96 @@ $yireh-ribbon-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000
 		}
 	}
 }
+
+// Family (round 1b): the client's reference reads as one sentence on plain paper — «Con la
+// bendición de Dios y de mi» / Mamá / her name / «y de mi» / Hermano / his name — and her letter to
+// her mother closes the section. The panel's card, frame and monogram go; the header unwraps so
+// the letter can follow the names.
+.event--yireh-ana .family {
+	.family__container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.family__header,
+	.family__header-inner {
+		display: contents;
+	}
+
+	.family__eyebrow,
+	.family__content-overlay {
+		display: none;
+	}
+
+	.family__title {
+		order: 1;
+		margin: 0;
+		text-align: center;
+	}
+
+	.family__panel {
+		order: 2;
+		width: 100%;
+		margin: 0.4rem 0 0;
+		padding: 0;
+		border: 0;
+		background: none;
+		box-shadow: none;
+
+		&::before,
+		&::after {
+			display: none;
+		}
+	}
+
+	.family__groups {
+		gap: 0;
+		text-align: center;
+	}
+
+	// The Nautigal runs small; at the reference's scale the titles carry the page.
+	.family__group-title {
+		margin: 0 0 0.15rem;
+		font-size: clamp(3rem, 13vw, 3.8rem);
+		line-height: 1;
+	}
+
+	.family__name {
+		justify-content: center;
+		font-family: var(--font-display);
+		font-size: clamp(1rem, 4vw, 1.2rem);
+		font-weight: 500;
+		letter-spacing: 0.14em;
+		line-height: 1.45;
+		text-transform: uppercase;
+	}
+
+	// «y de mi» joins Mamá to Hermano, as in the reference's «Y la compañía de mis».
+	.family__group--group-1::before {
+		content: 'y de mi';
+		position: static;
+		display: block;
+		width: auto;
+		height: auto;
+		margin: 1.1rem 0 0.2rem;
+		background: none;
+		opacity: 100%;
+		transform: none;
+		font-family: var(--font-display);
+		font-size: clamp(1.15rem, 4.4vw, 1.4rem);
+		color: inherit;
+	}
+
+	.family__header-divider {
+		order: 3;
+		margin: 2rem auto 0;
+	}
+
+	.family__message {
+		order: 4;
+		max-width: 30ch;
+		margin: 1.2rem auto 0;
+		text-align: center;
+	}
+}
