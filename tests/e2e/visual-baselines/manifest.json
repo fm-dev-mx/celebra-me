@@ -2343,8 +2343,8 @@
             "preset": "storybook-lilac",
             "viewport": "mobile",
             "file": "pages/invitation-xv-yireh-ana-mobile.png",
-            "sha256": "3ef7261f9ab2719365a1910b287307a8702cea1683497823180aa44ba51a3ad4",
-            "contentHash": "8c9f02895c4e017745e9845ae1f11601e3d313440a73fc4221f59659dd94cb27",
+            "sha256": "a9f36c06e480bb946c991eb87eb6ab0fb24eefcb07edeac4081d50a082abbe9c",
+            "contentHash": "75ecbe5d2dae1b1e4782b18efd0bd08f6014d313168958b8134a8d93b5b262eb",
             "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
             "comparisonResult": "ACCEPTED"
         },
@@ -2355,8 +2355,8 @@
             "preset": "storybook-lilac",
             "viewport": "desktop",
             "file": "pages/invitation-xv-yireh-ana-desktop.png",
-            "sha256": "ae44826f928891949bd28ae7bef357bac2b77fa461dac2edc13ab12ef7eb74ed",
-            "contentHash": "8c9f02895c4e017745e9845ae1f11601e3d313440a73fc4221f59659dd94cb27",
+            "sha256": "70339c1693e8b096e4910ce372b32851f1bed5df1827e7d8c54a56b30dd12f80",
+            "contentHash": "75ecbe5d2dae1b1e4782b18efd0bd08f6014d313168958b8134a8d93b5b262eb",
             "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
             "comparisonResult": "ACCEPTED"
         },
@@ -4951,8 +4951,8 @@
                 "preset": "storybook-lilac",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-yireh-ana-mobile.png",
-                "sha256": "3ef7261f9ab2719365a1910b287307a8702cea1683497823180aa44ba51a3ad4",
-                "contentHash": "8c9f02895c4e017745e9845ae1f11601e3d313440a73fc4221f59659dd94cb27",
+                "sha256": "a9f36c06e480bb946c991eb87eb6ab0fb24eefcb07edeac4081d50a082abbe9c",
+                "contentHash": "75ecbe5d2dae1b1e4782b18efd0bd08f6014d313168958b8134a8d93b5b262eb",
                 "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4963,8 +4963,8 @@
                 "preset": "storybook-lilac",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-yireh-ana-desktop.png",
-                "sha256": "ae44826f928891949bd28ae7bef357bac2b77fa461dac2edc13ab12ef7eb74ed",
-                "contentHash": "8c9f02895c4e017745e9845ae1f11601e3d313440a73fc4221f59659dd94cb27",
+                "sha256": "70339c1693e8b096e4910ce372b32851f1bed5df1827e7d8c54a56b30dd12f80",
+                "contentHash": "75ecbe5d2dae1b1e4782b18efd0bd08f6014d313168958b8134a8d93b5b262eb",
                 "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
                 "comparisonResult": "CANDIDATE"
             },

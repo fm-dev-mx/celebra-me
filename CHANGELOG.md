@@ -10,6 +10,34 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.66.0-beta.1] - 2026-11-04
+
+Applies the first round of client feedback to the yireh-ana invitation. No database migrations.
+
+### Changed
+
+- Invitations: yireh-ana shows a larger centred name with «Mis XV años» on the cover and moves the
+  date and venue to later sections; the envelope and send-off fly yellow ribbons instead of
+  butterflies; the family section follows the client reference with calligraphy group titles.
+- Invitations: yireh-ana sets the countdown between the location and the pass, and re-paces the
+  section grounds as paper, mist and night with matted watercolor interludes.
+
+## [0.65.0-beta.1] - 2026-11-04
+
+Sends more customer data to Meta, hashed, to raise the event match quality. No database migrations.
+
+### Added
+
+- Tracking: Meta CAPI events carry the hashed customer country, name and city; lead cities are
+  canonicalized against the INEGI 2020 census list, with accent variants.
+- Tracking: the Meta customer list CSV adds the state (`st`) and the canonical city.
+- Landing: the lead form asks for the city (optional, with suggestions) instead of the celebrant
+  names.
+
+### Changed
+
+- Privacy notice: discloses the hashed country and Meta on-device measurement.
+
 ## [0.64.0-beta.1] - 2026-11-03
 
 Refines the naomi-huerta invitation scenes. No database migrations.
