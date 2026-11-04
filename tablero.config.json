@@ -118,6 +118,27 @@
             "tecla": 12,
             "nombre": "F12 Release",
             "entorno": "preview"
+        },
+        {
+            "id": "agente-claude",
+            "carpeta": "../celebra-me-worktrees/agente-claude",
+            "puerto": 4333,
+            "nombre": "Agente Claude",
+            "entorno": "local"
+        },
+        {
+            "id": "agente-codex",
+            "carpeta": "../celebra-me-worktrees/agente-codex",
+            "puerto": 4334,
+            "nombre": "Agente Codex",
+            "entorno": "local"
+        },
+        {
+            "id": "agente-gemini",
+            "carpeta": "../celebra-me-worktrees/agente-gemini",
+            "puerto": 4335,
+            "nombre": "Agente Gemini",
+            "entorno": "local"
         }
     ],
     "carrilesRetirados": ["f05-plataforma", "f10-libre"],
