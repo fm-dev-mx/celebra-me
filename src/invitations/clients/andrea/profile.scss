@@ -196,6 +196,15 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		--location-calendar-menu-bg: var(--color-story-cream);
 		--location-calendar-menu-ink: var(--color-forest-ink);
 
+		// Phones: the three actions share two lines so the venue fits the route stage.
+		@media (width < 768px) and (height < 900px) {
+			--location-program-action-primary-flex: 1 1 0;
+			--location-program-link-size: 0.9rem;
+			--location-program-link-tracking: 0.06em;
+			--location-program-link-padding: 0.3rem 0.75rem;
+			--location-program-drawing-size: 4rem;
+		}
+
 		@media (width >= 768px) {
 			--location-program-action-flex: 0 1 auto;
 			--location-program-action-primary-flex: 0 1 auto;
@@ -208,6 +217,25 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	// a faint gold light low on the page. Set on the scene's own selector so the scene default
 	// does not shadow it.
 	.event-location[data-location-scene='butterfly-route'] {
+		// The route keeps a readable share of the stage, even on the smallest phones.
+		--location-route-map-min: clamp(6rem, 16svh, 12rem);
+
+		// On phones each drawing sits beside its venue so the entry stays short; the shortest
+		// phones drop the drawing (composition) and stack the venue.
+		--location-route-entry-display: grid;
+		--location-route-entry-drawing-size: 4rem;
+
+		// Phones: the floating controls stand about 4rem tall, so the stage keeps 4.5rem clear
+		// for them instead of 6rem; the shortest phones also trim the route.
+		@media (width < 768px) and (height < 900px) {
+			--location-route-cue-space: 4.5rem;
+		}
+
+		@media (width < 768px) and (height < 640px) {
+			--location-route-entry-display: flex;
+			--location-route-map-min: 4.5rem;
+		}
+
 		--location-route-sky:
 			radial-gradient(
 				120% 60% at 50% 100%,
@@ -229,6 +257,12 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		// The arch keeps the portrait's own proportion (1843 × 2560), so the photograph fills it on
 		// every phone; short screens get a taller floor so the portrait never shrinks to a stamp.
 		--andrea-portrait-height: clamp(16rem, min(46svh, calc(100svh - 28rem)), 28rem);
+
+		// The shortest phones lower that floor so the cover and its larger letter keep one screen.
+		@media (width < 768px) and (height < 640px) {
+			--andrea-portrait-height: clamp(13.5rem, calc(100svh - 22rem), 16rem);
+		}
+
 		--hero-portrait-width-mobile: min(78vw, 19rem, calc(var(--andrea-portrait-height) * 0.72));
 		--hero-portrait-height-mobile: calc(var(--hero-portrait-width-mobile) / 0.72);
 

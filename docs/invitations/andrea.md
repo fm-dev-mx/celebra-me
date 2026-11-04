@@ -332,9 +332,14 @@ live in `src/invitations/clients/andrea/`; the shared `storybook-emerald` preset
 - A2 — white grounds become beige: `ivory-paper`, `story-cream`, `sage-mist`, `sage-veil` and the
   inline SVG fills.
 - A4 — larger type for older guests: the profile raises several rem sizes, and `composition.scss`
-  zooms `.event--andrea.event-theme-wrapper` by 1.125. A root `font-size` rule is not allowed in a
-  profile (`invitation-profile-boundary` test), and rem sizes ignore element font sizes, so the
-  scoped zoom is the one-step scale.
+  zooms the outermost text elements by 1.125. A root `font-size` rule is not allowed in a profile
+  (`invitation-profile-boundary` test), and rem sizes ignore element font sizes, so a scoped zoom is
+  the one-step scale. Only text zooms: zooming the wrapper also scaled `vw`/`svh`, so the hero and
+  the pinned scenes overflowed the viewport on wide screens.
+- Viewport fit (all sizes from 320×568 to 1920×1080): on phones under 900 px tall the three venue
+  actions share two lines and the route keeps 4.5rem clear for the floating controls; under 740 px
+  the route stage keeps base-size text and hides the address (the map and copy actions carry it);
+  under 640 px it also hides the lede and the venue drawing, and the cover portrait shrinks.
 - A5 — `NO NIÑOS (sin excepción)`.
 - A6 — client exception to the «usted» register, approved by the owner on 2026-11-04 for this one
   line only: «…y quiero que estés ahí.» All other copy stays in «usted».

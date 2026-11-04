@@ -1,7 +1,54 @@
 // Andrea: the few rules her tokens cannot express. Everything else lives in the profile.
 
-// Client round 2: many guests are older adults, so the invitation reads one step larger. Every
-// size in it is set in rem, which no element font-size can scale, so the wrapper zooms one step.
-.event--andrea.event-theme-wrapper {
-	zoom: 1.125;
+// Client round 2: many guests are older adults, so the invitation reads one step larger. Its sizes
+// are set in rem, which no element font-size can scale, so text zooms one step. Only text zooms:
+// zoom also scales vw and svh, and the frames sized by the viewport (hero, pinned scenes, footer)
+// must keep the real viewport or they overflow it. The outermost text element zooms once; text
+// nested in it inherits that zoom; empty decorative elements and elements that hold photos keep
+// their geometry.
+$andrea-text-zoom: 1.125;
+$andrea-text: 'h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, legend, button, a, time, span';
+
+.event--andrea {
+	:is(#{$andrea-text}):not(:is(#{$andrea-text}) *):not(:empty, :has(img, picture, video)) {
+		zoom: $andrea-text-zoom;
+	}
+}
+
+// Short phones: the pinned route stage holds the heading, the route and a venue in one screen. Its
+// text keeps the base size there and the address gives way, since «Ver mapa» and «Copiar dirección»
+// carry it; the shortest phones also drop the lede and the venue drawing so the route keeps room.
+@media (width < 768px) and (height < 740px) {
+	.event--andrea .location-route .scroll-scene__stage {
+		* {
+			zoom: 1;
+		}
+
+		.event-location__program-address {
+			display: none;
+		}
+	}
+}
+
+// Phones: «Agendar» shares the first line with «Ver mapa» at the right edge (profile action tokens),
+// so its menu opens leftward and stays on screen.
+@media (width < 768px) and (height < 900px) {
+	.event--andrea
+		.location-route
+		.scroll-scene__stage
+		.event-location__program-entry
+		.event-location__program-calendar
+		.event-location__calendar-options {
+		right: 0;
+		left: auto;
+	}
+}
+
+@media (width < 768px) and (height < 640px) {
+	.event--andrea .location-route .scroll-scene__stage {
+		.event-location__lede,
+		.event-location__program-drawing {
+			display: none;
+		}
+	}
 }
