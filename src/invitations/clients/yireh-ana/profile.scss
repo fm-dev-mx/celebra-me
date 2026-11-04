@@ -7,7 +7,7 @@ $yireh-icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
 $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8.5' y='8.5' width='11' height='11' rx='2'/%3E%3Cpath d='M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5'/%3E%3C/svg%3E");
 
 // Yireh Ana: the storybook-lilac preset as illustrated watercolor stationery. Ultra-pale lilac
-// paper, frameless watercolor stills between sections, and the night kept only as contrast for the
+// paper, matted watercolor stills between sections, and the night kept only as contrast for the
 // countdown and the closing. Each motif has one job: the oak on the cover, flowers only on the
 // cover, the bouquet and envelope stills and the closing wreath, and the small yellow bow tying off
 // the program ribbon (the only bow besides the oak's). Two pinned scenes (the cover closing in on the
@@ -290,19 +290,20 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--header-nav-cta-border: var(--color-leaf-gold);
 	}
 
-	.invitation-interlude[data-presentation='framed'][data-interlude-index='2'] {
+	// The bouquet rests on the story paper as a matted print, a pause between the program and
+	// the practical pages.
+	.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
 		--section-band-paper: var(--color-lilac-paper);
 		--interlude-framed-bg: var(--color-lilac-paper);
-		--interlude-framed-padding: clamp(0.5rem, 3vw, 1.5rem) var(--yireh-gutter)
-			clamp(2rem, 6vw, 3.5rem);
-		--interlude-framed-max-width: 34rem;
-		--interlude-framed-radius: 0;
-		--interlude-framed-image-radius: 0;
-		--interlude-framed-mat: 0;
-		--interlude-framed-mat-bg: transparent;
+		--interlude-framed-padding: clamp(1rem, 4vw, 2rem) var(--yireh-gutter)
+			clamp(3.5rem, 9vw, 6rem);
+		--interlude-framed-max-width: 22.5rem;
+		--interlude-framed-mat: 0.875rem 0.875rem 2.75rem;
+		--interlude-framed-mat-bg: var(--color-story-cream);
 		--interlude-framed-border: 0;
 		--interlude-framed-outline: 0;
-		--interlude-framed-shadow: none;
+		--interlude-framed-shadow:
+			0 1px 0 var(--yireh-rule), 0 18px 40px -24px rgb(var(--color-violet-ink-rgb) / 45%);
 	}
 
 	.invitation-section-wrapper[data-section-kind='countdown'] {
@@ -353,7 +354,8 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--intersection-depth: var(--yireh-print-overlap);
 	}
 
-	.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
+	// The envelope hangs from the night of the count onto the mist of the pass.
+	.invitation-interlude[data-presentation='framed'][data-interlude-index='2'] {
 		--section-band-paper: none;
 		--interlude-framed-bg: linear-gradient(
 			transparent 0 var(--yireh-print-overlap),

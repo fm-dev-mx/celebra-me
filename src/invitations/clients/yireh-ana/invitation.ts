@@ -41,9 +41,9 @@ const content: CanonicalEventContentInput = {
 		'family',
 		'itinerary',
 		'gifts',
-		// Round 1: the count, the venue and the map now sit together with the pass and the reply.
-		'countdown',
 		'location',
+		// Round 1: the count sits on the pass, right after the venue and the map.
+		'countdown',
 		'personalizedAccess',
 		'rsvp',
 		'thankYou',
@@ -52,7 +52,7 @@ const content: CanonicalEventContentInput = {
 		intersections: {
 			// Three intentional joins across the whole narrative arc (Bridge, Bridge, Climax),
 			// preserving clean neutral paper-mist cuts everywhere else.
-			countdown: { family: 'overlap', source: 'gifts' },
+			countdown: { family: 'overlap', source: 'location' },
 			'interlude-after-countdown': { family: 'overlap', source: 'countdown' },
 			thankYou: { family: 'arch', source: 'rsvp' },
 		},
@@ -61,15 +61,16 @@ const content: CanonicalEventContentInput = {
 		{
 			// Bespoke still 1: a lilac and purple bouquet with one yellow flower, tied with ribbon.
 			image: 'interludeBouquet',
-			afterSection: 'countdown',
+			afterSection: 'itinerary',
 			alt: 'Ramo de flores lilas y moradas con una flor amarilla, atado con un listón, en acuarela.',
 			height: 'medium',
 			presentation: 'framed',
 		},
 		{
-			// Bespoke still 2: the invitation itself, a sealed lilac envelope, before the pass.
+			// Bespoke still 2: the invitation itself, a sealed lilac envelope, hung from the night
+			// of the count right before the pass.
 			image: 'interludeEnvelope',
-			afterSection: 'location',
+			afterSection: 'countdown',
 			alt: 'Sobre lila cerrado con un ramito de flores y un moño amarillo, en acuarela.',
 			height: 'medium',
 			presentation: 'framed',
