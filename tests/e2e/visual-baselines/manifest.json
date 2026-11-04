@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-04T15:55:37.020Z",
+    "generatedAt": "2026-11-04T16:57:32.291Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -2343,7 +2343,7 @@
             "preset": "storybook-lilac",
             "viewport": "mobile",
             "file": "pages/invitation-xv-yireh-ana-mobile.png",
-            "sha256": "3b3427cbfce6bbb54d6df5cd1de10ec3d0d05cc55dc03ee5048866f05f1a2078",
+            "sha256": "0fbcd9f323c76e9e40afbae3bd20118e7d0d60f1f265c0623b329d26db463dd3",
             "contentHash": "0ac9d8dce41dbcb7058ab76c4e11e84b5bc2fdd007905d319b500635d98a0fb2",
             "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
             "comparisonResult": "ACCEPTED"
@@ -2355,7 +2355,7 @@
             "preset": "storybook-lilac",
             "viewport": "desktop",
             "file": "pages/invitation-xv-yireh-ana-desktop.png",
-            "sha256": "aa9aa243a3232e6b10a2140415a40bfa3e3a791b0300fc4d4ee78ee04fcb0207",
+            "sha256": "8a6e058a9a65d022c26e90a4727cf57d501325215d950d3966d2c86a70a0ccc1",
             "contentHash": "0ac9d8dce41dbcb7058ab76c4e11e84b5bc2fdd007905d319b500635d98a0fb2",
             "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
             "comparisonResult": "ACCEPTED"
@@ -2577,9 +2577,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "62db4239a3d7b0a604e47ae4bd59704841a63c1f",
+    "referenceSha": "19f9f21cc0bc7da5de353fc9c3e6f59bb5305be9",
     "variantManifest": {
-        "generatedAt": "2026-11-04T15:55:37.020Z",
+        "generatedAt": "2026-11-04T16:57:32.291Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4509,10 +4509,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "62db4239a3d7b0a604e47ae4bd59704841a63c1f"
+        "referenceSha": "19f9f21cc0bc7da5de353fc9c3e6f59bb5305be9"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-04T15:55:37.033Z",
+        "generatedAt": "2026-11-04T16:57:32.297Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4951,7 +4951,7 @@
                 "preset": "storybook-lilac",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-yireh-ana-mobile.png",
-                "sha256": "3b3427cbfce6bbb54d6df5cd1de10ec3d0d05cc55dc03ee5048866f05f1a2078",
+                "sha256": "0fbcd9f323c76e9e40afbae3bd20118e7d0d60f1f265c0623b329d26db463dd3",
                 "contentHash": "0ac9d8dce41dbcb7058ab76c4e11e84b5bc2fdd007905d319b500635d98a0fb2",
                 "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
                 "comparisonResult": "CANDIDATE"
@@ -4963,7 +4963,7 @@
                 "preset": "storybook-lilac",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-yireh-ana-desktop.png",
-                "sha256": "aa9aa243a3232e6b10a2140415a40bfa3e3a791b0300fc4d4ee78ee04fcb0207",
+                "sha256": "8a6e058a9a65d022c26e90a4727cf57d501325215d950d3966d2c86a70a0ccc1",
                 "contentHash": "0ac9d8dce41dbcb7058ab76c4e11e84b5bc2fdd007905d319b500635d98a0fb2",
                 "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
                 "comparisonResult": "CANDIDATE"
@@ -5185,9 +5185,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "62db4239a3d7b0a604e47ae4bd59704841a63c1f"
+        "referenceSha": "19f9f21cc0bc7da5de353fc9c3e6f59bb5305be9"
     },
-    "candidateManifestSha256": "f37d03601b4b1f20b259b332e418af9624d1fdc8484cbd2b5b47cb0bf3e03ff7",
-    "acceptedFromCommit": "62db4239a3d7b0a604e47ae4bd59704841a63c1f",
-    "acceptedAt": "2026-11-04T15:56:14.176Z"
+    "candidateManifestSha256": "821b47067f1d7c101b3c3b3bc2ed197a0c708856a6020b142972cb4cbfec8787",
+    "acceptedFromCommit": "19f9f21cc0bc7da5de353fc9c3e6f59bb5305be9",
+    "acceptedAt": "2026-11-04T16:58:05.579Z"
 }
