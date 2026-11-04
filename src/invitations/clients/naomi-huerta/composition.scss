@@ -85,12 +85,11 @@
 			display: none;
 		}
 
-		.event-location__program-entry {
-			--location-route-entry-drawing-size: 4.75rem;
-		}
-
+		// The drawing fills its column beside the venue (the profile turns the entry grid on).
 		.event-location__program-drawing {
+			width: 100%;
 			height: 6.25rem;
+			margin: 0;
 			padding: 2rem 0.45rem 0.7rem;
 		}
 
@@ -101,6 +100,7 @@
 		.event-location__program-actions {
 			flex-wrap: nowrap;
 			gap: 0.5rem;
+			margin-top: 0.75rem;
 
 			> *,
 			> :first-child {

@@ -228,8 +228,8 @@ $lantern-sky:
 				flex: 1;
 				width: 100%;
 
-				// The route always keeps a readable share of the stage.
-				min-height: var(--location-route-map-min, clamp(8rem, 24svh, 12rem));
+				// Profiles may reserve a readable share of the stage for the route.
+				min-height: var(--location-route-map-min, 0);
 				overflow: visible;
 			}
 
@@ -266,6 +266,8 @@ $lantern-sky:
 		// Stop names beside the two dots. The stop the guest is at stays lit and the other one dims,
 		// so the route reads as "from the mass to the party".
 		.location-route__stop-label {
+			// Off unless the profile opts in with --location-route-stop-labels: block.
+			display: var(--location-route-stop-labels, none);
 			position: absolute;
 			margin: 0;
 
@@ -484,11 +486,11 @@ $lantern-sky:
 				}
 			}
 
-			// Phones: the drawing sits beside the venue and the actions run below both, so the
-			// entry stays short and the route keeps room to fly.
+			// Phones: a profile may set --location-route-entry-display: grid to sit the drawing beside
+			// the venue with the actions below both. Under the default flex these placements are inert.
 			@include m.respond-below(lg) {
 				@include scene.pinned {
-					display: grid;
+					display: var(--location-route-entry-display, flex);
 					grid-template-columns: var(--location-route-entry-drawing-size, 5.5rem) minmax(
 							0,
 							1fr
@@ -504,13 +506,10 @@ $lantern-sky:
 						grid-row: 1 / span 4;
 						grid-column: 1;
 						align-self: start;
-						width: 100%;
-						margin: 0;
 					}
 
 					.event-location__program-actions {
 						grid-column: 1 / -1;
-						margin-top: 0.75rem;
 					}
 				}
 			}

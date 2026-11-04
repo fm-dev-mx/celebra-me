@@ -241,6 +241,13 @@ $naomi-paper-grain-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 	// a faint silver light low on the page. Set on the scene's own selector so the scene default
 	// does not shadow it.
 	.event-location[data-location-scene='butterfly-route'] {
+		// The route keeps a readable share of the stage and names its two stops.
+		--location-route-map-min: clamp(8rem, 24svh, 12rem);
+		--location-route-stop-labels: block;
+
+		// On phones each drawing sits beside its venue so the entry stays short.
+		--location-route-entry-display: grid;
+		--location-route-entry-drawing-size: 4.75rem;
 		--location-route-sky:
 			radial-gradient(
 				120% 60% at 50% 100%,
