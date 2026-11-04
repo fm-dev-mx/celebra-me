@@ -10,6 +10,25 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.67.0-beta.1] - 2026-11-04
+
+Applies the naomi-huerta client corrections and the second andrea adjustment round. No database
+migrations.
+
+### Added
+
+- Invitations: a gift-tag variant for the gifts section, used by naomi-huerta to fit the registry
+  and the cash envelope box in one screen.
+
+### Changed
+
+- Invitations: naomi-huerta shows the full name on the cover, corrects the program times (reception
+  at 20:15), adds the cash envelope box and asks for the names of every attendee in the RSVP notes
+  step.
+- Invitations: andrea applies the second client round: whole sections at every viewport size,
+  refined footer, countdown, cues, music and menu, matching pass and RSVP widths, and retouched
+  portraits (makeup, dress sparkle and the garden bracelet).
+
 ## [0.66.0-beta.1] - 2026-11-04
 
 Applies the first round of client feedback to the yireh-ana invitation. No database migrations.
