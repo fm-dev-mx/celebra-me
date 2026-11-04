@@ -10,6 +10,18 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.66.0-beta.1] - 2026-11-04
+
+Applies the first round of client feedback to the yireh-ana invitation. No database migrations.
+
+### Changed
+
+- Invitations: yireh-ana shows a larger centred name with «Mis XV años» on the cover and moves the
+  date and venue to later sections; the envelope and send-off fly yellow ribbons instead of
+  butterflies; the family section follows the client reference with calligraphy group titles.
+- Invitations: yireh-ana sets the countdown between the location and the pass, and re-paces the
+  section grounds as paper, mist and night with matted watercolor interludes.
+
 ## [0.65.0-beta.1] - 2026-11-04
 
 Sends more customer data to Meta, hashed, to raise the event match quality. No database migrations.
