@@ -318,3 +318,50 @@ repository.
   leads, the silhouettes illustrate the attire, the requested courtesy note appears once, and the
   reserved colors and adults-only notice remain secondary. No new client-adjustment round is
   consumed by correcting these details.
+
+## Second client adjustment round — 2026-11-04
+
+Source: Gloria's WhatsApp list of 2026-11-03 (paid; she stated it is her final list). All changes
+live in `src/invitations/clients/andrea/`; the shared `storybook-emerald` preset is untouched.
+
+- A1/A3 — every text reads gold: the profile maps `forest-ink`, `forest-ink-soft`, `pale-cream`,
+  `night-sage` and `pale-gold` to stronger golds, and the former emerald text uses (hero name and
+  date, header initial and nav, location program links) now use `gold-ink`. Emerald stays only as a
+  ground (primary program button, dress). The RSVP reply card inherits the same inks, so it renders
+  on beige with gold text instead of white with dark text.
+- A2 — white grounds become beige: `ivory-paper`, `story-cream`, `sage-mist`, `sage-veil` and the
+  inline SVG fills.
+- A4 — larger type for older guests: the profile raises several rem sizes, and `composition.scss`
+  zooms the outermost text elements by 1.125. A root `font-size` rule is not allowed in a profile
+  (`invitation-profile-boundary` test), and rem sizes ignore element font sizes, so a scoped zoom is
+  the one-step scale. Only text zooms: zooming the wrapper also scaled `vw`/`svh`, so the hero and
+  the pinned scenes overflowed the viewport on wide screens.
+- Viewport fit (all sizes from 320×568 to 1920×1080): on phones under 900 px tall the three venue
+  actions share two lines and the route keeps 4.5rem clear for the floating controls; under 740 px
+  the route stage keeps base-size text and hides the address (the map and copy actions carry it);
+  under 640 px it also hides the lede and the venue drawing, and the cover portrait shrinks.
+- A5 — `NO NIÑOS (sin excepción)`.
+- A6 — client exception to the «usted» register, approved by the owner on 2026-11-04 for this one
+  line only: «…y quiero que estés ahí.» All other copy stays in «usted».
+- A7 — gifts title `Lluvia de sobres o regalo` with a gift header mark; «completamente opcional»
+  sits in the subtitle.
+- Pending outside the code: photo edits B1–B3 (dress sparkle to gold, gold bracelet, light makeup
+  polish; edit, never regenerate), the 5×7 table card with the photo-upload QR built in (C1, under
+  the $399 QR service C2), Production re-enable, Preview and client approval.
+
+### Design refinements — 2026-11-04
+
+Owner review of the second round, in two passes, all in `src/invitations/clients/andrea/`.
+
+- Footer: the reply, the sign-off (ornament, name line in the night foil, replay as an underlined
+  link) and the platform colophon under a gold hairline. No plates or pills.
+- Countdown: no cells. The days lead in a large night-foil numeral over a short gold rule; hours,
+  minutes and seconds follow on one line, separated by hairlines.
+- Scroll cues: the cover cue and the cue under the dress code share one quiet mark (a slim gold
+  capsule with a sliding dot, 62 % opacity, still under reduced motion).
+- Music: a small emerald glass disc with a fine gold ring and no pulsing halos; the prompt is one
+  line in sentence case at every width.
+- Phone menu: a numbered, left-aligned list on hairlines whose spacing follows the screen height, so
+  the whole drawer (links, confirm button, signature) fits from 320×568 up without scrolling.
+- Also refined in this pass: the hero photo framing, the accent golds, the paper texture and the
+  itinerary drawings.
