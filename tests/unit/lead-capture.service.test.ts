@@ -62,7 +62,7 @@ function makePayload(overrides: Record<string, unknown> = {}) {
 		eventDate: futureDate(),
 		contactName: 'Gloria Garza',
 		celebrantNames: 'Andrea',
-		city: '  Los Mochis ',
+		city: '  los mochis, Sinaloa ',
 		phone: '668 111 2233',
 		demoSlug: 'demo-xv-celestial-blue',
 		sourceArea: 'hero',

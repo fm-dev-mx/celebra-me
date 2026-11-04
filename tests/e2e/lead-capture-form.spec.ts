@@ -46,7 +46,6 @@ async function fillValidForm(page: Page) {
 	await dialog.getByLabel('Su nombre').fill('Gloria Prueba');
 	await dialog.getByLabel('Tipo de evento').selectOption('xv');
 	await dialog.getByLabel('Fecha del evento').fill(futureIsoDate());
-	await dialog.getByLabel(/Nombre\(s\) de quien celebra/).fill('Andrea');
 	await dialog.getByLabel(/Su ciudad/).fill('Los Mochis');
 	await dialog.getByLabel('Su WhatsApp').fill('668 111 2233');
 	// The honeypot timer drops submissions faster than a person could type.
@@ -93,7 +92,7 @@ test.describe('lead capture form', () => {
 		expect(requests[0]).toMatchObject({
 			contactName: 'Gloria Prueba',
 			eventType: 'xv',
-			celebrantNames: 'Andrea',
+			city: 'Los Mochis',
 			phone: '668 111 2233',
 			website: '',
 		});
@@ -102,7 +101,7 @@ test.describe('lead capture form', () => {
 
 		const text = destination.searchParams.get('text') ?? '';
 		expect(text).toContain('Hola, soy Gloria Prueba. Quiero apartar mi fecha.');
-		expect(text).toContain('XV años de Andrea');
+		expect(text).toContain('XV años');
 		expect(text).toContain(`Folio ${LEAD_CODE}`);
 	});
 

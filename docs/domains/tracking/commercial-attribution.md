@@ -432,10 +432,16 @@ customers share one country: the Pixel always initializes with `country: 'mx'` (
 itself), and every CAPI event, browser or CRM, carries `country` as the SHA-256 of `mx`.
 
 Browser-triggered CAPI events that carry a `customer_id` also send the customer's name and city,
-hashed with SHA-256 after Meta's normalization (lowercase Roman letters only: accents, spaces and
-punctuation removed). `fn` is the first word of `display_name`; `ln` lists the last one or two
-remaining words, so a Mexican double surname sends both candidates. `ct` is the normalized `city`
-(for example «Ciudad Juárez» → `ciudadjuarez`). CRM lead-stage events do not send them.
+hashed with SHA-256 after Meta's normalization (lowercase letters only, spaces and punctuation
+removed). Each value is sent as two candidates, with and without accents (`maría` and `maria`),
+because Meta's guide asks for Roman letters while its own SDK keeps accents. `fn` is the first word
+of `display_name`; `ln` lists the last one or two remaining surnames, each joined with its particles
+(`de`, `del`, `la`, `las`, `los`, `y`, `san`, `van`, `von`) and also bare, so «Gloria de la Garza»
+sends `delagarza` and `garza`. The lead form suggests cities from
+`src/lib/commercial/mexican-cities.ts` and the server stores the canonical name for a listed city or
+alias («Cd. Juárez», «CDJ» → «Ciudad Juárez»; an unlisted city is kept as typed). `ct` is that city
+(`ciudadjuárez`, `ciudadjuarez`) and `st` is its state from the same list (`chihuahua`); an unlisted
+city sends no `st`. CRM lead-stage events do not send them.
 
 After a successful «Aparta su fecha» submission with marketing consent, `lead-capture-client.ts`
 calls `rememberMetaPhoneMatchKey()`, which stores only `ph` (the SHA-256 hex of the phone's E.164

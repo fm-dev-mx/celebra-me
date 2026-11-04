@@ -8,6 +8,7 @@
  * Without JavaScript the CTA keeps its WhatsApp link.
  */
 import { DEMO_SHOWROOM_ITEMS } from '@/data/demo-showroom.data';
+import { MEXICAN_CITIES } from '@/lib/commercial/mexican-cities';
 import { LEAD_CAPTURE_EVENT_TYPES } from '@/lib/tracking/lead-capture';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 import '@/styles/components/_lead-capture.scss';
@@ -17,6 +18,7 @@ const demoOptions = [...DEMO_SHOWROOM_ITEMS]
 	.filter((item) => item.reviewStatus === 'approved')
 	.sort((a, b) => a.sortOrder - b.sortOrder)
 	.map((item) => ({ slug: item.slug, name: item.styleName, eventType: item.eventType }));
+const cityOptions = MEXICAN_CITIES.map((city) => city.name).sort((a, b) => a.localeCompare(b, 'es'));
 ---
 
 {
@@ -104,19 +106,6 @@ const demoOptions = [...DEMO_SHOWROOM_ITEMS]
 					</div>
 
 					<div class="lead-capture__field">
-						<label for="lead-capture-celebrant">
-							Nombre(s) de quien celebra <span class="lead-capture__optional">(opcional)</span>
-						</label>
-						<input
-							id="lead-capture-celebrant"
-							name="celebrantNames"
-							type="text"
-							maxlength="120"
-							placeholder="Ej. Andrea · Daniela y Martín"
-						/>
-					</div>
-
-					<div class="lead-capture__field">
 						<label for="lead-capture-city">
 							Su ciudad <span class="lead-capture__optional">(opcional)</span>
 						</label>
@@ -127,7 +116,13 @@ const demoOptions = [...DEMO_SHOWROOM_ITEMS]
 							autocomplete="address-level2"
 							maxlength="60"
 							placeholder="Ej. Ciudad Juárez"
+							list="lead-capture-city-options"
 						/>
+						<datalist id="lead-capture-city-options">
+							{cityOptions.map((name) => (
+								<option value={name} />
+							))}
+						</datalist>
 					</div>
 
 					<div class="lead-capture__field">

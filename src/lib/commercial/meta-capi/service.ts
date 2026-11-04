@@ -5,6 +5,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 import { safeErr } from '@/lib/server/safe-error';
 import { getEstimatedLeadValue } from './estimated-lead-value';
+import { canonicalizeMexicanCity, findMexicanCity } from '@/lib/commercial/mexican-cities';
 import {
 	getMetaCrmLeadStageFromTriggerStatus,
 	META_CHAT_EVENT_MAX_AGE_MS,
@@ -234,36 +235,64 @@ export function normalizeAndHashPhone(phoneE164?: string | null): string | undef
 }
 
 /**
- * Meta's name and city normalization: lowercase Roman letters only, so accents, spaces and
- * punctuation are dropped («Ciudad Juárez» → `ciudadjuarez`).
+ * Meta's name, city and state normalization: lowercase, no spaces, digits or punctuation. Meta's
+ * docs recommend Roman a–z, while its own SDK keeps accented letters, so both spellings are
+ * returned when they differ («Ciudad Juárez» → `ciudadjuárez`, `ciudadjuarez`).
  */
-function normalizeMetaLetters(value: string): string {
-	return value
+function normalizeMetaLetterVariants(value: string): string[] {
+	const lower = value.normalize('NFC').toLowerCase();
+	const accented = lower.replace(/[^\p{L}]/gu, '');
+	const plain = lower
 		.normalize('NFD')
 		.replace(/\p{M}/gu, '')
-		.toLowerCase()
 		.replace(/[^a-z]/g, '');
+	return [...new Set([accented, plain])].filter((variant) => variant.length > 0);
 }
 
+function hashMetaLetterVariants(values: readonly string[]): string[] {
+	return [...new Set(values.flatMap(normalizeMetaLetterVariants))].map(hashSha256);
+}
+
+/** Spanish surname particles that belong to the surname after them («de la Garza»). */
+const SURNAME_PARTICLES = new Set(['de', 'del', 'la', 'las', 'los', 'y', 'san', 'van', 'von']);
+
 /**
- * Hashed `fn` and `ln` from a full name. The first word is the first name; the last name may be
- * one or two surnames, so the last two words are both sent as `ln` candidates
- * («María Fernanda López García» → fn `maria`, ln `lopez` and `garcia`).
+ * Hashed `fn` and `ln` from a full name. The first word is the first name. Particles join the
+ * surname after them, and the last name may be one or two surnames, so the last two surnames are
+ * sent as `ln` candidates, a particle surname also without its particles
+ * («Gloria de la Garza López» → fn `gloria`, ln `delagarza`, `garza` and `lópez`/`lopez`).
  */
 export function normalizeAndHashName(fullName?: string | null): { fn?: string[]; ln?: string[] } {
 	const words = (fullName ?? '')
 		.split(/\s+/)
-		.map(normalizeMetaLetters)
-		.filter((word) => word.length > 0);
+		.filter((word) => normalizeMetaLetterVariants(word).length > 0);
 	if (words.length === 0) return {};
-	const fn = [hashSha256(words[0])];
-	const surnames = [...new Set(words.slice(1).slice(-2))];
-	return surnames.length > 0 ? { fn, ln: surnames.map(hashSha256) } : { fn };
+	const fn = hashMetaLetterVariants([words[0]]);
+
+	const surnames: { joined: string; core: string }[] = [];
+	let particles: string[] = [];
+	for (const word of words.slice(1)) {
+		if (SURNAME_PARTICLES.has(normalizeMetaLetterVariants(word).at(-1) ?? '')) {
+			particles.push(word);
+			continue;
+		}
+		surnames.push({ joined: [...particles, word].join(''), core: word });
+		particles = [];
+	}
+	const lnSources = surnames.slice(-2).flatMap(({ joined, core }) => [joined, core]);
+	const ln = hashMetaLetterVariants(lnSources);
+	return ln.length > 0 ? { fn, ln } : { fn };
 }
 
-export function normalizeAndHashCity(city?: string | null): string | undefined {
-	const normalized = normalizeMetaLetters(city ?? '');
-	return normalized ? hashSha256(normalized) : undefined;
+/** Hashed `ct` candidates (accented and plain) from a city name. */
+export function normalizeAndHashCity(city?: string | null): string[] {
+	return hashMetaLetterVariants(city ? [city] : []);
+}
+
+/** Hashed `st` candidates for a listed Mexican city («Ciudad Juárez» → `chihuahua`). */
+export function normalizeAndHashStateForCity(city?: string | null): string[] {
+	const state = findMexicanCity(city)?.state;
+	return hashMetaLetterVariants(state ? [state] : []);
 }
 
 export type BrowserConversionEventName = 'PageView' | 'ViewContent' | 'Contact' | 'Lead';
@@ -396,7 +425,7 @@ async function fetchSessionDetails(sessionId: string): Promise<SessionDetail | n
 
 type UserData = Record<string, string | string[]>;
 
-/** Hashed customer keys: email, phone, first and last name, city and the external ID. */
+/** Hashed customer keys: email, phone, first and last name, city, state and the external ID. */
 function buildIdentityKeys(detail: OutboxDetail, session: SessionDetail | null): UserData {
 	const userData: UserData = {};
 
@@ -412,9 +441,14 @@ function buildIdentityKeys(detail: OutboxDetail, session: SessionDetail | null):
 
 	Object.assign(userData, normalizeAndHashName(detail.customers?.display_name));
 
-	const cityHash = normalizeAndHashCity(detail.customers?.city);
-	if (cityHash) {
-		userData.ct = [cityHash];
+	const city = canonicalizeMexicanCity(detail.customers?.city);
+	const cityHashes = normalizeAndHashCity(city);
+	if (cityHashes.length > 0) {
+		userData.ct = cityHashes;
+	}
+	const stateHashes = normalizeAndHashStateForCity(city);
+	if (stateHashes.length > 0) {
+		userData.st = stateHashes;
 	}
 
 	// The first-party visitor ID is shared by every event of the same browser; the customer ID

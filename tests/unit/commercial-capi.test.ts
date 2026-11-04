@@ -12,6 +12,7 @@ import {
 	normalizeAndHashCity,
 	normalizeAndHashEmail,
 	normalizeAndHashName,
+	normalizeAndHashStateForCity,
 	normalizeAndHashPhone,
 	deliverMetaConversionEvent,
 	enqueueBrowserConversionEvent,
@@ -108,25 +109,59 @@ describe('Meta CAPI service helpers', () => {
 		expect(normalizeAndHashPhone('')).toBeUndefined();
 	});
 
-	it('hashes the first name and up to two surnames as Roman letters only', () => {
+	it('hashes the first name and up to two surnames, with and without accents', () => {
 		expect(normalizeAndHashName('  María Fernanda López García ')).toEqual({
-			fn: [hashSha256('maria')],
-			ln: [hashSha256('lopez'), hashSha256('garcia')],
+			fn: [hashSha256('maría'), hashSha256('maria')],
+			ln: [
+				hashSha256('lópez'),
+				hashSha256('lopez'),
+				hashSha256('garcía'),
+				hashSha256('garcia'),
+			],
 		});
 		expect(normalizeAndHashName('José Peña')).toEqual({
-			fn: [hashSha256('jose')],
-			ln: [hashSha256('pena')],
+			fn: [hashSha256('josé'), hashSha256('jose')],
+			ln: [hashSha256('peña'), hashSha256('pena')],
 		});
 		expect(normalizeAndHashName('Andrea')).toEqual({ fn: [hashSha256('andrea')] });
 		expect(normalizeAndHashName('  ')).toEqual({});
 		expect(normalizeAndHashName(null)).toEqual({});
 	});
 
-	it('hashes the city without accents, spaces or punctuation', () => {
-		expect(normalizeAndHashCity(' Ciudad Juárez ')).toBe(hashSha256('ciudadjuarez'));
-		expect(normalizeAndHashCity('Cd. Juárez, Chih.')).toBe(hashSha256('cdjuarezchih'));
-		expect(normalizeAndHashCity('')).toBeUndefined();
-		expect(normalizeAndHashCity(undefined)).toBeUndefined();
+	it('joins surname particles and also sends the bare surname', () => {
+		expect(normalizeAndHashName('Gloria de la Garza')).toEqual({
+			fn: [hashSha256('gloria')],
+			ln: [hashSha256('delagarza'), hashSha256('garza')],
+		});
+		expect(normalizeAndHashName('Luis Del Río Soto')).toEqual({
+			fn: [hashSha256('luis')],
+			ln: [
+				hashSha256('delrío'),
+				hashSha256('delrio'),
+				hashSha256('río'),
+				hashSha256('rio'),
+				hashSha256('soto'),
+			],
+		});
+	});
+
+	it('hashes the city with and without accents, never spaces or punctuation', () => {
+		expect(normalizeAndHashCity(' Ciudad Juárez ')).toEqual([
+			hashSha256('ciudadjuárez'),
+			hashSha256('ciudadjuarez'),
+		]);
+		expect(normalizeAndHashCity('Los Mochis')).toEqual([hashSha256('losmochis')]);
+		expect(normalizeAndHashCity('')).toEqual([]);
+		expect(normalizeAndHashCity(undefined)).toEqual([]);
+	});
+
+	it('hashes the state of a listed city only', () => {
+		expect(normalizeAndHashStateForCity('Ciudad Juárez')).toEqual([hashSha256('chihuahua')]);
+		expect(normalizeAndHashStateForCity('Monterrey')).toEqual([
+			hashSha256('nuevoleón'),
+			hashSha256('nuevoleon'),
+		]);
+		expect(normalizeAndHashStateForCity('Pueblo Inventado')).toEqual([]);
 	});
 });
 
@@ -351,7 +386,7 @@ describe('deliverMetaConversionEvent', () => {
 						email: 'client@example.com',
 						phone_e164: '+521000000005',
 						display_name: 'Ana Pérez',
-						city: 'Ciudad Juárez',
+						city: 'Cd. Juarez',
 					},
 					sales_orders: {
 						session_id: 'session-id',
@@ -402,8 +437,12 @@ describe('deliverMetaConversionEvent', () => {
 		expect(body.data[0].user_data.em).toEqual([hashSha256('client@example.com')]);
 		expect(body.data[0].user_data.ph).toEqual([hashSha256('521000000005')]);
 		expect(body.data[0].user_data.fn).toEqual([hashSha256('ana')]);
-		expect(body.data[0].user_data.ln).toEqual([hashSha256('perez')]);
-		expect(body.data[0].user_data.ct).toEqual([hashSha256('ciudadjuarez')]);
+		expect(body.data[0].user_data.ln).toEqual([hashSha256('pérez'), hashSha256('perez')]);
+		expect(body.data[0].user_data.ct).toEqual([
+			hashSha256('ciudadjuárez'),
+			hashSha256('ciudadjuarez'),
+		]);
+		expect(body.data[0].user_data.st).toEqual([hashSha256('chihuahua')]);
 		expect(JSON.stringify(body.data)).not.toContain('Ana');
 		expect(body.data[0].user_data.fbp).toBe('fb.1.12345');
 		expect(body.data[0].user_data.fbc).toBe('fb.1.67890');
