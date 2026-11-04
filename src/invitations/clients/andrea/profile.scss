@@ -19,6 +19,10 @@ $andrea-mist-rise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 $andrea-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 12' fill='none' stroke='%23A8843F' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M8 6h38M58 6h38'/%3E%3Cpath d='M52 2l4 4-4 4-4-4z'/%3E%3C/svg%3E");
 $andrea-rule-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 12' fill='none' stroke='%23E6C678' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M8 6h38M58 6h38'/%3E%3Cpath d='M52 2l4 4-4 4-4-4z'/%3E%3C/svg%3E");
 
+// The day rule in two inks: emerald hairlines around a filled gold diamond, so the paper sections
+// carry the green accent the client asked for and not one more gold line.
+$andrea-rule-duo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 12' fill='none' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M8 6h38M58 6h38' stroke='%231F5A47'/%3E%3Cpath d='M52 2l4 4-4 4-4-4z' fill='%23A8843F' stroke='%23A8843F'/%3E%3C/svg%3E");
+
 // Line icons for the venue actions (map pin, calendar, copy), painted as masks in the link ink.
 $andrea-icon-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z'/%3E%3Ccircle cx='12' cy='10' r='2.4'/%3E%3C/svg%3E");
 $andrea-icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5.5' width='16' height='14.5' rx='2'/%3E%3Cpath d='M4 10h16M8.5 3.5v4M15.5 3.5v4'/%3E%3C/svg%3E");
@@ -45,6 +49,26 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	--andrea-band-padding: clamp(4.5rem, 12vw, 7.5rem);
 	--andrea-gutter: clamp(1.5rem, 6vw, 4rem);
 	--andrea-rule: rgb(var(--color-forest-ink-rgb) / 18%);
+
+	// Round 3 accents: the letters stay gold (client round 2) but in three golds, not one. A
+	// metallic foil for the names and titles, a deep honey for secondary text on beige (AA, 6.4:1)
+	// and a light champagne for secondary text on the night; emerald carries the elements.
+	--andrea-honey: rgb(132 94 22);
+	--andrea-champagne: rgb(244 228 186);
+	--andrea-foil-day: linear-gradient(
+		100deg,
+		rgb(122 88 24) 0%,
+		rgb(176 136 58) 38%,
+		rgb(140 102 30) 62%,
+		rgb(104 74 18) 100%
+	);
+	--andrea-foil-night: linear-gradient(
+		100deg,
+		rgb(214 176 92) 0%,
+		rgb(250 232 178) 42%,
+		rgb(222 186 104) 68%,
+		rgb(196 156 74) 100%
+	);
 
 	// Client round 2: every letter in gold and the white grounds in warm beige. Day inks become
 	// dark golds that keep AA on beige (7.6:1, 6:1, 5:1); the night inks that read as beige or
@@ -79,11 +103,11 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	--family-message-size: clamp(1.4rem, 5.2vw, 1.6rem);
 	--family-message-style: italic;
 	--family-message-line-height: 1.4;
-	--family-divider: #{$andrea-rule} center / contain no-repeat;
+	--family-divider: #{$andrea-rule-duo} center / contain no-repeat;
 	--family-divider-width: 6.5rem;
 	--family-divider-height: 0.75rem;
 	--family-divider-opacity: 100%;
-	--family-group-title-color: var(--color-gold-ink);
+	--family-group-title-color: var(--andrea-honey);
 	--location-program-art-display: none;
 	--location-program-art: none;
 	--location-program-margin-top: 0;
@@ -92,7 +116,12 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	// The dress code hangs from a gold thread as a small emerald tag with clipped corners: a
 	// butterfly at its head, the etiquette, the colors kept for her (a half-emerald, half-gold
 	// swatch) and one closing line in spaced capitals.
-	--location-enclosure-bg: var(--color-emerald-night);
+	// Fine paper: a light grain and a faint laid line over the night, lit from the top.
+	--location-enclosure-bg:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .96 0 0 0 0 .9 0 0 0 0 .72 0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+		repeating-linear-gradient(0deg, rgb(255 255 255 / 2%) 0 1px, transparent 1px 4px),
+		radial-gradient(120% 60% at 50% 0%, rgb(var(--color-pale-gold-rgb) / 12%), transparent 70%),
+		var(--color-emerald-night);
 	--location-enclosure-ink: var(--color-pale-cream);
 	--location-enclosure-muted: var(--color-night-sage);
 	--location-enclosure-rule: rgb(var(--color-pale-gold-rgb) / 35%);
@@ -155,19 +184,19 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	--location-enclosure-reserved-title-caps: all-small-caps;
 	--location-enclosure-reserved-title-line-height: 1.4;
 	--location-enclosure-reserved-title-tracking: 0.08em;
-	--location-enclosure-reserved-title-color: var(--color-night-sage);
+	--location-enclosure-reserved-title-color: var(--andrea-champagne);
 	--location-enclosure-last-text-font: var(--font-label);
 	--location-enclosure-last-text-size: 0.9375rem;
 	--location-enclosure-last-text-transform: uppercase;
 	--location-enclosure-last-text-tracking: 0.14em;
-	--location-enclosure-last-text-color: var(--color-night-sage);
+	--location-enclosure-last-text-color: var(--andrea-champagne);
 
 	// Venue entries read top-down: the moment in gold ink, the hour, the venue large in the
 	// section's ink, the address soft. The map is the primary action, filled in emerald; the
 	// calendar and the copy sit beside each other as outlined buttons below it, and wide screens
 	// set the three on one line. Set at the entry so it wins over the route stage's gold remaps.
 	.event-location__program-entry {
-		--location-program-label-color: var(--color-gold-ink);
+		--location-program-label-color: var(--andrea-honey);
 		--location-program-label-size: 1.15rem;
 		--location-program-time-color: var(--color-forest-ink-soft);
 		--location-program-address-color: var(--color-forest-ink-soft);
@@ -254,16 +283,18 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		--hero-portrait-margin: 0 auto;
 		--hero-portrait-max-width: 100%;
 
-		// The arch keeps the portrait's own proportion (1843 × 2560), so the photograph fills it on
-		// every phone; short screens get a taller floor so the portrait never shrinks to a stamp.
-		--andrea-portrait-height: clamp(16rem, min(46svh, calc(100svh - 28rem)), 28rem);
+		// The arch keeps the portrait's own proportion (1843 × 2560) and takes the larger share of
+		// the first screen on phones: the name, date and cue keep about 21rem under it, and the
+		// floor stays high enough that the portrait never shrinks to a stamp.
+		--andrea-portrait-height: clamp(17rem, min(54svh, calc(100svh - 21rem)), 30rem);
 
-		// The shortest phones lower that floor so the cover and its larger letter keep one screen.
+		// The shortest phones lower that floor and set the name one step smaller, and the cue keeps
+		// only its capsule (the label stays for screen readers), so the cover keeps one screen.
 		@media (width < 768px) and (height < 640px) {
-			--andrea-portrait-height: clamp(13.5rem, calc(100svh - 22rem), 16rem);
+			--andrea-portrait-height: clamp(15rem, calc(100svh - 19rem), 18rem);
 		}
 
-		--hero-portrait-width-mobile: min(78vw, 19rem, calc(var(--andrea-portrait-height) * 0.72));
+		--hero-portrait-width-mobile: min(84vw, 21rem, calc(var(--andrea-portrait-height) * 0.72));
 		--hero-portrait-height-mobile: calc(var(--hero-portrait-width-mobile) / 0.72);
 
 		// On desktop the arch and its hairline clear the fixed menu bar.
@@ -273,12 +304,31 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		--hero-portrait-outline: 1px solid rgb(var(--color-leaf-gold-rgb) / 70%);
 		--hero-portrait-outline-offset: 0.4rem;
 		--hero-title-max-width: none;
-		--hero-title-size: clamp(5.5rem, 26vw, 8.5rem);
+		--hero-title-size: clamp(4.5rem, 21vw, 8.5rem);
+
+		// The scroll cue: small spaced capitals over a slim capsule with a dot that travels down
+		// it, in a light gold so it sits under the name instead of competing with it.
+		--hero-scroll-display: grid;
+		--hero-scroll-font: 500 0.6875rem / 1.4 var(--font-label);
+		--hero-scroll-letter-spacing: 0.24em;
+		--hero-scroll-text-transform: uppercase;
+		--hero-scroll-cue-width: 0.875rem;
+		--hero-scroll-cue-height: 1.5rem;
+		--hero-scroll-cue-margin: 0;
+		--hero-scroll-cue-overflow: hidden;
+		--hero-scroll-cue-font-size: 0;
 		--hero-name-margin: 0.1rem 0 0;
 		--hero-occasion-text-transform: uppercase;
 		--hero-occasion-letter-spacing: 0.22em;
-		--hero-occasion-color: var(--color-gold-ink);
+		--hero-occasion-color: var(--andrea-honey);
 		--hero-details-font: italic 400 clamp(1.2rem, 4.8vw, 1.4rem) / 1.45 var(--font-display);
+
+		// Declared after the tokens it overrides: Sass emits a nested block after the declarations
+		// that precede it, so it must follow the ones it replaces.
+		@media (width < 768px) and (height < 640px) {
+			--hero-title-size: clamp(3.5rem, 16vw, 4.5rem);
+			--hero-scroll-font: 500 0 / 1 var(--font-label);
+		}
 	}
 
 	// The cover is ivory, so while the menu floats over it, it reads in ink with no photo scrim;
@@ -334,20 +384,32 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		--countdown-type-section-padding-block: calc(
 			var(--andrea-band-padding) + var(--andrea-cut)
 		);
-		--countdown-type-title-size: 0.9375rem;
-		--countdown-type-title-weight: 400;
-		--countdown-type-title-tracking: 0.14em;
-		--countdown-type-title-ink: var(--color-pale-gold);
-		--countdown-type-value-size: clamp(2rem, 8vw, 4rem);
-		--countdown-type-value-weight: 400;
-		--countdown-type-value-tracking: 0;
+
+		// Hierarchy: «Faltan» is a small champagne eyebrow, the days lead on their own wide cell in
+		// a larger numeral, hours, minutes and seconds share the row under it, and the date and the
+		// closing line follow in lighter golds (the cells and the foil live in the composition).
+		--countdown-type-title-size: 0.8125rem;
+		--countdown-type-title-weight: 500;
+		--countdown-type-title-tracking: 0.32em;
+		--countdown-type-title-transform: uppercase;
+		--countdown-type-title-ink: var(--andrea-champagne);
+		--countdown-type-value-size: clamp(2.25rem, 10vw, 3.5rem);
+		--countdown-type-value-weight: 500;
+		--countdown-type-value-tracking: 0.02em;
 		--countdown-type-label-font: var(--font-label);
-		--countdown-type-label-size: 0.8125rem;
-		--countdown-type-label-tracking: 0.06em;
-		--countdown-type-label-ink: var(--color-pale-gold);
+		--countdown-type-label-size: 0.6875rem;
+		--countdown-type-label-weight: 500;
+		--countdown-type-label-tracking: 0.22em;
+		--countdown-type-label-ink: var(--color-night-sage);
 		--countdown-type-label-opacity: 100%;
-		--countdown-segment-padding-mobile: 1rem 0.25rem;
-		--countdown-segment-padding-desktop: 1.5rem 0.75rem;
+		--countdown-grid-columns-mobile: 3;
+		--countdown-grid-columns-tablet: 3;
+		--countdown-days-span: 1 / -1;
+		--countdown-segment-padding-mobile: 1.1rem 0.25rem 0.95rem;
+		--countdown-segment-padding-desktop: 1.5rem 0.75rem 1.25rem;
+		--countdown-date-size: 0.8125rem;
+		--countdown-date-spacing: 0.24em;
+		--andrea-countdown-days-size: clamp(4rem, 20vw, 6.5rem);
 	}
 
 	// Join 2, the second bridge: the sealed-letter print hangs out of the night into the paper on
@@ -374,8 +436,8 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	}
 
 	// Program: one card per moment under a dusk sky (paper into the gallery's sage). Each card is
-	// an arched window with its lamp at the apex, the hour in gold, a gold hairline, then the
-	// moment set large. The waltz card is set in the night.
+	// an arched window with the drawing of its moment at the apex (composition), the hour in gold,
+	// a two-tone hairline, then the moment set large. The waltz card is set in the night.
 	.itinerary[data-variant='stacked-cards'] {
 		--stacked-cards-section-bg: linear-gradient(
 			180deg,
@@ -398,7 +460,9 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		--stacked-cards-max-width: 26rem;
 		--stacked-cards-align: center;
 		--stacked-cards-text-align: center;
-		--stacked-cards-padding: 2.25rem 1.75rem 4.5rem;
+		--stacked-cards-padding: 5.25rem 1.75rem 4.5rem;
+		--stacked-cards-motif-position: 50% 1.75rem;
+		--stacked-cards-motif-size: 3rem;
 		--stacked-cards-gap: 0.35rem;
 		--stacked-cards-shadow: 0 18px 40px -28px rgb(var(--color-forest-ink-rgb) / 45%);
 		--stacked-cards-lantern-size: 1.5rem;
@@ -407,7 +471,7 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		--stacked-cards-time-caps: normal;
 		--stacked-cards-time-tracking: 0.04em;
 		--stacked-cards-numeral: none;
-		--stacked-cards-rule: #{$andrea-rule};
+		--stacked-cards-rule: #{$andrea-rule-duo};
 		--stacked-cards-rule-display: block;
 		--stacked-cards-rule-ratio: 104 / 12;
 		--stacked-cards-label-line-height: 1.05;
@@ -464,7 +528,7 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		--gifts-header-mark-display: block;
 		--gifts-header-mark-width: 3.5rem;
 		--gifts-header-mark-ratio: 6 / 5;
-		--gifts-header-mark-color: var(--color-leaf-gold);
+		--gifts-header-mark-color: var(--color-emerald-deep);
 		--intersection-surface: var(--andrea-ground);
 		--intersection-surface-fill: var(--andrea-ground);
 		--intersection-blend: none;
@@ -534,7 +598,7 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		rgb(var(--color-pale-gold-rgb) / 24%),
 		transparent 70%
 	);
-	--footer-pull-label: 'Deslice hacia arriba para dejar volar la última mariposa';
+	--footer-pull-label: 'Deslice hacia arriba';
 	--footer-pull-label-color: rgb(var(--color-pale-gold-rgb) / 85%);
 	--footer-pull-label-size: 0.9375rem;
 	--footer-pull-breathe: footer-pull-breathe;
@@ -581,34 +645,36 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		);
 		--footer-bg: var(--color-emerald-night);
 		--footer-border-color: rgb(var(--color-pale-gold-rgb) / 14%);
-		--footer-closing-color: rgb(var(--color-pale-gold-rgb) / 78%);
+		--footer-closing-color: var(--color-pale-gold);
 		--footer-divider-line: rgb(var(--color-pale-gold-rgb) / 30%);
 		--footer-logo-claro: none;
 		--footer-logo-oscuro: block;
+		--footer-logo-opacity: 88%;
 		--footer-contact-border: 0;
-		--footer-contact-bg: none;
-		--footer-contact-padding: 0.5rem 0.25rem;
-		--footer-replay-color: var(--color-night-sage);
-		--footer-replay-opacity: 72%;
+		--footer-contact-bg: transparent;
+		--footer-contact-padding: 0.5rem 0;
+		--footer-replay-color: var(--andrea-champagne);
+		--footer-replay-opacity: 100%;
 
-		// Three tiers: the reply, then the invitation's own sign-off with the replay under it, and
-		// last the platform, set apart by a short gold rule on one quiet line with the legal note.
+		// Three centered tiers: the reply; the invitation's sign-off (an ornament, the name line in
+		// the night foil, the replay as an underlined link); last the platform, under a gold hairline,
+		// with the brand over the contact link and the legal line, with no plates or pills.
 		--footer-reply-gap: 3.25rem;
-		--footer-closing-size: clamp(1.1rem, 3vw, 1.25rem);
+		--footer-closing-size: clamp(1.25rem, 4.6vw, 1.5rem);
+		--footer-closing-style: italic;
 		--footer-divider-display: none;
 		--footer-replay-order: -1;
-		--footer-content-gap: 1rem;
-		--footer-primary-row-direction: row;
-		--footer-platform-rule: linear-gradient(
-			90deg,
-			transparent,
-			rgb(var(--color-pale-gold-rgb) / 45%),
-			transparent
-		);
-		--footer-platform-rule-space: 1.5rem;
-		--footer-contact-color: var(--color-night-sage);
-		--footer-contact-weight: 400;
-		--footer-contact-icon-filter: brightness(0) invert(0.85);
+		--footer-content-gap: 1.25rem;
+		--footer-primary-row-direction: column;
+		--footer-primary-row-direction-sm: column;
+		--footer-primary-row-gap-sm: 1rem;
+		--footer-platform-rule: none;
+		--footer-platform-rule-space: 0;
+		--footer-contact-color: var(--color-pale-gold);
+		--footer-contact-weight: 500;
+		--footer-contact-icon-filter: brightness(0) invert(0.88) sepia(0.5) saturate(1.6);
+		--footer-powered-opacity: 70%;
+		--andrea-footer-ornament: #{$andrea-rule-night};
 
 		// The music button rests in the bottom corner; the legal line ends above it.
 		--footer-padding-bottom: 5.5rem;

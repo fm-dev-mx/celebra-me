@@ -1,3 +1,6 @@
+@use 'sass:list';
+@use '../../../styles/tools/motion';
+
 // Andrea: the few rules her tokens cannot express. Everything else lives in the profile.
 
 // Client round 2: many guests are older adults, so the invitation reads one step larger. Its sizes
@@ -7,11 +10,32 @@
 // nested in it inherits that zoom; empty decorative elements and elements that hold photos keep
 // their geometry.
 $andrea-text-zoom: 1.125;
+
+// Accents: the section titles on paper and the name on the cover take the day foil (a darker gold
+// with a lit band), the titles on the night take the night foil, and the small labels move to a
+// warmer honey (profile tokens), so the golds differ in tone instead of reading as one flat ink. Split titles carry
+// the foil on each word, since a word that animates on its own does not paint through its parent.
+$andrea-day-titles: '.event-location__heading, .family__title, .itinerary__title, .gallery-section__title, .gifts-section__title, .rsvp__title, .framed-portrait-hero__name';
+$andrea-night-titles: '.event-location__indications-heading, .stacked-card[data-moment="Waltz"] .stacked-card__label';
 $andrea-text: 'h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, legend, button, a, time, span';
 
 .event--andrea {
 	:is(#{$andrea-text}):not(:is(#{$andrea-text}) *):not(:empty, :has(img, picture, video)) {
 		zoom: $andrea-text-zoom;
+	}
+
+	:is(#{$andrea-day-titles}),
+	:is(#{$andrea-day-titles}) span {
+		background: var(--andrea-foil-day);
+		background-clip: text;
+		color: transparent;
+	}
+
+	:is(#{$andrea-night-titles}),
+	:is(#{$andrea-night-titles}) span {
+		background: var(--andrea-foil-night);
+		background-clip: text;
+		color: transparent;
 	}
 }
 
@@ -51,4 +75,326 @@ $andrea-text: 'h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, la
 			display: none;
 		}
 	}
+}
+
+// Both scroll cues (the cover's and the one under the dress code) share one quiet mark: a slim
+// capsule with a small gold dot that slides down and fades (motion-safe; reduced motion keeps the
+// dot at rest at the top).
+.event--andrea .framed-portrait-hero__invitation span,
+.event--andrea .location-route__next .section-nav-button__icon {
+	position: relative;
+	display: block;
+	width: 0.875rem;
+	height: 1.5rem;
+	border: 1px solid rgb(var(--color-leaf-gold-rgb) / 50%);
+	border-radius: 999px;
+	animation: none;
+
+	&::after {
+		content: '';
+		position: absolute;
+		top: 0.25rem;
+		left: 50%;
+		width: 0.1875rem;
+		height: 0.3125rem;
+		border-radius: 999px;
+		background: var(--color-leaf-gold);
+		translate: -50% 0;
+	}
+
+	@include motion.motion-safe {
+		&::after {
+			animation: andrea-cue-dot 2.4s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+		}
+	}
+}
+
+.event--andrea .framed-portrait-hero__invitation {
+	opacity: 62%;
+
+	@keyframes andrea-cue-dot {
+		0% {
+			opacity: 0%;
+			translate: -50% 0;
+		}
+
+		20% {
+			opacity: 100%;
+		}
+
+		80% {
+			opacity: 0%;
+			translate: -50% 0.6rem;
+		}
+
+		100% {
+			opacity: 0%;
+			translate: -50% 0.6rem;
+		}
+	}
+}
+
+// The wrapper carries both the client class and the reveal state, so the cue rests while sealed.
+.event--andrea[data-reveal-state='sealed'] .framed-portrait-hero__invitation span::after {
+	animation-play-state: paused;
+}
+
+.event--andrea .location-route__next .section-nav-button {
+	gap: 0.625rem;
+	opacity: 62%;
+	animation: none;
+
+	.section-nav-button__text {
+		font: 500 0.6875rem / 1.4 var(--font-label);
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--andrea-honey);
+	}
+
+	.section-nav-button__icon {
+		svg {
+			display: none;
+		}
+	}
+}
+
+// The closing sign-off, one quiet column with no plates: a two-tone ornament over the name line in
+// the night foil, the replay as a plain champagne link, then a gold hairline and the platform (the
+// brand, the contact as a link, the legal line), smaller and dimmer so it reads as the colophon.
+.event--andrea .invitation-footer {
+	.footer__closing-phrase {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.75rem;
+		max-width: 18rem;
+		margin-bottom: 0.25rem;
+		text-wrap: balance;
+
+		&::before {
+			content: '';
+			width: 6.5rem;
+			height: 0.75rem;
+			background: var(--andrea-footer-ornament, none) center / contain no-repeat;
+		}
+	}
+
+	.footer__replay-link {
+		text-decoration: underline;
+		text-decoration-color: rgb(var(--color-pale-gold-rgb) / 40%);
+		text-underline-offset: 0.35em;
+	}
+
+	.footer__primary-row {
+		gap: 0.5rem;
+		width: 16rem;
+		max-width: 100%;
+		margin-top: 1.25rem;
+		padding-top: 1.75rem;
+		border-top: 1px solid rgb(var(--color-pale-gold-rgb) / 22%);
+	}
+
+	.whatsapp-button {
+		text-decoration: underline;
+		text-decoration-color: rgb(var(--color-pale-gold-rgb) / 35%);
+		text-underline-offset: 0.35em;
+	}
+
+	.footer__rights {
+		color: var(--color-night-sage);
+		opacity: 80%;
+	}
+}
+
+// The countdown, with no cells: the days lead in a large night-foil numeral over a short gold rule,
+// and the hours, minutes and seconds follow on one line, parted by hairlines.
+.event--andrea .countdown-section {
+	.countdown__timer {
+		max-width: 22rem;
+		margin-inline: auto;
+		gap: 0;
+	}
+
+	.countdown__segment {
+		position: relative;
+		border: 0;
+		border-radius: 0;
+		background: none;
+		box-shadow: none;
+	}
+
+	.countdown__segment:not([data-unit='days']) + .countdown__segment {
+		border-inline-start: 1px solid rgb(var(--color-pale-gold-rgb) / 22%);
+	}
+
+	.countdown__value {
+		background: var(--andrea-foil-night);
+		background-clip: text;
+		color: transparent;
+	}
+
+	.countdown__segment[data-unit='days'] {
+		margin-bottom: 1.25rem;
+		padding-block: 0 1.25rem;
+
+		.countdown__value {
+			font-size: var(--andrea-countdown-days-size);
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			bottom: 0;
+			left: 50%;
+			width: 3rem;
+			height: 1px;
+			background: rgb(var(--color-pale-gold-rgb) / 50%);
+			translate: -50% 0;
+		}
+	}
+
+	.event-date {
+		color: var(--color-pale-cream);
+	}
+
+	.countdown-invitation-text {
+		color: var(--andrea-champagne);
+		font-style: italic;
+	}
+}
+
+// The music control: a small emerald glass disc with a fine gold ring and no pulsing halos, and its
+// prompt as a single quiet line beside it, in sentence case.
+.event--andrea .music-player {
+	gap: 0.5rem;
+
+	.music-player__prompt {
+		width: max-content;
+		padding: 0.35rem 0.8rem;
+		border: 1px solid rgb(var(--color-pale-gold-rgb) / 22%);
+		background: rgb(var(--color-emerald-night-rgb) / 72%);
+		box-shadow: none;
+		font-size: 0.75rem;
+		letter-spacing: 0.04em;
+		text-transform: none;
+		white-space: nowrap;
+		color: var(--color-pale-cream);
+
+		&::before {
+			color: var(--color-pale-gold);
+		}
+	}
+
+	.music-player__button--play {
+		width: 2.75rem;
+		height: 2.75rem;
+		border: 1px solid rgb(var(--color-pale-gold-rgb) / 45%);
+		background: rgb(var(--color-emerald-night-rgb) / 82%);
+		backdrop-filter: blur(8px);
+		box-shadow: 0 0.5rem 1.25rem -0.5rem rgb(0 0 0 / 45%);
+		color: var(--color-pale-gold);
+		animation: none;
+
+		&::before,
+		&::after {
+			display: none;
+		}
+
+		svg {
+			width: 1.125rem;
+			height: 1.125rem;
+			filter: none;
+		}
+	}
+}
+
+// The phone menu fits any height: the drawer runs to the bottom of the screen, its spacing follows the screen
+// height, and the links run left-aligned in a numbered list on hairlines, in the night gold.
+.event--andrea .header-base__mobile-menu {
+	display: flex;
+	flex-direction: column;
+	bottom: 0;
+	height: auto;
+	padding-top: clamp(3.5rem, 10svh, 7rem);
+	padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+	overflow-y: auto;
+
+	.mobile-nav-header {
+		margin-bottom: 0;
+		padding-bottom: clamp(0.75rem, 2.5svh, 1.25rem);
+	}
+
+	.mobile-nav-links {
+		counter-reset: andrea-nav;
+		align-items: stretch;
+		gap: 0;
+		margin-block: clamp(0.25rem, 1.5svh, 1.5rem) clamp(1rem, 3svh, 3rem);
+	}
+
+	.mobile-nav-links__link {
+		counter-increment: andrea-nav;
+		display: flex;
+		align-items: baseline;
+		gap: 1rem;
+		padding-block: clamp(0.4rem, 1.2svh, 0.9rem);
+		border-bottom: 1px solid rgb(var(--color-pale-gold-rgb) / 14%);
+		font-size: clamp(1rem, 2.8svh, 1.375rem);
+		letter-spacing: 0.16em;
+		text-align: start;
+
+		&::before {
+			content: counter(andrea-nav, decimal-leading-zero);
+			font: 500 0.6875rem / 1 var(--font-label);
+			letter-spacing: 0.1em;
+			color: var(--color-night-sage);
+		}
+	}
+
+	.mobile-nav-footer {
+		margin-top: auto;
+		padding-top: clamp(0.75rem, 2svh, 2rem);
+
+		.mobile-nav-footer__divider {
+			margin-bottom: clamp(1rem, 3svh, 3rem);
+		}
+
+		.mobile-nav-actions {
+			margin-bottom: clamp(0.75rem, 2.5svh, 2rem);
+		}
+	}
+}
+
+// The program: each card carries a fine-line drawing of its moment at the apex (chapel, raised
+// glasses, the waltz, the table, the surprise, the mirror ball, the closing crown) in place of the
+// shared lamp, in program order (the data names three moments «Party»); the waltz card, set in the night, draws in pale gold.
+$andrea-moments: (
+	'M24 4v8M20 8h8M13 23l11-11 11 11M16 20v22h16V20M21 42v-7a3 3 0 0 1 6 0v7M9 42h30',
+	'M11 9h9l-1 9a3.5 3.5 0 0 1-7 0zM15.5 21.5V36M11 37h9M28 9h9l-1 9a3.5 3.5 0 0 1-7 0zM32.5 21.5V36M28 37h9M24 3v3M19 4l1.5 2.5M29 4l-1.5 2.5',
+	'M18 35V13l17-5v22M18 19l17-5M18 35a4 3 0 1 1-8 0a4 3 0 1 1 8 0zM35 30a4 3 0 1 1-8 0a4 3 0 1 1 8 0z',
+	'M24 14a10 10 0 1 1 0 20a10 10 0 1 1 0-20zM24 18a6 6 0 1 1 0 12a6 6 0 1 1 0-12zM7 10v7a2.5 2.5 0 0 0 5 0v-7M9.5 19.5V38M41 10c-3.5 2.5-3.5 9 0 11v17',
+	'M24 6l3 10 10 3-10 3-3 10-3-10-10-3 10-3zM38 30l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5zM10 31l1 3 3 1-3 1-1 3-1-3-3-1 3-1z',
+	'M24 4v11M24 15a12 12 0 1 1 0 24a12 12 0 1 1 0-24zM12 27h24M14 21h20M14 33h20M24 15c-5.5 4-5.5 20 0 24M24 15c5.5 4 5.5 20 0 24M6 12l3 2M42 12l-3 2',
+	'M10 35L8 16l9 8 7-13 7 13 9-8-2 19zM10 40h28M24 11V8'
+);
+
+.event--andrea .itinerary[data-variant='stacked-cards'] {
+	.stacked-card__lantern {
+		display: none;
+	}
+
+	@each $path in $andrea-moments {
+		$index: list.index($andrea-moments, $path);
+		$ink: if($index == 3, '%23E6C678', '%23A8843F');
+
+		.stacked-card:nth-child(#{$index}) {
+			--stacked-cards-motif: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='#{$ink}' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='#{$path}'/%3E%3C/svg%3E");
+		}
+	}
+}
+
+// The dress-code card: the closing rule («NO NIÑOS») reads as a band between two gold hairlines,
+// so it stands apart from the etiquette above it.
+.event--andrea .event-location__enclosure-note:last-of-type .event-location__enclosure-text {
+	padding: 0.6rem 1rem;
+	border-block: 1px solid rgb(var(--color-pale-gold-rgb) / 45%);
 }

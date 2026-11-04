@@ -348,3 +348,20 @@ live in `src/invitations/clients/andrea/`; the shared `storybook-emerald` preset
 - Pending outside the code: photo edits B1–B3 (dress sparkle to gold, gold bracelet, light makeup
   polish; edit, never regenerate), the 5×7 table card with the photo-upload QR built in (C1, under
   the $399 QR service C2), Production re-enable, Preview and client approval.
+
+### Design refinements — 2026-11-04
+
+Owner review of the second round, in two passes, all in `src/invitations/clients/andrea/`.
+
+- Footer: the reply, the sign-off (ornament, name line in the night foil, replay as an underlined
+  link) and the platform colophon under a gold hairline. No plates or pills.
+- Countdown: no cells. The days lead in a large night-foil numeral over a short gold rule; hours,
+  minutes and seconds follow on one line, separated by hairlines.
+- Scroll cues: the cover cue and the cue under the dress code share one quiet mark (a slim gold
+  capsule with a sliding dot, 62 % opacity, still under reduced motion).
+- Music: a small emerald glass disc with a fine gold ring and no pulsing halos; the prompt is one
+  line in sentence case at every width.
+- Phone menu: a numbered, left-aligned list on hairlines whose spacing follows the screen height, so
+  the whole drawer (links, confirm button, signature) fits from 320×568 up without scrolling.
+- Also refined in this pass: the hero photo framing, the accent golds, the paper texture and the
+  itinerary drawings.
