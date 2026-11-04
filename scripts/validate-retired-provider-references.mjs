@@ -34,6 +34,9 @@ const RETIRED_PROVIDER_ALLOWLIST = new Set([
 	'tests/unit/deployment-workflow-contract.test.ts',
 	'tests/unit/post-deploy-smoke.test.ts',
 	'tests/scripts/operational-contracts.test.ts',
+	// .vercel/ gitignore pattern and @vercel/* transitive dependency overrides.
+	'.gitignore',
+	'pnpm-workspace.yaml',
 	// Proves the schema rejects live Cloudinary rows and keeps soft-deleted ones as history.
 	'supabase/tests/invitation_assets_r2_provider.test.sql',
 	// Proves the purge migration deletes only soft-deleted Cloudinary rows.
