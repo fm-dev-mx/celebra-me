@@ -50,7 +50,8 @@ export function validatePolicy(policy) {
 const shellPattern = (command) => `${command}${command.endsWith('*') ? '' : ' *'}`;
 // Gemini prepends `"command":"` before compiling this regex against serialized tool arguments.
 // Allow only simple literal argv; shell composition/substitution keeps the host's approval gate.
-const geminiAllow = (command) => `${regexEscape(command)}(?: [A-Za-z0-9_./:=,@%+\\-]+)*"`;
+// One flat character class after the prefix: no nested quantifier for the matcher to backtrack through.
+const geminiAllow = (command) => `${regexEscape(command)}(?:"| [ A-Za-z0-9_./:=,@%+\\-]*")`;
 const geminiDeny = (command) => `${globRegex(command)}(?:\\s|")`;
 
 /** Compile only documented native fields; unsupported coverage is returned explicitly. */
