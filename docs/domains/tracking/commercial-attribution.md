@@ -533,11 +533,13 @@ the `packageValue` the operator types; enter the net amount there too.
 
 **Meta customer list.** `GET /api/dashboard/commercial/customers?export=meta-csv` (strong admin
 session, `no-store`) downloads `celebra-me-clientes-meta.csv` with the columns
-`phone,fn,ln,ct,country`. It lists only customers with a confirmed sale, one row per E.164 phone,
-`country` defaulting to `MX`. RSVP and guest data are never part of it. The file is uploaded to Meta
-by the owner by hand; no code uploads it. The privacy notice (`src/pages/privacidad.astro`, sections
-2, 4, 6 and 7) discloses this use and the opt-out; remove a customer who opts out before the next
-upload.
+`phone,fn,ln,ct,st,country`. It lists only customers with a confirmed sale, one row per E.164 phone,
+`country` defaulting to `MX`. A Mexican city found in `src/lib/commercial/mexican-cities.ts` is
+written under its canonical name (`cd juarez` → `Ciudad Juárez`) with its state in `st`; any other
+city is kept as stored and `st` stays empty. RSVP and guest data are never part of it. The file is
+uploaded to Meta by the owner by hand; no code uploads it. The privacy notice
+(`src/pages/privacidad.astro`, sections 2, 4, 6 and 7) discloses this use and the opt-out; remove a
+customer who opts out before the next upload.
 
 #### CRM how-to (owner)
 
