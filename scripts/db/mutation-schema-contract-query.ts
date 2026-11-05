@@ -45,7 +45,7 @@ export function buildMutationSchemaContractQuery(): string {
 	    select p.prosrc ~* 'from\\s+public\\.invitations[\\s\\S]{0,160}archived_at\\s+is\\s+null\\s+for\\s+update'
 	    from pg_proc p where p.oid = 'public.restore_invitation_from_published_atomic(uuid,uuid,timestamptz,timestamptz,uuid,integer,jsonb,text,text,uuid,text,text)'::regprocedure
 	  ),
-	  'submitRsvpRpc', to_regprocedure('public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)') is not null,
+	  'submitRsvpRpc', to_regprocedure('public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text,integer)') is not null,
 	  'recordEngagementRpc', to_regprocedure('public.record_guest_engagement_events_public(text,jsonb,uuid)') is not null,
 	  'engagementSummaryRpc', to_regprocedure('public.get_event_engagement_summary(uuid)') is not null
 	) || jsonb_build_object(
@@ -55,14 +55,14 @@ export function buildMutationSchemaContractQuery(): string {
 	  'serviceRoleRankingV2Execute', coalesce(has_function_privilege('service_role', to_regprocedure('public.list_invitation_engagement_ranking_v2(text)'), 'EXECUTE'), false),
 	  'anonRankingV2Execute', coalesce(has_function_privilege('anon', to_regprocedure('public.list_invitation_engagement_ranking_v2(text)'), 'EXECUTE'), false),
 	  'authenticatedRankingV2Execute', coalesce(has_function_privilege('authenticated', to_regprocedure('public.list_invitation_engagement_ranking_v2(text)'), 'EXECUTE'), false),
-	  'serviceRoleSubmitRsvpExecute', coalesce(has_function_privilege('service_role', to_regprocedure('public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)'), 'EXECUTE'), false),
+	  'serviceRoleSubmitRsvpExecute', coalesce(has_function_privilege('service_role', to_regprocedure('public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text,integer)'), 'EXECUTE'), false),
 	  'serviceRoleRecordEngagementExecute', coalesce(has_function_privilege('service_role', to_regprocedure('public.record_guest_engagement_events_public(text,jsonb,uuid)'), 'EXECUTE'), false),
 	  'authenticatedEngagementSummaryExecute', coalesce(has_function_privilege('authenticated', to_regprocedure('public.get_event_engagement_summary(uuid)'), 'EXECUTE'), false),
 	  'serviceRoleEngagementLedgerInsert', coalesce(has_table_privilege('service_role', to_regclass('public.guest_engagement_events'), 'INSERT'), false),
 	  'serviceRoleEngagementLedgerUpdate', coalesce(has_table_privilege('service_role', to_regclass('public.guest_engagement_events'), 'UPDATE'), false),
 	  'serviceRoleEngagementLedgerDelete', coalesce(has_table_privilege('service_role', to_regclass('public.guest_engagement_events'), 'DELETE'), false),
-	  'anonSubmitRsvpExecute', coalesce(has_function_privilege('anon', to_regprocedure('public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)'), 'EXECUTE'), false),
-	  'authenticatedSubmitRsvpExecute', coalesce(has_function_privilege('authenticated', to_regprocedure('public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)'), 'EXECUTE'), false),
+	  'anonSubmitRsvpExecute', coalesce(has_function_privilege('anon', to_regprocedure('public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text,integer)'), 'EXECUTE'), false),
+	  'authenticatedSubmitRsvpExecute', coalesce(has_function_privilege('authenticated', to_regprocedure('public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text,integer)'), 'EXECUTE'), false),
 	  'anonRecordEngagementExecute', coalesce(has_function_privilege('anon', to_regprocedure('public.record_guest_engagement_events_public(text,jsonb,uuid)'), 'EXECUTE'), false),
 	  'authenticatedRecordEngagementExecute', coalesce(has_function_privilege('authenticated', to_regprocedure('public.record_guest_engagement_events_public(text,jsonb,uuid)'), 'EXECUTE'), false),
 	  'anonEngagementSummaryExecute', coalesce(has_function_privilege('anon', to_regprocedure('public.get_event_engagement_summary(uuid)'), 'EXECUTE'), false),
@@ -72,7 +72,7 @@ export function buildMutationSchemaContractQuery(): string {
 	  'publicGuestRpcPgcryptoQualifyMigration', exists(select 1 from supabase_migrations.schema_migrations where version = '20260730220544'),
 	  'submitRsvpUsesExtensionsGenRandomBytes', (
 	    select p.prosrc ~* 'extensions\\.gen_random_bytes\\s*\\('
-	    from pg_proc p where p.oid = 'public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)'::regprocedure
+	    from pg_proc p where p.oid = 'public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text,integer)'::regprocedure
 	  ),
 	  'receiptOperationIdUnique', exists(
 	    select 1 from pg_indexes
