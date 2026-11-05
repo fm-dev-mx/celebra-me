@@ -200,6 +200,17 @@ export function useRsvpSubmission({
 		supportsPlusOnes,
 	]);
 
+	// Lowering the attendees can leave entered children over the cap; surface that error
+	// without waiting for the children field to be blurred.
+	const previousAttendeeCount = useRef(attendeeCount);
+	useEffect(() => {
+		if (String(previousAttendeeCount.current) === String(attendeeCount)) return;
+		previousAttendeeCount.current = attendeeCount;
+		if (maxChildren <= 0 || !(Number(childrenCount) > 0)) return;
+		setTouched((prev) => (prev.childrenCount ? prev : { ...prev, childrenCount: true }));
+		validate();
+	}, [attendeeCount, childrenCount, maxChildren, validate]);
+
 	const handleBlur = useCallback(
 		(field: string) => {
 			setTouched((prev) => ({ ...prev, [field]: true }));
@@ -227,6 +238,7 @@ export function useRsvpSubmission({
 						phone: true,
 						attendance: true,
 						guestCount: true,
+						childrenCount: true,
 					});
 
 					const firstError = errorKeys[0];

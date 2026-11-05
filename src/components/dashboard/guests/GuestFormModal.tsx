@@ -35,6 +35,16 @@ interface GuestFormModalProps {
 	) => Promise<void>;
 }
 
+/** Copies each defined message into the form's field errors. */
+const addFieldErrors = (
+	errors: Record<string, string>,
+	messages: Record<string, string | undefined>,
+): void => {
+	for (const [field, message] of Object.entries(messages)) {
+		if (message) errors[field] = message;
+	}
+};
+
 const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	open,
 	mode,
@@ -52,7 +62,8 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	const [attendeeCount, setAttendeeCount] = useState(0);
 	const [showChildren, setShowChildren] = useState(false);
 	const [childrenInput, setChildrenInput] = useState('0');
-	const [childrenCount, setChildrenCount] = useState(0);
+	// Kept as typed so an emptied field is reported instead of silently becoming 0.
+	const [childrenCountInput, setChildrenCountInput] = useState('0');
 	const [tags, setTags] = useState<string[]>([]);
 	const [isTest, setIsTest] = useState(false);
 	const [saving, setSaving] = useState(false);
@@ -72,7 +83,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setAttendeeCount(0);
 		setShowChildren(false);
 		setChildrenInput('0');
-		setChildrenCount(0);
+		setChildrenCountInput('0');
 		setTags([]);
 		setIsTest(false);
 		setFieldErrors({});
@@ -102,7 +113,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setAttendeeCount(initialGuest.attendeeCount);
 		setShowChildren((initialGuest.maxAllowedChildren ?? 0) > 0);
 		setChildrenInput(String(initialGuest.maxAllowedChildren ?? 0));
-		setChildrenCount(initialGuest.childrenCount ?? 0);
+		setChildrenCountInput(String(initialGuest.childrenCount ?? 0));
 		setTags(initialGuest.tags || []);
 		setIsTest(initialGuest.isTest === true);
 	}, [initialGuest, open]);
@@ -140,18 +151,28 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	const resolveConfirmedChildren = (
 		maxAttendees: number,
 		maxChildren: number,
-	): { value: number; error?: string } => {
-		const value = mode === 'edit' && attendanceStatus === 'confirmed' ? childrenCount : 0;
+	): { value: number; attendeeError?: string; childrenError?: string } => {
+		const attendeeError =
+			mode === 'edit' && attendeeCount > maxAttendees
+				? `No puede superar el límite (${maxAttendees}).`
+				: undefined;
+		if (mode !== 'edit' || attendanceStatus !== 'confirmed' || maxChildren <= 0) {
+			return { value: 0, attendeeError };
+		}
+		const raw = childrenCountInput.trim();
+		const value = /^\d+$/.test(raw) ? parseInt(raw, 10) : NaN;
+		if (Number.isNaN(value)) {
+			return { value: 0, attendeeError, childrenError: 'Escriba cuántos niños vienen.' };
+		}
 		if (value > maxConfirmableChildren(attendeeCount, maxChildren)) {
 			return {
 				value,
-				error: 'Los niños no pueden superar sus pases ni a las personas que vienen.',
+				attendeeError,
+				childrenError:
+					'Los niños no pueden superar sus pases ni a las personas que vienen.',
 			};
 		}
-		if (mode === 'edit' && attendeeCount > maxAttendees) {
-			return { value, error: `No puede superar el límite (${maxAttendees}).` };
-		}
-		return { value };
+		return { value, attendeeError };
 	};
 
 	const handleFormSubmit = async (stayOpen = false) => {
@@ -178,12 +199,11 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 
 		const childrenResult = resolveMaxChildren(maxResult.value);
 		const confirmedChildren = resolveConfirmedChildren(maxResult.value, childrenResult.value);
-		if (childrenResult.error) {
-			errors.children = childrenResult.error;
-		}
-		if (confirmedChildren.error) {
-			errors.attendeeCount = confirmedChildren.error;
-		}
+		addFieldErrors(errors, {
+			children: childrenResult.error,
+			attendeeCount: confirmedChildren.attendeeError,
+			childrenCount: confirmedChildren.childrenError,
+		});
 
 		if (Object.keys(errors).length > 0) {
 			setFieldErrors(errors);
@@ -379,17 +399,18 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							status={attendanceStatus}
 							attendeeCount={attendeeCount}
 							maxAttendees={liveMaxAttendees}
-							childrenCount={childrenCount}
+							childrenCount={childrenCountInput}
 							maxChildren={liveMaxChildren}
-							onChildrenCountChange={setChildrenCount}
+							onChildrenCountChange={setChildrenCountInput}
 							error={fieldErrors.attendeeCount}
+							childrenError={fieldErrors.childrenCount}
 							onStatusChange={(newStatus) => {
 								setAttendanceStatus(newStatus);
 								if (newStatus === 'confirmed') {
 									if (attendeeCount < 1) setAttendeeCount(1);
 								} else {
 									setAttendeeCount(0);
-									setChildrenCount(0);
+									setChildrenCountInput('0');
 								}
 							}}
 							onAttendeeCountChange={setAttendeeCount}

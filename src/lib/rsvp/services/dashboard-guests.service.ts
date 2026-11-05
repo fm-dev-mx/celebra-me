@@ -35,7 +35,11 @@ import {
 import { toGuestDto } from '@/lib/rsvp/services/shared/guest-dto';
 import { getSharingConfigForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
 import { sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
-import { guestReservationSchema, maxConfirmableChildren } from '@/lib/rsvp/guest-cap';
+import {
+	guestReservationSchema,
+	maxConfirmableChildren,
+	resolveChildrenCap,
+} from '@/lib/rsvp/guest-cap';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { generateShortId } from '@/lib/server/ids';
 import {
@@ -460,10 +464,14 @@ export async function updateDashboardGuest(input: {
 			? toSafeAttendeeCount(input.attendeeCount)
 			: existing.attendeeCount;
 	const nextAttendeeCount = nextStatus === 'declined' ? 0 : requestedCount;
+	// A stored children limit follows the passes down when only the passes change; an
+	// explicit children limit is still validated as sent.
+	const requestedCap = input.maxAllowedAttendees ?? existing.maxAllowedAttendees;
 	const { maxAllowedAttendees: nextCap, maxAllowedChildren: nextChildrenCap } =
 		parseReservationOrThrow(
-			input.maxAllowedAttendees ?? existing.maxAllowedAttendees,
-			input.maxAllowedChildren ?? existing.maxAllowedChildren ?? 0,
+			requestedCap,
+			input.maxAllowedChildren ??
+				resolveChildrenCap(existing.maxAllowedChildren, requestedCap),
 		);
 
 	if (nextStatus === 'confirmed' && nextAttendeeCount < 1) {
