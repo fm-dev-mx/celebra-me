@@ -346,7 +346,9 @@ export function ConfirmedFields(props: {
 		attendanceStatus === 'confirmed' &&
 		maxChildren > 0 &&
 		onChildrenCountChange;
-	const childrenCap = maxConfirmableChildren(Number(attendeeCount) || 1, maxChildren);
+	// Same confirmed count the validation uses: a single pass when plus-ones are off.
+	const confirmedCount = supportsPlusOnes ? Number(attendeeCount) || 1 : 1;
+	const childrenCap = maxConfirmableChildren(confirmedCount, maxChildren);
 	const showGuests = part !== 'notes' && attendanceStatus === 'confirmed' && supportsPlusOnes;
 	const showNotes = part !== 'guests';
 

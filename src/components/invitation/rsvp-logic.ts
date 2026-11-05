@@ -336,9 +336,8 @@ function confirmedPartyErrors(
 		return { guestCount: `El límite de invitados es de ${maxAttendees}.` };
 	}
 	if (issue === 'max_children') {
-		return {
-			childrenCount: `Pueden venir hasta ${maxConfirmableChildren(attendeeCount, maxChildren)} niños.`,
-		};
+		const cap = maxConfirmableChildren(attendeeCount, maxChildren);
+		return { childrenCount: `Pueden venir hasta ${cap} ${cap === 1 ? 'niño' : 'niños'}.` };
 	}
 	return {};
 }
