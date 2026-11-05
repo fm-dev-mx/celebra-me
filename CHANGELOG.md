@@ -10,6 +10,16 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.68.0-beta.1] - 2026-11-04
+
+Makes the andrea gold bracelet visible on phones. No database migrations.
+
+### Fixed
+
+- Invitations: andrea shows a thicker gold bracelet on five photos (gallery, family, both interludes
+  and the staircase album) so it reads at phone width; the closing photo keeps the thin chain, and
+  the cover and full-body photos stay without it.
+
 ## [0.67.0-beta.1] - 2026-11-04
 
 Applies the naomi-huerta client corrections and the second andrea adjustment round. No database
