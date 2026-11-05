@@ -20,8 +20,10 @@ export interface DashboardGuestItem {
 	tags: string[];
 	metadata?: Record<string, unknown>;
 	maxAllowedAttendees: number;
+	maxAllowedChildren?: number;
 	attendanceStatus: AttendanceStatus;
 	attendeeCount: number;
+	childrenCount?: number;
 	guestComment: string;
 	deliveryStatus: DeliveryStatus;
 	firstSharedAt: string | null;
@@ -86,6 +88,10 @@ export interface DashboardGuestListResponse {
 		pendingPeople: number;
 		confirmedInvitations: number;
 		confirmedPeople: number;
+		/** Passes reserved for children across the event; adults are derived. */
+		totalChildren?: number;
+		/** Confirmed attendees who are children. */
+		confirmedChildren?: number;
 		declinedInvitations: number;
 		declinedPeople: number;
 		unconfirmedShared: number;

@@ -1,6 +1,7 @@
 import { parsePhoneInput, stripAllNonDigits } from '@/lib/phone/validation';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
 import type { WhatsAppConfig } from '@/lib/adapters/types';
+import { checkConfirmedParty, formatParty, maxConfirmableChildren } from '@/lib/rsvp/guest-cap';
 export type { RsvpResponseMessages } from '@/lib/invitation/rsvp-messages';
 
 /**
@@ -37,6 +38,9 @@ export interface ValidationContext {
 	attendeeCount: number | string;
 	supportsPlusOnes: boolean;
 	effectiveGuestCap: number;
+	/** Children among the confirmed attendees; only checked when maxChildren > 0. */
+	childrenCount?: number | string;
+	maxChildren?: number;
 	isPublicRsvp?: boolean;
 	copy?: RsvpDefaultCopy;
 }
@@ -269,18 +273,26 @@ export function buildWhatsAppUrl(params: {
 	whatsappConfig?: WhatsAppConfig;
 	attendanceStatus: RsvpAttendanceChoice;
 	attendeeCount: number | string;
+	childrenCount?: number;
 	name: string;
 	title: string;
 }) {
-	const { whatsappConfig, attendanceStatus, attendeeCount, name, title } = params;
+	const {
+		whatsappConfig,
+		attendanceStatus,
+		attendeeCount,
+		childrenCount = 0,
+		name,
+		title,
+	} = params;
 	if (!whatsappConfig?.phone) return '';
 
 	const isConfirmed = attendanceStatus === 'confirmed';
 	const omitTitleByDefault = Boolean(whatsappConfig.omitTitle);
 
 	const defaultConfirmedTemplate = omitTitleByDefault
-		? 'Hola, soy {name}. Confirmo mi asistencia. Asistiremos {guestCount} persona(s).'
-		: 'Hola, soy {name}. Confirmo mi asistencia a {title}. Asistiremos {guestCount} persona(s).';
+		? 'Hola, soy {name}. Confirmo mi asistencia. Asistiremos {party}.'
+		: 'Hola, soy {name}. Confirmo mi asistencia a {title}. Asistiremos {party}.';
 	const defaultDeclinedTemplate = omitTitleByDefault
 		? 'Hola, soy {name}. Lamentablemente no podré asistir.'
 		: 'Hola, soy {name}. Lamentablemente no podré asistir a {title}.';
@@ -290,12 +302,45 @@ export function buildWhatsAppUrl(params: {
 		(isConfirmed ? defaultConfirmedTemplate : defaultDeclinedTemplate);
 	const guestCount = isConfirmed ? Math.max(1, parseAttendeeCount(attendeeCount) || 1) : 0;
 
+	// Without children the message keeps its original wording.
+	const party =
+		isConfirmed && childrenCount > 0
+			? formatParty(guestCount, { children: childrenCount, unit: 'persona' })
+			: `${guestCount} persona(s)`;
+
 	const message = template
 		.replaceAll('{name}', name)
+		.replaceAll('{party}', party)
 		.replaceAll('{guestCount}', String(guestCount))
 		.replaceAll('{title}', title);
 
 	return `https://wa.me/${whatsappConfig.phone}?text=${encodeURIComponent(message)}`;
+}
+
+/** Field errors for a confirmed party, from the one shared rule in guest-cap. */
+function confirmedPartyErrors(
+	attendeeCount: number,
+	childrenCount: number | string,
+	maxAttendees: number,
+	maxChildren: number,
+): Record<string, string> {
+	const issue = checkConfirmedParty({
+		attendeeCount,
+		childrenCount: maxChildren > 0 ? parseAttendeeCount(childrenCount) : 0,
+		maxAttendees,
+		maxChildren,
+	});
+	if (issue === 'min_attendees')
+		return { guestCount: 'El número de invitados debe ser al menos 1.' };
+	if (issue === 'max_attendees') {
+		return { guestCount: `El límite de invitados es de ${maxAttendees}.` };
+	}
+	if (issue === 'max_children') {
+		return {
+			childrenCount: `Pueden venir hasta ${maxConfirmableChildren(attendeeCount, maxChildren)} niños.`,
+		};
+	}
+	return {};
 }
 
 export function validateRsvpForm({
@@ -307,6 +352,8 @@ export function validateRsvpForm({
 	attendeeCount,
 	supportsPlusOnes,
 	effectiveGuestCap,
+	childrenCount = 0,
+	maxChildren = 0,
 	isPublicRsvp,
 	copy = 'usted',
 }: ValidationContext) {
@@ -333,11 +380,15 @@ export function validateRsvpForm({
 	}
 	if (attendanceStatus === 'confirmed') {
 		const normalizedCount = supportsPlusOnes ? parseAttendeeCount(attendeeCount) : 1;
-		if (!normalizedCount || normalizedCount < 1) {
-			errors.guestCount = 'El número de invitados debe ser al menos 1.';
-		} else if (normalizedCount > effectiveGuestCap) {
-			errors.guestCount = `El límite de invitados es de ${effectiveGuestCap}.`;
-		}
+		Object.assign(
+			errors,
+			confirmedPartyErrors(
+				normalizedCount || 0,
+				childrenCount,
+				effectiveGuestCap,
+				maxChildren,
+			),
+		);
 	}
 
 	return errors;
@@ -354,4 +405,16 @@ export function normalizeGuestCount(
 	const parsed = parseAttendeeCount(attendeeCount);
 	const safe = parsed >= 1 ? parsed : 1;
 	return effectiveGuestCap !== undefined ? Math.min(safe, effectiveGuestCap) : safe;
+}
+
+/** Children sent with a confirmed RSVP; always 0 when declined or not reserved. */
+export function normalizeChildrenCount(
+	attendanceStatus: RsvpAttendanceChoice,
+	childrenCount: number | string,
+	attendeeCount: number,
+	maxChildren: number,
+): number {
+	if (attendanceStatus !== 'confirmed' || maxChildren <= 0) return 0;
+	const parsed = Math.max(0, parseAttendeeCount(childrenCount) || 0);
+	return Math.min(parsed, maxConfirmableChildren(attendeeCount, maxChildren));
 }

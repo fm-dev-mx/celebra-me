@@ -50,8 +50,10 @@ export interface GuestFormPayload {
 	phone?: string | null;
 	countryCode?: string;
 	maxAllowedAttendees: number;
+	maxAllowedChildren?: number;
 	attendanceStatus?: AttendanceStatus;
 	attendeeCount?: number;
+	childrenCount?: number;
 	tags?: string[];
 	isTest?: boolean;
 }
@@ -476,6 +478,8 @@ export const useGuestDashboardActions = ({
 					country_code: guest.countryCode || null,
 					email: guest.email,
 					tags: guest.tags,
+					max_allowed_attendees: guest.maxAllowedAttendees,
+					max_allowed_children: guest.maxAllowedChildren,
 				})),
 			});
 			await loadGuests();

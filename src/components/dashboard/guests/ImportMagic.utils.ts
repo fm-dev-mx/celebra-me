@@ -1,3 +1,4 @@
+import { reservationIssue } from '@/lib/rsvp/guest-cap';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { normalizeName, splitPhoneForExport, SUPPORTED_COUNTRY_CODES } from '@/lib/rsvp/core/utils';
@@ -19,6 +20,8 @@ export interface ParsedGuest {
 	phoneCountryCode: string;
 	email: string | null;
 	maxAllowedAttendees?: number;
+	/** How many of the passes are for children; adults are derived. */
+	maxAllowedChildren?: number;
 	tags?: string[];
 	error?: string;
 	fieldErrors?: {
@@ -26,6 +29,7 @@ export interface ParsedGuest {
 		phone?: string;
 		phoneCountryCode?: string;
 		email?: string;
+		maxAllowedChildren?: string;
 	};
 	_status?: ImportRowStatus;
 	action?: ImportRowAction;
@@ -38,7 +42,14 @@ export interface ParsedGuest {
 }
 
 export type ColumnTarget =
-	'fullName' | 'phone' | 'phoneCountryCode' | 'email' | 'maxAllowedAttendees' | 'tags' | 'ignore';
+	| 'fullName'
+	| 'phone'
+	| 'phoneCountryCode'
+	| 'email'
+	| 'maxAllowedAttendees'
+	| 'maxAllowedChildren'
+	| 'tags'
+	| 'ignore';
 
 export interface ColumnAssignment {
 	sourceIndex: number;
@@ -68,6 +79,9 @@ export const KNOWN_IMPORT_HEADERS: Record<string, keyof ParsedGuest> = {
 	correo: 'email',
 	email: 'email',
 	max_allowed_attendees: 'maxAllowedAttendees',
+	max_allowed_children: 'maxAllowedChildren',
+	niños: 'maxAllowedChildren',
+	ninos: 'maxAllowedChildren',
 	tags: 'tags',
 };
 
@@ -76,6 +90,7 @@ export const IGNORED_EXPORT_HEADERS = new Set([
 	'invite_id',
 	'attendance_status',
 	'attendee_count',
+	'children_count',
 	'delivery_status',
 	'first_viewed_at',
 	'responded_at',
@@ -287,6 +302,10 @@ const FIELD_SETTERS: Record<string, (r: ParsedGuest, v: string) => void> = {
 		const p = Number.parseInt(v, 10);
 		if (Number.isFinite(p)) r.maxAllowedAttendees = p;
 	},
+	maxAllowedChildren: (r, v) => {
+		const p = Number.parseInt(v, 10);
+		if (Number.isFinite(p)) r.maxAllowedChildren = p;
+	},
 	tags: (r, v) => {
 		r.tags = parseTags(v);
 	},
@@ -360,12 +379,21 @@ export function validateGuestRow(guest: ParsedGuest): {
 		fieldErrors[result.field] = result.message;
 	}
 
+	const childrenIssue = reservationIssue(
+		guest.maxAllowedAttendees ?? 2,
+		guest.maxAllowedChildren ?? 0,
+	);
+	if (childrenIssue) {
+		fieldErrors.maxAllowedChildren = childrenIssue;
+	}
+
 	const hasErrors = Object.keys(fieldErrors).length > 0;
 	return {
 		rowError: hasErrors
 			? fieldErrors.phone ||
 				fieldErrors.phoneCountryCode ||
 				fieldErrors.fullName ||
+				fieldErrors.maxAllowedChildren ||
 				'Corrige los errores de esta fila.'
 			: undefined,
 		fieldErrors: hasErrors ? fieldErrors : undefined,
