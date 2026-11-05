@@ -1,27 +1,39 @@
 {
     "eventType": "primera-comunion",
     "isDemo": true,
-    "templateId": "primera-comunion-angelic-presence",
-    "title": "Primera Comunión Ilustrada",
-    "description": "Ejemplo de invitación de primera comunión con confirmación de asistencia y galería.",
+    "templateId": "primera-comunion-eucharistic-grace",
+    "title": "Primera Comunión de Camila Aurora",
+    "description": "Con profunda alegría, le invitamos a acompañar a Camila Aurora en el sacramento de su Primera Comunión, el sábado 12 de septiembre de 2028 en Ciudad de México.",
+    "visualProfileId": "demo-primera-comunion-angelic-presence",
     "_assetSlug": "demo-primera-comunion-angelic-presence",
     "theme": {
-        "preset": "angelic-presence"
+        "preset": "eucharistic-grace",
+        "fontFamily": "serif",
+        "motion": "editorial"
     },
     "sectionOrder": [
         "quote",
         "personalizedAccess",
-        "family",
-        "gallery",
         "countdown",
+        "family",
         "location",
         "itinerary",
-        "rsvp",
+        "gallery",
         "gifts",
+        "rsvp",
         "thankYou"
     ],
     "composition": {
-        "intersections": {}
+        "intersections": {
+            "family": {
+                "family": "arch",
+                "source": "interlude-after-personalizedAccess"
+            },
+            "thankYou": {
+                "family": "atmospheric-blend",
+                "source": "rsvp"
+            }
+        }
     },
     "eventTiming": {
         "localDateTime": "2028-09-12T11:00",
@@ -38,15 +50,15 @@
     },
     "location": {
         "accessPolicy": { "visibility": "public" },
-        "indicationsHeading": "Indicaciones",
+        "indicationsHeading": "Para este día",
         "indications": [
             {
                 "iconName": "Calendar",
-                "text": "<strong>Llegada sugerida</strong> 15 minutos antes de la ceremonia."
+                "text": "<strong>Llegada</strong> Le pedimos estar en la parroquia quince minutos antes del inicio de la Santa Misa."
             },
             {
                 "iconName": "DressCode",
-                "text": "<strong>Vestimenta</strong> Tonos claros, formales y suaves."
+                "text": "<strong>Vestimenta</strong> Formal en tonos claros. Evite el color blanco, reservado para la comulgante."
             }
         ],
         "variant": "standard",
@@ -55,7 +67,7 @@
         },
         "venues": [
             {
-                "venueEvent": "Ceremonia",
+                "venueEvent": "Santa Misa",
                 "venueName": "Parroquia Nuestra Señora de la Luz",
                 "address": "Av. de la Paz 120, Centro",
                 "city": "Ciudad de México",
@@ -99,107 +111,107 @@
         "featuredImage": "family",
         "focalPoint": "50% 36%",
         "labels": {
-            "sectionTitle": "Los que hacen este momento sagrado",
+            "sectionTitle": "Quienes acompañan este sacramento",
             "sectionSubtitle": "Familia",
-            "parentsTitle": "Con la bendición de",
-            "godparentsTitle": "Padrinos",
-            "sectionMessage": "Gracias por acompañarnos en este día de fe y alegría. Su amor y sus bendiciones hacen más luminoso este sacramento."
+            "parentsTitle": "Con la bendición de sus padres",
+            "godparentsTitle": "Padrinos de comunión",
+            "sectionMessage": "Con gratitud a Dios por habernos permitido guiar a Camila Aurora hasta este momento de fe. Gracias por acompañarnos en la celebración de este sacramento."
         },
         "variant": "standard"
     },
     "gallery": {
         "eyebrow": "Galería",
-        "title": "Instantes de luz",
-        "subtitle": "Una memoria serena de este día especial",
+        "title": "Gracia y ternura",
+        "subtitle": "Instantes del camino hacia la mesa del Señor",
         "items": [
             {
                 "image": "gallery01",
-                "caption": "Pureza y ternura"
+                "caption": "Pureza de corazón"
             },
             {
                 "image": "gallery02",
-                "caption": "La luz del sacramento"
+                "caption": "La luz de la fe"
             }
         ],
         "variant": "uniform-grid"
     },
     "gifts": {
-        "title": "Detalles para Celebrar",
-        "subtitle": "Gracias por acompañarnos en este día de fe y alegría.",
+        "title": "Un detalle de cariño",
+        "subtitle": "Su presencia es el mejor regalo. Si desea tener un detalle, se lo agradecemos de corazón.",
         "items": [
             {
                 "type": "cash",
                 "title": "Lluvia de Sobres",
-                "text": "Si desean tener un detalle, podrán hacerlo en el área de recepción."
+                "text": "Si desea tener un detalle especial, podrá hacerlo en el área de recepción."
             }
         ],
         "variant": "standard"
     },
     "itinerary": {
-        "title": "Programa",
-        "subtitle": "Primera Comunión",
+        "title": "Programa del día",
+        "subtitle": "Primera Comunión de Camila Aurora",
         "items": [
             {
                 "iconName": "Reception",
-                "label": "Llegada",
+                "label": "Recepción",
                 "time": "10:45",
-                "description": "Recepción en la parroquia"
+                "description": "Bienvenida a los invitados en la parroquia"
             },
             {
                 "iconName": "Church",
-                "label": "Misa",
+                "label": "Santa Misa",
                 "time": "11:00",
-                "description": "Celebración de Primera Comunión"
+                "description": "Celebración eucarística y Primera Comunión"
             },
             {
-                "iconName": "Reception",
+                "iconName": "Dinner",
                 "label": "Convivencia",
                 "time": "13:00",
-                "description": "Comida familiar"
+                "description": "Comida y festejo en Jardín Santa Clara"
             }
         ],
         "variant": "standard"
     },
     "countdown": {
         "variant": "standard",
-        "title": "Nos acercamos con alegría",
-        "footerText": "Gracias por preparar el corazón para acompañarnos"
+        "title": "Se acerca el día",
+        "footerText": "Preparemos el corazón para acompañar a Camila Aurora en este sacramento"
     },
     "quote": {
-        "text": "Yo soy el pan de vida. El que viene a mí nunca tendrá hambre, y el que cree en mí nunca tendrá sed.",
-        "author": "Juan 6:35"
+        "text": "Yo soy el pan vivo que ha bajado del cielo. El que coma de este pan vivirá para siempre.",
+        "author": "Juan 6:51"
     },
     "rsvp": {
         "title": "Confirme su asistencia",
         "guestCap": 4,
-        "confirmationMessage": "Gracias por confirmar y acompañarnos en este día de fe.",
+        "confirmationMessage": "Gracias por confirmar. Su compañía hará de esta celebración un momento más cercano al corazón de Dios.",
         "confirmationMode": "api",
         "variant": "standard",
         "personalizedAccess": {
             "title": "Pase de acceso",
-            "subtitle": "Este pase le identifica como invitado y muestra el número de lugares reservados.",
+            "subtitle": "Este pase le identifica como invitado y muestra el número de lugares reservados para usted.",
             "footerText": "Confirme su asistencia en la sección de RSVP al final de la invitación.",
             "variant": "standard"
         },
-        "subcopy": "Su respuesta nos ayuda a preparar cada detalle de esta celebración de fe.",
+        "subcopy": "Su respuesta nos ayuda a preparar cada detalle de esta celebración eucarística.",
         "labels": {
             "name": "Su nombre",
-            "notesPlaceholder": "Escriba un mensaje para Camila…",
+            "notesPlaceholder": "Escriba un mensaje para Camila Aurora…",
             "guestHint": "Hemos reservado {count} lugares para su invitación. Puede ajustar el número si asistirán menos personas."
         },
         "responseMessages": {
             "confirmed": {
-                "title": "Confirmación recibida",
-                "subtitle": "Su asistencia ha quedado registrada. Será un honor compartir este día con usted."
+                "title": "¡Confirmación recibida!",
+                "subtitle": "Su asistencia ha quedado registrada. Será un honor compartir este sacramento con usted."
             },
             "declined": {
                 "title": "Lamentamos que no pueda acompañarnos, {guestName}.",
-                "subtitle": "Gracias por avisarnos."
+                "subtitle": "Gracias por avisarnos. Le tendremos presente en nuestras oraciones."
             }
         }
     },
     "thankYou": {
-        "message": "Gracias por compartir este momento sagrado. Su presencia y sus bendiciones quedarán guardadas con mucho cariño.",
+        "message": "Gracias por acompañar a Camila Aurora en este paso de fe. Su presencia, sus oraciones y su cariño quedarán guardados con gratitud en nuestro corazón.",
         "closingName": "Camila Aurora",
         "image": "thankYouPortrait",
         "focalPoint": "50% 50%",
@@ -209,22 +221,29 @@
         {
             "image": "interlude01",
             "afterSection": "personalizedAccess",
-            "alt": "Detalle floral de Primera Comunión",
+            "alt": "Detalle floral que acompaña la invitación de Primera Comunión",
             "height": "tall",
             "focalPoint": "50% 58%"
         },
         {
             "image": "interlude02",
             "afterSection": "gallery",
-            "alt": "Detalle luminoso de la celebración",
+            "alt": "Momento luminoso de la preparación para la comunión",
             "height": "screen",
             "focalPoint": "53% 55%"
+        },
+        {
+            "image": "interlude03",
+            "afterSection": "location",
+            "alt": "Decoración sacra para la Primera Comunión",
+            "height": "medium",
+            "focalPoint": "50% 45%"
         }
     ],
     "envelope": {
         "disabled": false,
         "sealStyle": "wax",
         "sealInitials": "C·A",
-        "microcopy": "Primera Comunión de Camila"
+        "microcopy": "Primera Comunión de Camila Aurora"
     }
 }

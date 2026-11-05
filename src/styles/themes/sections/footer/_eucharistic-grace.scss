@@ -1,0 +1,45 @@
+.theme-preset--eucharistic-grace .invitation-footer {
+	background:
+		linear-gradient(180deg, rgb(var(--color-grace-linen-rgb) / 48%), var(--color-grace-pearl)),
+		var(--color-grace-pearl);
+	border-top: 1px solid rgb(var(--color-grace-gold-rgb) / 18%);
+	color: var(--color-grace-ink);
+
+	.footer__closing-phrase {
+		color: rgb(var(--color-grace-ink-rgb) / 65%);
+	}
+
+	.footer__divider {
+		background: rgb(var(--color-grace-gold-rgb) / 45%);
+
+		&::before {
+			background: var(--color-grace-gold);
+			box-shadow: 0 0 6px rgb(var(--color-grace-gold-rgb) / 40%);
+		}
+	}
+
+	.powered-by {
+		color: rgb(var(--color-grace-ink-rgb) / 46%);
+	}
+
+	.whatsapp-button {
+		border-color: rgb(var(--color-grace-gold-rgb) / 28%);
+		background: rgb(var(--color-grace-cream-rgb) / 56%);
+		color: rgb(var(--color-grace-ink-rgb) / 72%);
+
+		&:hover {
+			background: var(--color-grace-ink);
+			border-color: var(--color-grace-ink);
+			color: var(--color-grace-cream);
+			box-shadow: 0 12px 28px rgb(var(--color-grace-ink-rgb) / 12%);
+		}
+	}
+
+	.footer__replay-link {
+		color: rgb(var(--color-grace-ink-rgb) / 48%);
+
+		&:hover {
+			color: var(--color-grace-ink);
+		}
+	}
+}
