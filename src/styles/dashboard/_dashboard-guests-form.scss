@@ -1,4 +1,5 @@
 @use '../global/mixins' as mixins;
+@use '../tokens/type-scale';
 
 // phone-input-group moved to src/styles/components/_phone-input-group.scss
 
@@ -374,5 +375,47 @@
 		width: 1.125rem;
 		height: 1.125rem;
 		accent-color: var(--color-action-accent, currentColor);
+	}
+}
+
+/* Children passes: a quiet link until the host needs it */
+.guest-form__children-toggle {
+	@include type-scale.text(body-small);
+
+	flex-basis: 100%;
+	align-self: flex-start;
+	min-height: 2.75rem;
+	padding: 0.25rem 0;
+	border: 0;
+	background: none;
+	color: var(--color-text-secondary);
+	text-align: left;
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	cursor: pointer;
+}
+
+.guest-form__children {
+	display: flex;
+	flex-basis: 100%;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.25rem 0.75rem;
+
+	label {
+		@include type-scale.text(body-small);
+
+		flex: 1 1 8rem;
+		color: var(--color-text-primary);
+		font-weight: 600;
+	}
+
+	input {
+		width: 6rem;
+		min-height: 2.75rem;
+	}
+
+	.guest-field-error {
+		flex-basis: 100%;
 	}
 }

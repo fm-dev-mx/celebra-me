@@ -10,7 +10,7 @@ import { findEventById, findEventByIdService } from '@/lib/rsvp/repositories/eve
 import { ApiError, isApiError } from '@/lib/rsvp/core/errors';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
 import { z } from 'zod';
-import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
+import { guestChildrenCapSchema, reservationIssue, rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 import { safeErr } from '@/lib/server/safe-error';
 
 const BulkGuestSchema = z.object({
@@ -20,6 +20,7 @@ const BulkGuestSchema = z.object({
 	email: z.email().optional().nullable(),
 	tags: z.array(z.string()).optional(),
 	max_allowed_attendees: rsvpGuestCapSchema.optional().default(2),
+	max_allowed_children: guestChildrenCapSchema.optional().default(0),
 });
 
 const BulkImportSchema = z.object({
@@ -77,6 +78,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 				return null;
 			}
 
+			const reservationError = reservationIssue(
+				guest.max_allowed_attendees,
+				guest.max_allowed_children,
+			);
+			if (reservationError) {
+				rowErrors.push(`Fila ${i + 1}: ${reservationError}`);
+				return null;
+			}
+
 			return {
 				full_name: guest.full_name,
 				phone: phoneResult.phone,
@@ -84,6 +94,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 				email: guest.email ?? null,
 				tags: guest.tags ?? [],
 				max_allowed_attendees: guest.max_allowed_attendees,
+				max_allowed_children: guest.max_allowed_children,
 			};
 		});
 
