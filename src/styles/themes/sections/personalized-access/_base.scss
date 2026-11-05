@@ -373,7 +373,7 @@
 		display: block;
 		margin-top: 0.5rem;
 		font-family: var(--font-body, serif);
-		font-size: 0.85rem;
+		font-size: var(--pa-party-size, 0.85rem);
 		line-height: 1.4;
 		color: var(--pa-label-color, var(--color-text-secondary));
 	}
