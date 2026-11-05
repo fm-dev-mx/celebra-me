@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDownGlyph } from '@/components/dashboard/guests/GuestGlyphs';
+import { formatParty, maxConfirmableChildren } from '@/lib/rsvp/guest-cap';
 import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 
 const STATUS_SUMMARY: Record<AttendanceStatus, string> = {
@@ -14,6 +15,9 @@ interface GuestResponseFieldsProps {
 	maxAttendees: number;
 	onStatusChange: (status: AttendanceStatus) => void;
 	onAttendeeCountChange: (count: number) => void;
+	childrenCount?: number;
+	maxChildren?: number;
+	onChildrenCountChange?: (count: number) => void;
 	error?: string;
 }
 
@@ -24,12 +28,15 @@ export const GuestResponseFields: React.FC<GuestResponseFieldsProps> = ({
 	maxAttendees,
 	onStatusChange,
 	onAttendeeCountChange,
+	childrenCount = 0,
+	maxChildren = 0,
+	onChildrenCountChange,
 	error,
 }) => {
 	const [open, setOpen] = useState(Boolean(error));
 	const summary =
 		status === 'confirmed'
-			? `${STATUS_SUMMARY.confirmed} · ${attendeeCount} ${attendeeCount === 1 ? 'persona' : 'personas'}`
+			? `${STATUS_SUMMARY.confirmed} · ${formatParty(attendeeCount, { children: childrenCount, unit: 'persona' })}`
 			: STATUS_SUMMARY[status];
 
 	return (
@@ -73,6 +80,21 @@ export const GuestResponseFields: React.FC<GuestResponseFieldsProps> = ({
 								value={attendeeCount}
 								onChange={(event) =>
 									onAttendeeCountChange(Number(event.target.value))
+								}
+							/>
+						</div>
+					)}
+					{status === 'confirmed' && maxChildren > 0 && onChildrenCountChange && (
+						<div className="dashboard-form-field">
+							<label htmlFor="childrenCount">De ellos, niños</label>
+							<input
+								id="childrenCount"
+								type="number"
+								min={0}
+								max={maxConfirmableChildren(attendeeCount, maxChildren)}
+								value={childrenCount}
+								onChange={(event) =>
+									onChildrenCountChange(Number(event.target.value))
 								}
 							/>
 						</div>

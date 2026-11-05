@@ -10,6 +10,7 @@ import { rsvpApi, type PublicRsvpPayload } from '@/lib/client/rsvp-api';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
 import {
 	DEMO_GUEST_NAME,
+	normalizeChildrenCount,
 	normalizeGuestCount,
 	normalizePhoneInput,
 	parseRsvpPhoneInput,
@@ -25,9 +26,11 @@ import { emitInvitationEngagement } from '@/lib/invitation/invitation-analytics'
 interface InitialGuestData {
 	fullName?: string;
 	maxAllowedAttendees?: number;
+	maxAllowedChildren?: number;
 	inviteId?: string;
 	attendanceStatus?: 'pending' | 'confirmed' | 'declined';
 	attendeeCount?: number;
+	childrenCount?: number;
 	guestComment?: string;
 }
 
@@ -83,15 +86,21 @@ export function useRsvpSubmission({
 			? 0
 			: (initialData?.attendeeCount ?? 0) || effectiveGuestCap;
 	const initialGuestComment = initialData?.guestComment ?? '';
+	const maxChildren = isDemoPreview ? 0 : (initialData?.maxAllowedChildren ?? 0);
+	const initialChildrenCount =
+		initialAttendanceStatus === 'confirmed' ? (initialData?.childrenCount ?? 0) : 0;
+	const [childrenCount, setChildrenCount] = useState<number | string>(initialChildrenCount);
 	const [attendeeCount, setAttendeeCount] = useState<number | string>(initialAttendeeCount);
 	const [notes, setNotes] = useState(initialGuestComment);
 	const savedResponseRef = useRef<{
 		attendanceStatus: RsvpAttendanceChoice;
 		attendeeCount: number;
+		childrenCount: number;
 		guestComment: string;
 	}>({
 		attendanceStatus: initialAttendanceStatus,
 		attendeeCount: initialAttendeeCount,
+		childrenCount: initialChildrenCount,
 		guestComment: initialGuestComment,
 	});
 	const nameLocked = isDemoPreview || Boolean(initialData?.fullName);
@@ -153,6 +162,7 @@ export function useRsvpSubmission({
 		const saved = savedResponseRef.current;
 		setAttendanceStatus(saved.attendanceStatus);
 		setAttendeeCount(saved.attendeeCount);
+		setChildrenCount(saved.childrenCount);
 		setNotes(saved.guestComment);
 		setErrors({});
 		setTouched({});
@@ -169,6 +179,8 @@ export function useRsvpSubmission({
 			attendeeCount,
 			supportsPlusOnes,
 			effectiveGuestCap,
+			childrenCount,
+			maxChildren,
 			isPublicRsvp,
 			copy: defaultCopy,
 		});
@@ -177,6 +189,8 @@ export function useRsvpSubmission({
 	}, [
 		attendanceStatus,
 		attendeeCount,
+		childrenCount,
+		maxChildren,
 		defaultCopy,
 		effectiveGuestCap,
 		isPublicRsvp,
@@ -254,6 +268,12 @@ export function useRsvpSubmission({
 					attendeeCount,
 					supportsPlusOnes,
 				);
+				const normalizedChildren = normalizeChildrenCount(
+					attendanceStatus,
+					childrenCount,
+					normalizedCount,
+					maxChildren,
+				);
 
 				if (!initialData?.inviteId) {
 					if (accessMode !== 'hybrid') {
@@ -281,6 +301,7 @@ export function useRsvpSubmission({
 					savedResponseRef.current = {
 						attendanceStatus,
 						attendeeCount: normalizedCount,
+						childrenCount: 0,
 						guestComment: trimmedNotes,
 					};
 					setSubmitStatus('success');
@@ -293,14 +314,17 @@ export function useRsvpSubmission({
 				await rsvpApi.submitRsvp(initialData.inviteId, {
 					attendanceStatus: attendanceStatus as 'confirmed' | 'declined',
 					attendeeCount: normalizedCount,
+					childrenCount: normalizedChildren,
 					guestComment: notes.trim(),
 				});
 				setResponseInviteId(initialData.inviteId);
 				savedResponseRef.current = {
 					attendanceStatus,
 					attendeeCount: normalizedCount,
+					childrenCount: normalizedChildren,
 					guestComment: notes.trim(),
 				};
+				setChildrenCount(normalizedChildren);
 				setSubmitStatus('success');
 				if (attendanceStatus === 'confirmed') {
 					notifyConfirmedRsvp(initialData.inviteId);
@@ -319,6 +343,8 @@ export function useRsvpSubmission({
 			accessMode,
 			attendanceStatus,
 			attendeeCount,
+			childrenCount,
+			maxChildren,
 			countryCode,
 			eventSlug,
 			eventType,
@@ -341,6 +367,8 @@ export function useRsvpSubmission({
 		isPublicRsvp,
 		attendanceStatus,
 		attendeeCount,
+		childrenCount,
+		maxChildren,
 		notes,
 		nameLocked,
 		effectiveGuestCap,
@@ -360,6 +388,7 @@ export function useRsvpSubmission({
 		handlePhoneChange,
 		setAttendanceStatus,
 		setAttendeeCount,
+		setChildrenCount,
 		setNotes,
 		handleBlur,
 		handleSubmit,

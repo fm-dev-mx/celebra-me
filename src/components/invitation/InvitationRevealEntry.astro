@@ -39,6 +39,7 @@ const { envelope, viewModel } = page;
 			spreadOrnaments={envelope.spreadOrnaments}
 			guestName={page.guestName ?? (envelope.isDemo ? DEMO_GUEST_NAME : undefined)}
 			guestSeats={page.guestContext?.guest.maxAllowedAttendees}
+			guestChildren={page.guestContext?.guest.maxAllowedChildren}
 			coverExperience={envelope.coverExperience}
 			coverImage={envelope.backdropImage}
 			backgroundImage={viewModel.hero.backgroundImage}

@@ -1,5 +1,6 @@
+import { maxConfirmableChildren } from '@/lib/rsvp/guest-cap';
 import { motion } from 'framer-motion';
-import type { RefObject } from 'react';
+import { useRef, type RefObject } from 'react';
 import { useRsvpContext } from '@/components/invitation/rsvp-context';
 import { getDefaultGuestHint, type RsvpAttendanceChoice } from '@/components/invitation/rsvp-logic';
 import { COUNTRY_OPTIONS } from '@/lib/phone/country-codes';
@@ -331,9 +332,21 @@ export function ConfirmedFields(props: {
 		onNotesChange,
 		onBlur,
 	} = props;
-	const { defaultCopy = 'legacy' } = useRsvpContext();
+	const {
+		defaultCopy = 'legacy',
+		maxChildren = 0,
+		childrenCount = 0,
+		onChildrenCountChange,
+	} = useRsvpContext();
 
 	const isExpanded = attendanceStatus !== null;
+	const childrenRef = useRef<HTMLInputElement>(null);
+	const showChildren =
+		part !== 'notes' &&
+		attendanceStatus === 'confirmed' &&
+		maxChildren > 0 &&
+		onChildrenCountChange;
+	const childrenCap = maxConfirmableChildren(Number(attendeeCount) || 1, maxChildren);
 	const showGuests = part !== 'notes' && attendanceStatus === 'confirmed' && supportsPlusOnes;
 	const showNotes = part !== 'guests';
 
@@ -369,6 +382,23 @@ export function ConfirmedFields(props: {
 							)}
 						</p>
 					</>
+				)}
+				{showChildren && (
+					<FloatingField
+						id="childrenCount"
+						fieldRef={childrenRef}
+						type="number"
+						label="De ellos, niños"
+						labelSuffix={` (Máx. ${childrenCap})`}
+						value={String(childrenCount)}
+						error={errors.childrenCount}
+						touched={touched.childrenCount}
+						prefersReducedMotion={prefersReducedMotion}
+						onChange={onChildrenCountChange}
+						onBlur={onBlur}
+						min={0}
+						max={childrenCap}
+					/>
 				)}
 				{showNotes && (
 					<div className="rsvp__field rsvp__field--notes">

@@ -3,6 +3,7 @@ import ModalShell from '@/components/dashboard/ModalShell';
 import PhoneInputGroup from '@/components/shared/PhoneInputGroup';
 import GuestPeopleStepper from '@/components/dashboard/guests/GuestPeopleStepper';
 import { MAX_CUSTOM_ATTENDEES } from '@/components/dashboard/guests/guest-form-constants';
+import { maxConfirmableChildren, reservationIssue } from '@/lib/rsvp/guest-cap';
 import { resolvePhonePayload } from '@/lib/phone/resolve-phone-payload';
 import { getVisibleTags, isSystemTag } from '@/lib/guests/guest-tags';
 import GuestTagChips from '@/components/dashboard/guests/GuestTagChips';
@@ -23,8 +24,10 @@ interface GuestFormModalProps {
 			phone?: string | null;
 			countryCode?: string;
 			maxAllowedAttendees: number;
+			maxAllowedChildren?: number;
 			attendanceStatus?: AttendanceStatus;
 			attendeeCount?: number;
+			childrenCount?: number;
 			tags?: string[];
 			isTest?: boolean;
 		},
@@ -47,6 +50,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	const [peopleInput, setPeopleInput] = useState('1');
 	const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus>('pending');
 	const [attendeeCount, setAttendeeCount] = useState(0);
+	const [showChildren, setShowChildren] = useState(false);
+	const [childrenInput, setChildrenInput] = useState('0');
+	const [childrenCount, setChildrenCount] = useState(0);
 	const [tags, setTags] = useState<string[]>([]);
 	const [isTest, setIsTest] = useState(false);
 	const [saving, setSaving] = useState(false);
@@ -64,6 +70,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setPeopleInput('1');
 		setAttendanceStatus('pending');
 		setAttendeeCount(0);
+		setShowChildren(false);
+		setChildrenInput('0');
+		setChildrenCount(0);
 		setTags([]);
 		setIsTest(false);
 		setFieldErrors({});
@@ -91,6 +100,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		setPeopleInput(String(initialGuest.maxAllowedAttendees));
 		setAttendanceStatus(initialGuest.attendanceStatus);
 		setAttendeeCount(initialGuest.attendeeCount);
+		setShowChildren((initialGuest.maxAllowedChildren ?? 0) > 0);
+		setChildrenInput(String(initialGuest.maxAllowedChildren ?? 0));
+		setChildrenCount(initialGuest.childrenCount ?? 0);
 		setTags(initialGuest.tags || []);
 		setIsTest(initialGuest.isTest === true);
 	}, [initialGuest, open]);
@@ -109,6 +121,37 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 		if (parsed > MAX_CUSTOM_ATTENDEES)
 			return { value: 1, error: `El máximo es ${MAX_CUSTOM_ATTENDEES} personas.` };
 		return { value: parsed };
+	};
+
+	const liveMaxChildren = showChildren
+		? Math.max(0, Math.min(parseInt(childrenInput, 10) || 0, liveMaxAttendees))
+		: 0;
+
+	const resolveMaxChildren = (passes: number): { value: number; error?: string } => {
+		if (!showChildren) return { value: 0 };
+		const raw = childrenInput.trim();
+		const parsed = raw === '' ? 0 : parseInt(raw, 10);
+		if (isNaN(parsed) || parsed < 0) return { value: 0, error: 'Escriba cuántos son niños.' };
+		const issue = reservationIssue(passes, parsed);
+		return issue ? { value: 0, error: issue } : { value: parsed };
+	};
+
+	// In edit mode the confirmed party must fit the passes, and its children the children's passes.
+	const resolveConfirmedChildren = (
+		maxAttendees: number,
+		maxChildren: number,
+	): { value: number; error?: string } => {
+		const value = mode === 'edit' && attendanceStatus === 'confirmed' ? childrenCount : 0;
+		if (value > maxConfirmableChildren(attendeeCount, maxChildren)) {
+			return {
+				value,
+				error: 'Los niños no pueden superar sus pases ni a las personas que vienen.',
+			};
+		}
+		if (mode === 'edit' && attendeeCount > maxAttendees) {
+			return { value, error: `No puede superar el límite (${maxAttendees}).` };
+		}
+		return { value };
 	};
 
 	const handleFormSubmit = async (stayOpen = false) => {
@@ -133,8 +176,13 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 			errors.customAttendees = maxResult.error;
 		}
 
-		if (mode === 'edit' && attendeeCount > maxResult.value) {
-			errors.attendeeCount = `No puede superar el límite (${maxResult.value}).`;
+		const childrenResult = resolveMaxChildren(maxResult.value);
+		const confirmedChildren = resolveConfirmedChildren(maxResult.value, childrenResult.value);
+		if (childrenResult.error) {
+			errors.children = childrenResult.error;
+		}
+		if (confirmedChildren.error) {
+			errors.attendeeCount = confirmedChildren.error;
 		}
 
 		if (Object.keys(errors).length > 0) {
@@ -152,8 +200,10 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 					phone: phonePayload.ok ? phonePayload.phone : undefined,
 					countryCode: phonePayload.ok ? phonePayload.countryCode : undefined,
 					maxAllowedAttendees: maxResult.value,
+					maxAllowedChildren: childrenResult.value,
 					attendanceStatus: mode === 'edit' ? attendanceStatus : undefined,
 					attendeeCount: mode === 'edit' ? attendeeCount : undefined,
+					childrenCount: mode === 'edit' ? confirmedChildren.value : undefined,
 					tags,
 					isTest,
 				},
@@ -249,6 +299,34 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 								{fieldErrors.customAttendees}
 							</span>
 						)}
+						{showChildren ? (
+							<div className="guest-form__children">
+								<label htmlFor="guest-children">De ellos, niños</label>
+								<input
+									id="guest-children"
+									type="number"
+									inputMode="numeric"
+									min={0}
+									max={liveMaxAttendees}
+									value={childrenInput}
+									onChange={(event) => setChildrenInput(event.target.value)}
+									aria-invalid={Boolean(fieldErrors.children)}
+								/>
+								{fieldErrors.children && (
+									<span className="guest-field-error">
+										{fieldErrors.children}
+									</span>
+								)}
+							</div>
+						) : (
+							<button
+								type="button"
+								className="guest-form__children-toggle"
+								onClick={() => setShowChildren(true)}
+							>
+								+ Incluye niños
+							</button>
+						)}
 					</div>
 
 					<div className="dashboard-form-field">
@@ -301,6 +379,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							status={attendanceStatus}
 							attendeeCount={attendeeCount}
 							maxAttendees={liveMaxAttendees}
+							childrenCount={childrenCount}
+							maxChildren={liveMaxChildren}
+							onChildrenCountChange={setChildrenCount}
 							error={fieldErrors.attendeeCount}
 							onStatusChange={(newStatus) => {
 								setAttendanceStatus(newStatus);
@@ -308,6 +389,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 									if (attendeeCount < 1) setAttendeeCount(1);
 								} else {
 									setAttendeeCount(0);
+									setChildrenCount(0);
 								}
 							}}
 							onAttendeeCountChange={setAttendeeCount}

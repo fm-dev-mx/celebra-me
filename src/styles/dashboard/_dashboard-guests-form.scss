@@ -376,3 +376,43 @@
 		accent-color: var(--color-action-accent, currentColor);
 	}
 }
+
+/* Children passes: a quiet link until the host needs it */
+.guest-form__children-toggle {
+	flex-basis: 100%;
+	align-self: flex-start;
+	min-height: 2.75rem;
+	padding: 0.25rem 0;
+	border: 0;
+	background: none;
+	color: var(--color-text-secondary);
+	font-size: 0.875rem;
+	text-align: left;
+	text-decoration: underline;
+	text-underline-offset: 0.2em;
+	cursor: pointer;
+}
+
+.guest-form__children {
+	display: flex;
+	flex-basis: 100%;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.25rem 0.75rem;
+
+	label {
+		flex: 1 1 8rem;
+		color: var(--color-text-primary);
+		font-size: 0.9375rem;
+		font-weight: 600;
+	}
+
+	input {
+		width: 6rem;
+		min-height: 2.75rem;
+	}
+
+	.guest-field-error {
+		flex-basis: 100%;
+	}
+}

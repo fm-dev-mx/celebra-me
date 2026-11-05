@@ -368,6 +368,16 @@
 		text-shadow: var(--pa-count-shadow, none);
 	}
 
+	// Adults/children breakdown, shown only when the host reserved children's passes.
+	&__party {
+		display: block;
+		margin-top: 0.5rem;
+		font-family: var(--font-body, serif);
+		font-size: 0.85rem;
+		line-height: 1.4;
+		color: var(--pa-label-color, var(--color-text-secondary));
+	}
+
 	&__note {
 		margin: 0 auto;
 		font-family: var(--font-body, serif);
