@@ -10,6 +10,30 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.69.0-beta.1] - 2026-11-05
+
+Lets hosts reserve part of a guest's passes for children. Requires migration
+`20261105120000_guest_children_in_party`, already applied in Production.
+
+### Added
+
+- Dashboard: guests can include children within their passes («+ Incluye niños» / «De ellos,
+  niños»); adults are derived from the total, and the guest list, import and export gain a «Niños»
+  column with children totals (#828).
+- Invitations: the access pass and the editorial cover show the adults/children breakdown, the RSVP
+  asks how many children attend (capped by the guest's children allowance) and the default WhatsApp
+  message names adults and children; custom templates keep `{guestCount}` (#828).
+- Database: guests store `max_allowed_children` and `children_count`, and `submit_guest_rsvp_public`
+  now takes a twelfth argument `p_children_count` (#828).
+
+### Fixed
+
+- Guests: children are validated in the RSVP and guest forms — an over-limit RPC error returns a
+  Spanish 400, empty or invalid children values are rejected, and lowering passes below the stored
+  children cap clamps it instead of failing (#830).
+- Database: the post-apply schema contract verifies the 12-argument `submit_guest_rsvp_public`, and
+  a unit test fails when the contract references a dropped function signature (#831).
+
 ## [0.68.0-beta.1] - 2026-11-04
 
 Makes the andrea gold bracelet visible on phones. No database migrations.
