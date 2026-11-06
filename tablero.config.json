@@ -1,6 +1,7 @@
 {
     "proyecto": "Celebra-me",
     "datos": ".agent/tmp/tablero",
+    "protegidos": [".vercel/", ".backups/"],
     "puerto": 4320,
     "wipMax": 6,
     "agentes": [
