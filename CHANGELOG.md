@@ -10,6 +10,17 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.69.1-beta.1] - 2026-11-05
+
+Refreshes the photos of the `/xv/andrea` invitation with the third round of owner-selected sources.
+No migrations.
+
+### Changed
+
+- Invitations: Andrea's ten invitation photos are replaced with the third-round sources, each role
+  kept distinct and the hero centered; the mobile and desktop visual references are re-accepted
+  (#829).
+
 ## [0.69.0-beta.1] - 2026-11-05
 
 Lets hosts reserve part of a guest's passes for children. Requires migration
