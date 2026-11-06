@@ -9,6 +9,8 @@ interface BulkImportGuestDTO {
 	country_code?: string | null;
 	email?: string | null;
 	tags?: string[];
+	max_allowed_attendees?: number;
+	max_allowed_children?: number;
 }
 
 export interface BulkImportDTO {
@@ -33,6 +35,7 @@ export interface CreateGuestDTO {
 	email?: string | null;
 	tags?: string[];
 	maxAllowedAttendees?: number;
+	maxAllowedChildren?: number;
 	isTest?: boolean;
 }
 
@@ -43,6 +46,8 @@ export interface UpdateGuestDTO {
 	email?: string | null;
 	tags?: string[];
 	maxAllowedAttendees?: number;
+	maxAllowedChildren?: number;
+	childrenCount?: number;
 	deliveryStatus?: DeliveryStatus;
 	lastReminderSentAt?: string | null;
 	lastMemoriesReminderSentAt?: string | null;

@@ -279,6 +279,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		cssOwner: 'src/styles/themes/sections/gifts/_editorial-catalog.scss',
 	},
 	{
+		section: 'gifts',
+		variant: 'gift-tag',
+		default: false,
+		prerequisites: ['gifts.items or an explicit compatible presentation'],
+		cssOwner: 'src/styles/themes/sections/gifts/_gift-tag.scss',
+	},
+	{
 		section: 'rsvp',
 		variant: 'standard',
 		default: true,

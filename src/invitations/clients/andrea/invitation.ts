@@ -8,7 +8,7 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
  * the garden plate, the sealed-letter print hangs out of it, and the closing rises into the reply
  * card under an arch. Fine gold butterflies are the only motif. The cover frames the portrait in
  * an arch over the name. The photographs come from an AI session edited from the client's
- * snapshots, upscaled 2× with a resampling filter that invents no detail. The song is
+ * snapshots, delivered without enlargement from the owner's third photo round. The song is
  * omitted until its file is hosted on the media domain. The program, gifts, reply deadline and
  * every guest-facing line are drafts for the client's approval. The family section is «Mi
  * familia» (never «Mis padres») and has no godparents. Adults only, with personalized passes.
@@ -79,8 +79,8 @@ const content: CanonicalEventContentInput = {
 		// Hero formats its display date in UTC; eventTiming owns the real instant.
 		date: '2027-07-03T12:00:00.000Z',
 		backgroundImage: 'hero',
-		focalPoint: '62% 30%',
-		focalPointMobile: '62% 30%',
+		focalPoint: '50% 30%',
+		focalPointMobile: '50% 30%',
 		presentation: { venueIndex: 0 },
 		scrollLabel: 'Deslice para descubrir',
 	},
@@ -314,7 +314,7 @@ export default defineCanonicalInvitation({
 	// Provisional: the celebrant's surname is not in the intake.
 	hostLoginAlias: 'andrea_xv',
 	assetDir: 'src/invitations/clients/andrea/assets',
-	// One role per photograph; the og crop is a separate derivative of the cover source.
+	// One distinct round-three photograph per role, including the landscape social card.
 	assetFiles: {
 		hero: 'hero-arch.webp',
 		family: 'family.webp',

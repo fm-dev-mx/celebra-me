@@ -11,6 +11,41 @@ import { findDemoByRouteSlug } from '@/lib/invitation/demo-routes';
 
 export type HeaderEntry = readonly [name: string, value: string];
 
+/**
+ * Content-Security-Policy-Report-Only allowlist.
+ *
+ * Uses `'unsafe-inline'` for `script-src` because 9+ Astro components use `is:inline` scripts
+ * and GA4/Meta Pixel/Cloudflare inject scripts via `createElement`. Switching to nonces is
+ * deferred to the blocking-mode task after the report-only observation period.
+ *
+ * Allowlist inventory (external origins):
+ * - script-src: googletagmanager.com (GA4), connect.facebook.net (Meta Pixel),
+ *   static.cloudflareinsights.com (Cloudflare Web Analytics)
+ * - connect-src: googletagmanager.com, analytics.google.com, google-analytics.com (GA4),
+ *   connect.facebook.net (Meta Pixel), cloudflareinsights.com (CF beacon),
+ *   *.supabase.co + wss (MFA, Realtime), celebra-memories-sign.workers.dev (photo upload)
+ * - img-src: media.celebra-me.com, media-staging.celebra-me.com (R2), *.supabase.co (storage)
+ * - media-src: media.celebra-me.com, media-staging.celebra-me.com (invitation music)
+ * - font-src: self only (@fontsource bundles all fonts locally)
+ * - frame-src: self only (dashboard preview iframe, landing showroom)
+ */
+const CSP_REPORT_ONLY_DIRECTIVES = [
+	"default-src 'self'",
+	"script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net https://static.cloudflareinsights.com",
+	"style-src 'self' 'unsafe-inline'",
+	"img-src 'self' data: blob: https://media.celebra-me.com https://media-staging.celebra-me.com https://*.supabase.co",
+	"font-src 'self' data:",
+	"connect-src 'self' https://www.googletagmanager.com https://analytics.google.com https://www.google-analytics.com https://connect.facebook.net https://cloudflareinsights.com https://*.supabase.co wss://*.supabase.co https://celebra-memories-sign.workers.dev",
+	"frame-src 'self'",
+	"media-src 'self' blob: https://media.celebra-me.com https://media-staging.celebra-me.com",
+	"object-src 'none'",
+	"base-uri 'self'",
+	"form-action 'self'",
+	'report-uri /api/security/csp-report',
+] as const;
+
+export const CSP_REPORT_ONLY_VALUE = CSP_REPORT_ONLY_DIRECTIVES.join('; ');
+
 /** Security headers applied to every response except the same-origin frames below. */
 export const SECURITY_HEADERS: readonly HeaderEntry[] = [
 	['X-Content-Type-Options', 'nosniff'],
@@ -19,6 +54,7 @@ export const SECURITY_HEADERS: readonly HeaderEntry[] = [
 	['Referrer-Policy', 'strict-origin-when-cross-origin'],
 	['Permissions-Policy', 'camera=(), microphone=(), geolocation=()'],
 	['Strict-Transport-Security', 'max-age=31536000; includeSubDomains'],
+	['Content-Security-Policy-Report-Only', CSP_REPORT_ONLY_VALUE],
 ];
 
 /**
@@ -34,6 +70,7 @@ export const INVITATION_PREVIEW_SECURITY_HEADERS: readonly HeaderEntry[] = [
 	['Referrer-Policy', 'strict-origin-when-cross-origin'],
 	['Permissions-Policy', 'camera=(), microphone=(), geolocation=()'],
 	['Strict-Transport-Security', 'max-age=31536000; includeSubDomains'],
+	['Content-Security-Policy-Report-Only', CSP_REPORT_ONLY_VALUE],
 ];
 
 const INVITATION_PREVIEW_PATH = /^\/dashboard\/invitaciones\/[^/]+\/preview$/;

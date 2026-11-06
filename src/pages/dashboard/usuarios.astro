@@ -1,6 +1,10 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import UsersAdminTable from '@/components/dashboard/users/UsersAdminTable';
+
+if (!Astro.locals.session?.isSuperAdmin) {
+	return Astro.redirect('/dashboard/invitados');
+}
 ---
 
 <DashboardLayout

@@ -1152,4 +1152,30 @@ describe('Middleware: Authentication & Authorization', () => {
 
 		expect(response).toEqual({ status: 200 });
 	});
+
+	describe('encoded and malformed admin-only paths', () => {
+		const encodedPaths = [
+			'/dashboard/%61dmin',
+			'/dashboard//admin',
+			'/dashboard/Admin',
+			'/dashboard/admin/../usuarios',
+			'/dashboard/admin/',
+			'/dashboard/%75suarios',
+			'/dashboard//usuarios',
+			'/dashboard/invitaciones/%2e%2e/admin',
+		];
+
+		it.each(encodedPaths)('redirects host_client from encoded admin path: %s', async (path) => {
+			const context = createContext(path);
+			mockCookies.get.mockReturnValue({ value: 'host-token' });
+			mockSupabaseResponse({
+				id: 'host-1',
+				app_metadata: { role: 'host_client' },
+				amr: [{ method: 'password' }],
+			});
+
+			await middleware(context as unknown as APIContext, mockNext);
+			expect(mockRedirect).toHaveBeenCalledWith('/dashboard/invitados');
+		});
+	});
 });

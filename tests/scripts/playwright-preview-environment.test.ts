@@ -18,7 +18,6 @@ import {
 	PREVIEW_FIXTURE_EVENT_TYPE,
 	PREVIEW_FIXTURE_SLUG,
 	PREVIEW_FIXTURE_TITLE,
-	PREVIEW_OUTPUT_ROOT,
 	PREVIEW_SUPABASE_PROJECT_REF,
 	PreviewRequestWindowLimiter,
 	PRODUCTION_SUPABASE_PROJECT_REF,
@@ -478,7 +477,8 @@ describe('Playwright Preview environment', () => {
 
 	it('keeps Preview artifacts ignored and disables retained browser state', () => {
 		const ignore = readFileSync(join(process.cwd(), '.gitignore'), 'utf8');
-		expect(ignore).toContain(`${PREVIEW_OUTPUT_ROOT}/`);
+		// The broader `output/` gitignore rule covers the Preview output root.
+		expect(ignore).toContain('output/');
 
 		const factory = readFileSync(
 			join(process.cwd(), 'scripts', 'playwright', 'preview-config.ts'),

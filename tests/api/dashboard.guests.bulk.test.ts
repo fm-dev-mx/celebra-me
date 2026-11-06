@@ -324,6 +324,7 @@ describe('POST /api/dashboard/guests/bulk', () => {
 			'email',
 			'tags',
 			'max_allowed_attendees',
+			'max_allowed_children',
 		];
 
 		function getRpcBody() {

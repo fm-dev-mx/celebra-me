@@ -26,6 +26,17 @@ describe('supabase errors mapping', () => {
 			status: 404,
 			code: 'not_found',
 		});
+		expect(
+			mapSupabaseErrorToApiError(
+				new Error(
+					JSON.stringify({ code: 'P0001', message: 'children_count_exceeds_limit' }),
+				),
+			),
+		).toMatchObject({
+			status: 400,
+			code: 'bad_request',
+			message: 'El número de niños excede los pases para niños de la invitación.',
+		});
 		expect(mapSupabaseErrorToApiError(new Error('attendee_count_exceeds_limit'))).toMatchObject(
 			{
 				status: 400,

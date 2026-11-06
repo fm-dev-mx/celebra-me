@@ -5,6 +5,7 @@ import type { LocationSection } from '@/lib/adapters/types';
 interface RsvpPayload {
 	attendanceStatus: 'confirmed' | 'declined';
 	attendeeCount: number;
+	childrenCount?: number;
 	guestComment?: string;
 }
 
