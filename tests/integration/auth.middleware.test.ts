@@ -19,7 +19,13 @@ function createContext(path: string) {
 	const locals: TestLocals = {};
 	return {
 		url: new URL(`http://localhost${path}`),
-		cookies: mockCookies,
+		cookies: {
+			...mockCookies,
+			get: (name: string) =>
+				name === 'sb-idle-seen'
+					? { value: String(Math.floor(Date.now() / 1000)) }
+					: mockCookies.get(name),
+		},
 		redirect: mockRedirect,
 		request: {
 			headers: new Map([['user-agent', 'test-agent']]),
@@ -80,6 +86,43 @@ let originalSupabaseUrl: string | undefined;
 let originalSupabaseAnon: string | undefined;
 
 describe('Middleware: Authentication & Authorization', () => {
+	it.each(['/dashboard/invitados', '/dashboard/mfa-setup', '/api/dashboard/guests'])(
+		'expires %s without an idle cookie before calling Auth or the handler',
+		async (path) => {
+			const fixture = createIsolatedContext(path, { 'sb-access-token': 'session-token' });
+			const response = await middleware(
+				fixture.context as unknown as APIContext,
+				fixture.next,
+			);
+			if (!(response instanceof Response))
+				throw new Error('Expected an idle-expiry response');
+			expect(response.status).toBe(path.startsWith('/api/') ? 401 : 302);
+			expect(fixture.next).not.toHaveBeenCalled();
+			expect(mockFetch).not.toHaveBeenCalled();
+			expect(fixture.locals.session).toBeUndefined();
+			expect(fixture.cookies.delete).toHaveBeenCalledWith('sb-access-token', { path: '/' });
+		},
+	);
+
+	it.each(['invalid', '0', String(Math.floor(Date.now() / 1000) - 3601)])(
+		'rejects invalid or expired API idle timestamp %s',
+		async (idle) => {
+			const fixture = createIsolatedContext('/api/dashboard/guests', {
+				'sb-access-token': 'session-token',
+				'sb-idle-seen': idle,
+			});
+			const response = await middleware(
+				fixture.context as unknown as APIContext,
+				fixture.next,
+			);
+			if (!(response instanceof Response))
+				throw new Error('Expected an idle-expiry response');
+			expect(response.status).toBe(401);
+			expect(fixture.next).not.toHaveBeenCalled();
+			expect(mockFetch).not.toHaveBeenCalled();
+		},
+	);
+
 	beforeEach(() => {
 		mockCookies = {
 			get: jest.fn(),
@@ -449,7 +492,9 @@ describe('Middleware: Authentication & Authorization', () => {
 
 		const cases = Array.from({ length: 20 }, (_, index) => {
 			const group = Math.floor(index / 5);
-			const initialCookies: Record<string, string> = {};
+			const initialCookies: Record<string, string> = {
+				'sb-idle-seen': String(Math.floor(Date.now() / 1000)),
+			};
 			if (group === 0) initialCookies['sb-access-token'] = `valid-${index}`;
 			if (group === 1) {
 				initialCookies['sb-access-token'] = `rejected-${index}`;
@@ -799,7 +844,7 @@ describe('Middleware: Authentication & Authorization', () => {
 		});
 	});
 
-	it('allows superadmin with OTP MFA (aal2) to dashboard', async () => {
+	it('requires MFA setup for superadmin with only OTP evidence', async () => {
 		const context = createContext('/dashboard/invitados');
 		mockCookies.get.mockReturnValue({ value: 'admin-token' });
 		mockSupabaseResponse({
@@ -809,8 +854,8 @@ describe('Middleware: Authentication & Authorization', () => {
 		});
 
 		await middleware(context as unknown as APIContext, mockNext);
-		expect(mockNext).toHaveBeenCalled();
-		expect(mockRedirect).not.toHaveBeenCalled();
+		expect(mockNext).not.toHaveBeenCalled();
+		expect(mockRedirect).toHaveBeenCalledWith('/dashboard/mfa-setup');
 	});
 
 	it('redirects host_client from admin-only path to /dashboard/invitados', async () => {

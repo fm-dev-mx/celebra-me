@@ -6,6 +6,7 @@ import * as authApi from '@/lib/rsvp/auth/auth-api';
 import * as authorization from '@/lib/rsvp/auth/authorization';
 import * as auth from '@/lib/rsvp/auth/auth';
 import { ApiError, AuthRequestError } from '@/lib/rsvp/core/errors';
+import { resetRateLimitProviderForTests } from '@/lib/rsvp/security/rate-limit-provider';
 import { createMockRequest } from '../helpers/api-mocks';
 import * as mutationOperationService from '@/lib/intake/services/mutation-operation.service';
 import * as mutationOperationRepository from '@/lib/intake/repositories/mutation-operation.repository';
@@ -17,6 +18,7 @@ jest.mock('@/lib/rsvp/repositories/role-membership.repository', () => ({
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signInWithPassword: jest.fn(),
+	revokeAuthSessions: jest.fn(),
 	updateUserPasswordUserAuth: jest.fn(),
 	adminSetUserMustChangePassword: jest.fn(),
 	adminResetAuthUserPassword: jest.fn(),
@@ -88,6 +90,8 @@ describe('Password Management & Recovery', () => {
 	>;
 
 	beforeEach(() => {
+		resetRateLimitProviderForTests();
+		jest.mocked(authApi.revokeAuthSessions).mockReset().mockResolvedValue(undefined);
 		jest.mocked(findAppUserRoleByUserIdService).mockResolvedValue({
 			userId: '550e8400-e29b-41d4-a716-446655440000',
 			role: 'host_client',
@@ -236,66 +240,89 @@ describe('Password Management & Recovery', () => {
 	});
 
 	describe('3. Authenticated Password Change API (/api/auth/change-password)', () => {
-		it('successfully changes password and clears must_change_password flag', async () => {
-			requireSessionContextMock.mockResolvedValue({
-				userId: 'user-123',
-				email: 'client@example.com',
-				accessToken: 'current-token',
-				role: 'host_client',
-				isSuperAdmin: false,
-				mustChangePassword: true,
-			});
-
-			signInWithPasswordMock
-				.mockResolvedValueOnce({
-					access_token: 'valid-current-token',
-					refresh_token: 'refresh-token',
-					user: { id: 'user-123', email: 'client@example.com' },
-				})
-				.mockResolvedValueOnce({
-					access_token: 'fresh-new-token',
-					refresh_token: 'fresh-refresh-token',
-					user: { id: 'user-123', email: 'client@example.com' },
+		it.each([false, true])(
+			'changes password and fails closed when revoking other sessions fails (%s)',
+			async (revocationFails) => {
+				requireSessionContextMock.mockResolvedValue({
+					userId: 'user-123',
+					email: 'client@example.com',
+					accessToken: 'current-token',
+					role: 'host_client',
+					isSuperAdmin: false,
+					mustChangePassword: true,
 				});
 
-			updateUserPasswordUserAuthMock.mockResolvedValue({
-				id: 'user-123',
-				email: 'client@example.com',
-			});
+				signInWithPasswordMock
+					.mockResolvedValueOnce({
+						access_token: 'valid-current-token',
+						refresh_token: 'refresh-token',
+						user: { id: 'user-123', email: 'client@example.com' },
+					})
+					.mockResolvedValueOnce({
+						access_token: 'fresh-new-token',
+						refresh_token: 'fresh-refresh-token',
+						user: { id: 'user-123', email: 'client@example.com' },
+					});
 
-			adminSetUserMustChangePasswordMock.mockResolvedValue({
-				id: 'user-123',
-				email: 'client@example.com',
-			});
+				updateUserPasswordUserAuthMock.mockResolvedValue({
+					id: 'user-123',
+					email: 'client@example.com',
+				});
 
-			const response = await changePassword({
-				request: createMockRequest(
-					{
-						currentPassword: 'CurrentTempPass123!',
-						newPassword: 'NewSecurePassword2026!',
-						confirmPassword: 'NewSecurePassword2026!',
-					},
-					{ Origin: 'http://localhost:4321', Host: 'localhost:4321' },
-					'http://localhost:4321/api/auth/change-password',
-				),
-				url: new URL('http://localhost:4321/api/auth/change-password'),
-			} as never);
+				adminSetUserMustChangePasswordMock.mockResolvedValue({
+					id: 'user-123',
+					email: 'client@example.com',
+				});
+				if (revocationFails)
+					jest.mocked(authApi.revokeAuthSessions).mockRejectedValueOnce(
+						new AuthRequestError({ operation: 'sign_out', kind: 'http', status: 503 }),
+					);
 
-			expect(response.status).toBe(200);
-			const body = await response.json();
-			expect(body.ok).toBe(true);
-			expect(body.next).toBe('/dashboard/invitados');
+				const response = await changePassword({
+					request: createMockRequest(
+						{
+							currentPassword: 'CurrentTempPass123!',
+							newPassword: 'NewSecurePassword2026!',
+							confirmPassword: 'NewSecurePassword2026!',
+						},
+						{ Origin: 'http://localhost:4321', Host: 'localhost:4321' },
+						'http://localhost:4321/api/auth/change-password',
+					),
+					url: new URL('http://localhost:4321/api/auth/change-password'),
+				} as never);
 
-			expect(updateUserPasswordUserAuthMock).toHaveBeenCalledWith({
-				accessToken: 'current-token',
-				password: 'NewSecurePassword2026!',
-			});
+				if (revocationFails) {
+					expect(response.status).toBe(503);
+					expect(response.headers.get('set-cookie')).toBeNull();
+					return;
+				}
+				expect(response.status).toBe(200);
+				const body = await response.json();
+				expect(body.ok).toBe(true);
+				expect(body.next).toBe('/dashboard/invitados');
+				expect(authApi.revokeAuthSessions).toHaveBeenCalledWith({
+					accessToken: 'fresh-new-token',
+					scope: 'others',
+				});
+				expect(response.headers.get('set-cookie')).toContain(
+					'sb-access-token=fresh-new-token',
+				);
+				expect(response.headers.get('set-cookie')).toContain(
+					'sb-refresh-token=fresh-refresh-token',
+				);
+				expect(response.headers.get('set-cookie')).toContain('sb-idle-seen=');
 
-			expect(adminSetUserMustChangePasswordMock).toHaveBeenCalledWith({
-				userId: 'user-123',
-				mustChangePassword: false,
-			});
-		});
+				expect(updateUserPasswordUserAuthMock).toHaveBeenCalledWith({
+					accessToken: 'current-token',
+					password: 'NewSecurePassword2026!',
+				});
+
+				expect(adminSetUserMustChangePasswordMock).toHaveBeenCalledWith({
+					userId: 'user-123',
+					mustChangePassword: false,
+				});
+			},
+		);
 
 		it('rejects password change when current password is incorrect', async () => {
 			requireSessionContextMock.mockResolvedValue({
