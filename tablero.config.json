@@ -20,11 +20,13 @@
                 "--carril={carril}",
                 "--sesion={sesion}",
                 "--minutos=90",
+                "--modelos=claude-opus-5-5,claude-sonnet-5-5",
+                "--tipo={tipo}",
                 "--",
                 "--permission-mode",
                 "acceptEdits",
                 "--allowedTools",
-                "Edit,Write,Read,Glob,Grep,Bash(git add:*),Bash(git commit:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(pnpm test:*),Bash(pnpm install:*),Bash(pnpm audit:*),Bash(pnpm type-check:*),Bash(pnpm validate:changed:*),Bash(pnpm security:secrets:*),Bash(pnpm ci:*),Bash(pnpm run ci:*),Bash(pnpm lint:*),Bash(pnpm test:changed:*),Bash(pnpm format:markdown-tables:*),Bash(pnpm validate:structure:*),Bash(pnpm agent:git-safety:start:*),Bash(pnpm agent:git-safety:finish:*),Bash(pnpm board:*),Bash(pnpm run test:*),Bash(pnpm run test:changed:*),Bash(pnpm run type-check:*),Bash(pnpm run lint:*),Bash(pnpm run build:*),Bash(pnpm run validate:changed:*),Bash(pnpm run validate:structure:*),Bash(pnpm run format:markdown-tables:*),Bash(gh pr create:*),Bash(gh pr view:*),Bash(git push -u origin {rama}),mcp__celebra-board__messages,mcp__celebra-board__msg,mcp__celebra-board__atendido,mcp__celebra-board__inbox,mcp__celebra-board__show,mcp__celebra-board__list,mcp__celebra-board__timeline,mcp__celebra-board__paso,mcp__celebra-board__latido,mcp__celebra-board__close",
+                "Edit,Write,Read,Glob,Grep,Bash(git add:*),Bash(git commit:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(pnpm test:*),Bash(pnpm install:*),Bash(pnpm audit:*),Bash(pnpm type-check:*),Bash(pnpm validate:changed:*),Bash(pnpm security:secrets:*),Bash(pnpm ci:*),Bash(pnpm run ci:*),Bash(pnpm lint:*),Bash(pnpm test:changed:*),Bash(pnpm format:markdown-tables:*),Bash(pnpm validate:structure:*),Bash(pnpm agent:git-safety:start:*),Bash(pnpm agent:git-safety:finish:*),Bash(pnpm board:*),Bash(pnpm run test:*),Bash(pnpm run test:changed:*),Bash(pnpm run type-check:*),Bash(pnpm run lint:*),Bash(pnpm run build:*),Bash(pnpm run validate:changed:*),Bash(pnpm run validate:structure:*),Bash(pnpm run format:markdown-tables:*),Bash(gh pr create:*),Bash(gh pr view:*),Bash(git push -u origin {rama}),mcp__celebra-board__messages,mcp__celebra-board__msg,mcp__celebra-board__atendido,mcp__celebra-board__inbox,mcp__celebra-board__show,mcp__celebra-board__list,mcp__celebra-board__timeline,mcp__celebra-board__paso,mcp__celebra-board__latido,mcp__celebra-board__close,mcp__celebra-board__prompt,mcp__celebra-board__asignar,mcp__celebra-board__siguiente",
                 "--disallowedTools",
                 "Bash(gh pr merge:*),Bash(git push --force:*),Bash(git push -f:*),Bash(git merge:*),Bash(git reset --hard:*),Bash(pnpm prod:*),Bash(supabase:*)"
             ],
@@ -40,7 +42,7 @@
                 "--datos={datos}",
                 "--",
                 "--allowedTools",
-                "mcp__celebra-board__messages,mcp__celebra-board__msg,mcp__celebra-board__atendido,mcp__celebra-board__inbox,mcp__celebra-board__show,mcp__celebra-board__list,mcp__celebra-board__timeline"
+                "mcp__celebra-board__messages,mcp__celebra-board__msg,mcp__celebra-board__atendido,mcp__celebra-board__inbox,mcp__celebra-board__show,mcp__celebra-board__list,mcp__celebra-board__timeline,mcp__celebra-board__prompt,mcp__celebra-board__asignar,mcp__celebra-board__siguiente"
             ],
             "despacho": [
                 "node",
@@ -53,7 +55,7 @@
                 "--datos={datos}",
                 "--",
                 "--allowedTools",
-                "mcp__celebra-board__messages,mcp__celebra-board__msg,mcp__celebra-board__atendido,mcp__celebra-board__inbox,mcp__celebra-board__show,mcp__celebra-board__list,mcp__celebra-board__timeline"
+                "mcp__celebra-board__messages,mcp__celebra-board__msg,mcp__celebra-board__atendido,mcp__celebra-board__inbox,mcp__celebra-board__show,mcp__celebra-board__list,mcp__celebra-board__timeline,mcp__celebra-board__prompt,mcp__celebra-board__asignar,mcp__celebra-board__siguiente"
             ]
         },
         {
@@ -73,6 +75,7 @@
                 "--sesion={sesion}",
                 "--minutos=90",
                 "--cli=C:/Users/fmdevmx/AppData/Roaming/npm/codex.cmd",
+                "--tipo={tipo}",
                 "--",
                 "-s",
                 "workspace-write",
@@ -99,7 +102,13 @@
                 "-c",
                 "mcp_servers.celebra-board.tools.latido.approval_mode=\"approve\"",
                 "-c",
-                "mcp_servers.celebra-board.tools.close.approval_mode=\"approve\""
+                "mcp_servers.celebra-board.tools.close.approval_mode=\"approve\"",
+                "-c",
+                "mcp_servers.celebra-board.tools.prompt.approval_mode=\"approve\"",
+                "-c",
+                "mcp_servers.celebra-board.tools.asignar.approval_mode=\"approve\"",
+                "-c",
+                "mcp_servers.celebra-board.tools.siguiente.approval_mode=\"approve\""
             ],
             "reenvio": [
                 "node",
@@ -128,7 +137,13 @@
                 "-c",
                 "mcp_servers.celebra-board.tools.list.approval_mode=\"approve\"",
                 "-c",
-                "mcp_servers.celebra-board.tools.timeline.approval_mode=\"approve\""
+                "mcp_servers.celebra-board.tools.timeline.approval_mode=\"approve\"",
+                "-c",
+                "mcp_servers.celebra-board.tools.prompt.approval_mode=\"approve\"",
+                "-c",
+                "mcp_servers.celebra-board.tools.asignar.approval_mode=\"approve\"",
+                "-c",
+                "mcp_servers.celebra-board.tools.siguiente.approval_mode=\"approve\""
             ],
             "despacho": [
                 "node",
@@ -156,7 +171,13 @@
                 "-c",
                 "mcp_servers.celebra-board.tools.list.approval_mode=\"approve\"",
                 "-c",
-                "mcp_servers.celebra-board.tools.timeline.approval_mode=\"approve\""
+                "mcp_servers.celebra-board.tools.timeline.approval_mode=\"approve\"",
+                "-c",
+                "mcp_servers.celebra-board.tools.prompt.approval_mode=\"approve\"",
+                "-c",
+                "mcp_servers.celebra-board.tools.asignar.approval_mode=\"approve\"",
+                "-c",
+                "mcp_servers.celebra-board.tools.siguiente.approval_mode=\"approve\""
             ]
         },
         {
@@ -165,7 +186,7 @@
             "trabajo": [
                 "node",
                 "../tablero/src/puente.ts",
-                "gemini",
+                "agy",
                 "--agente={agente}",
                 "--tarea={id}",
                 "--archivo={archivo}",
@@ -175,54 +196,52 @@
                 "--carril={carril}",
                 "--sesion={sesion}",
                 "--minutos=90",
-                "--cli=C:/Users/fmdevmx/AppData/Roaming/fnm/node-versions/v24.14.1/installation/gemini.cmd",
+                "--cli=C:/Users/fmdevmx/AppData/Local/agy/bin/agy.exe",
+                "--excluir=do-commit.mjs,scripts/commit.ps1,scripts/git-config-fix.mjs,scripts/commit-t637.mjs",
+                "--tipo={tipo}",
                 "--",
-                "--include-directories",
-                "D:/code/celebra-me/.agent/tmp/tablero/salida",
-                "-m",
-                "gemini-3.5-flash-lite",
-                "--approval-mode",
-                "auto_edit",
-                "--allowed-tools",
-                "write_file,replace,read_file,glob,search_file_content,list_directory,run_shell_command(git add),run_shell_command(git commit),run_shell_command(git status),run_shell_command(git diff),run_shell_command(git log),run_shell_command(pnpm test),run_shell_command(pnpm run test),run_shell_command(pnpm run test:changed),run_shell_command(pnpm run type-check),run_shell_command(pnpm run lint),run_shell_command(pnpm run build),run_shell_command(pnpm run validate:changed),run_shell_command(pnpm run validate:structure),run_shell_command(pnpm run format:markdown-tables),run_shell_command(gh pr create),run_shell_command(gh pr view),run_shell_command(git push -u origin {rama}),mcp_celebra-board_messages,mcp_celebra-board_msg,mcp_celebra-board_atendido,mcp_celebra-board_inbox,mcp_celebra-board_show,mcp_celebra-board_list,mcp_celebra-board_timeline,mcp_celebra-board_paso,mcp_celebra-board_latido,mcp_celebra-board_close"
+                "--mode",
+                "accept-edits",
+                "--model",
+                "gemini-3.8-flash-medium",
+                "--add-dir",
+                "D:/code/celebra-me/.agent/tmp/tablero/salida"
             ],
             "reenvio": [
                 "node",
                 "../tablero/src/puente.ts",
-                "gemini",
+                "agy",
                 "--agente={agente}",
                 "--mensaje={mensaje}",
                 "--tarea={id}",
                 "--archivo={archivo}",
                 "--carpeta={carpeta}",
                 "--datos={datos}",
-                "--cli=C:/Users/fmdevmx/AppData/Roaming/fnm/node-versions/v24.14.1/installation/gemini.cmd",
+                "--cli=C:/Users/fmdevmx/AppData/Local/agy/bin/agy.exe",
                 "--",
-                "-m",
-                "gemini-3.5-flash-lite",
-                "--allowed-tools",
-                "mcp_celebra-board_messages,mcp_celebra-board_msg,mcp_celebra-board_atendido,mcp_celebra-board_inbox,mcp_celebra-board_show,mcp_celebra-board_list,mcp_celebra-board_timeline"
+                "--model",
+                "gemini-3.8-flash-medium"
             ],
             "despacho": [
                 "node",
                 "../tablero/src/puente.ts",
-                "gemini",
+                "agy",
                 "--agente={agente}",
                 "--tarea={id}",
                 "--archivo={archivo}",
                 "--carpeta={carpeta}",
                 "--datos={datos}",
-                "--cli=C:/Users/fmdevmx/AppData/Roaming/fnm/node-versions/v24.14.1/installation/gemini.cmd",
+                "--cli=C:/Users/fmdevmx/AppData/Local/agy/bin/agy.exe",
                 "--",
-                "-m",
-                "gemini-3.5-flash-lite",
-                "--allowed-tools",
-                "mcp_celebra-board_messages,mcp_celebra-board_msg,mcp_celebra-board_atendido,mcp_celebra-board_inbox,mcp_celebra-board_show,mcp_celebra-board_list,mcp_celebra-board_timeline"
+                "--mode",
+                "plan",
+                "--model",
+                "gemini-3.8-flash-medium"
             ]
         }
     ],
     "vigia": { "escalar": [10, 30] },
-    "reparto": { "base": "origin/develop", "cada": 10, "tipos": ["codigo", "docs"] },
+    "reparto": { "base": "origin/develop", "cada": 10, "tipos": ["codigo", "docs", "revision"] },
     "hechoDias": 7,
     "zonaHoraria": "America/Mexico_City",
     "ordenan": ["coordinador", "dueno"],
@@ -322,5 +341,27 @@
             "id": "marketing",
             "nombre": "Marketing"
         }
-    ]
+    ],
+    "ciclo": {
+        "revisores": {
+            "claude": [
+                "codex"
+            ],
+            "codex": [
+                "claude"
+            ],
+            "gemini": [
+                "codex"
+            ]
+        },
+        "unir": "develop",
+        "rojo": [
+            ".github/workflows/deploy*",
+            "src/lib/commercial/**",
+            "src/components/home/Pricing.astro",
+            "supabase/migrations/**",
+            "**/*payment*",
+            "**/*pricing*"
+        ]
+    }
 }
