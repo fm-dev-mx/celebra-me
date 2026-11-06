@@ -360,7 +360,6 @@
             "src/lib/commercial/**",
             "src/components/home/Pricing.astro",
             "supabase/migrations/**",
-            "vercel.json",
             "**/*payment*",
             "**/*pricing*"
         ]
