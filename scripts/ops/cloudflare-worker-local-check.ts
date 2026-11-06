@@ -60,10 +60,12 @@ export interface LocalCheckOptions {
 	expectedSha?: string;
 	logTimeoutMs?: number;
 	sleep?: (ms: number) => Promise<void>;
+	/** Local Supabase origin the Worker talks to; its report-only CSP then allows that origin. */
+	localSupabaseOrigin?: string;
 }
 
-function headerFailures(path: string, response: Response): string[] {
-	return resolveSecurityHeaders(path).flatMap(([name, value]) => {
+function headerFailures(path: string, response: Response, localSupabaseOrigin?: string): string[] {
+	return resolveSecurityHeaders(path, { localSupabaseOrigin }).flatMap(([name, value]) => {
 		const actual = response.headers.get(name);
 		return actual === value ? [] : [`${path}: header ${name} is ${actual ?? 'missing'}`];
 	});
@@ -73,10 +75,11 @@ async function checkPage(
 	fetchImpl: typeof fetch,
 	origin: string,
 	page: PageExpectation,
+	localSupabaseOrigin?: string,
 ): Promise<string[]> {
 	const response = await fetchImpl(`${origin}${page.path}`, { redirect: 'manual' });
 	await response.text();
-	const failures = headerFailures(page.path, response);
+	const failures = headerFailures(page.path, response, localSupabaseOrigin);
 	if (response.status !== page.status) {
 		failures.push(`${page.path}: status ${response.status}, expected ${page.status}`);
 	}
@@ -127,11 +130,12 @@ async function checkHealth(
 	fetchImpl: typeof fetch,
 	origin: string,
 	expectedSha: string | undefined,
+	localSupabaseOrigin?: string,
 ): Promise<string[]> {
 	const path = '/api/health';
 	const response = await fetchImpl(`${origin}${path}`);
 	const body = ((await response.json().catch(() => null)) ?? {}) as HealthBody;
-	const failures = headerFailures(path, response);
+	const failures = headerFailures(path, response, localSupabaseOrigin);
 	if (response.status !== 200 || body.status !== 'healthy') {
 		failures.push(`${path}: status ${response.status} (${body.status ?? 'no JSON body'})`);
 	}
@@ -170,21 +174,30 @@ export async function runLocalWorkerChecks(options: LocalCheckOptions): Promise<
 	const origin = options.origin.replace(/\/$/, '');
 	const failures: string[] = [];
 	for (const page of PAGE_EXPECTATIONS)
-		failures.push(...(await checkPage(fetchImpl, origin, page)));
+		failures.push(...(await checkPage(fetchImpl, origin, page, options.localSupabaseOrigin)));
 	failures.push(...(await checkContactRedirect(fetchImpl, origin)));
-	failures.push(...(await checkHealth(fetchImpl, origin, options.expectedSha)));
+	failures.push(
+		...(await checkHealth(fetchImpl, origin, options.expectedSha, options.localSupabaseOrigin)),
+	);
 	failures.push(...(await checkScheduled({ ...options, origin, fetchImpl })));
 	return failures;
 }
 
 async function main(): Promise<void> {
 	const { values } = parseArgs({
-		options: { url: { type: 'string' }, log: { type: 'string' }, sha: { type: 'string' } },
+		options: {
+			url: { type: 'string' },
+			log: { type: 'string' },
+			sha: { type: 'string' },
+			'supabase-url': { type: 'string' },
+		},
 	});
 	if (!values.url) throw new Error('--url is required (for example http://127.0.0.1:8799).');
 	const logPath = values.log;
+	const supabaseUrl = values['supabase-url'];
 	const failures = await runLocalWorkerChecks({
 		origin: values.url,
+		localSupabaseOrigin: supabaseUrl ? new URL(supabaseUrl).origin : undefined,
 		expectedSha: values.sha,
 		readLog: logPath ? () => readFileSync(logPath, 'utf8') : undefined,
 	});

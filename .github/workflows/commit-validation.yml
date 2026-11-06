@@ -284,7 +284,7 @@ jobs:
 
             - name: Check pages, headers, health and crons through the Worker
               if: matrix.tier == 'workerd'
-              run: pnpm test:workerd --url http://127.0.0.1:8799 --log .tmp/workerd/wrangler.log --sha "$GITHUB_SHA"
+              run: pnpm test:workerd --url http://127.0.0.1:8799 --log .tmp/workerd/wrangler.log --sha "$GITHUB_SHA" --supabase-url http://127.0.0.1:54321
 
             - name: Preserve workerd logs
               if: failure() && matrix.tier == 'workerd'
