@@ -35,7 +35,11 @@ import {
 import { toGuestDto } from '@/lib/rsvp/services/shared/guest-dto';
 import { getSharingConfigForSlug } from '@/lib/rsvp/services/shared/invitation-helpers';
 import { sanitize, toSafeAttendeeCount } from '@/lib/rsvp/core/utils';
-import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
+import {
+	guestReservationSchema,
+	maxConfirmableChildren,
+	resolveChildrenCap,
+} from '@/lib/rsvp/guest-cap';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { generateShortId } from '@/lib/server/ids';
 import {
@@ -64,6 +68,8 @@ export function buildDashboardTotals(items: DashboardGuestListResponse['items'])
 	let pendingPeople = 0;
 	let confirmedInvitations = 0;
 	let confirmedPeople = 0;
+	let totalChildren = 0;
+	let confirmedChildren = 0;
 	let declinedInvitations = 0;
 	let declinedPeople = 0;
 	let generatedInvitations = 0;
@@ -76,6 +82,7 @@ export function buildDashboardTotals(items: DashboardGuestListResponse['items'])
 		if (item.isTest) continue;
 		totalInvitations++;
 		totalPeople += item.maxAllowedAttendees ?? 0;
+		totalChildren += item.maxAllowedChildren ?? 0;
 
 		switch (item.attendanceStatus) {
 			case 'pending':
@@ -85,6 +92,7 @@ export function buildDashboardTotals(items: DashboardGuestListResponse['items'])
 			case 'confirmed':
 				confirmedInvitations++;
 				confirmedPeople += item.attendeeCount ?? 0;
+				confirmedChildren += item.childrenCount ?? 0;
 				break;
 			case 'declined':
 				declinedInvitations++;
@@ -111,6 +119,8 @@ export function buildDashboardTotals(items: DashboardGuestListResponse['items'])
 		pendingPeople,
 		confirmedInvitations,
 		confirmedPeople,
+		totalChildren,
+		confirmedChildren,
 		declinedInvitations,
 		declinedPeople,
 		unconfirmedShared,
@@ -319,12 +329,29 @@ export async function listDashboardGuests(input: {
 	throw new ApiError(404, 'not_found', 'Event not found.');
 }
 
+function parseReservationOrThrow(maxAllowedAttendees: number, maxAllowedChildren: number) {
+	const result = guestReservationSchema.safeParse({ maxAllowedAttendees, maxAllowedChildren });
+	if (!result.success) {
+		const childrenIssue = result.error.issues.find(
+			(issue) => issue.path[0] === 'maxAllowedChildren',
+		);
+		throw new ApiError(
+			400,
+			'bad_request',
+			childrenIssue?.message ?? 'El máximo de asistentes no es válido.',
+			{ issues: result.error.issues },
+		);
+	}
+	return result.data;
+}
+
 export async function createDashboardGuest(input: {
 	eventId: string;
 	fullName: string;
 	phone?: string | null;
 	countryCode?: string;
 	maxAllowedAttendees: number;
+	maxAllowedChildren?: number;
 	hostAccessToken: string;
 	origin: string;
 	actorUserId?: string;
@@ -357,13 +384,10 @@ export async function createDashboardGuest(input: {
 		}
 	}
 
-	const capResult = rsvpGuestCapSchema.safeParse(input.maxAllowedAttendees ?? 1);
-	if (!capResult.success) {
-		throw new ApiError(400, 'bad_request', 'El máximo de asistentes no es válido.', {
-			issues: capResult.error.issues,
-		});
-	}
-	const maxAllowedAttendees = capResult.data;
+	const { maxAllowedAttendees, maxAllowedChildren } = parseReservationOrThrow(
+		input.maxAllowedAttendees ?? 1,
+		input.maxAllowedChildren ?? 0,
+	);
 
 	let created;
 	try {
@@ -374,6 +398,7 @@ export async function createDashboardGuest(input: {
 				phone: phone || undefined,
 				countryCode: input.countryCode,
 				maxAllowedAttendees,
+				maxAllowedChildren,
 				tags: input.tags,
 				shortId: generateShortId(8),
 				isTest: input.isTest === true,
@@ -423,8 +448,10 @@ export async function updateDashboardGuest(input: {
 	phone?: string | null;
 	countryCode?: string;
 	maxAllowedAttendees?: number;
+	maxAllowedChildren?: number;
 	attendanceStatus?: AttendanceStatus;
 	attendeeCount?: number;
+	childrenCount?: number;
 	tags?: string[];
 	deliveryStatus?: DeliveryStatus;
 	isTest?: boolean;
@@ -437,15 +464,15 @@ export async function updateDashboardGuest(input: {
 			? toSafeAttendeeCount(input.attendeeCount)
 			: existing.attendeeCount;
 	const nextAttendeeCount = nextStatus === 'declined' ? 0 : requestedCount;
-	const nextCapResult = rsvpGuestCapSchema.safeParse(
-		input.maxAllowedAttendees ?? existing.maxAllowedAttendees,
-	);
-	if (!nextCapResult.success) {
-		throw new ApiError(400, 'bad_request', 'El máximo de asistentes no es válido.', {
-			issues: nextCapResult.error.issues,
-		});
-	}
-	const nextCap = nextCapResult.data;
+	// A stored children limit follows the passes down when only the passes change; an
+	// explicit children limit is still validated as sent.
+	const requestedCap = input.maxAllowedAttendees ?? existing.maxAllowedAttendees;
+	const { maxAllowedAttendees: nextCap, maxAllowedChildren: nextChildrenCap } =
+		parseReservationOrThrow(
+			requestedCap,
+			input.maxAllowedChildren ??
+				resolveChildrenCap(existing.maxAllowedChildren, requestedCap),
+		);
 
 	if (nextStatus === 'confirmed' && nextAttendeeCount < 1) {
 		throw new ApiError(
@@ -456,6 +483,20 @@ export async function updateDashboardGuest(input: {
 	}
 	if (nextAttendeeCount > nextCap) {
 		throw new ApiError(400, 'bad_request', `The maximum allowed value is ${nextCap}.`);
+	}
+	// Only a confirmed party has children. An explicit count must fit; a stored
+	// one shrinks with the party so a smaller edit never trips the constraint.
+	const childrenLimit = maxConfirmableChildren(nextAttendeeCount, nextChildrenCap);
+	let nextChildrenCount = 0;
+	if (nextStatus === 'confirmed') {
+		if (input.childrenCount !== undefined) {
+			nextChildrenCount = toSafeAttendeeCount(input.childrenCount);
+			if (nextChildrenCount > childrenLimit) {
+				throw new ApiError(400, 'bad_request', 'Los niños no pueden superar sus pases.');
+			}
+		} else {
+			nextChildrenCount = Math.min(existing.childrenCount ?? 0, childrenLimit);
+		}
 	}
 
 	let updated;
@@ -474,8 +515,10 @@ export async function updateDashboardGuest(input: {
 				phone: phoneUpdate.phone,
 				countryCode: phoneUpdate.countryCode,
 				maxAllowedAttendees: nextCap,
+				maxAllowedChildren: nextChildrenCap,
 				attendanceStatus: nextStatus,
 				attendeeCount: nextAttendeeCount,
+				childrenCount: nextChildrenCount,
 				lastResponseSource: 'admin',
 				respondedAt: nextStatus === 'pending' ? null : new Date().toISOString(),
 				tags: input.tags,

@@ -231,39 +231,46 @@ romantic display), and the client's own emerald gown reference (colour and spark
 
 ## Photograph Inventory
 
-Source label: `source:ai-session` (opaque). The client has no XV photo session until February or
-March 2027, so the owner chose an AI session built from her WhatsApp snapshots (D2). The snapshots
-are references only and never become assets. The AI photographs replace nothing real; they can be
-swapped for the professional session later.
+Source label: `source:andrea-round-3` (opaque). The owner selected ten replacement AI-assisted
+photographs on 2026-11-05 for T645 andrea-fotos-ronda-3. These replace the earlier photo rounds.
+Originals remain outside the repository and are unchanged.
 
-| source filename            | dims      | format | orientation | weight | quality          | role      | duplicate   | processing                                     | derivative                              |
-| -------------------------- | --------- | ------ | ----------- | ------ | ---------------- | --------- | ----------- | ---------------------------------------------- | --------------------------------------- |
-| 01-ficha-rostro.png        | 1122×1402 | PNG    | portrait    | 2.1 MB | production-ready | gallery   | no          | Lanczos 2× + light unsharp; WebP q80           | gallery-01.webp 1441×1800 151 KiB       |
-| 02-ficha-cuerpo-entero.png | 1122×1402 | PNG    | portrait    | 2.2 MB | production-ready | gallery   | no          | Lanczos 2× + light unsharp; WebP q72           | gallery-02.webp 1441×1800 131 KiB       |
-| 03-portada.png             | 941×1672  | PNG    | portrait    | 2.2 MB | production-ready | hero      | no          | Lanczos 2×, arch crop; WebP q84                | hero-arch.webp 1843×2560 290 KiB        |
-| 03-portada.png             | 941×1672  | PNG    | portrait    | 2.2 MB | production-ready | og-share  | intentional | 1200×630 crop of the cover                     | og-share.webp 1200×630 27 KiB           |
-| 04-familia.png             | 1536×1024 | PNG    | landscape   | 2.1 MB | production-ready | family    | no          | Lanczos 2× + light unsharp; WebP               | family.webp 2200×1467 158 KiB           |
-| 05-cierre.png              | 1122×1402 | PNG    | portrait    | 2.1 MB | production-ready | thank-you | no          | Lanczos 2× + light unsharp; WebP q80           | thank-you.webp 1761×2200 211 KiB        |
-| 06-lamina-jardin.png       | 1122×1402 | PNG    | portrait    | 2.4 MB | production-ready | interlude | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | interlude-garden.webp 1440×1800 165 KiB |
-| 07-lamina-detalle.png      | 1122×1402 | PNG    | portrait    | 2.4 MB | production-ready | interlude | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | interlude-detail.webp 1440×1800 177 KiB |
-| 08-album-escalera.png      | 1122×1402 | PNG    | portrait    | 2.3 MB | production-ready | gallery   | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | album-staircase.webp 1440×1800 133 KiB  |
-| 09-album-ventanal.png      | 1122×1402 | PNG    | portrait    | 2.6 MB | production-ready | gallery   | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q76 | album-window.webp 960×1200 130 KiB      |
+| source     | dimensions | quality          | role      | processing                          | derivative            | delivery             |
+| ---------- | ---------- | ---------------- | --------- | ----------------------------------- | --------------------- | -------------------- |
+| round-3-01 | 1122×1402  | production-ready | gallery   | Native dimensions; WebP q80         | gallery-01.webp       | 1122×1402; 153.3 KiB |
+| round-3-02 | 1122×1402  | production-ready | gallery   | Downsample to role budget; WebP q72 | album-window.webp     | 1024×1280; 167.9 KiB |
+| round-3-03 | 1448×1086  | production-ready | family    | Native dimensions; WebP q84         | family.webp           | 1448×1086; 196.2 KiB |
+| round-3-04 | 1122×1402  | production-ready | gallery   | Native dimensions; WebP q80         | gallery-02.webp       | 1122×1402; 176.8 KiB |
+| round-3-05 | 1122×1402  | production-ready | hero      | Native dimensions; WebP q84         | hero-arch.webp        | 1122×1402; 218.0 KiB |
+| round-3-06 | 1122×1402  | production-ready | interlude | Native dimensions; WebP q84         | interlude-detail.webp | 1122×1402; 261.2 KiB |
+| round-3-07 | 1122×1402  | production-ready | interlude | Native dimensions; WebP q84         | interlude-garden.webp | 1122×1402; 246.5 KiB |
+| round-3-08 | 1672×941   | production-ready | og-share  | Centre crop to 1200×630; WebP q84   | og-share.webp         | 1200×630; 52.6 KiB   |
+| round-3-09 | 1122×1402  | production-ready | thank-you | Native dimensions; WebP q84         | thank-you.webp        | 1122×1402; 198.3 KiB |
+| round-3-10 | 1122×1402  | production-ready | gallery   | Native dimensions; WebP q76         | album-staircase.webp  | 1122×1402; 167.1 KiB |
 
-The upscale is a plain resampling filter (Lanczos 2× with a light unsharp mask); it adds no detail
-and was checked to keep the faces unchanged. Every derivative is inside its role budget. Assets live
-in `src/invitations/clients/andrea/assets/`; the sources and the 2× intermediates stay outside the
-repository.
+No enlargement or generated detail was added. All ten files decode successfully and meet their role
+weight ceilings. Production-ready describes source and encoding quality; browser capture is
+mechanical evidence and does not replace human creative acceptance. The social card uses its own
+landscape source, with the central square reserved for the portrait.
+
+On 2026-11-05, the owner accepted the hero's current 1122×1402 resolution and requested that the
+gold arch follow that photograph's proportions. The profile keeps the image's natural aspect ratio
+on mobile and desktop; the asset remains unchanged.
 
 ### Uniqueness table (required before READY_*)
 
-| role      | source         | derivative                                                  | intentional multi-role?    |
-| --------- | -------------- | ----------------------------------------------------------- | -------------------------- |
-| hero      | 03-portada.png | hero-arch.webp                                              | yes — og-share is its crop |
-| og-share  | 03-portada.png | og-share.webp                                               | yes — social card of cover |
-| family    | 04-familia.png | family.webp                                                 | no                         |
-| thank-you | 05-cierre.png  | thank-you.webp                                              | no                         |
-| gallery   | 01, 02, 08, 09 | gallery-01, gallery-02, album-staircase, album-window .webp | no                         |
-| interlude | 06, 07         | interlude-garden.webp, interlude-detail.webp                | no                         |
+| role      | source     | derivative            | intentional multi-role? |
+| --------- | ---------- | --------------------- | ----------------------- |
+| gallery   | round-3-01 | gallery-01.webp       | no                      |
+| gallery   | round-3-02 | album-window.webp     | no                      |
+| family    | round-3-03 | family.webp           | no                      |
+| gallery   | round-3-04 | gallery-02.webp       | no                      |
+| hero      | round-3-05 | hero-arch.webp        | no                      |
+| interlude | round-3-06 | interlude-detail.webp | no                      |
+| interlude | round-3-07 | interlude-garden.webp | no                      |
+| og-share  | round-3-08 | og-share.webp         | no                      |
+| thank-you | round-3-09 | thank-you.webp        | no                      |
+| gallery   | round-3-10 | album-staircase.webp  | no                      |
 
 ---
 
@@ -307,7 +314,14 @@ repository.
 - Photos: localized edits of the nine existing photographs, preserving their original roles and
   identities. Warm-gold earrings, including their reflections, match the tiara; visible nails
   receive a perceptible milky rose-nude polish. The cover and its social crop share one edited
-  source. The family edit places the father's outer hand gently on Andrea's upper arm.
+  source. The family edit places the father's outer hand gently on Andrea's upper arm. A gold
+  bracelet with a small bezel-set charm sits on Andrea's left wrist in seven of the nine photos. In
+  `gallery-01`, `family`, `interlude-garden`, `interlude-detail` and `album-staircase` it is a
+  warm-gold link bracelet with a soft highlight, about four times as thick as the first thin chain,
+  so it reads at phone width; the closing photo (`thank-you`) keeps the thin chain (owner decision,
+  2026-11-04). It is intentionally absent from the cover (`hero-arch`, and so `og-share`) and the
+  full body (`gallery-02`): there the wrist sits behind the bouquet and the bracelet would show only
+  as a dot between the flowers (owner decision, 2026-11-04).
 - Owner visual acceptance: **ACCEPTED** on 2026-10-27 for the certified candidate at
   `522369399124bb72ddb64dc651238da00b0f1fe8`. Its exact approval identity is recorded in
   `tests/e2e/visual-baselines/manifest.json`. Client approval from Gloria remains **PENDING**; this
@@ -318,3 +332,50 @@ repository.
   leads, the silhouettes illustrate the attire, the requested courtesy note appears once, and the
   reserved colors and adults-only notice remain secondary. No new client-adjustment round is
   consumed by correcting these details.
+
+## Second client adjustment round — 2026-11-04
+
+Source: Gloria's WhatsApp list of 2026-11-03 (paid; she stated it is her final list). All changes
+live in `src/invitations/clients/andrea/`; the shared `storybook-emerald` preset is untouched.
+
+- A1/A3 — every text reads gold: the profile maps `forest-ink`, `forest-ink-soft`, `pale-cream`,
+  `night-sage` and `pale-gold` to stronger golds, and the former emerald text uses (hero name and
+  date, header initial and nav, location program links) now use `gold-ink`. Emerald stays only as a
+  ground (primary program button, dress). The RSVP reply card inherits the same inks, so it renders
+  on beige with gold text instead of white with dark text.
+- A2 — white grounds become beige: `ivory-paper`, `story-cream`, `sage-mist`, `sage-veil` and the
+  inline SVG fills.
+- A4 — larger type for older guests: the profile raises several rem sizes, and `composition.scss`
+  zooms the outermost text elements by 1.125. A root `font-size` rule is not allowed in a profile
+  (`invitation-profile-boundary` test), and rem sizes ignore element font sizes, so a scoped zoom is
+  the one-step scale. Only text zooms: zooming the wrapper also scaled `vw`/`svh`, so the hero and
+  the pinned scenes overflowed the viewport on wide screens.
+- Viewport fit (all sizes from 320×568 to 1920×1080): on phones under 900 px tall the three venue
+  actions share two lines and the route keeps 4.5rem clear for the floating controls; under 740 px
+  the route stage keeps base-size text and hides the address (the map and copy actions carry it);
+  under 640 px it also hides the lede and the venue drawing, and the cover portrait shrinks.
+- A5 — `NO NIÑOS (sin excepción)`.
+- A6 — client exception to the «usted» register, approved by the owner on 2026-11-04 for this one
+  line only: «…y quiero que estés ahí.» All other copy stays in «usted».
+- A7 — gifts title `Lluvia de sobres o regalo` with a gift header mark; «completamente opcional»
+  sits in the subtitle.
+- Pending outside the code: photo edits B1 and B3 (dress sparkle to gold, light makeup polish; edit,
+  never regenerate), the 5×7 table card with the photo-upload QR built in (C1, under the $399 QR
+  service C2), Production re-enable, Preview and client approval.
+
+### Design refinements — 2026-11-04
+
+Owner review of the second round, in two passes, all in `src/invitations/clients/andrea/`.
+
+- Footer: the reply, the sign-off (ornament, name line in the night foil, replay as an underlined
+  link) and the platform colophon under a gold hairline. No plates or pills.
+- Countdown: no cells. The days lead in a large night-foil numeral over a short gold rule; hours,
+  minutes and seconds follow on one line, separated by hairlines.
+- Scroll cues: the cover cue and the cue under the dress code share one quiet mark (a slim gold
+  capsule with a sliding dot, 62 % opacity, still under reduced motion).
+- Music: a small emerald glass disc with a fine gold ring and no pulsing halos; the prompt is one
+  line in sentence case at every width.
+- Phone menu: a numbered, left-aligned list on hairlines whose spacing follows the screen height, so
+  the whole drawer (links, confirm button, signature) fits from 320×568 up without scrolling.
+- Also refined in this pass: the hero photo framing, the accent golds, the paper texture and the
+  itinerary drawings.

@@ -31,8 +31,12 @@ export interface GuestInvitationRecord {
 	phone: string;
 	countryCode?: string;
 	maxAllowedAttendees: number;
+	/** Passes reserved for children; adults = passes - children. */
+	maxAllowedChildren?: number;
 	attendanceStatus: AttendanceStatus;
 	attendeeCount: number;
+	/** Confirmed attendees who are children. */
+	childrenCount?: number;
 	guestComment: string;
 	deliveryStatus: DeliveryStatus;
 	firstSharedAt: string | null;
@@ -66,8 +70,12 @@ export interface GuestInvitationDTO {
 	phone: string;
 	countryCode?: string;
 	maxAllowedAttendees: number;
+	/** Passes reserved for children; adults = passes - children. */
+	maxAllowedChildren?: number;
 	attendanceStatus: AttendanceStatus;
 	attendeeCount: number;
+	/** Confirmed attendees who are children. */
+	childrenCount?: number;
 	guestComment: string;
 	deliveryStatus: DeliveryStatus;
 	firstSharedAt: string | null;
@@ -104,5 +112,6 @@ export interface DashboardGuestMutationResponse {
 export interface GuestRSVPSubmitDTO {
 	attendanceStatus: 'confirmed' | 'declined';
 	attendeeCount: number;
+	childrenCount?: number;
 	guestComment?: string;
 }

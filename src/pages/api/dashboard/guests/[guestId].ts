@@ -56,8 +56,11 @@ export const PATCH: APIRoute = async ({ params, request, url, locals, cookies })
 			countryCode: phoneUpdate.countryCode,
 			maxAllowedAttendees:
 				typeof body.maxAllowedAttendees === 'number' ? body.maxAllowedAttendees : undefined,
+			maxAllowedChildren:
+				typeof body.maxAllowedChildren === 'number' ? body.maxAllowedChildren : undefined,
 			attendanceStatus: parseStatus(sanitize(body.attendanceStatus, 20)),
 			attendeeCount: typeof body.attendeeCount === 'number' ? body.attendeeCount : undefined,
+			childrenCount: typeof body.childrenCount === 'number' ? body.childrenCount : undefined,
 			tags: Array.isArray(body.tags)
 				? body.tags.filter((tag): tag is string => typeof tag === 'string')
 				: undefined,

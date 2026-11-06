@@ -62,7 +62,9 @@ audit tooling (`pnpm invitation:published-audit`).
 - **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`, `editorial-program`,
   `stacked-cards` (one sticky card per moment that recedes as the next arrives, using scroll-driven
   CSS where supported, otherwise a plain list; requires `itinerary.items`).
-- **Gifts:** `standard`, `editorial-catalog`.
+- **Gifts:** `standard`, `editorial-catalog`, `gift-tag` (the whole registry fits one screen: a
+  flush-left heading, beside the cards on wide screens; the store card as a tag with a bow and a
+  number pill; the cash gift as a strip; tokens `--gifts-tag-*`).
 - **RSVP:** `standard`, `editorial-press-pass`, `formal-register`, `reply-card`.
 - **Personalized Access:** `standard`, `ornamented`, `editorial-pass`, `formal-pass`, `reply-card`.
 - **Thank You:** `standard`, `editorial-back-cover`, `portrait-letter`, `full-bleed-photo`,

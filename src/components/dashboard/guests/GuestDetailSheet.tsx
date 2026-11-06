@@ -5,6 +5,7 @@ import GuestDetailMore from '@/components/dashboard/guests/GuestDetailMore';
 import GuestLastMessage from '@/components/dashboard/guests/GuestLastMessage';
 import GuestPrimaryAction from '@/components/dashboard/guests/GuestPrimaryAction';
 import GuestStatusCard from '@/components/dashboard/guests/GuestStatusCard';
+import { formatParty } from '@/lib/rsvp/guest-cap';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { ShareMessagesConfig } from '@/lib/rsvp/services/shared/share-message-defaults';
 import type { ShareMessageDateContext } from '@/lib/rsvp/services/shared/share-message-date';
@@ -62,7 +63,7 @@ const GuestDetailSheet: React.FC<GuestDetailSheetProps> = ({
 }) => {
 	const hasNextStep =
 		getGuestPrimaryAction(item, reminderMode, isReminderEligible).action !== 'copy-link';
-	const passes = `${item.maxAllowedAttendees} ${item.maxAllowedAttendees === 1 ? 'pase' : 'pases'}`;
+	const passes = formatParty(item.maxAllowedAttendees, { children: item.maxAllowedChildren });
 	const subtitle = `${passes} · ${item.phone ? formatPhoneDisplay(item.phone) : 'Sin teléfono'}`;
 	const brandingToggle =
 		isBrandingRemovalEligible && onToggleBrandingRemoval

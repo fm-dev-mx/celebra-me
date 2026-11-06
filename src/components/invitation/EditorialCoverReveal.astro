@@ -1,5 +1,6 @@
 ---
 // Editorial Cover Reveal — replaces the envelope when revealVariant === 'editorial-cover'.
+import { formatParty } from '@/lib/rsvp/guest-cap';
 import { formatSpanishLongDate } from '@/lib/invitation/venue-datetime';
 import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
 import { plainImgSrc } from '@/lib/assets/image-delivery-policy';
@@ -38,6 +39,8 @@ interface Props {
 	guestName?: string;
 	/** Collector edition: seats reserved for that guest. */
 	guestSeats?: number;
+	/** Children among the guest's passes; shown in the breakdown only when > 0. */
+	guestChildren?: number;
 	/** Collector edition: handwritten note on the inside front cover, addressed to the guest. */
 	coverNote?: string;
 	/** Collector edition: table of contents, in the invitation's section order. */
@@ -73,6 +76,7 @@ const {
 	coverExperience = 'standard',
 	guestName,
 	guestSeats,
+	guestChildren = 0,
 	coverNote,
 	coverContents = [],
 	spreadImage,
@@ -101,7 +105,7 @@ const coverTeasers = coverContents.slice(0, 2);
 const trimmedGuestName = guestName?.trim();
 const seatsLabel =
 	typeof guestSeats === 'number' && guestSeats > 0
-		? `${guestSeats} ${guestSeats === 1 ? 'pase' : 'pases'}`
+		? formatParty(guestSeats, { children: guestChildren })
 		: undefined;
 // Deterministic, decorative barcode derived from the slug.
 let barcodeX = 0;

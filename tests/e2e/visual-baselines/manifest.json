@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-04T00:54:30.774Z",
+    "generatedAt": "2026-11-05T17:09:42.955Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,15 +12,15 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "7c84f51b04d62997217843b1d52e5397057cde44194d1349e4e111b7b6e1fc91",
-        "cssSha256": "92ca34534ba7f9345dec652800fb6287d5122218815bda69140c062dd45e0463",
+        "cssSha256": "0e9df3a5df905b4cf14bc47206c72ea4c9c66691988c3bdec32575ae714238cb",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 190,
-    "matrixHash": "a3ab6711bb3cbab0717f731f081cd5fdf5665c016acb48701de080cfbfb29e89",
+    "totalCaptures": 192,
+    "matrixHash": "0a83b0497ced1b6280aa6e97c0a8b942af61069df9a3f9ce8bd042b0bc57dcd2",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -1001,6 +1001,34 @@
             "file": "jewelry-box-desktop-gifts-editorial-catalog.png",
             "sha256": "52f79c289ecf5eda7a9ff0521cb7ab6d8d469b035faedd78be0c43cf445a8477",
             "contentHash": "427c7bfd9f497a762efb13620a90730d4930d6d0aa39563281638f45815eebab",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "gifts",
+            "variant": "gift-tag",
+            "preset": "jewelry-box",
+            "viewport": "mobile",
+            "cssOwner": "src/styles/themes/sections/gifts/_gift-tag.scss",
+            "fixtureIdentity": "synthetic:gifts.gift-tag",
+            "file": "jewelry-box-mobile-gifts-gift-tag.png",
+            "sha256": "5dc8e076eb023ec490fd33a4e7951473c54cbbf6aea424ced7b23a6d009046b9",
+            "contentHash": "22cf411560520f07b9f88c8273f7715bb711b8621f066c7860ec9962dd4bd3db",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "gifts",
+            "variant": "gift-tag",
+            "preset": "jewelry-box",
+            "viewport": "desktop",
+            "cssOwner": "src/styles/themes/sections/gifts/_gift-tag.scss",
+            "fixtureIdentity": "synthetic:gifts.gift-tag",
+            "file": "jewelry-box-desktop-gifts-gift-tag.png",
+            "sha256": "5dd005ba42945f56b4055aaed032b3ed8a9a0440648db3b62a0cd000df869960",
+            "contentHash": "22cf411560520f07b9f88c8273f7715bb711b8621f066c7860ec9962dd4bd3db",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
         },
@@ -2295,9 +2323,9 @@
             "preset": "storybook-emerald",
             "viewport": "mobile",
             "file": "pages/invitation-xv-andrea-mobile.png",
-            "sha256": "1db1304d9b96a09e36396a658f0c9f235138498a07d8cdb4dc4e8b6130d0e0b4",
-            "contentHash": "27716b890ce3ca433730f29498728657ab7afa361f29b72e1c59069c841abe55",
-            "assetHash": "c417d2e54e037ee58022ca12b7d2d635ca4858db0e1cbb33204a462d4b0d246b",
+            "sha256": "2417e6edc7facc25dabc6c5e9241c32c5b1acebfef75bea7b807a84dd5bab1d0",
+            "contentHash": "02aa02cadacb321568b261ef6071bc10ce25dd32ae995f4fce15c4ac96c38ade",
+            "assetHash": "6eaf429aaf40d6defb0466419cb9b921b638bce1f8f7f9288710b3293df60bb8",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2307,9 +2335,9 @@
             "preset": "storybook-emerald",
             "viewport": "desktop",
             "file": "pages/invitation-xv-andrea-desktop.png",
-            "sha256": "7e4275b5c22e86e1d74ab5ac86c370d8be80907fb8cda8fc151fdfd713a8d0ef",
-            "contentHash": "27716b890ce3ca433730f29498728657ab7afa361f29b72e1c59069c841abe55",
-            "assetHash": "c417d2e54e037ee58022ca12b7d2d635ca4858db0e1cbb33204a462d4b0d246b",
+            "sha256": "98336e68c83ad8ad966343f4f323212d97a02d3b9771760ddc82b1a627baf74f",
+            "contentHash": "02aa02cadacb321568b261ef6071bc10ce25dd32ae995f4fce15c4ac96c38ade",
+            "assetHash": "6eaf429aaf40d6defb0466419cb9b921b638bce1f8f7f9288710b3293df60bb8",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2319,8 +2347,8 @@
             "preset": "storybook-blush",
             "viewport": "mobile",
             "file": "pages/invitation-xv-naomi-huerta-mobile.png",
-            "sha256": "560a7b0ad777ed6298f7341d9ded61b0c2d0b4db30ebb87f0f3b5f97d3cc2e0f",
-            "contentHash": "a6ee8043056703b584d582ecd9529b4972bac823ca0b36834e113bf2787a556a",
+            "sha256": "9421bf27be3c9d95a3f6ca51e4574507a690ceff2da36b5fecdacdd5c028363f",
+            "contentHash": "a33bff3136c876376ecefe812d27b0890387c251a198e76bf6f7c38513e1ee1c",
             "assetHash": "397cb4df3a7cc282903e826a44059f4b8fe66b6192baa5ab591f9b3b6b24629f",
             "comparisonResult": "ACCEPTED"
         },
@@ -2331,8 +2359,8 @@
             "preset": "storybook-blush",
             "viewport": "desktop",
             "file": "pages/invitation-xv-naomi-huerta-desktop.png",
-            "sha256": "cd184221dafb28e4047cfbfc6593db799c5f8f7a4650beed10e33d1411ea6618",
-            "contentHash": "a6ee8043056703b584d582ecd9529b4972bac823ca0b36834e113bf2787a556a",
+            "sha256": "be806f1cae907aede758321e5a02bcc69ba8032c34ad2623ca3d54baaedd12ac",
+            "contentHash": "a33bff3136c876376ecefe812d27b0890387c251a198e76bf6f7c38513e1ee1c",
             "assetHash": "397cb4df3a7cc282903e826a44059f4b8fe66b6192baa5ab591f9b3b6b24629f",
             "comparisonResult": "ACCEPTED"
         },
@@ -2343,8 +2371,8 @@
             "preset": "storybook-lilac",
             "viewport": "mobile",
             "file": "pages/invitation-xv-yireh-ana-mobile.png",
-            "sha256": "3ef7261f9ab2719365a1910b287307a8702cea1683497823180aa44ba51a3ad4",
-            "contentHash": "8c9f02895c4e017745e9845ae1f11601e3d313440a73fc4221f59659dd94cb27",
+            "sha256": "a9f36c06e480bb946c991eb87eb6ab0fb24eefcb07edeac4081d50a082abbe9c",
+            "contentHash": "75ecbe5d2dae1b1e4782b18efd0bd08f6014d313168958b8134a8d93b5b262eb",
             "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
             "comparisonResult": "ACCEPTED"
         },
@@ -2355,8 +2383,8 @@
             "preset": "storybook-lilac",
             "viewport": "desktop",
             "file": "pages/invitation-xv-yireh-ana-desktop.png",
-            "sha256": "ae44826f928891949bd28ae7bef357bac2b77fa461dac2edc13ab12ef7eb74ed",
-            "contentHash": "8c9f02895c4e017745e9845ae1f11601e3d313440a73fc4221f59659dd94cb27",
+            "sha256": "70339c1693e8b096e4910ce372b32851f1bed5df1827e7d8c54a56b30dd12f80",
+            "contentHash": "75ecbe5d2dae1b1e4782b18efd0bd08f6014d313168958b8134a8d93b5b262eb",
             "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
             "comparisonResult": "ACCEPTED"
         },
@@ -2577,9 +2605,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "c8a1e3167c7022e2bf75a18dde1f3f72b559ad07",
+    "referenceSha": "046e8ce0f19ee98e4d89ce1f2be5e9766d889ade",
     "variantManifest": {
-        "generatedAt": "2026-11-04T00:54:30.774Z",
+        "generatedAt": "2026-11-05T17:09:42.955Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2592,15 +2620,15 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "7c84f51b04d62997217843b1d52e5397057cde44194d1349e4e111b7b6e1fc91",
-            "cssSha256": "92ca34534ba7f9345dec652800fb6287d5122218815bda69140c062dd45e0463",
+            "cssSha256": "0e9df3a5df905b4cf14bc47206c72ea4c9c66691988c3bdec32575ae714238cb",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 136,
-        "matrixHash": "5e8bd14d2b6fb14528c6320ed5ce114d24f55691fed82ec34525304faa67943a",
+        "totalCaptures": 138,
+        "matrixHash": "34c29cd47d57b457991436f3799e758416eb1ba261eb37f7c3f7ea4ceb9bdb6e",
         "baselinePreset": "jewelry-box",
         "crossPreset": "celestial-blue",
         "captures": [
@@ -3586,6 +3614,34 @@
             },
             {
                 "kind": "variant",
+                "section": "gifts",
+                "variant": "gift-tag",
+                "preset": "jewelry-box",
+                "viewport": "mobile",
+                "cssOwner": "src/styles/themes/sections/gifts/_gift-tag.scss",
+                "fixtureIdentity": "synthetic:gifts.gift-tag",
+                "file": "jewelry-box-mobile-gifts-gift-tag.png",
+                "sha256": "5dc8e076eb023ec490fd33a4e7951473c54cbbf6aea424ced7b23a6d009046b9",
+                "contentHash": "22cf411560520f07b9f88c8273f7715bb711b8621f066c7860ec9962dd4bd3db",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "gifts",
+                "variant": "gift-tag",
+                "preset": "jewelry-box",
+                "viewport": "desktop",
+                "cssOwner": "src/styles/themes/sections/gifts/_gift-tag.scss",
+                "fixtureIdentity": "synthetic:gifts.gift-tag",
+                "file": "jewelry-box-desktop-gifts-gift-tag.png",
+                "sha256": "5dd005ba42945f56b4055aaed032b3ed8a9a0440648db3b62a0cd000df869960",
+                "contentHash": "22cf411560520f07b9f88c8273f7715bb711b8621f066c7860ec9962dd4bd3db",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
                 "section": "rsvp",
                 "variant": "standard",
                 "preset": "jewelry-box",
@@ -4509,10 +4565,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "c8a1e3167c7022e2bf75a18dde1f3f72b559ad07"
+        "referenceSha": "046e8ce0f19ee98e4d89ce1f2be5e9766d889ade"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-04T00:54:30.779Z",
+        "generatedAt": "2026-11-05T17:09:42.963Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4525,7 +4581,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "7c84f51b04d62997217843b1d52e5397057cde44194d1349e4e111b7b6e1fc91",
-            "cssSha256": "92ca34534ba7f9345dec652800fb6287d5122218815bda69140c062dd45e0463",
+            "cssSha256": "0e9df3a5df905b4cf14bc47206c72ea4c9c66691988c3bdec32575ae714238cb",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4903,9 +4959,9 @@
                 "preset": "storybook-emerald",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-andrea-mobile.png",
-                "sha256": "1db1304d9b96a09e36396a658f0c9f235138498a07d8cdb4dc4e8b6130d0e0b4",
-                "contentHash": "27716b890ce3ca433730f29498728657ab7afa361f29b72e1c59069c841abe55",
-                "assetHash": "c417d2e54e037ee58022ca12b7d2d635ca4858db0e1cbb33204a462d4b0d246b",
+                "sha256": "2417e6edc7facc25dabc6c5e9241c32c5b1acebfef75bea7b807a84dd5bab1d0",
+                "contentHash": "02aa02cadacb321568b261ef6071bc10ce25dd32ae995f4fce15c4ac96c38ade",
+                "assetHash": "6eaf429aaf40d6defb0466419cb9b921b638bce1f8f7f9288710b3293df60bb8",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -4915,9 +4971,9 @@
                 "preset": "storybook-emerald",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-andrea-desktop.png",
-                "sha256": "7e4275b5c22e86e1d74ab5ac86c370d8be80907fb8cda8fc151fdfd713a8d0ef",
-                "contentHash": "27716b890ce3ca433730f29498728657ab7afa361f29b72e1c59069c841abe55",
-                "assetHash": "c417d2e54e037ee58022ca12b7d2d635ca4858db0e1cbb33204a462d4b0d246b",
+                "sha256": "98336e68c83ad8ad966343f4f323212d97a02d3b9771760ddc82b1a627baf74f",
+                "contentHash": "02aa02cadacb321568b261ef6071bc10ce25dd32ae995f4fce15c4ac96c38ade",
+                "assetHash": "6eaf429aaf40d6defb0466419cb9b921b638bce1f8f7f9288710b3293df60bb8",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -4927,8 +4983,8 @@
                 "preset": "storybook-blush",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-naomi-huerta-mobile.png",
-                "sha256": "560a7b0ad777ed6298f7341d9ded61b0c2d0b4db30ebb87f0f3b5f97d3cc2e0f",
-                "contentHash": "a6ee8043056703b584d582ecd9529b4972bac823ca0b36834e113bf2787a556a",
+                "sha256": "9421bf27be3c9d95a3f6ca51e4574507a690ceff2da36b5fecdacdd5c028363f",
+                "contentHash": "a33bff3136c876376ecefe812d27b0890387c251a198e76bf6f7c38513e1ee1c",
                 "assetHash": "397cb4df3a7cc282903e826a44059f4b8fe66b6192baa5ab591f9b3b6b24629f",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4939,8 +4995,8 @@
                 "preset": "storybook-blush",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-naomi-huerta-desktop.png",
-                "sha256": "cd184221dafb28e4047cfbfc6593db799c5f8f7a4650beed10e33d1411ea6618",
-                "contentHash": "a6ee8043056703b584d582ecd9529b4972bac823ca0b36834e113bf2787a556a",
+                "sha256": "be806f1cae907aede758321e5a02bcc69ba8032c34ad2623ca3d54baaedd12ac",
+                "contentHash": "a33bff3136c876376ecefe812d27b0890387c251a198e76bf6f7c38513e1ee1c",
                 "assetHash": "397cb4df3a7cc282903e826a44059f4b8fe66b6192baa5ab591f9b3b6b24629f",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4951,8 +5007,8 @@
                 "preset": "storybook-lilac",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-yireh-ana-mobile.png",
-                "sha256": "3ef7261f9ab2719365a1910b287307a8702cea1683497823180aa44ba51a3ad4",
-                "contentHash": "8c9f02895c4e017745e9845ae1f11601e3d313440a73fc4221f59659dd94cb27",
+                "sha256": "a9f36c06e480bb946c991eb87eb6ab0fb24eefcb07edeac4081d50a082abbe9c",
+                "contentHash": "75ecbe5d2dae1b1e4782b18efd0bd08f6014d313168958b8134a8d93b5b262eb",
                 "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4963,8 +5019,8 @@
                 "preset": "storybook-lilac",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-yireh-ana-desktop.png",
-                "sha256": "ae44826f928891949bd28ae7bef357bac2b77fa461dac2edc13ab12ef7eb74ed",
-                "contentHash": "8c9f02895c4e017745e9845ae1f11601e3d313440a73fc4221f59659dd94cb27",
+                "sha256": "70339c1693e8b096e4910ce372b32851f1bed5df1827e7d8c54a56b30dd12f80",
+                "contentHash": "75ecbe5d2dae1b1e4782b18efd0bd08f6014d313168958b8134a8d93b5b262eb",
                 "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5185,9 +5241,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "c8a1e3167c7022e2bf75a18dde1f3f72b559ad07"
+        "referenceSha": "046e8ce0f19ee98e4d89ce1f2be5e9766d889ade"
     },
-    "candidateManifestSha256": "abc96ae6205cbd9132735e147b8ad72ea6bb2473fe5779f2501c984cdb3ad070",
-    "acceptedFromCommit": "c8a1e3167c7022e2bf75a18dde1f3f72b559ad07",
-    "acceptedAt": "2026-11-04T00:58:34.756Z"
+    "candidateManifestSha256": "c4f12463d001286344600d35e8e13efbfaf387e7b3ee432583715f658e373cbe",
+    "acceptedFromCommit": "046e8ce0f19ee98e4d89ce1f2be5e9766d889ade",
+    "acceptedAt": "2026-11-05T17:13:17.409Z"
 }
