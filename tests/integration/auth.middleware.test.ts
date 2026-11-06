@@ -700,7 +700,7 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect(mockRedirect).toHaveBeenCalledWith('/dashboard/mfa-setup');
 	});
 
-	it('sets temporary MFA cookies (300s) on MFA setup route for superadmin', async () => {
+	it('never exposes the session tokens in readable MFA cookies on the MFA setup route', async () => {
 		const context = createContext('/dashboard/mfa-setup');
 		mockCookies.get.mockImplementation((name: string) => {
 			if (name === 'sb-access-token') return { value: 'admin-token' };
@@ -715,22 +715,9 @@ describe('Middleware: Authentication & Authorization', () => {
 
 		await middleware(context as unknown as APIContext, mockNext);
 		expect(mockNext).toHaveBeenCalled();
-		expect(mockCookies.set).toHaveBeenCalledWith(
-			'sb-mfa-session',
-			'admin-token',
-			expect.objectContaining({
-				path: '/dashboard/mfa-setup',
-				maxAge: 300,
-			}),
-		);
-		expect(mockCookies.set).toHaveBeenCalledWith(
-			'sb-mfa-refresh',
-			'refresh-token',
-			expect.objectContaining({
-				path: '/dashboard/mfa-setup',
-				maxAge: 300,
-			}),
-		);
+		const names = mockCookies.set.mock.calls.map((call: unknown[]) => call[0]);
+		expect(names).not.toContain('sb-mfa-session');
+		expect(names).not.toContain('sb-mfa-refresh');
 	});
 
 	it('allows superadmin with TOTP MFA (aal2) to dashboard', async () => {

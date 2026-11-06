@@ -66,6 +66,27 @@ const DashboardUserMenu: React.FC<DashboardUserMenuProps> = ({ email, roleLabel 
 					</>
 				)}
 			</button>
+			{roleLabel === 'ADMIN' ? (
+				<button
+					type="button"
+					className="dashboard-sidebar__logout"
+					disabled={busy}
+					onClick={async () => {
+						setBusy(true);
+						setErrorMessage('');
+						try {
+							await logoutAndRedirect('/login', { allDevices: true });
+						} catch {
+							setErrorMessage(
+								'No se pudo cerrar la sesión en todos los dispositivos. Inténtelo de nuevo.',
+							);
+							setBusy(false);
+						}
+					}}
+				>
+					<span>Cerrar sesión en todos los dispositivos</span>
+				</button>
+			) : null}
 			{errorMessage ? (
 				<p className="dashboard-sidebar__account-error" role="alert" aria-live="polite">
 					{errorMessage}

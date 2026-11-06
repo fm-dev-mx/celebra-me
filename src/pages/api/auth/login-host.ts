@@ -16,6 +16,7 @@ import {
 	normalizeLoginIdentifier,
 	sanitizePassword,
 } from '@/lib/rsvp/security/auth-security';
+import { isTemporaryPasswordExpired } from '@/lib/rsvp/auth/temporary-password';
 import { resolvePasswordAuthEmail } from '@/lib/rsvp/services/auth-identifier.service';
 import { logSecurityEvent } from '@/lib/server/security-events';
 
@@ -86,6 +87,14 @@ export const POST: APIRoute = async ({ request, url }) => {
 				403,
 				'account_access_incomplete',
 				'Su cuenta requiere que el administrador complete el acceso. Comuníquese con él para continuar.',
+			);
+		}
+		if (isTemporaryPasswordExpired(auth.user.app_metadata)) {
+			logSecurityEvent('login_failed', { route: 'login-host' });
+			throw new ApiError(
+				403,
+				'temporary_password_expired',
+				'La contraseña temporal caducó. Solicite al administrador una nueva.',
 			);
 		}
 		const payload = {

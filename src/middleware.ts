@@ -4,8 +4,9 @@ import type { SessionContext } from '@/lib/rsvp/auth/auth';
 import { hasMfaEvidence } from '@/lib/rsvp/auth/auth-mfa-evidence';
 import { refreshAccessToken } from '@/lib/rsvp/auth/auth-api';
 import { normalizeAppRole } from '@/lib/rsvp/auth/roles';
+import { isTemporaryPasswordExpired } from '@/lib/rsvp/auth/temporary-password';
 import type { AppUserRole } from '@/interfaces/auth/session.interface';
-import { verifyTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
+import { verifyTrustedDevice } from '@/lib/rsvp/security/trusted-device';
 import { setCsrfToken } from '@/lib/rsvp/security/csrf';
 import { ApiError, isAuthRequestError, isRejectedAuthCredential } from '@/lib/rsvp/core/errors';
 import { errorResponse } from '@/lib/rsvp/core/http';
@@ -34,7 +35,6 @@ interface AuthContext {
 }
 
 const IDLE_TIMEOUT_SECONDS = 60 * 30;
-const MFA_TEMP_MAX_AGE_SECONDS = 60 * 5;
 const TRUST_DEVICE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 const ADMIN_ONLY_PATHS = ['/dashboard/admin', '/dashboard/usuarios', '/dashboard/invitaciones'];
@@ -241,26 +241,7 @@ async function refreshUserSession(cookies: CookieStore, refreshToken: string) {
 	}
 }
 
-function applyMfaSetupCookies(cookies: CookieStore, accessToken: string, refreshToken: string) {
-	cookies.set('sb-mfa-session', accessToken, {
-		path: '/dashboard/mfa-setup',
-		httpOnly: false,
-		sameSite: 'strict',
-		maxAge: MFA_TEMP_MAX_AGE_SECONDS,
-		secure: !isLocalProcess(),
-	});
-
-	if (refreshToken) {
-		cookies.set('sb-mfa-refresh', refreshToken, {
-			path: '/dashboard/mfa-setup',
-			httpOnly: false,
-			sameSite: 'strict',
-			maxAge: MFA_TEMP_MAX_AGE_SECONDS,
-			secure: !isLocalProcess(),
-		});
-	}
-}
-
+// The MFA setup now runs on /api/auth/mfa/*; these only retire cookies set by older deployments.
 function clearMfaSetupCookies(cookies: CookieStore) {
 	cookies.delete('sb-mfa-session', { path: '/dashboard/mfa-setup' });
 	cookies.delete('sb-mfa-refresh', { path: '/dashboard/mfa-setup' });
@@ -453,18 +434,18 @@ function authHtmlFailure(status: 500 | 502 | 503): Response {
 	return response;
 }
 
-function resolveAuthContext(
+async function resolveAuthContext(
 	cookies: CookieStore,
 	request: Request,
 	user: NonNullable<Awaited<ReturnType<typeof getSupabaseUserByAccessToken>>>,
 	accessToken: string,
-): AuthContext {
+): Promise<AuthContext> {
 	const role = normalizeAppRole(user.app_metadata?.role);
 	const hasMfa = hasMfaEvidence({ token: accessToken, amr: user.amr });
 	const trustCookie = cookies.get('sb-trust-device')?.value || '';
 	const trustedDevice =
 		role === 'super_admin' && trustCookie
-			? verifyTrustedDeviceToken({
+			? await verifyTrustedDevice({
 					token: trustCookie,
 					userId: user.id,
 					userAgent: request.headers.get('user-agent') || '',
@@ -564,6 +545,26 @@ function handleUnauthenticatedResponse(
 	return url.pathname === '/login' ? null : privateRedirect(redirect, '/login');
 }
 
+function clearLegacyMfaCookies(cookies: CookieStore): void {
+	if (cookies.get('sb-mfa-session') || cookies.get('sb-mfa-refresh')) {
+		clearMfaSetupCookies(cookies);
+	}
+}
+
+/** A temporary password past its 24h window ends the session instead of letting it continue. */
+function rejectExpiredTemporaryPassword(
+	user: { app_metadata?: Record<string, unknown> },
+	url: URL,
+	cookies: CookieStore,
+	redirect: (path: string) => Response,
+): Response | null {
+	if (!isTemporaryPasswordExpired(user.app_metadata)) return null;
+	clearPrimaryAuthCookies(cookies);
+	const isApiRoute = url.pathname.startsWith('/api/dashboard');
+	if (!isApiRoute) return privateRedirect(redirect, '/login?reason=temporary_password_expired');
+	return handleUnauthenticatedResponse(url, isApiRoute, redirect);
+}
+
 async function handleProtectedAuthRequest(
 	url: URL,
 	cookies: CookieStore,
@@ -592,12 +593,15 @@ async function handleProtectedAuthRequest(
 		return privateRedirect(redirect, '/login');
 	}
 
-	const { accessToken, refreshToken, user } = await resolveAuthenticatedUser(cookies);
+	const { accessToken, user } = await resolveAuthenticatedUser(cookies);
 	if (!user) {
 		return handleUnauthenticatedResponse(url, isApiRoute, redirect);
 	}
 
-	const authContext = resolveAuthContext(cookies, request, user, accessToken);
+	const expired = rejectExpiredTemporaryPassword(user, url, cookies, redirect);
+	if (expired) return expired;
+
+	const authContext = await resolveAuthContext(cookies, request, user, accessToken);
 	if (!authContext.role) {
 		clearPrimaryAuthCookies(cookies);
 		if (!isApiRoute)
@@ -621,9 +625,7 @@ async function handleProtectedAuthRequest(
 		return response;
 	}
 
-	if (authContext.role === 'super_admin' && !effectiveAdminStrongAuth) {
-		applyMfaSetupCookies(cookies, accessToken, refreshToken);
-	}
+	clearLegacyMfaCookies(cookies);
 
 	if (!isApiRoute) {
 		const redirectTarget = resolveAuthenticatedRedirect(

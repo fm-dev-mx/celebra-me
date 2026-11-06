@@ -7,7 +7,7 @@ import {
 	resolveAccessTokenFromRequest,
 } from '@/lib/rsvp/auth/auth';
 import { hasMfaEvidence } from '@/lib/rsvp/auth/auth-mfa-evidence';
-import { verifyTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
+import { verifyTrustedDevice } from '@/lib/rsvp/security/trusted-device';
 import {
 	requireAdminRateLimit,
 	type AdminRateLimitOperation,
@@ -79,7 +79,7 @@ export async function requireAdminStrongSession(request: Request): Promise<Sessi
 	}
 
 	const userAgent = request.headers.get('user-agent') || '';
-	const trustedDevice = verifyTrustedDeviceToken({
+	const trustedDevice = await verifyTrustedDevice({
 		token: trustCookie,
 		userId: session.userId,
 		userAgent,

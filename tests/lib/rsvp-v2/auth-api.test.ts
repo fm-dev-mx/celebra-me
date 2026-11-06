@@ -128,11 +128,13 @@ describe('rsvp authApi', () => {
 			}),
 		}) as typeof fetch;
 
+		jest.useFakeTimers({ now: new Date('2026-04-01T12:00:00.000Z') });
 		const user = await createAuthUserByAdmin({
 			email: 'created@test.com',
 			password: 'TempPass123!',
 			loginAlias: 'ximena_meza',
 		});
+		jest.useRealTimers();
 
 		expect(global.fetch).toHaveBeenCalledWith(
 			'https://project.supabase.co/auth/v1/admin/users',
@@ -151,6 +153,7 @@ describe('rsvp authApi', () => {
 					},
 					app_metadata: {
 						must_change_password: true,
+						temp_password_expires_at: '2026-04-02T12:00:00.000Z',
 					},
 				}),
 			}),
@@ -215,11 +218,13 @@ describe('rsvp authApi', () => {
 				}),
 			}) as typeof fetch;
 
+		jest.useFakeTimers({ now: new Date('2026-04-01T12:00:00.000Z') });
 		await adminResetAuthUserPassword({
 			userId: 'u-existing',
 			password: 'TempSecurePass!234',
 			mustChangePassword: true,
 		});
+		jest.useRealTimers();
 
 		expect(global.fetch).toHaveBeenNthCalledWith(
 			2,
@@ -231,6 +236,7 @@ describe('rsvp authApi', () => {
 						role: 'host_client',
 						custom_flag: 'keep-me',
 						must_change_password: true,
+						temp_password_expires_at: '2026-04-02T12:00:00.000Z',
 					},
 					password: 'TempSecurePass!234',
 				}),

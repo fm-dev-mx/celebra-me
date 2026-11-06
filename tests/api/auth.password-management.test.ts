@@ -127,16 +127,16 @@ describe('Password Management & Recovery', () => {
 	});
 
 	describe('1. Temporary Password Generator Contract', () => {
-		it('generates short memorable Word-####! temporary passwords', () => {
+		it('generates 12+ character CSPRNG temporary passwords', () => {
 			const passwords = new Set<string>();
-			const pattern = /^[A-Z][a-z]+-\d{4}[!@#$%*]$/;
+			const pattern = /^[A-HJ-NP-Za-km-z2-9]{5}(-[A-HJ-NP-Za-km-z2-9]{5}){2}$/;
 
 			for (let i = 0; i < 20; i += 1) {
 				const password = generateTemporaryPassword();
 				passwords.add(password);
 
 				expect(password).toMatch(pattern);
-				expect(password.length).toBeLessThanOrEqual(16);
+				expect(password.length).toBeGreaterThanOrEqual(12);
 				expect(password).not.toContain('client2026');
 				expect(password).not.toContain('celebra2026');
 			}
@@ -177,7 +177,7 @@ describe('Password Management & Recovery', () => {
 			const body = await response.json();
 			expect(body.userId).toBe('550e8400-e29b-41d4-a716-446655440000');
 			expect(body.credentials.temporaryPassword).toBeDefined();
-			expect(body.credentials.temporaryPassword).toMatch(/^[A-Z][a-z]+-\d{4}[!@#$%*]$/);
+			expect(body.credentials.temporaryPassword).toMatch(/^[A-Za-z2-9-]{17}$/);
 			expect(adminResetAuthUserPasswordMock).toHaveBeenCalledWith(
 				expect.objectContaining({
 					userId: '550e8400-e29b-41d4-a716-446655440000',

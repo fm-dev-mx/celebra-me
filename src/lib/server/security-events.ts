@@ -14,7 +14,9 @@ export type SecurityEventKind = 'rate_limited' | 'login_failed' | 'mfa_failed' |
 type SecurityEventFields = {
 	rate_limited: { namespace: string };
 	login_failed: { route: 'login-host' | 'change-password' };
-	mfa_failed: { reason: 'invalid_elevated_token' | 'missing_mfa_evidence' };
+	mfa_failed: {
+		reason: 'invalid_elevated_token' | 'missing_mfa_evidence' | 'verify_rejected';
+	};
 	csp_violation: { directive: string; blocked: string };
 };
 

@@ -209,12 +209,13 @@ Preferred mechanisms:
 
 ### 6.1 Session Elevation (MFA)
 
-After MFA on the client:
+The MFA step runs on the server, so no session token reaches the browser:
 
-1. the client completes the challenge flow,
-2. fetches the elevated session,
-3. calls `/api/auth/sync-session`,
-4. and the server persists the AAL2 state in `HttpOnly` cookies.
+1. the client calls `/api/auth/mfa/enroll`, which uses the `HttpOnly` session to list, enroll or
+   challenge the TOTP factor and returns only the QR, the manual secret and the challenge id,
+2. the client posts the 6-digit code to `/api/auth/mfa/verify`,
+3. and the server verifies it with Supabase, checks the MFA evidence and persists the AAL2 state in
+   `HttpOnly` cookies (plus the revocable trusted device).
 
 This keeps middleware authorization aligned with the elevated session state.
 
