@@ -34,6 +34,7 @@ type PersonalizedAccessProps = {
 	ticket?: { signature: string; monogram: string };
 	guestName: string;
 	maxAllowedAttendees: number;
+	maxAllowedChildren?: number;
 	eventYear?: string;
 	editionMark?: string;
 	isDemoPreview?: boolean;
@@ -99,9 +100,11 @@ type DescriptorData =
 				initialGuestData?: {
 					fullName: string;
 					maxAllowedAttendees: number;
+					maxAllowedChildren?: number;
 					inviteId: string;
 					attendanceStatus: 'pending' | 'confirmed' | 'declined';
 					attendeeCount: number;
+					childrenCount?: number;
 					guestComment: string;
 				};
 				isDemoPreview?: boolean;
@@ -189,6 +192,7 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 				guestContext?.guest.maxAllowedAttendees ??
 				rsvpSection?.guestCap ??
 				DEFAULT_DEMO_GUEST_CAP,
+			maxAllowedChildren: guestContext?.guest.maxAllowedChildren ?? 0,
 			eventYear,
 			editionMark: pageContext.edition?.mark,
 			isDemoPreview,
@@ -238,9 +242,11 @@ function renderRsvpSection(pageContext: InvitationPageContext): DescriptorData |
 				? {
 						fullName: guestContext.guest.fullName,
 						maxAllowedAttendees: guestContext.guest.maxAllowedAttendees,
+						maxAllowedChildren: guestContext.guest.maxAllowedChildren ?? 0,
 						inviteId: guestContext.inviteId,
 						attendanceStatus: guestContext.guest.attendanceStatus,
 						attendeeCount: guestContext.guest.attendeeCount,
+						childrenCount: guestContext.guest.childrenCount ?? 0,
 						// Only the latest message: resubmitting it unchanged must not append history.
 						guestComment: getLatestMessage(guestContext.guest.guestComment),
 					}

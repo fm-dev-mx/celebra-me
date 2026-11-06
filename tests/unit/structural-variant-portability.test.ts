@@ -410,6 +410,14 @@ describe('registry-driven canonical variant portability', () => {
 		expect(viewModel.sections.rsvp?.variant).toBe('editorial-press-pass');
 	});
 
+	it('applies Gifts gift-tag without invitation identity', () => {
+		const event = buildPortableJewelryBoxEvent({ giftsVariant: 'gift-tag' });
+		const viewModel = adaptEvent(contentDocumentFromEntry(event));
+
+		expect(event.data).not.toHaveProperty('visualProfileId');
+		expect(viewModel.sections.gifts?.variant).toBe('gift-tag');
+	});
+
 	it('applies Personalized Access formal-pass and RSVP formal-register without invitation identity', () => {
 		const event = buildPortableJewelryBoxEvent({
 			personalizedAccessVariant: 'formal-pass',

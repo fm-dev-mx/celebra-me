@@ -84,6 +84,8 @@ export const POST: APIRoute = async ({ request, url, locals, cookies }) => {
 			phone: phoneValidation.phone,
 			countryCode: phoneValidation.countryCode,
 			maxAllowedAttendees,
+			maxAllowedChildren:
+				typeof body.maxAllowedChildren === 'number' ? body.maxAllowedChildren : 0,
 			hostAccessToken: session.accessToken,
 			origin: url.origin,
 			actorUserId: session.userId,

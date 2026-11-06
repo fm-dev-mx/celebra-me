@@ -25,6 +25,7 @@ export interface CreateGuestInput {
 	phone?: string | null;
 	countryCode?: string;
 	maxAllowedAttendees: number;
+	maxAllowedChildren?: number;
 	tags?: string[];
 	shortId?: string;
 	entrySource?: EntrySource;
@@ -37,8 +38,10 @@ export interface UpdateGuestInput {
 	phone?: string | null;
 	countryCode?: string;
 	maxAllowedAttendees?: number;
+	maxAllowedChildren?: number;
 	attendanceStatus?: AttendanceStatus;
 	attendeeCount?: number;
+	childrenCount?: number;
 	guestComment?: string;
 	deliveryStatus?: 'generated' | 'shared';
 	firstSharedAt?: string | null;
@@ -76,8 +79,10 @@ export type GuestRow = {
 	phone: string;
 	country_code: string | null;
 	max_allowed_attendees: number;
+	max_allowed_children?: number | null;
 	attendance_status: AttendanceStatus;
 	attendee_count: number;
+	children_count?: number | null;
 	guest_comment: string;
 	delivery_status: 'generated' | 'shared';
 	first_shared_at: string | null;
@@ -137,7 +142,7 @@ const EVENT_COLUMN_LIST = [
 
 export const EVENT_COLUMNS = EVENT_COLUMN_LIST.join(',');
 export const GUEST_COLUMNS =
-	'id,invite_id,event_id,full_name,phone,country_code,max_allowed_attendees,attendance_status,attendee_count,guest_comment,delivery_status,first_shared_at,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id,guest_code,hide_celebra_me_branding,last_reminder_sent_at,last_memories_reminder_sent_at,is_test,open_count,first_opened_at,last_opened_at,last_previewed_at,max_progress_milestone';
+	'id,invite_id,event_id,full_name,phone,country_code,max_allowed_attendees,max_allowed_children,attendance_status,attendee_count,children_count,guest_comment,delivery_status,first_shared_at,first_viewed_at,last_viewed_at,view_percentage,is_viewed,responded_at,last_response_source,entry_source,created_at,updated_at,tags,short_id,guest_code,hide_celebra_me_branding,last_reminder_sent_at,last_memories_reminder_sent_at,is_test,open_count,first_opened_at,last_opened_at,last_previewed_at,max_progress_milestone';
 
 export function toEventRecord(row: EventRow): EventRecord {
 	return {
@@ -165,8 +170,10 @@ export function toGuestRecord(row: GuestRow): GuestInvitationRecord {
 		phone: row.phone,
 		countryCode: row.country_code ?? undefined,
 		maxAllowedAttendees: row.max_allowed_attendees,
+		maxAllowedChildren: row.max_allowed_children ?? 0,
 		attendanceStatus: row.attendance_status,
 		attendeeCount: row.attendee_count,
+		childrenCount: row.children_count ?? 0,
 		guestComment: row.guest_comment,
 		deliveryStatus: row.delivery_status,
 		firstSharedAt: row.first_shared_at,

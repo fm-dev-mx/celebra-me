@@ -402,7 +402,7 @@ export function buildIncompatiblePrerequisiteEvent(
 			}
 			break;
 		case 'gifts':
-			if (entry.variant === 'editorial-catalog') {
+			if (entry.variant === 'editorial-catalog' || entry.variant === 'gift-tag') {
 				(data.gifts as Record<string, unknown>).items = [{ type: 'invalid' }];
 			}
 			break;
