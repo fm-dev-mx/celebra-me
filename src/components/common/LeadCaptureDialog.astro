@@ -8,6 +8,7 @@
  * Without JavaScript the CTA keeps its WhatsApp link.
  */
 import { DEMO_SHOWROOM_ITEMS } from '@/data/demo-showroom.data';
+import { MEXICAN_CITIES } from '@/lib/commercial/mexican-cities';
 import { LEAD_CAPTURE_EVENT_TYPES } from '@/lib/tracking/lead-capture';
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 import '@/styles/components/_lead-capture.scss';
@@ -17,6 +18,17 @@ const demoOptions = [...DEMO_SHOWROOM_ITEMS]
 	.filter((item) => item.reviewStatus === 'approved')
 	.sort((a, b) => a.sortOrder - b.sortOrder)
 	.map((item) => ({ slug: item.slug, name: item.styleName, eventType: item.eventType }));
+// Every suggestion shows its state. A name shared by two states («Guadalupe») also carries the
+// state in its value so the server can tell them apart («Guadalupe, Zacatecas»).
+const cityNameCounts = new Map<string, number>();
+for (const city of MEXICAN_CITIES) {
+	cityNameCounts.set(city.name, (cityNameCounts.get(city.name) ?? 0) + 1);
+}
+const cityOptions = MEXICAN_CITIES.map((city) =>
+	(cityNameCounts.get(city.name) ?? 0) > 1
+		? { value: `${city.name}, ${city.state}`, state: undefined }
+		: { value: city.name, state: city.state },
+).sort((a, b) => a.value.localeCompare(b.value, 'es'));
 ---
 
 {
@@ -104,16 +116,23 @@ const demoOptions = [...DEMO_SHOWROOM_ITEMS]
 					</div>
 
 					<div class="lead-capture__field">
-						<label for="lead-capture-celebrant">
-							Nombre(s) de quien celebra <span class="lead-capture__optional">(opcional)</span>
+						<label for="lead-capture-city">
+							Su ciudad <span class="lead-capture__optional">(opcional)</span>
 						</label>
 						<input
-							id="lead-capture-celebrant"
-							name="celebrantNames"
+							id="lead-capture-city"
+							name="city"
 							type="text"
-							maxlength="120"
-							placeholder="Ej. Andrea · Daniela y Martín"
+							autocomplete="address-level2"
+							maxlength="60"
+							placeholder="Ej. Ciudad Juárez"
+							list="lead-capture-city-options"
 						/>
+						<datalist id="lead-capture-city-options">
+							{cityOptions.map((option) => (
+								<option value={option.value} label={option.state} />
+							))}
+						</datalist>
 					</div>
 
 					<div class="lead-capture__field">

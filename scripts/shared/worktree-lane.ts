@@ -8,13 +8,15 @@
  *   └── <repo>-worktrees/         (external worktree root)
  *       ├── f06-landing/          (Win + F6)
  *       ├── …
- *       └── f12-release/          (Win + F12)
+ *       ├── f12-release/          (Win + F12)
+ *       └── agente-claude/        (agent lane, no key)
  *
  * `tablero.config.json` is the single source of truth for the task lanes:
  * `carriles` gives each lane's id, folder, port, key (`tecla`), name and runtime
- * (`entorno`), and `carrilesRetirados` lists folders that stay on disk but take
- * no tasks (detected as `unknown`, so the guards refuse sessions there). The
- * board reads the same file. Integration is not a board lane and stays here.
+ * (`entorno`); agent lanes (`agente-<name>`) have no key and are opened by the
+ * board's bridges, not by a person. `carrilesRetirados` lists folders that stay
+ * on disk but take no tasks (detected as `unknown`, so the guards refuse
+ * sessions there). The board reads the same file. Integration is not a board lane and stays here.
  * Win + F4 opens the separate board project (`tablero`), not a lane. A lane's
  * role is a default, not a restriction; folders under `<repo>-worktrees/` are
  * never created ad hoc — change `tablero.config.json` in a pull request instead.
@@ -29,8 +31,8 @@ export type WorktreeRuntimeDefault = 'local' | 'preview';
 
 interface WorktreeLaneEntry {
 	readonly id: string;
-	/** Function key that opens the lane (Win + F<key>). */
-	readonly key: number;
+	/** Function key that opens the lane (Win + F<key>); null for agent lanes. */
+	readonly key: number | null;
 	/** Stable Astro/Vite dev server port. */
 	readonly port: number;
 	/** Segment name under the external worktree root (null for Integration). */
@@ -57,20 +59,34 @@ const INTEGRATION_LANE: WorktreeLaneEntry = Object.freeze({
 	runtimeDefault: 'local',
 });
 
+/** Agent lanes take tasks from the board's bridges and have no function key. */
+const AGENT_LANE_PREFIX = 'agente-';
+const LANE_ID_PATTERN = /^(?:f\d{2}|agente)-[a-z0-9-]+$/;
+
 function laneConfigError(detail: string): Error {
 	return new Error(`Invalid lane config in tablero.config.json: ${detail}`);
 }
 
 function parseBoardLane(raw: BoardLaneConfig, index: number): WorktreeLaneEntry {
 	const { id, carpeta, puerto, tecla, nombre, entorno } = raw;
-	if (typeof id !== 'string' || !/^f\d{2}-[a-z0-9-]+$/.test(id)) {
-		throw laneConfigError(`carriles[${index}].id must look like "f06-landing"`);
+	if (typeof id !== 'string' || !LANE_ID_PATTERN.test(id)) {
+		throw laneConfigError(
+			`carriles[${index}].id must look like "f06-landing" or "agente-codex"`,
+		);
 	}
 	if (typeof carpeta !== 'string' || basename(carpeta.replaceAll('\\', '/')) !== id) {
 		throw laneConfigError(`carriles[${index}].carpeta must end in "${id}"`);
 	}
-	if (!Number.isInteger(puerto) || !Number.isInteger(tecla)) {
-		throw laneConfigError(`carriles[${index}] needs integer "puerto" and "tecla"`);
+	const agentLane = id.startsWith(AGENT_LANE_PREFIX);
+	if (!Number.isInteger(puerto)) {
+		throw laneConfigError(`carriles[${index}] needs an integer "puerto"`);
+	}
+	if (agentLane ? tecla !== undefined : !Number.isInteger(tecla)) {
+		throw laneConfigError(
+			agentLane
+				? `carriles[${index}] is an agent lane and takes no "tecla"`
+				: `carriles[${index}] needs an integer "tecla"`,
+		);
 	}
 	if (typeof nombre !== 'string' || !nombre.trim()) {
 		throw laneConfigError(`carriles[${index}].nombre is required`);
@@ -80,7 +96,7 @@ function parseBoardLane(raw: BoardLaneConfig, index: number): WorktreeLaneEntry 
 	}
 	return Object.freeze({
 		id,
-		key: tecla as number,
+		key: agentLane ? null : (tecla as number),
 		port: puerto as number,
 		segment: id,
 		displayName: nombre,
@@ -91,8 +107,10 @@ function parseBoardLane(raw: BoardLaneConfig, index: number): WorktreeLaneEntry 
 function assertUnique(lanes: readonly WorktreeLaneEntry[], field: 'key' | 'port'): void {
 	const seen = new Set<number>();
 	for (const lane of lanes) {
-		if (seen.has(lane[field])) throw laneConfigError(`duplicate ${field} ${lane[field]}`);
-		seen.add(lane[field]);
+		const value = lane[field];
+		if (value === null) continue;
+		if (seen.has(value)) throw laneConfigError(`duplicate ${field} ${value}`);
+		seen.add(value);
 	}
 }
 
@@ -129,7 +147,7 @@ export type WorktreeLaneId = KnownWorktreeLaneId | 'unknown';
 
 export interface WorktreeLaneDefinition {
 	id: WorktreeLaneId;
-	/** Function key (Win + F<key>); null for the unknown lane. */
+	/** Function key (Win + F<key>); null for agent lanes and the unknown lane. */
 	key: number | null;
 	displayName: string;
 	runtimeDefault: WorktreeRuntimeDefault;
@@ -137,14 +155,14 @@ export interface WorktreeLaneDefinition {
 	segment: string | null;
 }
 
-// 4399: never collides with a canonical lane (4321, 4326–4332) or the typical
+// 4399: never collides with a canonical lane (4321, 4326–4335) or the typical
 // 4324 fallback; surface the non-canonical cwd via detectWorktreeLane callers.
 const UNKNOWN_LANE_PORT = 4399;
 
 /**
  * Stable Astro/Vite ports per lane, derived from WORKTREE_LANES, so parallel
  * worktrees do not share :4321 and then 403 `/@fs/` asset requests that encode
- * another worktree's absolute path. Integration keeps 4321; other lanes use 4320 + key.
+ * another worktree's absolute path. Integration keeps 4321; each board lane uses its `puerto`.
  *
  * Override with PORT or ASTRO_PORT when needed (tests, one-off binds).
  */
@@ -327,7 +345,7 @@ export function checkLaneWorkPolicy(input: {
 	operation?: 'session' | 'commit';
 }): string | null {
 	const freeLanes = WORKTREE_LANES.filter((lane) => lane.segment)
-		.map((lane) => `${lane.segment} (Win + F${lane.key})`)
+		.map((lane) => (lane.key === null ? lane.segment : `${lane.segment} (Win + F${lane.key})`))
 		.join(', ');
 	const hint = `Request an explicit task assignment to a lane under <repo>-worktrees/: ${freeLanes}. Do not switch checkouts automatically.`;
 	if (input.lane.id === 'unknown') {

@@ -6,6 +6,11 @@ import { classifyTrackingRoute } from '@/lib/tracking/route-policy';
 import { safeErr } from '@/lib/server/safe-error';
 import { getEstimatedLeadValue } from './estimated-lead-value';
 import {
+	canonicalizeMexicanCity,
+	findMexicanCity,
+	getMexicanStateNames,
+} from '@/lib/commercial/mexican-cities';
+import {
 	getMetaCrmLeadStageFromTriggerStatus,
 	META_CHAT_EVENT_MAX_AGE_MS,
 	META_CRM_LEAD_EVENT_SOURCE,
@@ -31,7 +36,12 @@ interface OutboxDetail {
 	created_at?: string | null;
 	value: number | null;
 	currency: string;
-	customers: { email?: string | null; phone_e164?: string | null } | null;
+	customers: {
+		email?: string | null;
+		phone_e164?: string | null;
+		display_name?: string | null;
+		city?: string | null;
+	} | null;
 	sales_orders: {
 		session_id?: string | null;
 		deposit_paid_at?: string | null;
@@ -228,6 +238,69 @@ export function normalizeAndHashPhone(phoneE164?: string | null): string | undef
 	return createHash('sha256').update(digits).digest('hex');
 }
 
+/**
+ * Meta's name, city and state normalization: lowercase, no spaces, digits or punctuation. Meta's
+ * docs recommend Roman a–z, while its own SDK keeps accented letters, so both spellings are
+ * returned when they differ («Ciudad Juárez» → `ciudadjuárez`, `ciudadjuarez`).
+ */
+function normalizeMetaLetterVariants(value: string): string[] {
+	const lower = value.normalize('NFC').toLowerCase();
+	const accented = lower.replace(/[^\p{L}]/gu, '');
+	const plain = lower
+		.normalize('NFD')
+		.replace(/\p{M}/gu, '')
+		.replace(/[^a-z]/g, '');
+	return [...new Set([accented, plain])].filter((variant) => variant.length > 0);
+}
+
+function hashMetaLetterVariants(values: readonly string[]): string[] {
+	return [...new Set(values.flatMap(normalizeMetaLetterVariants))].map(hashSha256);
+}
+
+/** Spanish surname particles that belong to the surname after them («de la Garza»). */
+const SURNAME_PARTICLES = new Set(['de', 'del', 'la', 'las', 'los', 'y', 'san', 'van', 'von']);
+
+/**
+ * Hashed `fn` and `ln` from a full name. The first word is the first name. Particles join the
+ * surname after them, and the last name may be one or two surnames, so the last two surnames are
+ * sent as `ln` candidates, a particle surname also without its particles
+ * («Gloria de la Garza López» → fn `gloria`, ln `delagarza`, `garza` and `lópez`/`lopez`).
+ */
+export function normalizeAndHashName(fullName?: string | null): { fn?: string[]; ln?: string[] } {
+	const words = (fullName ?? '')
+		.split(/\s+/)
+		.filter((word) => normalizeMetaLetterVariants(word).length > 0);
+	if (words.length === 0) return {};
+	const fn = hashMetaLetterVariants([words[0]]);
+
+	const surnames: { joined: string; core: string }[] = [];
+	let particles: string[] = [];
+	for (const word of words.slice(1)) {
+		if (SURNAME_PARTICLES.has(normalizeMetaLetterVariants(word).at(-1) ?? '')) {
+			particles.push(word);
+			continue;
+		}
+		surnames.push({ joined: [...particles, word].join(''), core: word });
+		particles = [];
+	}
+	const lnSources = surnames.slice(-2).flatMap(({ joined, core }) => [joined, core]);
+	const ln = hashMetaLetterVariants(lnSources);
+	return ln.length > 0 ? { fn, ln } : { fn };
+}
+
+/** Hashed `ct` candidates (accented and plain) from a city name. */
+export function normalizeAndHashCity(city?: string | null): string[] {
+	return hashMetaLetterVariants(city ? [city] : []);
+}
+
+/**
+ * Hashed `st` candidates for a listed Mexican city: its state's common and INEGI official names,
+ * accented and plain («Saltillo» → `coahuila`, `coahuiladezaragoza`).
+ */
+export function normalizeAndHashStateForCity(city?: string | null): string[] {
+	return hashMetaLetterVariants(getMexicanStateNames(findMexicanCity(city)));
+}
+
 export type BrowserConversionEventName = 'PageView' | 'ViewContent' | 'Contact' | 'Lead';
 
 /** First-party tracking events whose Pixel standard event the server also delivers. */
@@ -340,7 +413,7 @@ export async function processPendingMetaConversionEvents(): Promise<ProcessResul
 
 async function fetchEventDetails(outboxId: string): Promise<OutboxDetail | null> {
 	const details = await supabaseRestRequest<OutboxDetail[]>({
-		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&select=id,event_name,event_id,trigger_status,customer_id,lead_id,session_id,event_source_path,created_at,value,currency,customers(email,phone_e164),sales_orders(session_id,deposit_paid_at,created_at),leads(consent_marketing,session_id,phone_e164,fbp,fbc,fbclid)`,
+		pathWithQuery: `meta_conversion_events?id=eq.${encodeURIComponent(outboxId)}&select=id,event_name,event_id,trigger_status,customer_id,lead_id,session_id,event_source_path,created_at,value,currency,customers(email,phone_e164,display_name,city),sales_orders(session_id,deposit_paid_at,created_at),leads(consent_marketing,session_id,phone_e164,fbp,fbc,fbclid)`,
 		method: 'GET',
 		useServiceRole: true,
 	});
@@ -358,7 +431,7 @@ async function fetchSessionDetails(sessionId: string): Promise<SessionDetail | n
 
 type UserData = Record<string, string | string[]>;
 
-/** Hashed customer keys: email, phone and the external ID. */
+/** Hashed customer keys: email, phone, first and last name, city, state and the external ID. */
 function buildIdentityKeys(detail: OutboxDetail, session: SessionDetail | null): UserData {
 	const userData: UserData = {};
 
@@ -370,6 +443,18 @@ function buildIdentityKeys(detail: OutboxDetail, session: SessionDetail | null):
 	const phoneHash = normalizeAndHashPhone(detail.customers?.phone_e164);
 	if (phoneHash) {
 		userData.ph = [phoneHash];
+	}
+
+	Object.assign(userData, normalizeAndHashName(detail.customers?.display_name));
+
+	const city = canonicalizeMexicanCity(detail.customers?.city);
+	const cityHashes = normalizeAndHashCity(city);
+	if (cityHashes.length > 0) {
+		userData.ct = cityHashes;
+	}
+	const stateHashes = normalizeAndHashStateForCity(city);
+	if (stateHashes.length > 0) {
+		userData.st = stateHashes;
 	}
 
 	// The first-party visitor ID is shared by every event of the same browser; the customer ID
@@ -409,16 +494,25 @@ function buildBrowserKeys(detail: OutboxDetail, session: SessionDetail | null): 
 	return userData;
 }
 
+/**
+ * Every customer is served in Mexico. Meta asks for the country on every event, even when all
+ * customers share it, as an ISO 3166-1 alpha-2 code in lowercase, hashed.
+ */
+const META_CUSTOMER_COUNTRY = 'mx';
+const META_CUSTOMER_COUNTRY_HASH = hashSha256(META_CUSTOMER_COUNTRY);
+
 function buildUserData(detail: OutboxDetail, session: SessionDetail | null): UserData {
+	const country = [META_CUSTOMER_COUNTRY_HASH];
 	if (getMetaCrmLeadStageFromTriggerStatus(detail.trigger_status)) {
 		const userData: UserData = {};
 		const phoneHash = normalizeAndHashPhone(detail.leads?.phone_e164);
 		if (phoneHash) userData.ph = [phoneHash];
 		if (detail.leads?.fbp) userData.fbp = detail.leads.fbp;
 		if (detail.leads?.fbc) userData.fbc = detail.leads.fbc;
+		userData.country = country;
 		return userData;
 	}
-	return { ...buildIdentityKeys(detail, session), ...buildBrowserKeys(detail, session) };
+	return { ...buildIdentityKeys(detail, session), ...buildBrowserKeys(detail, session), country };
 }
 
 function resolveEventSourceUrl(path: string | null | undefined): string {

@@ -25,14 +25,7 @@ function toInvitationContext(
 	eventTitle: string;
 	/** The event sells the per-guest branding removal add-on. */
 	brandingRemovalEnabled: boolean;
-	guest: {
-		fullName: string;
-		maxAllowedAttendees: number;
-		attendanceStatus: AttendanceStatus;
-		attendeeCount: number;
-		guestComment: string;
-		hideCelebraMeBranding: boolean;
-	};
+	guest: InvitationGuestContext;
 } {
 	return {
 		inviteId: invitation.inviteId,
@@ -43,12 +36,27 @@ function toInvitationContext(
 		guest: {
 			fullName: invitation.fullName,
 			maxAllowedAttendees: invitation.maxAllowedAttendees,
+			maxAllowedChildren: invitation.maxAllowedChildren ?? 0,
 			attendanceStatus: invitation.attendanceStatus,
 			attendeeCount: invitation.attendeeCount,
+			childrenCount: invitation.childrenCount ?? 0,
 			guestComment: invitation.guestComment,
 			hideCelebraMeBranding: invitation.hideCelebraMeBranding ?? false,
 		},
 	};
+}
+
+/** The guest's own invitation data rendered into the invitation page. */
+export interface InvitationGuestContext {
+	fullName: string;
+	maxAllowedAttendees: number;
+	/** Passes reserved for children; 0 when the host did not set any. */
+	maxAllowedChildren?: number;
+	attendanceStatus: AttendanceStatus;
+	attendeeCount: number;
+	childrenCount?: number;
+	guestComment: string;
+	hideCelebraMeBranding: boolean;
 }
 
 export async function getInvitationContextByInviteId(inviteId: string): Promise<{
@@ -58,14 +66,7 @@ export async function getInvitationContextByInviteId(inviteId: string): Promise<
 	eventTitle: string;
 	/** The event sells the per-guest branding removal add-on. */
 	brandingRemovalEnabled: boolean;
-	guest: {
-		fullName: string;
-		maxAllowedAttendees: number;
-		attendanceStatus: AttendanceStatus;
-		attendeeCount: number;
-		guestComment: string;
-		hideCelebraMeBranding: boolean;
-	};
+	guest: InvitationGuestContext;
 }> {
 	const safeInviteId = sanitize(inviteId, 64);
 	if (!safeInviteId) throw new ApiError(400, 'bad_request', 'inviteId is invalid.');
@@ -86,14 +87,7 @@ export async function getInvitationContextByShortId(shortId: string): Promise<{
 	eventTitle: string;
 	/** The event sells the per-guest branding removal add-on. */
 	brandingRemovalEnabled: boolean;
-	guest: {
-		fullName: string;
-		maxAllowedAttendees: number;
-		attendanceStatus: AttendanceStatus;
-		attendeeCount: number;
-		guestComment: string;
-		hideCelebraMeBranding: boolean;
-	};
+	guest: InvitationGuestContext;
 }> {
 	const safeShortId = sanitize(shortId, 12);
 	if (!safeShortId) throw new ApiError(400, 'bad_request', 'short_id is invalid.');

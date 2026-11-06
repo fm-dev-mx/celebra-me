@@ -107,7 +107,7 @@ describe('Meta Pixel initialization', () => {
 		expect(window.fbq.queue).toContainEqual([
 			'init',
 			'pixel-123',
-			{ external_id: expect.stringMatching(/^[0-9a-f]{64}$/), ph: PHONE_HASH },
+			{ country: 'mx', external_id: expect.stringMatching(/^[0-9a-f]{64}$/), ph: PHONE_HASH },
 		]);
 	});
 });

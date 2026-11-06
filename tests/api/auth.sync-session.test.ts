@@ -135,7 +135,7 @@ describe('API: /api/auth/sync-session', () => {
 		expect(data.ok).toBe(true);
 	});
 
-	it('stores session when elevated token uses otp amr method', async () => {
+	it.each(['otp', 'phone'])('rejects first-factor %s as elevated MFA', async (method) => {
 		getHostSessionMock.mockResolvedValue({
 			userId: 'user-1',
 			email: 'admin@celebra.me',
@@ -143,7 +143,7 @@ describe('API: /api/auth/sync-session', () => {
 		});
 		getSupabaseUserMock.mockResolvedValue({
 			id: 'user-1',
-			amr: [{ method: 'otp' }],
+			amr: [{ method }],
 		});
 
 		const response = await syncSession({
@@ -157,7 +157,8 @@ describe('API: /api/auth/sync-session', () => {
 			url: new URL('http://localhost/api/auth/sync-session'),
 		} as unknown as APIContext);
 
-		expect(response.status).toBe(200);
+		expect(response.status).toBe(403);
+		expect(response.headers.get('set-cookie')).toBeNull();
 	});
 
 	it('stores session when jwt has aal2 even without amr methods', async () => {

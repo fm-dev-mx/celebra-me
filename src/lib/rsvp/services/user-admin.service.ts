@@ -114,7 +114,7 @@ export async function changeUserRoleAdmin(input: {
 	const existing = await findAppUserRoleByUserIdService(userId);
 	const next = await upsertUserRoleService({ userId, role });
 
-	await logAdminAction({
+	await logAdminActionStrict({
 		actorId: sanitize(input.actorUserId, 120),
 		action: 'change_user_role',
 		targetTable: 'app_user_roles',

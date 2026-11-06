@@ -144,7 +144,7 @@ async function authRequest<T>(options: AuthApiOptions<T>): Promise<T> {
 
 		let parsed: unknown;
 		try {
-			parsed = await response.json();
+			parsed = response.status === 204 ? null : await response.json();
 		} catch {
 			throw new AuthRequestError({
 				kind: timedOut ? 'timeout' : 'invalid_response',
@@ -237,6 +237,18 @@ export async function refreshAccessToken(input: {
 		path: 'token?grant_type=refresh_token',
 		body: { refresh_token: input.refreshToken },
 		validate: isAuthTokenResponse,
+	});
+}
+
+export async function revokeAuthSessions(input: {
+	accessToken: string;
+	scope: 'global' | 'others';
+}): Promise<void> {
+	await authRequest({
+		operation: 'sign_out',
+		path: `logout?scope=${input.scope}`,
+		authToken: input.accessToken,
+		validate: (value): value is null => value === null,
 	});
 }
 

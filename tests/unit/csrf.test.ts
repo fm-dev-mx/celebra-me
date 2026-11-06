@@ -1,5 +1,9 @@
 import { ApiError } from '@/lib/rsvp/core/errors';
-import { setCsrfToken, validateCsrfToken } from '@/lib/rsvp/security/csrf';
+import {
+	setCsrfToken,
+	validateCsrfToken,
+	shouldSkipCsrfValidation,
+} from '@/lib/rsvp/security/csrf';
 import { asHostedDeploy } from '@tests/helpers/deploy-identity';
 
 function createCookies(initialToken?: string) {
@@ -65,6 +69,19 @@ describe('CSRF token lifecycle', () => {
 				cookies as never,
 			),
 		).not.toThrow();
+	});
+});
+
+describe('CSRF bypass list removal', () => {
+	it.each(['/api/webhook', '/api/stripe', '/api/supabase'])(
+		'no longer bypasses CSRF for formerly listed path: %s',
+		(path) => {
+			expect(shouldSkipCsrfValidation(path)).toBe(false);
+		},
+	);
+
+	it('does not bypass CSRF for any dashboard API path', () => {
+		expect(shouldSkipCsrfValidation('/api/dashboard/admin/users')).toBe(false);
 	});
 });
 

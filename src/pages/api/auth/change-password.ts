@@ -4,6 +4,7 @@ import { errorResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import {
 	adminSetUserMustChangePassword,
 	signInWithPassword,
+	revokeAuthSessions,
 	updateUserPasswordUserAuth,
 } from '@/lib/rsvp/auth/auth-api';
 import { requireSessionContext } from '@/lib/rsvp/auth/auth';
@@ -99,6 +100,8 @@ export const POST: APIRoute = async ({ request, url }) => {
 			email: session.email,
 			password: sanitizedNew,
 		});
+		// Keep the freshly issued session and revoke every previous session, including password verification.
+		await revokeAuthSessions({ accessToken: freshAuth.access_token, scope: 'others' });
 
 		const payload = {
 			ok: true,

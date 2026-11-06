@@ -112,6 +112,7 @@
 		font: var(--hero-details-font, 400 clamp(1.125rem, 2vw, 1.25rem) / 1.6 var(--font-body));
 		letter-spacing: var(--hero-details-letter-spacing, normal);
 		text-transform: var(--hero-details-text-transform, none);
+		color: var(--hero-details-color, inherit);
 
 		p {
 			margin: 0.2rem 0;

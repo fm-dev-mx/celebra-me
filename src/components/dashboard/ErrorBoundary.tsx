@@ -1,4 +1,5 @@
 import React, { Component, type ReactNode } from 'react';
+import { isDevEnvironment } from '@/lib/environment';
 
 interface Props {
 	children: ReactNode;
@@ -22,7 +23,7 @@ export class ErrorBoundary extends Component<Props, State> {
 	}
 
 	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-		console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+		if (isDevEnvironment()) console.error('[ErrorBoundary] Caught error:', error, errorInfo);
 		this.setState({ errorInfo });
 	}
 
@@ -35,8 +36,8 @@ export class ErrorBoundary extends Component<Props, State> {
 			return (
 				<div className="dashboard-error-boundary">
 					<h3>Algo salió mal</h3>
-					<p>Ocurrió un error al cargar este componente.</p>
-					{this.state.error && (
+					<p>Ocurrió un error al cargar este componente. Por favor, intente de nuevo.</p>
+					{isDevEnvironment() && this.state.error && (
 						<details className="dashboard-error-details">
 							<summary>Detalles del error</summary>
 							<pre className="dashboard-error-details__trace">

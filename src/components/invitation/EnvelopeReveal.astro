@@ -365,6 +365,11 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					'--storybook-sky-light',
 					getComputedStyle(this).getPropertyValue('--storybook-sky-light'),
 				);
+				// It lands outside the invitation, so it carries the event scope class: a slug composition
+				// can then redraw its flyers (e.g. ribbons instead of butterflies).
+				invitationRoot.classList.forEach((name) => {
+					if (name.startsWith('event--')) layer.classList.add(name);
+				});
 				document.body.append(layer);
 				const lanterns = Array.from(layer.querySelectorAll<HTMLElement>('.lantern-flight__lantern'));
 				let flying = lanterns.length;

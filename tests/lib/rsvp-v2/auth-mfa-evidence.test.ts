@@ -7,6 +7,14 @@ function makeToken(payload: Record<string, unknown>): string {
 }
 
 describe('rsvp authMfaEvidence', () => {
+	it.each(['otp', 'phone', 'password'])('rejects %s as standalone MFA evidence', (method) => {
+		expect(hasMfaEvidence({ token: makeToken({ aal: 'aal1' }), amr: [{ method }] })).toBe(
+			false,
+		);
+	});
+	it('accepts the explicit mfa method', () => {
+		expect(hasMfaEvidence({ token: 'x.y.z', amr: [{ method: 'mfa' }] })).toBe(true);
+	});
 	it('returns true when amr includes totp', () => {
 		expect(
 			hasMfaEvidence({

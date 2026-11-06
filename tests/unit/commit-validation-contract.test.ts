@@ -138,6 +138,20 @@ describe('Commit validation contract', () => {
 			expect(result.status).toBe(0);
 		});
 
+		it('skips a signed-off group bump written with a lowercase verb', () => {
+			const result = lintMessage(
+				[
+					'chore(deps-dev): bump eslint-plugin-boundaries',
+					'',
+					'Bumps the tooling group with 1 update: [eslint-plugin-boundaries](https://github.com/javierbrea/eslint-plugin-boundaries).',
+					'',
+					SIGN_OFF,
+				].join('\n'),
+			);
+
+			expect(result.status).toBe(0);
+		});
+
 		it('still lints a human commit shaped like a bump', () => {
 			const result = lintMessage(
 				'chore(deps): Bump zod from 4.6.5 to 4.7.0\n\nRaise the schema library version.',
