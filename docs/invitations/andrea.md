@@ -253,6 +253,10 @@ weight ceilings. Production-ready describes source and encoding quality; browser
 mechanical evidence and does not replace human creative acceptance. The social card uses its own
 landscape source, with the central square reserved for the portrait.
 
+On 2026-11-05, the owner accepted the hero's current 1122×1402 resolution and requested that the
+gold arch follow that photograph's proportions. The profile keeps the image's natural aspect ratio
+on mobile and desktop; the asset remains unchanged.
+
 ### Uniqueness table (required before READY_*)
 
 | role      | source     | derivative            | intentional multi-role? |
