@@ -97,9 +97,23 @@ describe('getClientIp', () => {
 });
 
 describe('resolveAfterResponseContext', () => {
-	it('wraps the Cloudflare execution context found on locals.runtime.ctx', () => {
+	/** Locals shaped like the Astro Cloudflare adapter's: `runtime` getters throw since Astro v6. */
+	function adapterLocals(cfContext: unknown): object {
+		const locals = { cfContext };
+		Object.defineProperty(locals, 'runtime', {
+			enumerable: false,
+			value: {
+				get ctx() {
+					throw new Error('Astro.locals.runtime.ctx has been removed in Astro v6.');
+				},
+			},
+		});
+		return locals;
+	}
+
+	it('wraps the Cloudflare execution context found on locals.cfContext', () => {
 		const waitUntil = jest.fn();
-		const ctx = resolveAfterResponseContext({ runtime: { ctx: { waitUntil } } });
+		const ctx = resolveAfterResponseContext(adapterLocals({ waitUntil }));
 		const promise = Promise.resolve();
 
 		ctx?.waitUntil(promise);
@@ -107,11 +121,15 @@ describe('resolveAfterResponseContext', () => {
 		expect(waitUntil).toHaveBeenCalledWith(promise);
 	});
 
+	it('never reads the removed locals.runtime.ctx getter', () => {
+		expect(() => resolveAfterResponseContext(adapterLocals(undefined))).not.toThrow();
+		expect(resolveAfterResponseContext(adapterLocals(undefined))).toBeNull();
+	});
+
 	it('returns null when locals carry no execution context', () => {
 		expect(resolveAfterResponseContext(undefined)).toBeNull();
 		expect(resolveAfterResponseContext({})).toBeNull();
-		expect(resolveAfterResponseContext({ runtime: {} })).toBeNull();
-		expect(resolveAfterResponseContext({ runtime: { ctx: { waitUntil: 'no' } } })).toBeNull();
+		expect(resolveAfterResponseContext({ cfContext: { waitUntil: 'no' } })).toBeNull();
 	});
 });
 
