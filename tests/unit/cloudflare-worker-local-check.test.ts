@@ -27,7 +27,7 @@ function fakeWorker(options: FakeWorkerOptions = {}) {
 		requested.push(`${url.pathname}${url.search}`);
 		const headers = new Headers(
 			resolveSecurityHeaders(url.pathname, {
-				localSupabaseOrigin: options.localSupabaseOrigin,
+				localSupabaseOrigin: url.pathname === '/' ? undefined : options.localSupabaseOrigin,
 			})
 				.filter(([name]) => name !== options.dropHeader)
 				.map(([name, value]) => [name, value]),
@@ -98,8 +98,8 @@ describe('cloudflare-worker-local-check', () => {
 		).resolves.toEqual([]);
 		const failures = await runLocalWorkerChecks({ origin: ORIGIN, fetchImpl });
 		expect(failures).toContain(
-			`/: header Content-Security-Policy-Report-Only is ${
-				resolveSecurityHeaders('/', { localSupabaseOrigin }).find(
+			`/login: header Content-Security-Policy-Report-Only is ${
+				resolveSecurityHeaders('/login', { localSupabaseOrigin }).find(
 					([name]) => name === 'Content-Security-Policy-Report-Only',
 				)?.[1]
 			}`,

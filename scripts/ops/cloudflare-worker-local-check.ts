@@ -34,11 +34,13 @@ interface PageExpectation {
 	path: string;
 	status: number;
 	location?: string;
+	/** Served from static assets with `_headers`, so the middleware never adds the local origin. */
+	staticAsset?: boolean;
 }
 
 /** Pages served by the Worker: prerendered asset, server page, auth redirects. */
 export const PAGE_EXPECTATIONS: readonly PageExpectation[] = [
-	{ path: '/', status: 200 },
+	{ path: '/', status: 200, staticAsset: true },
 	{ path: '/login', status: 200 },
 	{ path: '/dashboard/invitados', status: 302, location: '/login' },
 	{ path: '/dashboard/invitaciones/inv_123/preview', status: 302 },
@@ -79,7 +81,11 @@ async function checkPage(
 ): Promise<string[]> {
 	const response = await fetchImpl(`${origin}${page.path}`, { redirect: 'manual' });
 	await response.text();
-	const failures = headerFailures(page.path, response, localSupabaseOrigin);
+	const failures = headerFailures(
+		page.path,
+		response,
+		page.staticAsset ? undefined : localSupabaseOrigin,
+	);
 	if (response.status !== page.status) {
 		failures.push(`${page.path}: status ${response.status}, expected ${page.status}`);
 	}
