@@ -1,6 +1,10 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import InvitationList from '@/components/dashboard/intake/InvitationList';
+
+if (!Astro.locals.session?.isSuperAdmin) {
+	return Astro.redirect('/dashboard/invitados');
+}
 ---
 
 <DashboardLayout title="Dashboard Invitaciones">
