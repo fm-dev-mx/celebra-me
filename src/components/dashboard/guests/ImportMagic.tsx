@@ -154,6 +154,7 @@ const TARGET_LABELS: Record<ColumnTarget, string> = {
 	phoneCountryCode: 'Clave país',
 	email: 'Correo',
 	maxAllowedAttendees: 'Pases',
+	maxAllowedChildren: 'Niños',
 	tags: 'Etiquetas',
 	ignore: 'Ignorar',
 };
@@ -241,6 +242,7 @@ function toGuestPayload(g: ParsedGuest) {
 		countryCode: norm.ok ? norm.countryCode : undefined,
 		email: g.email,
 		maxAllowedAttendees: g.maxAllowedAttendees ?? 2,
+		maxAllowedChildren: g.maxAllowedChildren ?? 0,
 		tags: g.tags ?? [],
 	};
 }

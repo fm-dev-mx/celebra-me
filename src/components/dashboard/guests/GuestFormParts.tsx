@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDownGlyph } from '@/components/dashboard/guests/GuestGlyphs';
+import { formatParty, maxConfirmableChildren } from '@/lib/rsvp/guest-cap';
 import type { AttendanceStatus } from '@/interfaces/rsvp/domain.interface';
 
 const STATUS_SUMMARY: Record<AttendanceStatus, string> = {
@@ -14,7 +15,12 @@ interface GuestResponseFieldsProps {
 	maxAttendees: number;
 	onStatusChange: (status: AttendanceStatus) => void;
 	onAttendeeCountChange: (count: number) => void;
+	/** Children as typed; parsed and validated by the form on submit. */
+	childrenCount?: string;
+	maxChildren?: number;
+	onChildrenCountChange?: (value: string) => void;
 	error?: string;
+	childrenError?: string;
 }
 
 /** Manual RSVP correction, edit mode only and collapsed: rarely needed, never in the way. */
@@ -24,12 +30,18 @@ export const GuestResponseFields: React.FC<GuestResponseFieldsProps> = ({
 	maxAttendees,
 	onStatusChange,
 	onAttendeeCountChange,
+	childrenCount = '0',
+	maxChildren = 0,
+	onChildrenCountChange,
 	error,
+	childrenError,
 }) => {
-	const [open, setOpen] = useState(Boolean(error));
+	const hasError = Boolean(error || childrenError);
+	const [open, setOpen] = useState(hasError);
+	const childrenValue = parseInt(childrenCount, 10) || 0;
 	const summary =
 		status === 'confirmed'
-			? `${STATUS_SUMMARY.confirmed} · ${attendeeCount} ${attendeeCount === 1 ? 'persona' : 'personas'}`
+			? `${STATUS_SUMMARY.confirmed} · ${formatParty(attendeeCount, { children: childrenValue, unit: 'persona' })}`
 			: STATUS_SUMMARY[status];
 
 	return (
@@ -37,7 +49,7 @@ export const GuestResponseFields: React.FC<GuestResponseFieldsProps> = ({
 			<button
 				type="button"
 				className="guest-form__response-toggle"
-				aria-expanded={open || Boolean(error)}
+				aria-expanded={open || hasError}
 				aria-controls="guest-response-fields"
 				onClick={() => setOpen((value) => !value)}
 			>
@@ -45,7 +57,7 @@ export const GuestResponseFields: React.FC<GuestResponseFieldsProps> = ({
 				<span className="guest-form__response-summary">{summary}</span>
 				<ChevronDownGlyph size={18} />
 			</button>
-			{(open || error) && (
+			{(open || hasError) && (
 				<div id="guest-response-fields" className="guest-form__response-fields">
 					<p className="guest-field-hint">Cámbiela solo si necesita corregirla.</p>
 					<div className="dashboard-form-field">
@@ -75,6 +87,26 @@ export const GuestResponseFields: React.FC<GuestResponseFieldsProps> = ({
 									onAttendeeCountChange(Number(event.target.value))
 								}
 							/>
+						</div>
+					)}
+					{status === 'confirmed' && maxChildren > 0 && onChildrenCountChange && (
+						<div className="dashboard-form-field">
+							<label htmlFor="childrenCount">De ellos, niños</label>
+							<input
+								id="childrenCount"
+								type="number"
+								min={0}
+								max={maxConfirmableChildren(attendeeCount, maxChildren)}
+								value={childrenCount}
+								aria-invalid={Boolean(childrenError)}
+								aria-describedby={childrenError ? 'childrenCount-error' : undefined}
+								onChange={(event) => onChildrenCountChange(event.target.value)}
+							/>
+							{childrenError && (
+								<span id="childrenCount-error" className="guest-field-error">
+									{childrenError}
+								</span>
+							)}
 						</div>
 					)}
 					{error && <span className="guest-field-error">{error}</span>}

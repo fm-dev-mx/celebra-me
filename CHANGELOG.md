@@ -10,6 +10,118 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.69.2-beta.1] - 2026-11-05
+
+Sizes the `/xv/andrea` hero arch to the accepted portrait. No migrations.
+
+### Changed
+
+- Invitations: Andrea's gold hero arch follows the 1122 × 1402 portrait's own proportion on mobile
+  and desktop, so no beige strip shows inside the arch (#842).
+
+## [0.69.1-beta.1] - 2026-11-05
+
+Refreshes the photos of the `/xv/andrea` invitation with the third round of owner-selected sources.
+No migrations.
+
+### Changed
+
+- Invitations: Andrea's ten invitation photos are replaced with the third-round sources, each role
+  kept distinct and the hero centered; the mobile and desktop visual references are re-accepted
+  (#829).
+
+## [0.69.0-beta.1] - 2026-11-05
+
+Lets hosts reserve part of a guest's passes for children. Requires migration
+`20261105120000_guest_children_in_party`, already applied in Production.
+
+### Added
+
+- Dashboard: guests can include children within their passes («+ Incluye niños» / «De ellos,
+  niños»); adults are derived from the total, and the guest list, import and export gain a «Niños»
+  column with children totals (#828).
+- Invitations: the access pass and the editorial cover show the adults/children breakdown, the RSVP
+  asks how many children attend (capped by the guest's children allowance) and the default WhatsApp
+  message names adults and children; custom templates keep `{guestCount}` (#828).
+- Database: guests store `max_allowed_children` and `children_count`, and `submit_guest_rsvp_public`
+  now takes a twelfth argument `p_children_count` (#828).
+
+### Fixed
+
+- Guests: children are validated in the RSVP and guest forms — an over-limit RPC error returns a
+  Spanish 400, empty or invalid children values are rejected, and lowering passes below the stored
+  children cap clamps it instead of failing (#830).
+- Database: the post-apply schema contract verifies the 12-argument `submit_guest_rsvp_public`, and
+  a unit test fails when the contract references a dropped function signature (#831).
+
+## [0.68.0-beta.1] - 2026-11-04
+
+Makes the andrea gold bracelet visible on phones. No database migrations.
+
+### Fixed
+
+- Invitations: andrea shows a thicker gold bracelet on five photos (gallery, family, both interludes
+  and the staircase album) so it reads at phone width; the closing photo keeps the thin chain, and
+  the cover and full-body photos stay without it.
+
+## [0.67.0-beta.1] - 2026-11-04
+
+Applies the naomi-huerta client corrections and the second andrea adjustment round. No database
+migrations.
+
+### Added
+
+- Invitations: a gift-tag variant for the gifts section, used by naomi-huerta to fit the registry
+  and the cash envelope box in one screen.
+
+### Changed
+
+- Invitations: naomi-huerta shows the full name on the cover, corrects the program times (reception
+  at 20:15), adds the cash envelope box and asks for the names of every attendee in the RSVP notes
+  step.
+- Invitations: andrea applies the second client round: whole sections at every viewport size,
+  refined footer, countdown, cues, music and menu, matching pass and RSVP widths, and retouched
+  portraits (makeup, dress sparkle and the garden bracelet).
+
+## [0.66.0-beta.1] - 2026-11-04
+
+Applies the first round of client feedback to the yireh-ana invitation. No database migrations.
+
+### Changed
+
+- Invitations: yireh-ana shows a larger centred name with «Mis XV años» on the cover and moves the
+  date and venue to later sections; the envelope and send-off fly yellow ribbons instead of
+  butterflies; the family section follows the client reference with calligraphy group titles.
+- Invitations: yireh-ana sets the countdown between the location and the pass, and re-paces the
+  section grounds as paper, mist and night with matted watercolor interludes.
+
+## [0.65.0-beta.1] - 2026-11-04
+
+Sends more customer data to Meta, hashed, to raise the event match quality. No database migrations.
+
+### Added
+
+- Tracking: Meta CAPI events carry the hashed customer country, name and city; lead cities are
+  canonicalized against the INEGI 2020 census list, with accent variants.
+- Tracking: the Meta customer list CSV adds the state (`st`) and the canonical city.
+- Landing: the lead form asks for the city (optional, with suggestions) instead of the celebrant
+  names.
+
+### Changed
+
+- Privacy notice: discloses the hashed country and Meta on-device measurement.
+
+## [0.64.0-beta.1] - 2026-11-03
+
+Refines the naomi-huerta invitation scenes. No database migrations.
+
+### Changed
+
+- Invitations: naomi-huerta adds the castle clock, program motifs and paper stock, and fits each
+  section to the phone viewport; on phones each venue drawing sits beside its venue.
+- Invitations: the shared route map keeps stop labels and the phone entry grid opt-in, so other
+  route invitations render as before.
+
 ## [0.63.0-beta.1] - 2026-11-03
 
 Registers past clients with customer referral rewards and ships the naomi-huerta invitation updates.

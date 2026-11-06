@@ -32,6 +32,7 @@ function parseRsvpPayload(body: Record<string, unknown>): GuestRSVPSubmitDTO | R
 	return {
 		attendanceStatus,
 		attendeeCount: typeof body.attendeeCount === 'number' ? body.attendeeCount : 0,
+		childrenCount: typeof body.childrenCount === 'number' ? body.childrenCount : 0,
 		guestComment: sanitize(body.guestComment as string, MAX_GUEST_COMMENT_LEN),
 	};
 }

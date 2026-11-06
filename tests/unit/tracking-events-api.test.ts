@@ -83,7 +83,7 @@ describe('/api/tracking/events', () => {
 		});
 		const context = {
 			...createApiContext(request),
-			locals: { runtime: { ctx: { waitUntil } } },
+			locals: { cfContext: { waitUntil } },
 		};
 
 		await POST(context as never);

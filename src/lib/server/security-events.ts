@@ -9,12 +9,13 @@
 
 export const SECURITY_EVENT = 'security_event';
 
-export type SecurityEventKind = 'rate_limited' | 'login_failed' | 'mfa_failed';
+export type SecurityEventKind = 'rate_limited' | 'login_failed' | 'mfa_failed' | 'csp_violation';
 
 type SecurityEventFields = {
 	rate_limited: { namespace: string };
 	login_failed: { route: 'login-host' | 'change-password' };
 	mfa_failed: { reason: 'invalid_elevated_token' | 'missing_mfa_evidence' };
+	csp_violation: { directive: string; blocked: string };
 };
 
 export function logSecurityEvent<K extends SecurityEventKind>(

@@ -33,6 +33,9 @@ describe('worktree lane detection', () => {
 		'f09-docs',
 		'f11-preview',
 		'f12-release',
+		'agente-claude',
+		'agente-codex',
+		'agente-gemini',
 	] as const;
 
 	it('recognizes Integration and the six keyed lanes', () => {
@@ -84,18 +87,20 @@ describe('worktree lane detection', () => {
 	it('lists expected lane paths, keys and runtimes under the repository root', () => {
 		const lanes = listExpectedLanePaths('/mock/celebra-me');
 		expect(lanes.map((lane) => lane.id)).toEqual(['integration', ...laneSegments]);
-		expect(lanes.map((lane) => lane.key)).toEqual([5, 6, 7, 8, 9, 11, 12]);
+		expect(lanes.map((lane) => lane.key)).toEqual([5, 6, 7, 8, 9, 11, 12, null, null, null]);
 		expect(
 			lanes.filter((lane) => lane.runtimeDefault === 'preview').map((lane) => lane.id),
 		).toEqual(['f11-preview', 'f12-release']);
 	});
 
-	it('derives ports from the lane key', () => {
+	it('takes each lane port from tablero.config.json', () => {
 		expect(getWorktreeDevServerPort('integration')).toBe(4321);
 		expect(getWorktreeDevServerPort('f06-landing')).toBe(4326);
 		expect(getWorktreeDevServerPort('f08-demos')).toBe(4328);
 		expect(getWorktreeDevServerPort('f11-preview')).toBe(4331);
 		expect(getWorktreeDevServerPort('f12-release')).toBe(4332);
+		expect(getWorktreeDevServerPort('agente-claude')).toBe(4333);
+		expect(getWorktreeDevServerPort('agente-gemini')).toBe(4335);
 		expect(getWorktreeDevServerPort('unknown')).toBe(4399);
 	});
 
@@ -103,7 +108,7 @@ describe('worktree lane detection', () => {
 		const localPorts = listExpectedLanePaths('/mock/celebra-me')
 			.filter((lane) => lane.runtimeDefault === 'local')
 			.map((lane) => WORKTREE_DEV_SERVER_PORTS[lane.id]);
-		expect(localPorts).toHaveLength(5);
+		expect(localPorts).toHaveLength(8);
 		expect(new Set(localPorts).size).toBe(localPorts.length);
 		expect(localPorts).not.toContain(WORKTREE_DEV_SERVER_PORTS.unknown);
 	});
@@ -116,7 +121,7 @@ describe('worktree lane detection', () => {
 				id: string;
 				carpeta: string;
 				puerto: number;
-				tecla: number;
+				tecla?: number;
 				nombre: string;
 				entorno: string;
 			}>;
@@ -137,7 +142,7 @@ describe('worktree lane detection', () => {
 				lane.id,
 				lane.carpeta.split('/').pop(),
 				lane.puerto,
-				lane.tecla,
+				lane.tecla ?? null,
 				lane.nombre,
 				lane.entorno,
 			]),
@@ -157,6 +162,8 @@ describe('lane work policy', () => {
 		expect(message).toContain('lane: unknown');
 		expect(message).toContain('f06-landing (Win + F6)');
 		expect(message).toContain('f12-release (Win + F12)');
+		expect(message).toContain('agente-codex,');
+		expect(message).not.toContain('Win + Fnull');
 	});
 
 	it('allows Integration sessions on develop and only merge commits on develop', () => {
@@ -185,6 +192,18 @@ describe('lane work policy', () => {
 	it('allows any branch in a keyed lane', () => {
 		const docs = lane('/mock/celebra-me-worktrees/f09-docs');
 		expect(checkLaneWorkPolicy({ lane: docs, branch: 'chore/x' })).toBeNull();
+	});
+
+	it('lets an agent lane commit on a task branch but never on develop', () => {
+		const agent = lane('/mock/celebra-me-worktrees/agente-gemini');
+		expect(agent.id).toBe('agente-gemini');
+		expect(agent.key).toBeNull();
+		expect(
+			checkLaneWorkPolicy({ lane: agent, branch: 'gemini/t618', operation: 'commit' }),
+		).toBeNull();
+		expect(
+			checkLaneWorkPolicy({ lane: agent, branch: 'develop', operation: 'commit' }),
+		).toContain('Direct task commits on develop are forbidden');
 	});
 
 	it('lets a keyed lane start on develop but never commit there, even while merging', () => {

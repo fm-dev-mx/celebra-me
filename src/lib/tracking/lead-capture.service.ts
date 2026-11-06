@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { DEMO_SHOWROOM_ITEMS } from '@/data/demo-showroom.data';
 import { createCommercialCustomer } from '@/lib/commercial/customer.service';
+import { canonicalizeMexicanCity } from '@/lib/commercial/mexican-cities';
 import { enqueueBrowserConversionEvent } from '@/lib/commercial/meta-capi/service';
 import { normalizeCommercialPhone } from '@/lib/commercial/phone';
 import { ApiError } from '@/lib/rsvp/core/errors';
@@ -64,6 +65,7 @@ const LeadCaptureSchema = TrackingEventSchema.pick({
 		.refine((value) => isLeadEventDateInRange(value), 'Fecha fuera de rango.'),
 	contactName: z.string().trim().min(2).max(80),
 	celebrantNames: optionalText(120),
+	city: optionalText(60),
 	phone: z
 		.string()
 		.trim()
@@ -266,6 +268,7 @@ export async function submitLeadCapture(
 	const customerResult = await createCommercialCustomer({
 		displayName: input.contactName,
 		phone: input.phone,
+		city: canonicalizeMexicanCity(input.city),
 		createdFromLeadId: lead.id,
 	});
 	const customerId =

@@ -1,4 +1,5 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
+import { formatParty } from '@/lib/rsvp/guest-cap';
 import { formatPhoneDisplay } from '@/components/dashboard/guests/guest-presenter';
 
 interface SendGuestSummaryProps {
@@ -20,7 +21,7 @@ export const SendGuestSummary: React.FC<SendGuestSummaryProps> = ({
 	const people = parseInt(peopleInput, 10);
 	const peopleLabel =
 		Number.isFinite(people) && people > 0
-			? `${people} ${people === 1 ? 'persona' : 'personas'}`
+			? formatParty(people, { unit: 'persona' })
 			: 'Sin personas';
 	const phoneLabel = phone.trim()
 		? `${countryCode} ${formatPhoneDisplay(phone)}`

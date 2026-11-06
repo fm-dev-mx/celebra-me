@@ -271,7 +271,7 @@ describe('GET /api/dashboard/commercial/customers?export=meta-csv', () => {
 		);
 		expect(response.headers.get('cache-control')).toContain('no-store');
 		expect(await response.text()).toBe(
-			'phone,fn,ln,ct,country\n+526681112233,Valentina,Hernández Ruiz,Los Mochis,MX\n',
+			'phone,fn,ln,ct,st,country\n+526681112233,Valentina,Hernández Ruiz,Los Mochis,Sinaloa,MX\n',
 		);
 		expect(mockFindCommercialCustomerById).not.toHaveBeenCalled();
 	});

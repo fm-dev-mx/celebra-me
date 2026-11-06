@@ -2,8 +2,9 @@
 
 // Naomi: the storybook-blush preset as a printed photo album. Two flat day grounds (blush paper
 // and rose mist mist) alternate section by section, the countdown is the one short rose night band,
-// and the closing is the night the story ends in. The photographs lead; fine silver butterflies are
-// the only motif. Three joins out of eleven boundaries, in a bridge, bridge, climax cadence: the
+// and the closing is the night the story ends in. The photographs lead; fine silver butterflies head
+// the motifs, beside the castle clock, the itinerary marks and the gift bow. Three joins out of
+// eleven boundaries, in a bridge, bridge, climax cadence: the
 // night rises on a slow horizon under the door plate, the veil print hangs out of the
 // night into the paper, and the closing rises into the reply card under an arch. Tokens only;
 // layout stays with the variants.
@@ -36,6 +37,11 @@ $naomi-formal-attire: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/20
 $naomi-footer-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='%23E4E6F0' stroke='%23E4E6F0' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill-opacity='.85'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
 $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M40.1 84.6A36 36 0 0 1 30.9 19.5M59.9 84.6A36 36 0 0 0 69.1 19.5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/%3E%3Cellipse cx='33.9' cy='86.2' rx='4.6' ry='1.9' transform='rotate%28244 33.9 86.2%29'/%3E%3Cellipse cx='33.3' cy='77.7' rx='4.6' ry='1.9' transform='rotate%28171 33.3 77.7%29'/%3E%3Cellipse cx='22.3' cy='78.3' rx='4.4' ry='1.8' transform='rotate%28264 22.3 78.3%29'/%3E%3Cellipse cx='24.7' cy='70.2' rx='4.4' ry='1.8' transform='rotate%28191 24.7 70.2%29'/%3E%3Cellipse cx='14.2' cy='66.9' rx='4.2' ry='1.7' transform='rotate%28285 14.2 66.9%29'/%3E%3Cellipse cx='19.2' cy='60.1' rx='4.2' ry='1.7' transform='rotate%28212 19.2 60.1%29'/%3E%3Cellipse cx='10.6' cy='53.5' rx='4.0' ry='1.7' transform='rotate%28305 10.6 53.5%29'/%3E%3Cellipse cx='17.6' cy='48.8' rx='4.0' ry='1.7' transform='rotate%28-128 17.6 48.8%29'/%3E%3Cellipse cx='11.8' cy='39.5' rx='3.8' ry='1.6' transform='rotate%28-35 11.8 39.5%29'/%3E%3Cellipse cx='20.1' cy='37.6' rx='3.8' ry='1.6' transform='rotate%28-108 20.1 37.6%29'/%3E%3Cellipse cx='17.8' cy='26.9' rx='3.6' ry='1.5' transform='rotate%28-14 17.8 26.9%29'/%3E%3Cellipse cx='26.2' cy='28.0' rx='3.6' ry='1.5' transform='rotate%28-87 26.2 28.0%29'/%3E%3Cellipse cx='27.9' cy='17.2' rx='3.4' ry='1.4' transform='rotate%286 27.9 17.2%29'/%3E%3Cellipse cx='35.3' cy='21.1' rx='3.4' ry='1.4' transform='rotate%28-67 35.3 21.1%29'/%3E%3Cellipse cx='66.1' cy='86.2' rx='4.6' ry='1.9' transform='rotate%28116 66.1 86.2%29'/%3E%3Cellipse cx='66.7' cy='77.7' rx='4.6' ry='1.9' transform='rotate%28189 66.7 77.7%29'/%3E%3Cellipse cx='77.7' cy='78.3' rx='4.4' ry='1.8' transform='rotate%2896 77.7 78.3%29'/%3E%3Cellipse cx='75.3' cy='70.2' rx='4.4' ry='1.8' transform='rotate%28169 75.3 70.2%29'/%3E%3Cellipse cx='85.8' cy='66.9' rx='4.2' ry='1.7' transform='rotate%2875 85.8 66.9%29'/%3E%3Cellipse cx='80.8' cy='60.1' rx='4.2' ry='1.7' transform='rotate%28148 80.8 60.1%29'/%3E%3Cellipse cx='89.4' cy='53.5' rx='4.0' ry='1.7' transform='rotate%2855 89.4 53.5%29'/%3E%3Cellipse cx='82.4' cy='48.8' rx='4.0' ry='1.7' transform='rotate%28128 82.4 48.8%29'/%3E%3Cellipse cx='88.2' cy='39.5' rx='3.8' ry='1.6' transform='rotate%2835 88.2 39.5%29'/%3E%3Cellipse cx='79.9' cy='37.6' rx='3.8' ry='1.6' transform='rotate%28108 79.9 37.6%29'/%3E%3Cellipse cx='82.2' cy='26.9' rx='3.6' ry='1.5' transform='rotate%2814 82.2 26.9%29'/%3E%3Cellipse cx='73.8' cy='28.0' rx='3.6' ry='1.5' transform='rotate%2887 73.8 28.0%29'/%3E%3Cellipse cx='72.1' cy='17.2' rx='3.4' ry='1.4' transform='rotate%28-6 72.1 17.2%29'/%3E%3Cellipse cx='64.7' cy='21.1' rx='3.4' ry='1.4' transform='rotate%2867 64.7 21.1%29'/%3E%3Cg transform='translate%2841.84 3.12%29 scale%280.34%29'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31Z'/%3E%3Cpath d='M23 32C14 33 8 40 11 46 14 51 21 45 23 37Z'/%3E%3Cpath d='M25 26C34 12 45 12 44 22 43 30 34 33 25 31Z'/%3E%3Cpath d='M25 32C34 33 40 40 37 46 34 51 27 45 25 37Z'/%3E%3Cpath d='M24 20C25.2 20 25.8 25 25.8 32S25.2 44 24 44 22.2 39 22.2 32 22.8 20 24 20Z'/%3E%3C/g%3E%3C/svg%3E");
 
+// Luxury cotton stock: long laid fibers under a fine felt grain, inked plum for the pearl cards and
+// pearl for the night ones, tiled small so the texture reads as paper, never as a pattern.
+$naomi-paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.014 .2' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .3 0 0 0 0 .36 .42 0 0 0 -.2'/%3E%3C/filter%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .2 0 0 0 0 .26 .5 0 0 0 -.19'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+$naomi-paper-grain-night: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.014 .2' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .95 0 0 0 0 .97 .3 0 0 0 -.15'/%3E%3C/filter%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .08 0 0 0 0 .02 0 0 0 0 .06 .6 0 0 0 -.22'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+
 .event--naomi-huerta.theme-preset--storybook-blush {
 	// Depths of the three joins, each reserved as padding on the side it enters.
 	--naomi-cut: clamp(4.5rem, 14vw, 6.5rem);
@@ -48,6 +54,17 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	--storybook-paper: var(--color-blush-paper);
 	--storybook-paper-mist: var(--color-rose-mist);
 	--invitation-paper: var(--color-blush-paper);
+
+	// The «Continúe» labels read at full ink: 80% opacity left them at 4.3:1.
+	--section-nav-label-opacity: 100%;
+
+	// The date under the name reads in the deeper rose: rose deep read at 4:1 on the cover's paper.
+	--hero-details-color: var(--color-rose-night);
+
+	// The «Continúe» link under the venues reads in plum: the silver emphasis read at 4.3:1.
+	.section-nav-button--event-location {
+		--color-text-emphasis: var(--color-plum-ink-soft);
+	}
 
 	// Family as a dedication page: the mesrose mist reads as an epigraph in the display italic, with a
 	// silver hairline for the rules.
@@ -68,7 +85,10 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	// The dress code hangs from a silver thread as a small rose tag with clipped corners: a
 	// butterfly at its head, the etiquette, the colors kept for her (a half-rose, half-silver
 	// swatch) and one closing line in spaced capitals.
-	--location-enclosure-bg: var(--color-rose-night);
+	--location-enclosure-bg:
+		#{$naomi-paper-grain-night},
+		radial-gradient(ellipse 120% 90% at 50% 30%, transparent 50%, rgb(0 0 0 / 22%)),
+		linear-gradient(160deg, rgb(255 255 255 / 8%), transparent 40%), var(--color-rose-night);
 	--location-enclosure-ink: var(--color-pale-pearl);
 	--location-enclosure-muted: var(--color-pale-silver);
 	--location-enclosure-rule: rgb(var(--color-pale-silver-rgb) / 60%);
@@ -127,16 +147,61 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	--location-enclosure-swatch-size: 0.85rem;
 	--location-enclosure-swatch-ring: 0 0 0 1px rgb(var(--color-pale-silver-rgb) / 70%);
 	--location-enclosure-reserved-title-font: var(--font-display);
-	--location-enclosure-reserved-title-size: 1rem;
-	--location-enclosure-reserved-title-caps: all-small-caps;
+	--location-enclosure-reserved-title-size: 1.375rem;
+
+	// Full caps: small caps at this size read smaller than the italic line below.
+	--location-enclosure-reserved-title-caps: normal;
 	--location-enclosure-reserved-title-line-height: 1.4;
 	--location-enclosure-reserved-title-tracking: 0.08em;
 	--location-enclosure-reserved-title-color: var(--color-night-blush);
 	--location-enclosure-last-text-font: var(--font-label);
-	--location-enclosure-last-text-size: 0.8125rem;
+	--location-enclosure-last-text-size: 1rem;
 	--location-enclosure-last-text-transform: uppercase;
 	--location-enclosure-last-text-tracking: 0.14em;
 	--location-enclosure-last-text-color: var(--color-night-blush);
+
+	// The floating reply and the music button are one pair of pearl glass over the page: translucent
+	// pearl, a silver edge, rose ink, the same 44px height on the same baseline.
+	--floating-cta-bg: rgb(var(--color-story-pearl-rgb) / 72%);
+	--floating-cta-ink: var(--color-rose-deep);
+	--floating-cta-border: 1px solid var(--color-pale-silver);
+	--floating-cta-shadow: 0 0.5rem 1.25rem -0.5rem rgb(var(--color-rose-midnight-rgb) / 45%);
+	--music-player-button-bg: rgb(var(--color-story-pearl-rgb) / 72%);
+	--music-player-button-color: var(--color-rose-deep);
+	--music-player-button-border: 1px solid var(--color-pale-silver);
+	--music-player-button-shadow: 0 0.5rem 1.25rem -0.5rem rgb(var(--color-rose-midnight-rgb) / 45%);
+	--music-player-ring-color: rgb(var(--color-pale-silver-rgb) / 90%);
+
+	// The reply card as a ball ticket on thick pearl stock: the pass and the tear-off reply share
+	// one ground, joined by perforations notched with discs of the section's rose mist.
+	--reply-card-bg: linear-gradient(
+		165deg,
+		var(--color-story-pearl),
+		var(--color-blush-paper) 70%,
+		var(--color-story-pearl)
+	);
+	--reply-card-shadow-upper:
+		0 -1px 0 rgb(var(--color-pale-silver-rgb) / 90%),
+		0 -0.75rem 2rem -1rem rgb(var(--color-rose-midnight-rgb) / 35%);
+	--reply-card-shadow-lower:
+		0 2px 0 var(--color-pale-silver), 0 4px 0 rgb(var(--color-leaf-silver-rgb) / 55%),
+		0 1.5rem 2.25rem -1rem rgb(var(--color-rose-midnight-rgb) / 40%);
+	--reply-card-guest-size: clamp(2.75rem, 12vw, 3.5rem);
+	--reply-card-guest-weight: 400;
+	--reply-card-divider:
+		repeating-linear-gradient(
+				90deg,
+				rgb(var(--color-leaf-silver-rgb) / 80%) 0 0.4rem,
+				transparent 0.4rem 0.75rem
+			)
+			center / calc(100% - 2.5rem) 2px no-repeat,
+		radial-gradient(circle at 0 50%, var(--color-rose-mist) 0.7rem, transparent 0.75rem),
+		radial-gradient(circle at 100% 50%, var(--color-rose-mist) 0.7rem, transparent 0.75rem);
+	--reply-card-divider-width: auto;
+	--reply-card-divider-height: 1.5rem;
+	--reply-card-seam: var(--reply-card-divider);
+	--reply-card-seam-width: 100%;
+	--reply-card-seam-height: 1.5rem;
 
 	// Venue entries read top-down: the moment in silver ink, the hour, the venue large in the
 	// section's ink, the address soft. The map is the primary action, filled in rose; the
@@ -148,8 +213,10 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 		--location-program-drawing: var(--color-rose-deep);
 		--location-program-drawing-stroke: 1.7;
 		--location-program-drawing-size: 10rem;
-		--location-program-label-color: var(--color-silver-ink);
-		--location-program-label-size: 1.05rem;
+
+		// Labels name the stop, so they carry the strongest ink (silver read at 4.3:1).
+		--location-program-label-color: var(--color-plum-ink);
+		--location-program-label-size: 1.125rem;
 		--location-program-time-color: var(--color-plum-ink-soft);
 		--location-program-address-color: var(--color-plum-ink-soft);
 		--location-program-link: var(--color-rose-deep);
@@ -165,7 +232,7 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 		--location-program-link-bg: rgb(var(--color-story-pearl-rgb) / 55%);
 		--location-program-link-radius: 999px;
 		--location-program-link-decoration: none;
-		--location-program-link-size: 0.95rem;
+		--location-program-link-size: 1rem;
 		--location-program-link-tracking: 0.1em;
 		--location-program-link-primary-bg: var(--color-rose-deep);
 		--location-program-link-primary-color: var(--color-story-pearl);
@@ -189,6 +256,14 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	// a faint silver light low on the page. Set on the scene's own selector so the scene default
 	// does not shadow it.
 	.event-location[data-location-scene='butterfly-route'] {
+		// The route keeps a readable share of the stage and names its two stops.
+		--location-route-map-min: clamp(8rem, 24svh, 12rem);
+		--location-route-stop-labels: block;
+
+		// On phones each drawing sits beside its venue so the entry stays short.
+		--location-route-entry-display: grid;
+		--location-route-entry-drawing-size: 4.75rem;
+		--location-route-note-ink: var(--color-rose-night);
 		--location-route-sky:
 			radial-gradient(
 				120% 60% at 50% 100%,
@@ -281,15 +356,16 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	.countdown-section {
 		--naomi-band-padding: 7rem;
 		--countdown-type-section-padding-block: calc(var(--naomi-band-padding) + var(--naomi-cut));
-		--countdown-type-title-size: 0.8125rem;
+		--countdown-type-title-size: clamp(1.25rem, 5vw, 1.5rem);
 		--countdown-type-title-weight: 400;
 		--countdown-type-title-tracking: 0.14em;
 		--countdown-type-title-ink: var(--color-pale-silver);
 		--countdown-type-value-size: clamp(2rem, 8vw, 4rem);
 		--countdown-type-value-weight: 400;
+		--countdown-date-size: 1rem;
 		--countdown-type-value-tracking: 0;
 		--countdown-type-label-font: var(--font-label);
-		--countdown-type-label-size: 0.625rem;
+		--countdown-type-label-size: 0.875rem;
 		--countdown-type-label-tracking: 0.06em;
 		--countdown-type-label-ink: var(--color-pale-silver);
 		--countdown-type-label-opacity: 100%;
@@ -330,7 +406,15 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 			var(--color-blush-paper) 35%,
 			var(--color-rose-mist) 100%
 		);
-		--stacked-cards-paper: var(--color-story-pearl);
+		--stacked-cards-paper:
+			#{$naomi-paper-grain},
+			radial-gradient(
+				ellipse 120% 90% at 50% 30%,
+				transparent 55%,
+				rgb(var(--color-rose-midnight-rgb) / 7%)
+			),
+			linear-gradient(160deg, rgb(255 255 255 / 50%), transparent 40%),
+			var(--color-story-pearl);
 		--stacked-cards-ink: var(--color-plum-ink);
 		--stacked-cards-accent: var(--color-silver-ink);
 		--stacked-cards-border: 1px solid rgb(var(--color-leaf-silver-rgb) / 45%);
@@ -364,7 +448,10 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	}
 
 	.stacked-card[data-moment='Waltz'] {
-		--stacked-cards-paper: var(--color-rose-night);
+		--stacked-cards-paper:
+			#{$naomi-paper-grain-night},
+			radial-gradient(ellipse 120% 90% at 50% 30%, transparent 50%, rgb(0 0 0 / 22%)),
+			linear-gradient(160deg, rgb(255 255 255 / 8%), transparent 40%), var(--color-rose-night);
 		--stacked-cards-ink: var(--color-pale-silver);
 		--stacked-cards-accent: var(--color-pale-silver);
 		--stacked-cards-lantern-line: var(--color-pale-silver);
@@ -376,6 +463,8 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	// The album page keeps the page gutter and a narrow gap between prints; the first print is
 	// already falling as the page scrolls in.
 	.gallery-section {
+		--gallery-album-hint-size: 1rem;
+		--gallery-album-ink: var(--color-rose-night);
 		--gallery-title-style: normal;
 		--gallery-title-color: var(--color-plum-ink);
 		--gallery-title-weight: 400;
@@ -478,15 +567,21 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 	);
 	--footer-pull-label: 'Deslice hacia arriba para dejar volar la última mariposa';
 	--footer-pull-label-color: rgb(var(--color-pale-silver-rgb) / 85%);
-	--footer-pull-label-size: 0.8125rem;
+	--footer-pull-label-size: 0.9375rem;
 	--footer-pull-breathe: footer-pull-breathe;
 
-	// No text under 12 px; the footer links keep a 44 px tap height.
-	--footer-rights-size: 0.75rem;
-	--footer-powered-size: 0.75rem;
-	--footer-replay-font-size: 0.75rem;
-	--footer-control-font-size: 0.75rem;
+	// No footer text under 14 px; the footer links keep a 44 px tap height.
+	--footer-rights-size: 0.875rem;
+	--footer-powered-size: 0.875rem;
+	--footer-replay-font-size: 0.875rem;
+	--footer-control-font-size: 0.875rem;
 	--footer-link-tap-padding: 0.875rem;
+
+	// The header, its menu and the envelope card keep the same floor.
+	--header-action-size: 0.875rem;
+	--mobile-nav-subtitle-size: 0.875rem;
+	--mobile-nav-copy-size: 0.875rem;
+	--reveal-card-meta-size: 0.875rem;
 
 	// The footer waits below the closing: the invitation stops on the night, and a second scroll
 	// at the bottom lets a quiet strip of the same night rise, with the reply first.
@@ -502,15 +597,16 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 		// the reply under it, in pale silver.
 		--invitation-footer-reply: on;
 		--footer-reply-eyebrow: 'La última mariposa es la suya';
-		--footer-reply-question: '¿Me acompaña el 3 de julio?';
-		--footer-reply-note: 'Antes del viernes 18 de junio';
+		--footer-reply-question: '¿Me acompaña el 18 de diciembre?';
+		--footer-reply-note: 'Antes del viernes 4 de diciembre';
 		--footer-reply-answered: 'Su mariposa ya llegó. Gracias.';
 		--footer-reply-lantern-height: 1.87rem;
 		--footer-reply-lantern-glow: transparent;
 		--footer-reply-ink: var(--color-story-pearl);
 		--footer-reply-muted: var(--color-night-blush);
 		--footer-reply-accent: var(--color-pale-silver);
-		--footer-reply-eyebrow-size: 0.8125rem;
+		--footer-reply-eyebrow-size: 0.9375rem;
+		--footer-reply-button-size: 0.9375rem;
 		--footer-reply-question-size: clamp(1.6rem, 6.5vw, 2rem);
 		--footer-reply-button-bg: var(--color-pale-silver);
 		--footer-reply-button-ink: var(--color-rose-night);
@@ -534,13 +630,15 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 		--footer-replay-opacity: 72%;
 
 		// Three tiers: the reply, then the invitation's own sign-off with the replay under it, and
-		// last the platform, set apart by a short silver rule on one quiet line with the legal note.
+		// last the platform, set apart by a short silver rule, centered above the legal note.
 		--footer-reply-gap: 3.25rem;
 		--footer-closing-size: clamp(1.1rem, 3vw, 1.25rem);
 		--footer-divider-display: none;
 		--footer-replay-order: -1;
 		--footer-content-gap: 1rem;
-		--footer-primary-row-direction: row;
+		--footer-primary-row-direction: column;
+		--footer-primary-row-direction-sm: column;
+		--footer-primary-row-gap-sm: 1.25rem;
 		--footer-platform-rule: linear-gradient(
 			90deg,
 			transparent,
@@ -626,6 +724,43 @@ $naomi-seal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 		--color-text-primary-rgb: var(--color-plum-ink-rgb);
 		--color-text-secondary: var(--color-plum-ink-soft);
 		--color-text-secondary-rgb: var(--color-plum-ink-soft-rgb);
+	}
+
+	// The registry's gift tag: pearl stock in a silver edge with an inner silver filet.
+	.gifts-section[data-variant='gift-tag'] {
+		--gifts-card-radius: 1rem;
+		--gifts-title-color: var(--color-plum-ink);
+		--gifts-card-border: 1px solid var(--color-pale-silver);
+		--gifts-card-bg: linear-gradient(
+			165deg,
+			var(--color-story-pearl),
+			var(--color-blush-paper)
+		);
+		--gifts-card-shadow:
+			inset 0 0 0 0.35rem var(--color-story-pearl),
+			inset 0 0 0 calc(0.35rem + 1px) rgb(var(--color-leaf-silver-rgb) / 45%),
+			0 1.25rem 2rem -1.25rem rgb(var(--color-rose-midnight-rgb) / 40%);
+		--gifts-card-title-size: clamp(1.75rem, 7vw, 2.1rem);
+		--gifts-card-title-tracking: 0.06em;
+		--gifts-title-transform: none;
+		--gifts-title-letter-spacing: 0.02em;
+		--gifts-card-padding: clamp(1.25rem, 3.5svh, 2rem) 1.25rem;
+		--gifts-tag-button-bg: var(--color-rose-deep);
+		--gifts-tag-button-color: var(--color-story-pearl);
+		--gifts-tag-shadow-rgb: var(--color-rose-midnight-rgb);
+		--gifts-tag-pill-border: rgb(var(--color-leaf-silver-rgb) / 60%);
+		--gifts-tag-number-color: var(--color-plum-ink);
+		--gifts-tag-copy-color: var(--color-silver-ink);
+
+		@media (width < 768px) {
+			--gifts-subtitle-size: 1.125rem;
+			--gifts-subtitle-line-height: 1.5;
+		}
+
+		@media (height < 760px) {
+			--gifts-subtitle-size: 1rem;
+			--gifts-subtitle-line-height: 1.4;
+		}
 	}
 
 	@media (width >= 64rem) {

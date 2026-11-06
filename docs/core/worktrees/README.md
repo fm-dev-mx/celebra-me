@@ -16,9 +16,16 @@ Adding or retiring a lane is one pull request that edits that file. External pat
 | F9  | `f09-docs`                    | Generic      | Local   | 4329 |
 | F11 | `f11-preview`                 | Preview      | Preview | 4331 |
 | F12 | `f12-release`                 | Release      | Preview | 4332 |
+| —   | `agente-claude`               | Agent        | Local   | 4333 |
+| —   | `agente-codex`                | Agent        | Local   | 4334 |
+| —   | `agente-gemini`               | Agent        | Local   | 4335 |
 
 The board assigns tasks only to these lanes: four generic lanes for a WIP of three, plus Preview and
 release. A task's category never binds a generic lane.
+
+Agent lanes (`agente-<name>`) belong to one agent each. The board's bridges open them, so they take
+no key (`tecla`); the guards treat them like any other lane: task branches commit there, `develop`
+never does.
 
 Win + F4 opens the separate board project (`tablero`), not a lane. `f05-plataforma` and `f10-libre`
 are retired (`carrilesRetirados`, owner 2026-10-31): their folders stay, the guards treat them as

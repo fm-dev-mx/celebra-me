@@ -19,7 +19,7 @@ import {
 	sanitize,
 	toSafeAttendeeCount,
 } from '@/lib/rsvp/core/utils';
-import { resolveGuestCap } from '@/lib/rsvp/guest-cap';
+import { checkConfirmedParty, resolveChildrenCap, resolveGuestCap } from '@/lib/rsvp/guest-cap';
 import { appendGuestMessage } from '@/lib/rsvp/core/guest-message';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
@@ -112,34 +112,51 @@ async function resolveRsvpTarget(identity: RsvpIdentity): Promise<ResolvedRsvpTa
 	}
 }
 
-function validateRsvpPayload(
+export function validateRsvpPayload(
 	payload: GuestRSVPSubmitDTO,
 	maxAllowed: number,
-): { attendanceStatus: AttendanceStatus; attendeeCount: number } {
+	maxChildren = 0,
+): { attendanceStatus: AttendanceStatus; attendeeCount: number; childrenCount: number } {
 	const attendanceStatus = payload.attendanceStatus;
 	if (attendanceStatus !== 'confirmed' && attendanceStatus !== 'declined') {
 		throw new ApiError(400, 'bad_request', 'Attendance status is invalid.');
 	}
+	if (attendanceStatus === 'declined') {
+		return { attendanceStatus, attendeeCount: 0, childrenCount: 0 };
+	}
 
-	const safeCount = toSafeAttendeeCount(payload.attendeeCount);
-	const attendeeCount = attendanceStatus === 'declined' ? 0 : safeCount;
-	if (attendanceStatus === 'confirmed' && attendeeCount < 1) {
+	const attendeeCount = toSafeAttendeeCount(payload.attendeeCount);
+	const childrenCount = toSafeAttendeeCount(payload.childrenCount ?? 0);
+	const maxAllowedAttendees = resolveGuestCap(maxAllowed).maxTotalAttendees;
+	const issue = checkConfirmedParty({
+		attendeeCount,
+		childrenCount,
+		maxAttendees: maxAllowedAttendees,
+		maxChildren: resolveChildrenCap(maxChildren, maxAllowedAttendees),
+	});
+	if (issue === 'min_attendees') {
 		throw new ApiError(
 			400,
 			'bad_request',
 			'Confirmed attendance requires at least 1 attendee.',
 		);
 	}
-	const maxAllowedAttendees = resolveGuestCap(maxAllowed).maxTotalAttendees;
-	if (attendeeCount > maxAllowedAttendees) {
+	if (issue === 'max_attendees') {
 		throw new ApiError(
 			400,
 			'bad_request',
 			`The limit for this invitation is ${maxAllowedAttendees}.`,
 		);
 	}
+	if (issue === 'max_children') {
+		throw new ApiError(
+			400,
+			'bad_request',
+			'Children count exceeds the limit for this invitation.',
+		);
+	}
 
-	return { attendanceStatus, attendeeCount };
+	return { attendanceStatus, attendeeCount, childrenCount };
 }
 
 async function persistRsvpResponse(
@@ -149,6 +166,7 @@ async function persistRsvpResponse(
 ): Promise<{
 	attendanceStatus: AttendanceStatus;
 	attendeeCount: number;
+	childrenCount?: number;
 	respondedAt: string;
 	inviteId: string;
 	guestId: string;
@@ -160,7 +178,11 @@ async function persistRsvpResponse(
 		throw new ApiError(500, 'internal_error', 'Unable to resolve RSVP target.');
 	}
 
-	const { attendanceStatus, attendeeCount } = validateRsvpPayload(payload, maxAllowed);
+	const { attendanceStatus, attendeeCount, childrenCount } = validateRsvpPayload(
+		payload,
+		maxAllowed,
+		target.invitation?.maxAllowedChildren ?? 0,
+	);
 	const sanitizedNewMessage = sanitize(payload.guestComment, MAX_GUEST_COMMENT_LEN);
 	// Absolute comment for RPC SET semantics; null keeps existing DB value.
 	const guestCommentAbsolute = !sanitizedNewMessage
@@ -173,6 +195,7 @@ async function persistRsvpResponse(
 					inviteId: target.invitation.inviteId,
 					attendanceStatus,
 					attendeeCount,
+					childrenCount,
 					guestComment: guestCommentAbsolute,
 					responseSource,
 				})
@@ -185,6 +208,7 @@ async function persistRsvpResponse(
 					shortId: generateShortId(8),
 					attendanceStatus,
 					attendeeCount,
+					childrenCount,
 					guestComment: guestCommentAbsolute,
 					responseSource,
 				});
@@ -194,6 +218,7 @@ async function persistRsvpResponse(
 		return {
 			attendanceStatus: updated.attendanceStatus ?? attendanceStatus,
 			attendeeCount: updated.attendeeCount ?? attendeeCount,
+			childrenCount: updated.childrenCount ?? childrenCount,
 			respondedAt: updated.respondedAt ?? new Date().toISOString(),
 			inviteId: updated.inviteId,
 			guestId: updated.id,
@@ -222,6 +247,7 @@ export async function submitGuestRsvpByInviteId(
 ): Promise<{
 	attendanceStatus: AttendanceStatus;
 	attendeeCount: number;
+	childrenCount?: number;
 	respondedAt: string;
 	inviteId: string;
 	guestId: string;
@@ -241,6 +267,7 @@ export async function submitGuestRsvpByPublicEvent(input: {
 }): Promise<{
 	attendanceStatus: AttendanceStatus;
 	attendeeCount: number;
+	childrenCount?: number;
 	respondedAt: string;
 	inviteId: string;
 	guestId: string;
