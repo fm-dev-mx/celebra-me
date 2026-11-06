@@ -167,6 +167,8 @@ const RSVP: React.FC<RSVPProps> = ({
 		isPublicRsvp,
 		attendanceStatus,
 		attendeeCount,
+		childrenCount,
+		maxChildren,
 		notes,
 		nameLocked,
 		effectiveGuestCap,
@@ -185,6 +187,7 @@ const RSVP: React.FC<RSVPProps> = ({
 		handlePhoneChange,
 		setAttendanceStatus,
 		setAttendeeCount,
+		setChildrenCount,
 		setNotes,
 		handleBlur,
 		handleSubmit,
@@ -322,7 +325,18 @@ const RSVP: React.FC<RSVPProps> = ({
 
 	return (
 		<section data-screenshot-section="rsvp" className="rsvp-section" data-rsvp-flow={flow}>
-			<RsvpContext.Provider value={{ eventType, defaultCopy }}>
+			<RsvpContext.Provider
+				value={{
+					eventType,
+					defaultCopy,
+					maxChildren,
+					childrenCount,
+					onChildrenCountChange: (value) => {
+						setChildrenCount(value);
+						if (touched.childrenCount) validate();
+					},
+				}}
+			>
 				{/* Keep the first server/client render visible regardless of motion preference. */}
 				<AnimatePresence initial={false} mode="wait">
 					{submitted ? (
@@ -352,6 +366,7 @@ const RSVP: React.FC<RSVPProps> = ({
 									whatsappConfig,
 									attendanceStatus,
 									attendeeCount,
+									childrenCount: Number(childrenCount) || 0,
 									name,
 									title,
 								})}

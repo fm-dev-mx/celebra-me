@@ -115,7 +115,7 @@ and then:
 - **Step:** Meta
   - **Detail:** With marketing consent on a Meta-allowed route in Production: a `Lead` outbox row
     with the same event ID, `session_id`, `customer_id` and `lead_id`, so delivery adds the hashed
-    phone
+    phone, name and city (the form's optional «Su ciudad», stored as the customer `city`)
 
 The browser fires the Pixel `Lead` with the same event ID but does not post `form_submitted` to
 `/api/tracking`; the capture API already stored it. Outside Production the lead and customer are
@@ -381,11 +381,11 @@ stage; `action_source` is `system_generated`.
 
 The queue checks `leads.consent_marketing` before inserting. Delivery checks it again and, when the
 lead has a session, also requires that session's latest marketing-consent snapshot. Only a
-digits-only SHA-256 hash of the lead phone and the lead's stored `fbp`/`fbc` are sent as user data;
-no email, raw phone, IP address or user agent is included. CRM stage rows use the outbox creation
-time as `event_time`, do not include `event_source_url`, and follow the same retry lifecycle and
-30-day terminal-row retention as browser events. In the current workspace, `paid` is emitted when
-the deposit is registered; there is no separate full-payment transition API.
+digits-only SHA-256 hash of the lead phone, the lead's stored `fbp`/`fbc` and the hashed country
+(`mx`) are sent as user data; no email, raw phone, IP address or user agent is included. CRM stage
+rows use the outbox creation time as `event_time`, do not include `event_source_url`, and follow the
+same retry lifecycle and 30-day terminal-row retention as browser events. In the current workspace,
+`paid` is emitted when the deposit is registered; there is no separate full-payment transition API.
 
 ### CRM sales-stage events
 
@@ -426,6 +426,26 @@ another reason leaves that lead without a Purchase.
 The Pixel and CAPI send the same `external_id`: the SHA-256 hex of the first-party visitor ID
 (`cm_visitor_id`, trimmed and lowercased). The Pixel passes it to `fbq('init', id, { external_id })`
 with `autoConfig` off; it initializes without it when no visitor ID is stored.
+
+Both sides also send the customer country, because Meta asks for it on every event even when all
+customers share one country: the Pixel always initializes with `country: 'mx'` (it hashes the value
+itself), and every CAPI event, browser or CRM, carries `country` as the SHA-256 of `mx`.
+
+Browser-triggered CAPI events that carry a `customer_id` also send the customer's name and city,
+hashed with SHA-256 after Meta's normalization (lowercase letters only, spaces and punctuation
+removed). Each value is sent as two candidates, with and without accents (`maría` and `maria`),
+because Meta's guide asks for Roman letters while its own SDK keeps accents. `fn` is the first word
+of `display_name`; `ln` lists the last one or two remaining surnames, each joined with its particles
+(`de`, `del`, `la`, `las`, `los`, `y`, `san`, `van`, `von`) and also bare, so «Gloria de la Garza»
+sends `delagarza` and `garza`. The lead form suggests cities from
+`src/lib/commercial/mexican-cities.ts`: every locality of 100,000 people or more in the INEGI 2020
+census, under its common name with the INEGI official and municipality names as aliases, plus a few
+smaller cities. The server stores the canonical name for a listed city or alias («Cd. Juárez», «CDJ»
+→ «Ciudad Juárez»; an unlisted city is kept as typed); a state after a comma picks between
+same-named cities («Guadalupe, Zac.»), otherwise the larger one wins. `ct` is that city
+(`ciudadjuárez`, `ciudadjuarez`) and `st` is its state under both its common and INEGI official
+names (`coahuila`, `coahuiladezaragoza`); an unlisted city sends no `st`. CRM lead-stage events do
+not send them.
 
 After a successful «Aparta su fecha» submission with marketing consent, `lead-capture-client.ts`
 calls `rememberMetaPhoneMatchKey()`, which stores only `ph` (the SHA-256 hex of the phone's E.164
@@ -513,11 +533,13 @@ the `packageValue` the operator types; enter the net amount there too.
 
 **Meta customer list.** `GET /api/dashboard/commercial/customers?export=meta-csv` (strong admin
 session, `no-store`) downloads `celebra-me-clientes-meta.csv` with the columns
-`phone,fn,ln,ct,country`. It lists only customers with a confirmed sale, one row per E.164 phone,
-`country` defaulting to `MX`. RSVP and guest data are never part of it. The file is uploaded to Meta
-by the owner by hand; no code uploads it. The privacy notice (`src/pages/privacidad.astro`, sections
-2, 4, 6 and 7) discloses this use and the opt-out; remove a customer who opts out before the next
-upload.
+`phone,fn,ln,ct,st,country`. It lists only customers with a confirmed sale, one row per E.164 phone,
+`country` defaulting to `MX`. A Mexican city found in `src/lib/commercial/mexican-cities.ts` is
+written under its canonical name (`cd juarez` → `Ciudad Juárez`) with its state in `st`; any other
+city is kept as stored and `st` stays empty. RSVP and guest data are never part of it. The file is
+uploaded to Meta by the owner by hand; no code uploads it. The privacy notice
+(`src/pages/privacidad.astro`, sections 2, 4, 6 and 7) discloses this use and the opt-out; remove a
+customer who opts out before the next upload.
 
 #### CRM how-to (owner)
 

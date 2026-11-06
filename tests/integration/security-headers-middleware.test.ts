@@ -1,6 +1,7 @@
 import type { APIContext } from 'astro';
 import { onRequest as middleware } from '../../src/middleware';
 import {
+	CSP_REPORT_ONLY_VALUE,
 	INVITATION_PREVIEW_SECURITY_HEADERS,
 	PERMANENT_REDIRECTS,
 	SECURITY_HEADERS,
@@ -17,10 +18,11 @@ import {
 const EXPECTED_GLOBAL_HEADERS: Record<string, string> = {
 	'x-content-type-options': 'nosniff',
 	'x-frame-options': 'DENY',
-	'x-xss-protection': '1; mode=block',
+	'x-xss-protection': '0',
 	'referrer-policy': 'strict-origin-when-cross-origin',
 	'permissions-policy': 'camera=(), microphone=(), geolocation=()',
 	'strict-transport-security': 'max-age=31536000; includeSubDomains',
+	'content-security-policy-report-only': CSP_REPORT_ONLY_VALUE,
 };
 
 const EXPECTED_PREVIEW_HEADERS: Record<string, string> = {

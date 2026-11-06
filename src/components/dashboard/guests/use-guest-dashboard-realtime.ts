@@ -43,6 +43,8 @@ const DEFAULT_TOTALS: DashboardGuestListResponse['totals'] = {
 	pendingPeople: 0,
 	confirmedInvitations: 0,
 	confirmedPeople: 0,
+	totalChildren: 0,
+	confirmedChildren: 0,
 	declinedInvitations: 0,
 	declinedPeople: 0,
 	unconfirmedShared: 0,

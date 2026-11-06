@@ -239,6 +239,28 @@ describe('referral helpers', () => {
 			{ displayName: 'Sin Teléfono', phoneE164: null },
 		]);
 
-		expect(csv).toBe('phone,fn,ln,ct,country\n+526681112233,Ana,Pérez,Culiacán,MX\n');
+		expect(csv).toBe(
+			'phone,fn,ln,ct,st,country\n+526681112233,Ana,Pérez,Culiacán,Sinaloa,MX\n',
+		);
+	});
+
+	it('writes a Mexican city under its canonical name with its state, others as stored', () => {
+		const csv = buildMetaCustomerListCsv([
+			{ displayName: 'Luis Soto', phoneE164: '+526561112233', city: 'cd juarez' },
+			{ displayName: 'Eva Ruiz', phoneE164: '+526561112244', city: 'Guadalupe, Zac.' },
+			{ displayName: 'Ann Lee', phoneE164: '+19155550101', city: 'El Paso', country: 'us' },
+			{ displayName: 'Rosa Gil', phoneE164: '+526561112255', city: 'Villa Ahumada' },
+		]);
+
+		expect(csv).toBe(
+			[
+				'phone,fn,ln,ct,st,country',
+				'+526561112233,Luis,Soto,Ciudad Juárez,Chihuahua,MX',
+				'+526561112244,Eva,Ruiz,Guadalupe,Zacatecas,MX',
+				'+19155550101,Ann,Lee,El Paso,,US',
+				'+526561112255,Rosa,Gil,Villa Ahumada,,MX',
+				'',
+			].join('\n'),
+		);
 	});
 });

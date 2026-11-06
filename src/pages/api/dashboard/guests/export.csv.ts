@@ -4,7 +4,6 @@ import { badRequest, csvResponse, errorResponse } from '@/lib/rsvp/core/http';
 import { sanitize, splitPhoneForExport } from '@/lib/rsvp/core/utils';
 import { listDashboardGuests } from '@/lib/rsvp/services/dashboard-guests.service';
 
-
 /**
  * Escapes a CSV value: wraps in double quotes, escapes embedded quotes,
  * and prevents CSV injection by prefixing values that start with =, +, -, @, tab, or CR.
@@ -45,7 +44,9 @@ export const GET: APIRoute = async ({ request, url }) => {
 			'country_code',
 			'attendance_status',
 			'attendee_count',
+			'children_count',
 			'max_allowed_attendees',
+			'max_allowed_children',
 			'delivery_status',
 			'tags',
 			'guest_comment',
@@ -59,7 +60,9 @@ export const GET: APIRoute = async ({ request, url }) => {
 				split ? split.countryCode : '',
 				item.attendanceStatus,
 				String(item.attendeeCount),
+				String(item.childrenCount ?? 0),
 				String(item.maxAllowedAttendees),
+				String(item.maxAllowedChildren ?? 0),
 				item.deliveryStatus,
 				(item.tags || []).join('; '),
 				item.guestComment,

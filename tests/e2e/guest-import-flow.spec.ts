@@ -137,6 +137,7 @@ test.describe('Guest import flow', () => {
 			.context()
 			.addCookies([
 				{ name: 'sb-access-token', value: CANONICAL_HOST_ACCESS_TOKEN, url: baseURL },
+				{ name: 'sb-idle-seen', value: String(Math.floor(Date.now() / 1000)), url: baseURL },
 			]);
 		const { imports, unexpected } = await mockDashboard(page);
 

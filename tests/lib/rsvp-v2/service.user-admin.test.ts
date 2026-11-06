@@ -203,6 +203,22 @@ describe('rsvp user admin service', () => {
 		).rejects.toMatchObject({ code: 'account_access_incomplete' });
 	});
 
+	it('aborts role change when the strict audit log fails', async () => {
+		upsertUserRoleServiceMock.mockResolvedValueOnce({
+			userId: 'user-1',
+			role: 'host_client',
+			createdAt: '',
+			updatedAt: '',
+		});
+		logAdminActionStrictMock.mockRejectedValueOnce(new Error('audit write failed'));
+		await expect(
+			changeUserRoleAdmin({ userId: 'user-1', actorUserId: 'admin-1', role: 'host_client' }),
+		).rejects.toThrow('audit write failed');
+		expect(logAdminActionStrictMock).toHaveBeenCalledWith(
+			expect.objectContaining({ action: 'change_user_role' }),
+		);
+	});
+
 	it('lists orphan accounts honestly without assigning a default role', async () => {
 		jest.mocked(listAuthUsers).mockResolvedValueOnce([
 			{ id: 'user-1', email: 'host@example.test' },

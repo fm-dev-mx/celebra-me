@@ -47,16 +47,16 @@ _tmp_*
 # --- ENVIRONMENT & SECRETS ----------------------------------------------------
 # Sensitive data and local environment configurations
 .env
-.env.production
-.env.local
-.env.*.local
+.env.*
+!.env*.example
 
 
 # --- CACHE & TOOLING ----------------------------------------------------------
 # Framework and library caches
+.vercel/
+output/
 .playwright-mcp/
 .playwright-cli/
-output/playwright/
 playwright/.auth/
 .cache/
 .jest/

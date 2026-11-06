@@ -175,6 +175,9 @@ const venueType = (venue: GroupedVenue) =>
 				</g>
 				)}
 			</svg>
+			{/* The two stops name their moments; the entries below carry the full details. */}
+			<p class="location-route__stop-label location-route__stop-label--from" aria-hidden="true">{displayVenues[0].venueEvent}</p>
+			<p class="location-route__stop-label location-route__stop-label--to" aria-hidden="true">{displayVenues[displayVenues.length - 1].venueEvent}</p>
 			<p class="location-route__note">Siga bajando <span aria-hidden="true">↓</span></p>
 			</div>
 			</div>

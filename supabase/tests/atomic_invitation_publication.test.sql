@@ -1,5 +1,5 @@
 begin;
-select plan(94);
+select plan(101);
 
 insert into auth.users (id, aud, role, email, created_at, updated_at)
 values ('10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'atomic-publish@example.test', now(), now());
@@ -212,11 +212,11 @@ select throws_like(
   '%editor_stale_published%', 'restore rejects a changed published version'
 );
 
-select has_function('public', 'submit_guest_rsvp_public', array['text','uuid','text','text','text','integer','text','integer','text','text','text'], 'public RSVP RPC exists');
-select ok(has_function_privilege('service_role', 'public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)', 'EXECUTE'), 'service role can submit public RSVP');
-select ok(not has_function_privilege('anon', 'public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)', 'EXECUTE'), 'anon cannot execute public RSVP RPC');
-select ok(not has_function_privilege('authenticated', 'public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)', 'EXECUTE'), 'authenticated cannot execute public RSVP RPC directly');
-select ok((select prosecdef from pg_proc where oid='public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text)'::regprocedure), 'public RSVP RPC is security definer');
+select has_function('public', 'submit_guest_rsvp_public', array['text','uuid','text','text','text','integer','text','integer','text','text','text','integer'], 'public RSVP RPC exists');
+select ok(has_function_privilege('service_role', 'public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text,integer)', 'EXECUTE'), 'service role can submit public RSVP');
+select ok(not has_function_privilege('anon', 'public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text,integer)', 'EXECUTE'), 'anon cannot execute public RSVP RPC');
+select ok(not has_function_privilege('authenticated', 'public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text,integer)', 'EXECUTE'), 'authenticated cannot execute public RSVP RPC directly');
+select ok((select prosecdef from pg_proc where oid='public.submit_guest_rsvp_public(text,uuid,text,text,text,integer,text,integer,text,text,text,integer)'::regprocedure), 'public RSVP RPC is security definer');
 select ok((select relrowsecurity from pg_class where oid='public.guest_invitations'::regclass), 'guest RLS remains enabled');
 select ok((select relforcerowsecurity from pg_class where oid='public.guest_invitations'::regclass), 'guest RLS remains forced');
 select ok(not has_table_privilege('anon', 'public.guest_invitations', 'SELECT'), 'anon cannot select guest rows');
@@ -307,6 +307,34 @@ select throws_like(
 );
 select is((select guest_comment from public.guest_invitations where invite_id='91000000-0000-0000-0000-000000000003'), 'Reintento', 'failed capacity mutation does not overwrite guest comment');
 select is((select attendee_count from public.guest_invitations where invite_id='91000000-0000-0000-0000-000000000003'), 2, 'failed capacity mutation does not overwrite attendee count');
+
+-- Children inside the reserved passes
+select throws_like(
+  $$select public.submit_guest_rsvp_public('91000000-0000-0000-0000-000000000003',null,null,null,null,null,'confirmed',2,'','link',null,1)$$,
+  '%children_count_exceeds_limit%',
+  'children above the reserved children passes are rejected'
+);
+update public.guest_invitations set max_allowed_children=2 where invite_id='91000000-0000-0000-0000-000000000003';
+select lives_ok(
+  $$select public.submit_guest_rsvp_public('91000000-0000-0000-0000-000000000003',null,null,null,null,null,'confirmed',3,'','link',null,1)$$,
+  'RSVP with children inside the reserved passes succeeds'
+);
+select is((select children_count from public.guest_invitations where invite_id='91000000-0000-0000-0000-000000000003'), 1, 'RSVP stores the confirmed children');
+select throws_like(
+  $$select public.submit_guest_rsvp_public('91000000-0000-0000-0000-000000000003',null,null,null,null,null,'confirmed',1,'','link',null,2)$$,
+  '%children_count_exceeds_limit%',
+  'children above the confirmed attendees are rejected'
+);
+select lives_ok(
+  $$select public.submit_guest_rsvp_public('91000000-0000-0000-0000-000000000003',null,null,null,null,null,'declined',0,'','link',null,2)$$,
+  'decline with children succeeds'
+);
+select is((select children_count from public.guest_invitations where invite_id='91000000-0000-0000-0000-000000000003'), 0, 'decline forces children to zero');
+select throws_like(
+  $$update public.guest_invitations set max_allowed_children=5 where invite_id='91000000-0000-0000-0000-000000000003'$$,
+  '%guest_invitations_max_allowed_children_check%',
+  'children passes cannot exceed the reserved passes'
+);
 
 select * from finish();
 rollback;

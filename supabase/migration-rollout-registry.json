@@ -349,6 +349,12 @@
             "phase": "expand",
             "provides": ["past_clients_and_referrals"],
             "notes": "Adds customer referral codes, city/country, is_past_client and referral_credit_mxn; adds is_past_sale and referral linkage columns to leads and sales_orders; updates register_commercial_deposit_purchase so past sales skip meta_conversion_events and referred orders that are not past sales award $200 MXN credit on first deposit; adds referrer_credit_redeemed and the service-role redeem_customer_referral_credit function. Additive expand migration. Must be applied before the app that writes these columns is deployed."
+        },
+        "20261105120000": {
+            "phase": "contract",
+            "provides": ["guest_invitations_children"],
+            "requiresDeployedAppCapabilities": ["guest_link_code_client"],
+            "notes": "Adds max_allowed_children and children_count to guest_invitations with CHECKs bounded by passes and attendees; replaces the 11-argument submit_guest_rsvp_public with a 12-argument signature whose new p_children_count defaults to 0; upsert_guests_v1 keeps its signature and reads an optional max_allowed_children (default 0). Registered as contract only because the CHECK swaps use DROP CONSTRAINT, the old RPC signature is dropped, and the privilege resets REVOKE then re-GRANT the same service_role access. Existing rows default to 0 children, and deployed clients that call the RPC by name without p_children_count keep working. Must be applied before the app that sends children is deployed."
         }
     },
     "appCapabilities": {

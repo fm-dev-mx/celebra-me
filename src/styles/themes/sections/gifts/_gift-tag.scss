@@ -1,0 +1,193 @@
+// Gift tag: the whole registry fits one screen at any size. The heading sits flush left like a
+// note (beside the cards on wide screens), the store card is a gift tag with a bow and a number
+// pill to read aloud at the store, and the cash gift is a strip beside its medallion.
+// Tokens (all optional): --gifts-tag-gap, --gifts-tag-offset, --gifts-tag-bow-width,
+// --gifts-tag-bow-image, --gifts-tag-button-height, --gifts-tag-button-bg,
+// --gifts-tag-button-size, --gifts-tag-button-color, --gifts-tag-shadow-rgb, --gifts-tag-pill-border,
+// --gifts-tag-pill-bg, --gifts-tag-number-color, --gifts-tag-number-size, --gifts-tag-cash-title-size,
+// --gifts-tag-copy-color.
+
+$gift-tag-bow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 34' fill='%23F7F2F5' stroke='%23A8AEBF' stroke-width='1.3' stroke-linejoin='round' stroke-linecap='round'%3E%3Cpath d='M32 15C24 2 5 1 7 12c2 8 16 7 25 3Z'/%3E%3Cpath d='M32 15C40 2 59 1 57 12c-2 8-16 7-25 3Z'/%3E%3Cpath d='M30 17l-9 15 5-1 3 3 3-15M34 17l9 15-5-1-3 3-3-15'/%3E%3Ccircle cx='32' cy='15.5' r='3.5'/%3E%3C/svg%3E");
+
+.gifts-section[data-variant='gift-tag'] {
+	--gifts-tag-gap: clamp(1.25rem, 3.5svh, 2rem);
+	--gifts-tag-offset: 1.25rem;
+	--gifts-tag-bow-width: 4.5rem;
+	--gifts-tag-button-height: 3rem;
+	--gifts-tag-button-size: 1rem;
+	--gifts-tag-cash-title-size: clamp(1.375rem, 5.5vw, 1.625rem);
+	--gifts-tag-number-size: clamp(1.375rem, 6vw, 1.875rem);
+	--gifts-header-margin-bottom: clamp(1.5rem, 4.5svh, 2.5rem);
+	--gifts-container-max-width: 26rem;
+	--gifts-subtitle-max-width: 32ch;
+	--gifts-separator-display: none;
+	--gifts-grid-min-column: 100%;
+	--gifts-icon-size: 3.25rem;
+
+	display: grid;
+	align-content: center;
+	min-height: 100svh;
+	padding-block: clamp(4.25rem, 10svh, 6.5rem) clamp(1.5rem, 5svh, 3.5rem);
+
+	// Short screens tighten every gap so the tag and the strip still fit.
+	@media (height < 760px) {
+		--gifts-tag-gap: 1rem;
+		--gifts-tag-offset: 1rem;
+		--gifts-tag-bow-width: 3.75rem;
+		--gifts-tag-button-height: 2.75rem;
+		--gifts-header-margin-bottom: 1.25rem;
+		--gifts-subtitle-size: 1rem;
+		--gifts-subtitle-line-height: 1.4;
+		--gifts-card-description-size: 0.9375rem;
+	}
+
+	@media (width >= 768px) {
+		--gifts-header-margin-bottom: 0;
+		--gifts-container-max-width: 60rem;
+	}
+
+	.gifts-section__container {
+		width: 100%;
+	}
+
+	.gifts-section__header {
+		text-align: start;
+	}
+
+	.gifts-section__title,
+	.gifts-section__subtitle,
+	.gift-card--cash .gift-card__title,
+	.gift-card--cash .gift-card__description {
+		margin: 0;
+	}
+
+	.gifts-section__flourish {
+		justify-content: flex-start;
+		margin: clamp(0.4rem, 1.2svh, 0.75rem) 0;
+	}
+
+	.gifts-section__subtitle {
+		font-style: italic;
+	}
+
+	.gifts-grid {
+		gap: var(--gifts-tag-gap);
+	}
+
+	.gift-card__inner {
+		gap: clamp(0.5rem, 1.5svh, 1rem);
+	}
+
+	// Wide screens set the heading beside the cards.
+	@media (width >= 768px) {
+		.gifts-section__container {
+			display: grid;
+			grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+			align-items: center;
+			gap: clamp(2.5rem, 6vw, 5rem);
+		}
+	}
+
+	.gift-card--store {
+		overflow: visible;
+		margin-top: var(--gifts-tag-offset);
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: calc(var(--gifts-tag-offset) * -1.08);
+			left: 50%;
+			width: var(--gifts-tag-bow-width);
+			aspect-ratio: 64 / 34;
+			background: var(--gifts-tag-bow-image, #{$gift-tag-bow}) center / contain no-repeat;
+			filter: drop-shadow(
+				0 2px 2px rgb(var(--gifts-tag-shadow-rgb, var(--color-text-primary-rgb)) / 20%)
+			);
+			transform: translateX(-50%);
+		}
+
+		.gift-card__icon-medallion {
+			display: none;
+		}
+
+		.gift-card__title {
+			padding-top: calc(var(--gifts-tag-offset) * 0.4);
+		}
+
+		.gift-card__actions,
+		.gift-card__button {
+			width: 100%;
+		}
+
+		.gift-card__button {
+			min-height: var(--gifts-tag-button-height);
+			font-size: var(--gifts-tag-button-size);
+			border: 0;
+			border-radius: var(--radius-pill);
+			background: var(--gifts-tag-button-bg, var(--color-action-accent));
+			box-shadow: 0 0.5rem 1rem -0.5rem
+				rgb(var(--gifts-tag-shadow-rgb, var(--color-text-primary-rgb)) / 50%);
+			color: var(--gifts-tag-button-color, var(--color-surface-primary));
+		}
+	}
+
+	// The cash gift reads as one line of thanks: medallion on the left, title and text beside it.
+	.gift-card--cash {
+		.gift-card__content-head {
+			display: grid;
+			grid-template-columns: auto minmax(0, 1fr);
+			align-items: center;
+			gap: 0.25rem 1rem;
+			text-align: start;
+		}
+
+		.gift-card__icon-medallion {
+			grid-row: span 2;
+			margin: 0;
+		}
+
+		.gift-card__title {
+			font-size: var(--gifts-tag-cash-title-size);
+		}
+
+		@media (height < 760px) {
+			.gift-card__description {
+				line-height: 1.4;
+			}
+		}
+	}
+
+	// The event label sits on the same line as the number pill, so the tag stays short.
+	.gift-card__table-number-wrapper {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 0.35rem 0.5rem;
+		margin-block: 0;
+	}
+
+	.gift-card__number-pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.35rem 0.5rem 0.35rem 1.1rem;
+		border: 1px solid var(--gifts-tag-pill-border, rgb(var(--color-text-primary-rgb) / 20%));
+		border-radius: var(--radius-pill);
+		background: var(--gifts-tag-pill-bg, rgb(255 255 255 / 55%));
+	}
+
+	.gift-card__table-number-code {
+		color: var(--gifts-tag-number-color, var(--color-text-primary));
+		font-family: var(--font-display);
+		font-size: var(--gifts-tag-number-size);
+		font-variant-numeric: tabular-nums lining-nums;
+		letter-spacing: 0.08em;
+	}
+
+	.gift-card__number-pill .copy-icon-button {
+		min-width: 2.75rem;
+		min-height: 2.75rem;
+		color: var(--gifts-tag-copy-color, var(--color-text-secondary));
+	}
+}

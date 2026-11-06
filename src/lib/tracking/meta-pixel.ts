@@ -29,6 +29,8 @@
  *     the Conversions API sends for the lead's customer. Only the hash is stored, in first-party
  *     localStorage, with marketing consent and for PHONE_MATCH_TTL_MS; withdrawing consent
  *     deletes it (consent-client.ts). It applies from the next Pixel initialization on.
+ *   - `country`: always `mx`, the country every customer is served in; the Pixel hashes it and the
+ *     Conversions API sends the same hash.
  *
  * Pending-event queue:
  *   Events generated after marketing consent but before fbevents.js finishes loading are
@@ -134,6 +136,9 @@ export function hashVisitorIdForMeta(visitorId: string): string {
 export const PHONE_MATCH_TTL_MS = 90 * 86_400_000;
 
 const SHA256_HEX = /^[0-9a-f]{64}$/;
+
+/** ISO 3166-1 alpha-2 country of every customer, sent as an advanced-matching key. */
+const META_PIXEL_COUNTRY = 'mx';
 
 /**
  * SHA-256 hex of the phone's E.164 digits (country code included, no `+`), the same value
@@ -281,17 +286,14 @@ function loadPixelScript(): Promise<void> {
 			// Disable automatic advanced matching — prevents auto-collection
 			// of form fields and PII from the page.
 			window.fbq?.('set', 'autoConfig', false, id);
-			// Initialize the pixel with the manual match keys: hashed visitor ID and phone.
-			const matchKeys: Record<string, string> = {};
+			// Initialize the pixel with the manual match keys: hashed visitor ID and phone, plus
+			// the customer country the Conversions API also sends (the Pixel hashes it).
+			const matchKeys: Record<string, string> = { country: META_PIXEL_COUNTRY };
 			const externalId = readVisitorExternalId();
 			if (externalId) matchKeys.external_id = externalId;
 			const phoneHash = readMetaPhoneMatchKey();
 			if (phoneHash) matchKeys.ph = phoneHash;
-			if (Object.keys(matchKeys).length > 0) {
-				window.fbq?.('init', id, matchKeys);
-			} else {
-				window.fbq?.('init', id);
-			}
+			window.fbq?.('init', id, matchKeys);
 			pixelLoaded = true;
 			pixelLoading = false;
 			pixelFailed = false;

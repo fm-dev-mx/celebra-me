@@ -39,8 +39,31 @@ const TRUST_DEVICE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 const ADMIN_ONLY_PATHS = ['/dashboard/admin', '/dashboard/usuarios', '/dashboard/invitaciones'];
 
+/**
+ * Normalize a URL pathname for safe prefix comparison: decode percent-encoding,
+ * collapse consecutive slashes, resolve `.`/`..` segments, and lowercase.
+ */
+function normalizePathname(raw: string): string {
+	let decoded: string;
+	try {
+		decoded = decodeURIComponent(raw);
+	} catch {
+		decoded = raw;
+	}
+	const collapsed = decoded.replace(/\/\/+/g, '/');
+	const segments: string[] = [];
+	for (const seg of collapsed.split('/')) {
+		if (seg === '..') segments.pop();
+		else if (seg !== '.') segments.push(seg);
+	}
+	return segments.join('/').toLowerCase() || '/';
+}
+
 function isAdminOnlyPath(pathname: string): boolean {
-	return ADMIN_ONLY_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+	const normalized = normalizePathname(pathname);
+	return ADMIN_ONLY_PATHS.some(
+		(path) => normalized === path || normalized.startsWith(`${path}/`),
+	);
 }
 
 function shouldHandleAuth(pathname: string): boolean {
@@ -185,8 +208,13 @@ function clearIdleSessionCookies(cookies: CookieStore) {
 
 function isIdleSessionExpired(cookies: CookieStore, now: number) {
 	const idleSeenRaw = cookies.get('sb-idle-seen')?.value || '';
-	const idleSeenAt = Number.parseInt(idleSeenRaw, 10);
-	return Number.isFinite(idleSeenAt) && idleSeenAt > 0 && now - idleSeenAt > IDLE_TIMEOUT_SECONDS;
+	const idleSeenAt = Number(idleSeenRaw);
+	return (
+		!Number.isFinite(idleSeenAt) ||
+		idleSeenAt <= 0 ||
+		idleSeenAt > now ||
+		now - idleSeenAt > IDLE_TIMEOUT_SECONDS
+	);
 }
 
 async function refreshUserSession(cookies: CookieStore, refreshToken: string) {
@@ -554,8 +582,13 @@ async function handleProtectedAuthRequest(
 		return null;
 	}
 
-	if (!isApiRoute && isIdleSessionExpired(cookies, now)) {
+	if (isIdleSessionExpired(cookies, now)) {
 		clearIdleSessionCookies(cookies);
+		if (isApiRoute) {
+			return errorResponse(
+				new ApiError(401, 'unauthorized', 'Su sesión ha expirado. Inicie sesión de nuevo.'),
+			);
+		}
 		return privateRedirect(redirect, '/login');
 	}
 

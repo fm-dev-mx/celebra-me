@@ -11,18 +11,43 @@
     },
     "sectionOrder": [
         "quote",
-        "personalizedAccess",
-        "family",
-        "gallery",
         "countdown",
+        "family",
         "location",
         "itinerary",
-        "rsvp",
+        "gallery",
         "gifts",
+        "personalizedAccess",
+        "rsvp",
         "thankYou"
     ],
     "composition": {
-        "intersections": {}
+        "intersections": {
+            "quote": {
+                "family": "atmospheric-blend",
+                "source": "hero"
+            },
+            "countdown": {
+                "family": "arch",
+                "source": "quote"
+            },
+            "family": {
+                "family": "arch",
+                "source": "countdown"
+            },
+            "interlude-after-family": {
+                "family": "overlap",
+                "source": "family"
+            },
+            "personalized-access": {
+                "family": "arch",
+                "source": "gifts"
+            },
+            "thankYou": {
+                "family": "arch",
+                "source": "rsvp"
+            }
+        }
     },
     "eventTiming": {
         "localDateTime": "2028-10-28T20:00",
@@ -30,12 +55,17 @@
         "startsAtUtc": "2028-10-29T02:00:00.000Z"
     },
     "hero": {
+        "variant": "night-arch",
         "name": "Alberto Valenzuela",
         "label": "60 Años",
         "nickname": "Una noche en honor a Don Alberto",
         "date": "2028-10-28T20:00:00.000Z",
         "backgroundImage": "hero",
-        "variant": "standard"
+        "scrollLabel": "Descubra más",
+        "presentation": {
+            "venueIndex": 0,
+            "timeFormat": "12h"
+        }
     },
     "location": {
         "accessPolicy": {
@@ -123,7 +153,7 @@
         "personalizedAccess": {
             "title": "Pase de acceso",
             "subtitle": "Este pase le identifica como invitado y muestra el número de lugares reservados.",
-            "footerText": "Confirme su asistencia en la sección de RSVP al final de la invitación.",
+            "footerText": "Confirme su asistencia justo debajo de este pase.",
             "variant": "standard"
         },
         "subcopy": "Su confirmación nos ayuda a preparar cada detalle de esta velada tan especial.",
@@ -277,7 +307,7 @@
         },
         {
             "image": "gallery02",
-            "afterSection": "gifts",
+            "afterSection": "itinerary",
             "alt": "Celebración en la Hacienda",
             "height": "screen"
         }
