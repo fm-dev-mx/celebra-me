@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@/lib/schemas/zod-jitless';
 
 export const RSVP_GUEST_CAP_MIN = 1;
 
