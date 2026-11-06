@@ -19,6 +19,7 @@ test.describe('quote reminders', () => {
 			);
 			await context.addCookies([
 				{ name: 'sb-access-token', value: CANONICAL_ADMIN_ACCESS_TOKEN, url: baseURL! },
+				{ name: 'sb-idle-seen', value: String(Math.floor(Date.now() / 1000)), url: baseURL! },
 			]);
 			const leadId = '11111111-1111-4111-8111-111111111111';
 			const whatsappUrl =
@@ -139,6 +140,7 @@ test.describe('dashboard orders', () => {
 			);
 			await context.addCookies([
 				{ name: 'sb-access-token', value: CANONICAL_ADMIN_ACCESS_TOKEN, url: baseURL! },
+				{ name: 'sb-idle-seen', value: String(Math.floor(Date.now() / 1000)), url: baseURL! },
 			]);
 			const customer = {
 				id: 'customer-orders-fixture',
@@ -246,6 +248,7 @@ test.describe('dashboard orders', () => {
 		);
 		await context.addCookies([
 			{ name: 'sb-access-token', value: CANONICAL_HOST_ACCESS_TOKEN, url: baseURL! },
+			{ name: 'sb-idle-seen', value: String(Math.floor(Date.now() / 1000)), url: baseURL! },
 		]);
 		await page.goto('/dashboard/pedidos');
 		await expect(page).toHaveURL(/\/dashboard\/invitados/);
@@ -262,6 +265,7 @@ test.describe('dashboard orders', () => {
 		);
 		await context.addCookies([
 			{ name: 'sb-access-token', value: CANONICAL_ADMIN_ACCESS_TOKEN, url: baseURL! },
+			{ name: 'sb-idle-seen', value: String(Math.floor(Date.now() / 1000)), url: baseURL! },
 		]);
 		const orderId = 'b4000000-0000-4000-8000-000000000001';
 		const invitationId = 'd4000000-0000-4000-8000-000000000001';
