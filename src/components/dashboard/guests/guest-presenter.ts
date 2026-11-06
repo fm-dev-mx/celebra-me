@@ -1,4 +1,5 @@
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import { formatParty } from '@/lib/rsvp/guest-cap';
 import { generateInvitationLink } from '@/utils/invitation-link';
 import { getVisibleTags } from '@/lib/guests/guest-tags';
 import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
@@ -313,10 +314,6 @@ export interface GuestPeopleLabel {
 	secondary?: string;
 }
 
-function formatPasses(count: number): string {
-	return `${count} ${count === 1 ? 'pase' : 'pases'}`;
-}
-
 /** "Personas" cell: what the invitation means in people for its current stage. */
 export function getGuestPeopleLabel(item: DashboardGuestItem): GuestPeopleLabel {
 	const passes = passesOf(item);
@@ -325,12 +322,16 @@ export function getGuestPeopleLabel(item: DashboardGuestItem): GuestPeopleLabel 
 		case 'confirmed': {
 			const attending = attendingOf(item);
 			const unused = passes - attending;
+			const children = item.childrenCount ?? 0;
+			const notes = [
+				children > 0 ? formatParty(attending, { children }) : null,
+				unused > 0
+					? `${unused} ${unused === 1 ? 'lugar no usado' : 'lugares no usados'}`
+					: null,
+			].filter(Boolean);
 			return {
 				primary: `${attending === 1 ? 'Viene' : 'Vienen'} ${attending} de ${passes}`,
-				secondary:
-					unused > 0
-						? `${unused} ${unused === 1 ? 'lugar no usado' : 'lugares no usados'}`
-						: undefined,
+				secondary: notes.length > 0 ? notes.join(' · ') : undefined,
 			};
 		}
 		case 'declined':
@@ -339,7 +340,7 @@ export function getGuestPeopleLabel(item: DashboardGuestItem): GuestPeopleLabel 
 				secondary: `${passes} ${passes === 1 ? 'pase liberado' : 'pases liberados'}`,
 			};
 		default:
-			return { primary: formatPasses(passes) };
+			return { primary: formatParty(passes, { children: item.maxAllowedChildren }) };
 	}
 }
 
@@ -352,7 +353,7 @@ export function buildGuestSummaryShareText(
 	const { people, stages, awaitingAnswer } = summary;
 	const lines = [
 		eventTitle ? `${eventTitle}: resumen de invitados` : 'Resumen de invitados',
-		`${people.confirmed} ${people.confirmed === 1 ? 'persona confirmada' : 'personas confirmadas'} de ${formatPasses(people.assigned)}.`,
+		`${people.confirmed} ${people.confirmed === 1 ? 'persona confirmada' : 'personas confirmadas'} de ${formatParty(people.assigned)}.`,
 		`No asistirán: ${people.declined}. Sin respuesta: ${people.noAnswer}.`,
 	];
 	if (awaitingAnswer.invitations > 0) {
@@ -410,7 +411,8 @@ export function groupGuestsByStatus(
 export function getGuestSectionNote(section: GuestStatusSection): string | null {
 	if (section.bucket === 'confirmed') {
 		const people = section.items.reduce((sum, item) => sum + attendingOf(item), 0);
-		return `${people} ${people === 1 ? 'persona' : 'personas'}`;
+		const children = section.items.reduce((sum, item) => sum + (item.childrenCount ?? 0), 0);
+		return formatParty(people, { children, unit: 'persona' });
 	}
 	if (section.bucket === 'declined') {
 		const passes = section.items.reduce((sum, item) => sum + passesOf(item), 0);
@@ -438,7 +440,7 @@ export function getGuestListSubtitle(item: DashboardGuestItem, now: Date = new D
 		const people = getGuestPeopleLabel(item);
 		return people.secondary ? `${people.primary} · ${people.secondary}` : people.primary;
 	}
-	const passes = formatPasses(passesOf(item));
+	const passes = formatParty(passesOf(item), { children: item.maxAllowedChildren });
 	if (stage === 'to-send') {
 		return `${passes} · ${item.phone ? 'Sin enviar' : 'Sin teléfono'}`;
 	}

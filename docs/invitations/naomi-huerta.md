@@ -34,41 +34,41 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 
 ## Fact Register
 
-| field                 | value                                                                                        | classification | source        | notes                                                        |
-| --------------------- | -------------------------------------------------------------------------------------------- | -------------- | ------------- | ------------------------------------------------------------ |
-| slug                  | naomi-huerta                                                                                 | verified       | owner-session | Owner choice (D1)                                            |
-| celebrantName         | Naomi                                                                                        | verified       | wa-export     | Full name Naomi Alina Huerta Chávez; hero shows «Naomi» (D1) |
-| eventLabel            | Mis XV Años                                                                                  | inferred       | wa-export     | XV event; client gave no title                               |
-| eventDate             | 2026-12-18                                                                                   | verified       | wa-export     | Friday                                                       |
-| eventTime             | 18:30                                                                                        | verified       | wa-export     | Religious ceremony                                           |
-| receptionTime         | 21:00                                                                                        | verified       | wa-export     | Reception                                                    |
-| timeZone              | America/Mexico_City                                                                          | inferred       | wa-export     | Guadalajara metropolitan area, Jalisco                       |
-| sourceAssetPath       | source:client-photos                                                                         | verified       | owner-session | Opaque label only (D3)                                       |
-| sectionOrder          | quote, plate, countdown, plate, location, family, itinerary, gallery, gifts, pass, rsvp, end | inferred       | owner-session | Scene structure of the storybook album                       |
-| primaryVenueName      | Parroquia del Espíritu Santo                                                                 | verified       | wa-export     |                                                              |
-| primaryVenueAddress   | C. Miguel Ramos Arizpe 385, Magaña, Guadalajara, Jal.                                        | inferred       | wa-export     | Resolved from the client's map pin                           |
-| distinctVenues        | true                                                                                         | verified       | wa-export     | Church and event hall                                        |
-| receptionVenueName    | La Mattea Eventos                                                                            | verified       | wa-export     |                                                              |
-| receptionVenueAddress | C. Juan de Dios Robledo 1800-A, Balcones del Rosario, Tonalá, Jal.                           | verified       | wa-export     |                                                              |
-| ceremonyMapUrl        | Google Maps pins for both venues (maps.app.goo.gl)                                           | verified       | wa-export     | Both pins resolved to the named venues, 2026-11-01           |
-| fatherName            | José Humberto Huerta Navarro                                                                 | verified       | wa-export     |                                                              |
-| motherName            | Martha Leticia Chávez García                                                                 | verified       | wa-export     |                                                              |
-| familyLabel           | Mis padres                                                                                   | inferred       | owner-session | Both parents named by the client                             |
-| godparents            | Christina y Anthony Macías                                                                   | ambiguous      | wa-export     | Client wrote «Macias»; role not stated, shown as «Padrinos»  |
-| dressCode             | De gala                                                                                      | verified       | wa-export     |                                                              |
-| reservedColor         | Rosa — Reservado para la quinceañera                                                         | inferred       | owner-session | Agent draft, pending client approval (D4)                    |
-| adultsOnly            | —                                                                                            | missing        | wa-export     | Not stated; omitted until the client confirms (D4)           |
-| clientColors          | Rosa y plateado                                                                              | verified       | wa-export     |                                                              |
-| dressColor            | Rosa pálido con brillo, corona plateada                                                      | verified       | wa-export     | From the photographs                                         |
-| rsvpConfirmationMode  | api                                                                                          | verified       | wa-export     | Personal, non-transferable pass per guest; host panel        |
-| rsvpGuestCap          | 2                                                                                            | inferred       | owner-session | Fallback only; per-guest passes govern seats                 |
-| rsvpWhatsappPhone     | —                                                                                            | not_applicable | owner-session | No WhatsApp confirmation flow                                |
-| rsvpDeadline          | 2026-12-04 (viernes 4 de diciembre)                                                          | inferred       | owner-session | 14 days before (D4)                                          |
-| gifts                 | Liverpool registry, event 60070167                                                           | verified       | owner-session | Client-supplied 2026-11-03; gift stays optional              |
-| itinerary             | Misa 18:30, Recepción 21:00, Vals 21:30, Cena 22:30, Baile 23:30, Cierre 02:00               | inferred       | owner-session | Agent draft, pending client approval (D4)                    |
-| musicUrl              | Client song (YouTube reference)                                                              | verified       | wa-export     | Hosted at 64 kbps on the media domain (So This Is Love)      |
-| checkInQr             | —                                                                                            | not_applicable | wa-export     | Promo package without QR check-in                            |
-| specialMessages       | Copy proposed by agent                                                                       | inferred       | owner-session | Pending client approval (D4)                                 |
+| field                 | value                                                                                        | classification | source        | notes                                                                 |
+| --------------------- | -------------------------------------------------------------------------------------------- | -------------- | ------------- | --------------------------------------------------------------------- |
+| slug                  | naomi-huerta                                                                                 | verified       | owner-session | Owner choice (D1)                                                     |
+| celebrantName         | Naomi                                                                                        | verified       | wa-export     | Full name Naomi Alina Huerta Chávez; hero shows «Naomi Alina» (04-11) |
+| eventLabel            | Mis XV Años                                                                                  | inferred       | wa-export     | XV event; client gave no title                                        |
+| eventDate             | 2026-12-18                                                                                   | verified       | wa-export     | Friday                                                                |
+| eventTime             | 18:30                                                                                        | verified       | wa-export     | Religious ceremony                                                    |
+| receptionTime         | 20:15                                                                                        | verified       | wa-export     | Reception; client correction 04-11                                    |
+| timeZone              | America/Mexico_City                                                                          | inferred       | wa-export     | Guadalajara metropolitan area, Jalisco                                |
+| sourceAssetPath       | source:client-photos                                                                         | verified       | owner-session | Opaque label only (D3)                                                |
+| sectionOrder          | quote, plate, countdown, plate, location, family, itinerary, gallery, gifts, pass, rsvp, end | inferred       | owner-session | Scene structure of the storybook album                                |
+| primaryVenueName      | Parroquia del Espíritu Santo                                                                 | verified       | wa-export     |                                                                       |
+| primaryVenueAddress   | C. Miguel Ramos Arizpe 385, Magaña, Guadalajara, Jal.                                        | inferred       | wa-export     | Resolved from the client's map pin                                    |
+| distinctVenues        | true                                                                                         | verified       | wa-export     | Church and event hall                                                 |
+| receptionVenueName    | La Mattea Eventos                                                                            | verified       | wa-export     |                                                                       |
+| receptionVenueAddress | C. Juan de Dios Robledo 1800-A, Balcones del Rosario, Tonalá, Jal.                           | verified       | wa-export     |                                                                       |
+| ceremonyMapUrl        | Google Maps pins for both venues (maps.app.goo.gl)                                           | verified       | wa-export     | Both pins resolved to the named venues, 2026-11-01                    |
+| fatherName            | José Humberto Huerta Navarro                                                                 | verified       | wa-export     |                                                                       |
+| motherName            | Martha Leticia Chávez García                                                                 | verified       | wa-export     |                                                                       |
+| familyLabel           | Mis padres                                                                                   | inferred       | owner-session | Both parents named by the client                                      |
+| godparents            | Christina y Anthony Macías                                                                   | ambiguous      | wa-export     | Client wrote «Macias»; role not stated, shown as «Padrinos»           |
+| dressCode             | Formal                                                                                       | verified       | wa-export     | Client correction 04-11                                               |
+| reservedColor         | Rosa — Reservado para la quinceañera                                                         | inferred       | owner-session | Agent draft, pending client approval (D4)                             |
+| adultsOnly            | —                                                                                            | missing        | wa-export     | Not stated; omitted until the client confirms (D4)                    |
+| clientColors          | Rosa y plateado                                                                              | verified       | wa-export     |                                                                       |
+| dressColor            | Rosa pálido con brillo, corona plateada                                                      | verified       | wa-export     | From the photographs                                                  |
+| rsvpConfirmationMode  | api                                                                                          | verified       | wa-export     | Personal, non-transferable pass per guest; host panel                 |
+| rsvpGuestCap          | 2                                                                                            | inferred       | owner-session | Fallback only; per-guest passes govern seats                          |
+| rsvpWhatsappPhone     | —                                                                                            | not_applicable | owner-session | No WhatsApp confirmation flow                                         |
+| rsvpDeadline          | 2026-12-04 (viernes 4 de diciembre)                                                          | inferred       | owner-session | 14 days before (D4)                                                   |
+| gifts                 | Liverpool registry, event 60070167; cash box                                                 | verified       | wa-export     | Client-supplied 03-11 and 04-11; gift stays optional                  |
+| itinerary             | Misa 18:30, Recepción 20:15, Vals 21:00, Cena 22:00, Baile 23:00, Cierre 02:00               | verified       | wa-export     | Confirmed by the client 04-11                                         |
+| musicUrl              | Client song (YouTube reference)                                                              | verified       | wa-export     | Hosted at 64 kbps on the media domain (So This Is Love)               |
+| checkInQr             | —                                                                                            | not_applicable | wa-export     | Promo package without QR check-in                                     |
+| specialMessages       | Copy proposed by agent                                                                       | inferred       | owner-session | Pending client approval (D4)                                          |
 
 ---
 
@@ -144,19 +144,23 @@ Guest-facing copy (agent draft, D4; pending client approval). Voice: Naomi in th
 - Family: «Mis padres» · José Humberto Huerta Navarro · Martha Leticia Chávez García · «Mis
   padrinos» · Christina y Anthony Macías.
 - Countdown: «Faltan N días para mi gran noche».
-- Location: «Dos lugares, una noche» · «A las 18:30 daré gracias en misa; a las 21:00 le espero en
+- Location: «Dos lugares, una noche» · «A las 18:30 daré gracias en misa; a las 20:15 le espero en
   La Mattea para celebrar.»
-- Indications: «Vestimenta» · «De gala» · «Rosa — Reservado para la quinceañera».
-- Program: «Los capítulos de mi noche» · Misa 18:30 · Recepción 21:00 · Vals 21:30 · Cena 22:30 ·
-  Baile 23:30 · Despedida 02:00.
+- Indications: «Vestimenta» · «Formal» · «Rosa — Reservado para la quinceañera».
+- Program: «Los capítulos de mi noche» · Misa 18:30 · Recepción 20:15 · Vals 21:00 · Cena 22:00 ·
+  Baile 23:00 · Despedida 02:00.
 - Gallery: «Mi cuento de hadas».
-- Gifts: «Mesa de regalos» · «Verle en mi noche ya es el regalo. Si aun así desea darme algo, mi
-  mesa está en Liverpool; también recibiré con cariño el detalle que usted elija.» · Liverpool,
-  «Número de evento: 60070167».
+- Gifts: «Mesa de regalos» · «Su regalo es totalmente opcional: puede elegir de mi mesa o el detalle
+  que usted guste. Lo más valioso para mí es contar con su presencia en este día tan especial.»
+  (adapted from the client's own text, 03-11) · Liverpool, «Número de evento: 60070167» · «Buzón de
+  sobres» · «Si prefiere obsequiar efectivo, habrá un buzón de sobres en la recepción.» (client
+  request, 04-11).
 - Pass: «Pase personal e intransferible» · «Su lugar ya está apartado.» · «Confírmeme su llegada
   aquí abajo.»
 - RSVP: «¿Me acompaña?» · «Le agradeceré confirmar antes del viernes 4 de diciembre.» · Steps
   «¿Contamos con usted?» · «¿Cuántos llegan, contándose usted?» (the count is the party total).
+  Notes step «Nombres de quienes asistirán» · «Escriba el nombre de cada persona que llegará» (the
+  client asked for every attendee's name; saved as the guest comment).
 - Replies: «Su lugar está listo, {nombre}.» · «Me hará falta, {nombre}.»
 - Closing: «Gracias por ser parte de mis quince años. Le espero el 18 de diciembre.» · «Naomi».
 
@@ -204,7 +208,7 @@ delivered over WhatsApp (1600×1066 or 1066×1600, about 150–250 KB). The owne
 | ------ | ------------------ | --------- | ----------- | --------------------------- | ---------------------------------------- | --------------------------------- |
 | 01     | `production-ready` | 1280×853  | landscape   | interlude (veil)            | tight 4:5 crop on Naomi, WebP            | `interlude-veil.webp` 480×600     |
 | 02     | `production-ready` | 1280×853  | landscape   | gallery 2 (back, bow)       | tight 4:5 crop on Naomi, WebP            | `gallery-02.webp` 480×600         |
-| 03     | `production-ready` | 1600×1066 | landscape   | gallery 1 (bouquet)         | tight 4:5 crop on Naomi, WebP            | `gallery-01.webp` 608×760         |
+| 03     | `production-ready` | 1600×1066 | landscape   | gallery 1 (bouquet)         | tight 4:5 crop on Naomi, WebP            | `gallery-01.webp` 529×661         |
 | 04     | `production-ready` | 1600×1066 | landscape   | gallery 3 (bouquet, close)  | tight 4:5 crop on Naomi, WebP            | `gallery-03.webp` 512×640         |
 | 05     | `production-ready` | 1600×1066 | landscape   | interlude (golden door)     | tight 4:5 crop on Naomi, WebP            | `interlude-door.webp` 640×800     |
 | 06     | `production-ready` | 1066×1600 | portrait    | hero                        | full frame, WebP                         | `hero.webp` 1066×1600             |

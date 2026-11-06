@@ -31,6 +31,7 @@ function buildGuestInsertBody(input: CreateGuestInput) {
 		event_id: input.eventId,
 		full_name: input.fullName,
 		max_allowed_attendees: input.maxAllowedAttendees,
+		max_allowed_children: input.maxAllowedChildren ?? 0,
 		tags: input.tags,
 	};
 	if (phone) {
@@ -65,8 +66,10 @@ async function updateGuestRecord(
 const GUEST_COLUMN_MAP: Record<string, keyof UpdateGuestInput> = {
 	full_name: 'fullName',
 	max_allowed_attendees: 'maxAllowedAttendees',
+	max_allowed_children: 'maxAllowedChildren',
 	attendance_status: 'attendanceStatus',
 	attendee_count: 'attendeeCount',
+	children_count: 'childrenCount',
 	guest_comment: 'guestComment',
 	delivery_status: 'deliveryStatus',
 	first_shared_at: 'firstSharedAt',
@@ -253,6 +256,7 @@ export async function submitGuestRsvpPublicRpc(input: {
 	maxAllowedAttendees?: number | null;
 	attendanceStatus: AttendanceStatus;
 	attendeeCount: number;
+	childrenCount?: number;
 	guestComment?: string | null;
 	responseSource?: ResponseSource;
 	shortId?: string | null;
@@ -273,6 +277,7 @@ export async function submitGuestRsvpPublicRpc(input: {
 			p_guest_comment: input.guestComment ?? null,
 			p_response_source: input.responseSource ?? 'link',
 			p_short_id: input.shortId ?? null,
+			p_children_count: input.childrenCount ?? 0,
 		},
 	});
 

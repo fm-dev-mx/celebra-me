@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import GuestEngagementFunnel from '@/components/dashboard/guests/GuestEngagementFunnel';
 import GuestPassesBar from '@/components/dashboard/guests/GuestPassesBar';
 import type { DashboardEngagementSummary } from '@/interfaces/dashboard/guest.interface';
+import { formatParty } from '@/lib/rsvp/guest-cap';
 import { writeClipboardText } from '@/hooks/use-clipboard';
 import {
 	buildGuestSummaryShareText,
@@ -42,7 +43,7 @@ function plural(count: number, singular: string, pluralForm: string): string {
 }
 
 function passes(count: number): string {
-	return `${count} ${plural(count, 'pase', 'pases')}`;
+	return formatParty(count);
 }
 
 function percentOf(part: number, total: number): number {

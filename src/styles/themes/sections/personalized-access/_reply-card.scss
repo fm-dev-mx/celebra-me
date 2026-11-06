@@ -31,7 +31,9 @@
 		var(--reply-card-gutter, clamp(1.25rem, 5vw, 2rem)) 0;
 	background: none;
 
+	// Same width rule as the RSVP reply card it stacks on, so both halves line up.
 	.personalized-access__container {
+		width: var(--reply-card-width, 100%);
 		max-width: var(--reply-card-max-width, 36rem);
 		margin-inline: auto;
 		padding: 0;
