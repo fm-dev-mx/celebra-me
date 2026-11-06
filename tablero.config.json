@@ -341,5 +341,28 @@
             "id": "marketing",
             "nombre": "Marketing"
         }
-    ]
+    ],
+    "ciclo": {
+        "revisores": {
+            "claude": [
+                "codex"
+            ],
+            "codex": [
+                "claude"
+            ],
+            "gemini": [
+                "codex"
+            ]
+        },
+        "unir": "develop",
+        "rojo": [
+            ".github/workflows/deploy*",
+            "src/lib/commercial/**",
+            "src/components/home/Pricing.astro",
+            "supabase/migrations/**",
+            "vercel.json",
+            "**/*payment*",
+            "**/*pricing*"
+        ]
+    }
 }
