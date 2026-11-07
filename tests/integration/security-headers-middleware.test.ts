@@ -5,6 +5,7 @@ import {
 	INVITATION_PREVIEW_SECURITY_HEADERS,
 	PERMANENT_REDIRECTS,
 	SECURITY_HEADERS,
+	buildCspReportOnlyValue,
 	resolvePermanentRedirectPath,
 	resolveSecurityHeaders,
 } from '../../src/lib/server/security-headers';
@@ -225,5 +226,39 @@ describe('Middleware permanent redirects', () => {
 		expect(response.status).toBe(301);
 		expect(response.headers.get('Location')).toBe('/comunion-angelical');
 		expect(next).not.toHaveBeenCalled();
+	});
+});
+
+describe('Report-only CSP for Local Supabase', () => {
+	const LOCAL_ORIGIN = 'http://127.0.0.1:54321';
+
+	function directive(policy: string, name: string): string | undefined {
+		return policy.split('; ').find((entry) => entry.split(' ')[0] === name);
+	}
+
+	it('keeps the hosted policy when no local origin is given', () => {
+		expect(buildCspReportOnlyValue()).toBe(CSP_REPORT_ONLY_VALUE);
+		expect(resolveSecurityHeaders('/', {})).toBe(SECURITY_HEADERS);
+	});
+
+	it('allows the local origin only for Supabase resource directives', () => {
+		const policy = buildCspReportOnlyValue(LOCAL_ORIGIN);
+
+		for (const name of ['img-src', 'connect-src', 'media-src']) {
+			expect(directive(policy, name)?.endsWith(` ${LOCAL_ORIGIN}`)).toBe(true);
+		}
+		for (const name of ['script-src', 'default-src', 'frame-src']) {
+			expect(directive(policy, name)).toBe(directive(CSP_REPORT_ONLY_VALUE, name));
+		}
+	});
+
+	it('serves the local policy on global and preview routes', () => {
+		const options = { localSupabaseOrigin: LOCAL_ORIGIN };
+		for (const pathname of ['/', '/dashboard/invitaciones/abc/preview']) {
+			const headers = new Map(resolveSecurityHeaders(pathname, options));
+			expect(headers.get('Content-Security-Policy-Report-Only')).toBe(
+				buildCspReportOnlyValue(LOCAL_ORIGIN),
+			);
+		}
 	});
 });
