@@ -83,6 +83,8 @@ export const GuestResponseFields: React.FC<GuestResponseFieldsProps> = ({
 								min={1}
 								max={maxAttendees}
 								value={attendeeCount}
+								aria-invalid={Boolean(error)}
+								aria-describedby={error ? 'guest-response-error' : undefined}
 								onChange={(event) =>
 									onAttendeeCountChange(Number(event.target.value))
 								}
@@ -109,7 +111,11 @@ export const GuestResponseFields: React.FC<GuestResponseFieldsProps> = ({
 							)}
 						</div>
 					)}
-					{error && <span className="guest-field-error">{error}</span>}
+					{error && (
+						<span id="guest-response-error" className="guest-field-error">
+							{error}
+						</span>
+					)}
 				</div>
 			)}
 		</section>

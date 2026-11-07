@@ -331,9 +331,12 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 									value={childrenInput}
 									onChange={(event) => setChildrenInput(event.target.value)}
 									aria-invalid={Boolean(fieldErrors.children)}
+									aria-describedby={
+										fieldErrors.children ? 'guest-children-error' : undefined
+									}
 								/>
 								{fieldErrors.children && (
-									<span className="guest-field-error">
+									<span id="guest-children-error" className="guest-field-error">
 										{fieldErrors.children}
 									</span>
 								)}
