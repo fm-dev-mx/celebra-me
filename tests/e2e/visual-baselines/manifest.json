@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-05T17:09:42.955Z",
+    "generatedAt": "2026-11-07T23:26:10.220Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -11,8 +11,8 @@
         "locale": "en-US",
         "timezone": "UTC",
         "deviceScaleFactor": 1,
-        "lockfileSha256": "7c84f51b04d62997217843b1d52e5397057cde44194d1349e4e111b7b6e1fc91",
-        "cssSha256": "0e9df3a5df905b4cf14bc47206c72ea4c9c66691988c3bdec32575ae714238cb",
+        "lockfileSha256": "b1fa0f5e75ad48af47919a390f74e661be0e2004e55597b72e1edd1550f928bc",
+        "cssSha256": "e3480b7873f1eadbcce8e670848ada25b2ad3edb28ba109201557fd50feb1195",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2395,8 +2395,8 @@
             "preset": "angelic-presence",
             "viewport": "mobile",
             "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
-            "sha256": "3a02c2e389c33627881b7803664bfe1c7bd05c346cb2798f2790e879bf5e5b9d",
-            "contentHash": "99ef711be60de1b499ddafa01df5445b528ad88c5abffb69cf60dfdbdcaf6f8b",
+            "sha256": "4e35453b03ea71c6548d3290536390bafb7c55ccb803acdfa45cb2980dba344d",
+            "contentHash": "114c9f64c56627eb49d91968648c5b70cb21600544b28e41a54b40c75382fc2f",
             "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
             "comparisonResult": "ACCEPTED"
         },
@@ -2407,8 +2407,8 @@
             "preset": "angelic-presence",
             "viewport": "desktop",
             "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-desktop.png",
-            "sha256": "d5207828d77c053d5ede86a0528ec8f52314156a1126dc1e8d64a69e0ef54334",
-            "contentHash": "99ef711be60de1b499ddafa01df5445b528ad88c5abffb69cf60dfdbdcaf6f8b",
+            "sha256": "95a62cc2da00c4107cfdc4f2fdf3ac1f4f257196149915fcb44a72d36b893c32",
+            "contentHash": "114c9f64c56627eb49d91968648c5b70cb21600544b28e41a54b40c75382fc2f",
             "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
             "comparisonResult": "ACCEPTED"
         },
@@ -2605,9 +2605,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "046e8ce0f19ee98e4d89ce1f2be5e9766d889ade",
+    "referenceSha": "e4176421a38cf63251ce54c1805ae3ddebcde97e",
     "variantManifest": {
-        "generatedAt": "2026-11-05T17:09:42.955Z",
+        "generatedAt": "2026-11-07T23:26:10.220Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2619,8 +2619,8 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "7c84f51b04d62997217843b1d52e5397057cde44194d1349e4e111b7b6e1fc91",
-            "cssSha256": "0e9df3a5df905b4cf14bc47206c72ea4c9c66691988c3bdec32575ae714238cb",
+            "lockfileSha256": "b1fa0f5e75ad48af47919a390f74e661be0e2004e55597b72e1edd1550f928bc",
+            "cssSha256": "e3480b7873f1eadbcce8e670848ada25b2ad3edb28ba109201557fd50feb1195",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4565,10 +4565,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "046e8ce0f19ee98e4d89ce1f2be5e9766d889ade"
+        "referenceSha": "e4176421a38cf63251ce54c1805ae3ddebcde97e"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-05T17:09:42.963Z",
+        "generatedAt": "2026-11-07T23:26:10.225Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4580,8 +4580,8 @@
             "locale": "en-US",
             "timezone": "UTC",
             "deviceScaleFactor": 1,
-            "lockfileSha256": "7c84f51b04d62997217843b1d52e5397057cde44194d1349e4e111b7b6e1fc91",
-            "cssSha256": "0e9df3a5df905b4cf14bc47206c72ea4c9c66691988c3bdec32575ae714238cb",
+            "lockfileSha256": "b1fa0f5e75ad48af47919a390f74e661be0e2004e55597b72e1edd1550f928bc",
+            "cssSha256": "e3480b7873f1eadbcce8e670848ada25b2ad3edb28ba109201557fd50feb1195",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -5031,8 +5031,8 @@
                 "preset": "angelic-presence",
                 "viewport": "mobile",
                 "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
-                "sha256": "3a02c2e389c33627881b7803664bfe1c7bd05c346cb2798f2790e879bf5e5b9d",
-                "contentHash": "99ef711be60de1b499ddafa01df5445b528ad88c5abffb69cf60dfdbdcaf6f8b",
+                "sha256": "4e35453b03ea71c6548d3290536390bafb7c55ccb803acdfa45cb2980dba344d",
+                "contentHash": "114c9f64c56627eb49d91968648c5b70cb21600544b28e41a54b40c75382fc2f",
                 "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5043,8 +5043,8 @@
                 "preset": "angelic-presence",
                 "viewport": "desktop",
                 "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-desktop.png",
-                "sha256": "d5207828d77c053d5ede86a0528ec8f52314156a1126dc1e8d64a69e0ef54334",
-                "contentHash": "99ef711be60de1b499ddafa01df5445b528ad88c5abffb69cf60dfdbdcaf6f8b",
+                "sha256": "95a62cc2da00c4107cfdc4f2fdf3ac1f4f257196149915fcb44a72d36b893c32",
+                "contentHash": "114c9f64c56627eb49d91968648c5b70cb21600544b28e41a54b40c75382fc2f",
                 "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5241,9 +5241,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "046e8ce0f19ee98e4d89ce1f2be5e9766d889ade"
+        "referenceSha": "e4176421a38cf63251ce54c1805ae3ddebcde97e"
     },
-    "candidateManifestSha256": "c4f12463d001286344600d35e8e13efbfaf387e7b3ee432583715f658e373cbe",
-    "acceptedFromCommit": "046e8ce0f19ee98e4d89ce1f2be5e9766d889ade",
-    "acceptedAt": "2026-11-05T17:13:17.409Z"
+    "candidateManifestSha256": "89a06ec3dbd5f65e552e1790fbbfbd57fe337b657508b636f80fec78f00504d3",
+    "acceptedFromCommit": "e4176421a38cf63251ce54c1805ae3ddebcde97e",
+    "acceptedAt": "2026-11-07T23:28:24.641Z"
 }
