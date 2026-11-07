@@ -86,7 +86,9 @@ export function useRsvpSubmission({
 			? 0
 			: (initialData?.attendeeCount ?? 0) || effectiveGuestCap;
 	const initialGuestComment = initialData?.guestComment ?? '';
-	const maxChildren = isDemoPreview ? 0 : (initialData?.maxAllowedChildren ?? 0);
+	// A single-place pass is the guest alone, so it never asks for children.
+	const maxChildren =
+		isDemoPreview || effectiveGuestCap <= 1 ? 0 : (initialData?.maxAllowedChildren ?? 0);
 	const initialChildrenCount =
 		initialAttendanceStatus === 'confirmed' ? (initialData?.childrenCount ?? 0) : 0;
 	const [childrenCount, setChildrenCount] = useState<number | string>(initialChildrenCount);
