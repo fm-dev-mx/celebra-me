@@ -15,7 +15,7 @@ $andrea-text-zoom: 1.125;
 // with a lit band), the titles on the night take the night foil, and the small labels move to a
 // warmer honey (profile tokens), so the golds differ in tone instead of reading as one flat ink. Split titles carry
 // the foil on each word, since a word that animates on its own does not paint through its parent.
-$andrea-day-titles: '.event-location__heading, .family__title, .itinerary__title, .gallery-section__title, .gifts-section__title, .rsvp__title, .framed-portrait-hero__name';
+$andrea-day-titles: '.event-location__heading, .family__title, .itinerary__title, .gallery-section__title, .gifts-section__title, .rsvp__title, .memories-section__title, .framed-portrait-hero__name';
 $andrea-night-titles: '.event-location__indications-heading, .stacked-card[data-moment="Waltz"] .stacked-card__label';
 $andrea-text: 'h1, h2, h3, h4, h5, h6, p, li, dt, dd, blockquote, figcaption, label, legend, button, a, time, span';
 
@@ -397,4 +397,89 @@ $andrea-moments: (
 .event--andrea .event-location__enclosure-note:last-of-type .event-location__enclosure-text {
 	padding: 0.6rem 1rem;
 	border-block: 1px solid rgb(var(--color-pale-gold-rgb) / 45%);
+}
+
+// The photo-sharing card as the printed table card: an inner gold hairline inside the frame, the
+// butterfly resting on the top edge, the day rule under the title, a quieter label-set action,
+// and the QR plate ringed in gold. The plate itself stays black on white for every scanner.
+.event--andrea .memories-section[data-variant='card'] {
+	.memories-section__inner {
+		position: relative;
+		row-gap: 1rem;
+		margin-top: 1.25rem;
+		padding-top: clamp(2.75rem, 8vw, 3.25rem);
+		box-shadow:
+			inset 0 0 0 6px var(--memories-card-bg),
+			inset 0 0 0 7px rgb(var(--color-leaf-gold-rgb) / 32%);
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 50%;
+			width: 3.5rem;
+			height: 2.75rem;
+			translate: -50% -55%;
+			background:
+				var(--andrea-memories-mark) center / 2.1rem auto no-repeat,
+				var(--memories-card-bg);
+			pointer-events: none;
+		}
+	}
+
+	.memories-section__title {
+		font-style: italic;
+	}
+
+	.memories-section__description::before {
+		content: '';
+		display: block;
+		width: 6.5rem;
+		height: 0.75rem;
+		margin: 0 auto 1rem;
+		background: var(--andrea-memories-divider) center / contain no-repeat;
+	}
+
+	.memories-section__action {
+		max-width: 19rem;
+		min-height: 50px;
+		margin-top: 0.5rem;
+		border-radius: 2px;
+		box-shadow:
+			inset 0 0 0 4px var(--memories-action-bg),
+			inset 0 0 0 5px rgb(var(--color-pale-gold-rgb) / 45%);
+		font-size: 0.82rem;
+		font-weight: 500;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.memories-section__qr {
+		margin-top: 1rem;
+	}
+
+	.memories-section__qr-frame {
+		padding: 0.625rem;
+		box-shadow:
+			0 0 0 1px rgb(var(--color-leaf-gold-rgb) / 60%),
+			0 0 0 6px var(--memories-card-bg),
+			0 0 0 7px rgb(var(--color-leaf-gold-rgb) / 30%);
+	}
+
+	.memories-section__qr-image {
+		width: clamp(9.5rem, 44vw, 12.5rem);
+	}
+
+	.memories-section__footer {
+		margin-top: 0.5rem;
+		font-size: 0.92rem;
+	}
+
+	.memories-section__download {
+		color: var(--color-gold-ink);
+		font-size: 0.95rem;
+		letter-spacing: 0.02em;
+		text-decoration-color: rgb(var(--color-leaf-gold-rgb) / 55%);
+		text-decoration-thickness: 1px;
+	}
 }

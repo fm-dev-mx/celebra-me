@@ -274,6 +274,8 @@ const content: CanonicalEventContentInput = {
 		title: 'Comparta sus fotos de mi noche',
 		description:
 			'Ayúdeme a guardar cada momento. Suba aquí sus fotos y videos; solo mi familia y usted podrán verlos.',
+		// Short enough to stay on one line in the label-set action on a phone.
+		actionLabel: 'Subir fotos y videos',
 	},
 	thankYou: {
 		// She looks back over her shoulder: the story closes on the same gown, seen from behind.

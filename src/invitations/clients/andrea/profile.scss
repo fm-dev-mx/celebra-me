@@ -31,6 +31,9 @@ $andrea-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 // A pale-gold butterfly that rests at the head of the dress-code tag.
 $andrea-tag-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='none' stroke='%23E6C678' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill='%23E6C678' fill-opacity='.18'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' stroke-linecap='round'/%3E%3C/svg%3E");
 
+// The tag butterfly in leaf gold, for the top edge of the photo-sharing card on paper.
+$andrea-memories-butterfly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64' fill='none' stroke='%23A8843F' stroke-width='1.4' stroke-linejoin='round'%3E%3Cpath d='M23 26C14 12 3 12 4 22 5 30 14 33 23 31ZM23 32C14 33 8 40 11 46 14 51 21 45 23 37ZM25 26C34 12 45 12 44 22 43 30 34 33 25 31ZM25 32C34 33 40 40 37 46 34 51 27 45 25 37Z' fill='%23A8843F' fill-opacity='.22'/%3E%3Cpath d='M24 21V44M23.4 21C22 17 20 15 18 14M24.6 21C26 17 28 15 30 14' stroke-linecap='round'/%3E%3C/svg%3E");
+
 // Client-requested solid silhouettes: a floor-length gown and a suit with a necktie.
 $andrea-formal-attire: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 88' fill='%23E6C678'%3E%3Cpath d='M23 5h6c0 7 4 10 7 10s7-3 7-10h6l-1 21-6 13 20 43H10l20-43-6-13z'/%3E%3Cpath d='M83 6l13 7 13-7 12 9 4 40-9 2-4-28-2 26 5 27H99l-3-25-3 25H77l5-27-2-26-4 28-9-2 4-40z'/%3E%3Cpath fill='%2311382C' d='M85 8l11 8 11-8-6 27-5 5-5-5z'/%3E%3Cpath d='M94 17h4l1 4-3 15-3-15z'/%3E%3C/svg%3E");
 
@@ -524,6 +527,7 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 		[data-section-kind='gifts'],
 		[data-section-kind='personalized-access'],
 		[data-section-kind='rsvp'],
+		[data-section-kind='memories'],
 		[data-section-kind='thankYou']
 	),
 	.invitation-footer {
@@ -568,6 +572,20 @@ $andrea-gift: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' 
 	) {
 		--andrea-ground: var(--color-sage-mist);
 		--andrea-ground-rgb: var(--color-sage-mist-rgb);
+	}
+
+	// The photo-sharing card is the printed table card on paper: a cream leaf inside a gold
+	// hairline frame, a gold butterfly on its top edge, the day rule under the title, and the
+	// action in the emerald of the night with pale-gold letters. The QR plate stays white.
+	.memories-section {
+		--memories-card-bg: var(--color-story-cream);
+		--memories-card-ink: var(--color-forest-ink);
+		--memories-card-muted: var(--color-forest-ink-soft);
+		--memories-card-rule: rgb(var(--color-leaf-gold-rgb) / 55%);
+		--memories-action-bg: var(--color-emerald-night);
+		--memories-action-ink: var(--color-pale-gold);
+		--andrea-memories-mark: #{$andrea-memories-butterfly};
+		--andrea-memories-divider: #{$andrea-rule-duo};
 	}
 
 	// The closing is the night the story ends in.
