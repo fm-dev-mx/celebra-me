@@ -78,8 +78,6 @@
                 "--cli=C:/Users/fmdevmx/AppData/Roaming/npm/codex.cmd",
                 "--tipo={tipo}",
                 "--",
-                "-c",
-                "windows.sandbox=\"unelevated\"",
                 "-s",
                 "workspace-write",
                 "-c",
@@ -125,8 +123,6 @@
                 "--datos={datos}",
                 "--cli=C:/Users/fmdevmx/AppData/Roaming/npm/codex.cmd",
                 "--",
-                "-c",
-                "windows.sandbox=\"unelevated\"",
                 "-s",
                 "read-only",
                 "-c",
@@ -161,8 +157,6 @@
                 "--datos={datos}",
                 "--cli=C:/Users/fmdevmx/AppData/Roaming/npm/codex.cmd",
                 "--",
-                "-c",
-                "windows.sandbox=\"unelevated\"",
                 "-s",
                 "read-only",
                 "-c",
@@ -351,15 +345,9 @@
     ],
     "ciclo": {
         "revisores": {
-            "claude": [
-                "codex"
-            ],
-            "codex": [
-                "claude"
-            ],
-            "gemini": [
-                "codex"
-            ]
+            "claude": ["codex"],
+            "codex": ["claude"],
+            "gemini": ["codex"]
         },
         "unir": "develop",
         "rojo": [
