@@ -15,7 +15,8 @@ import {
 	withPrivateNoStore,
 } from '@/lib/http/private-cache-path';
 import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
-import { isLocalProcess } from '@/lib/server/deploy-identity';
+import { isLocalProcess, isLocalSupabaseUrl } from '@/lib/server/deploy-identity';
+import { getEnv } from '@/lib/server/env';
 import { isPreviewMfaBypassEnabled } from '@/lib/server/preview-mfa-bypass';
 import { resolvePermanentRedirect, withSecurityHeaders } from '@/lib/server/security-headers';
 import { COOKIE_NAME_IGNORE_TRACKING } from '@/lib/tracking/internal-exclusion';
@@ -713,10 +714,19 @@ async function handleRequest(
 	return finalizeMiddlewareResponse(url.pathname, response);
 }
 
+/** Local Supabase origin for the report-only CSP, so local and CI storage images are allowed. */
+function resolveLocalSupabaseOrigin(): string | undefined {
+	const supabaseUrl = getEnv('SUPABASE_URL');
+	return supabaseUrl && isLocalSupabaseUrl(supabaseUrl) ? new URL(supabaseUrl).origin : undefined;
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
+	const headerOptions = { localSupabaseOrigin: resolveLocalSupabaseOrigin() };
 	const permanentRedirect = resolvePermanentRedirect(context.url);
-	if (permanentRedirect) return withSecurityHeaders(context.url.pathname, permanentRedirect);
+	if (permanentRedirect) {
+		return withSecurityHeaders(context.url.pathname, permanentRedirect, headerOptions);
+	}
 
 	const response = await handleRequest(context, next);
-	return withSecurityHeaders(context.url.pathname, response);
+	return withSecurityHeaders(context.url.pathname, response, headerOptions);
 });

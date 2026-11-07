@@ -186,7 +186,7 @@ describe('canonical validation contract', () => {
 			expect(workflow).toContain('test "$COVERAGE_RESULT" = success');
 			expect(workflow).toContain('tier: [static, unit, database, workerd]');
 			expect(workflowLines).toContain(
-				'run: pnpm test:workerd --url http://127.0.0.1:8799 --log .tmp/workerd/wrangler.log --sha "$GITHUB_SHA"',
+				'run: pnpm test:workerd --url http://127.0.0.1:8799 --log .tmp/workerd/wrangler.log --sha "$GITHUB_SHA" --supabase-url http://127.0.0.1:54321',
 			);
 			expect(workflow).toContain('cancel-in-progress: true');
 			expect(workflow).toContain("PLAYWRIGHT_USE_CANONICAL_FIXTURES: 'true'");
