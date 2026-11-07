@@ -2,7 +2,6 @@ import {
 	createAdminUser,
 	listAdminUsers,
 	changeUserRoleAdmin,
-	deriveTemporaryPasswordForOperation,
 	generateTemporaryPassword,
 	resetUserPasswordAdmin,
 	updateUserLoginAliasAdmin,
@@ -203,6 +202,22 @@ describe('rsvp user admin service', () => {
 		).rejects.toMatchObject({ code: 'account_access_incomplete' });
 	});
 
+	it('aborts role change when the strict audit log fails', async () => {
+		upsertUserRoleServiceMock.mockResolvedValueOnce({
+			userId: 'user-1',
+			role: 'host_client',
+			createdAt: '',
+			updatedAt: '',
+		});
+		logAdminActionStrictMock.mockRejectedValueOnce(new Error('audit write failed'));
+		await expect(
+			changeUserRoleAdmin({ userId: 'user-1', actorUserId: 'admin-1', role: 'host_client' }),
+		).rejects.toThrow('audit write failed');
+		expect(logAdminActionStrictMock).toHaveBeenCalledWith(
+			expect.objectContaining({ action: 'change_user_role' }),
+		);
+	});
+
 	it('lists orphan accounts honestly without assigning a default role', async () => {
 		jest.mocked(listAuthUsers).mockResolvedValueOnce([
 			{ id: 'user-1', email: 'host@example.test' },
@@ -232,22 +247,17 @@ describe('rsvp user admin service', () => {
 		expect(logAdminActionMock).not.toHaveBeenCalled();
 	});
 
-	it('generates short memorable temporary passwords with secure randomness', () => {
-		const pwd1 = generateTemporaryPassword();
-		const pwd2 = generateTemporaryPassword();
-		const pattern = /^[A-Z][a-z]+-\d{4}[!@#$%*]$/;
-		expect(pwd1).toMatch(pattern);
-		expect(pwd2).toMatch(pattern);
-		expect(pwd1).not.toBe(pwd2);
-		expect(pwd1.length).toBeLessThanOrEqual(16);
-		expect(pwd1).not.toMatch(/[áéíóúñü]/i);
-	});
-
-	it('derives the same strong temporary password for the same operation without persistence', () => {
-		const first = deriveTemporaryPasswordForOperation(OPERATION_ID, 'test-secret');
-		const second = deriveTemporaryPasswordForOperation(OPERATION_ID, 'test-secret');
-		expect(first).toBe(second);
-		expect(first).toMatch(/^[A-Z][a-z]+-\d{4}[!@#$%*]$/);
+	it('generates 17-character temporary passwords from a CSPRNG', () => {
+		const pattern = /^[A-HJ-NP-Za-km-z2-9]{5}(-[A-HJ-NP-Za-km-z2-9]{5}){2}$/;
+		const passwords = Array.from({ length: 200 }, () => generateTemporaryPassword());
+		for (const password of passwords) {
+			expect(password).toMatch(pattern);
+			expect(password.length).toBeGreaterThanOrEqual(12);
+			expect(password).toMatch(/[A-Z]/);
+			expect(password).toMatch(/[a-z]/);
+			expect(password).toMatch(/\d/);
+		}
+		expect(new Set(passwords).size).toBe(passwords.length);
 	});
 
 	describe('resetUserPasswordAdmin outcomes', () => {
@@ -356,9 +366,8 @@ describe('rsvp user admin service', () => {
 			});
 			expect(adminResetAuthUserPasswordMock).not.toHaveBeenCalled();
 			expect(result.outcome.status).toBe('replayed');
-			expect(result.credentials?.temporaryPassword).toBe(
-				deriveTemporaryPasswordForOperation(OPERATION_ID, 'test-service-secret'),
-			);
+			// Passwords are random and never stored, so a replay cannot return them again.
+			expect(result.credentials).toBeUndefined();
 		});
 	});
 

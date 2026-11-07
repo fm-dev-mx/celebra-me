@@ -2323,9 +2323,9 @@
             "preset": "storybook-emerald",
             "viewport": "mobile",
             "file": "pages/invitation-xv-andrea-mobile.png",
-            "sha256": "2e379100c39d553af6cb7fc53fcc033c7a1f8e4e6cc45df0fa2af348349ee906",
-            "contentHash": "65c5ebee8591ddfd40b17a59414f9e0baba5624681d397e260abfec974432a1a",
-            "assetHash": "ea0add655c9a7cc521cedb540acf945fd6cf69bf793475720672cdef2484208b",
+            "sha256": "2417e6edc7facc25dabc6c5e9241c32c5b1acebfef75bea7b807a84dd5bab1d0",
+            "contentHash": "02aa02cadacb321568b261ef6071bc10ce25dd32ae995f4fce15c4ac96c38ade",
+            "assetHash": "6eaf429aaf40d6defb0466419cb9b921b638bce1f8f7f9288710b3293df60bb8",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2335,9 +2335,9 @@
             "preset": "storybook-emerald",
             "viewport": "desktop",
             "file": "pages/invitation-xv-andrea-desktop.png",
-            "sha256": "fb32b17ffb178e5390932b76043595042f59c190a424d54954fa1d40e63a90af",
-            "contentHash": "65c5ebee8591ddfd40b17a59414f9e0baba5624681d397e260abfec974432a1a",
-            "assetHash": "ea0add655c9a7cc521cedb540acf945fd6cf69bf793475720672cdef2484208b",
+            "sha256": "98336e68c83ad8ad966343f4f323212d97a02d3b9771760ddc82b1a627baf74f",
+            "contentHash": "02aa02cadacb321568b261ef6071bc10ce25dd32ae995f4fce15c4ac96c38ade",
+            "assetHash": "6eaf429aaf40d6defb0466419cb9b921b638bce1f8f7f9288710b3293df60bb8",
             "comparisonResult": "ACCEPTED"
         },
         {

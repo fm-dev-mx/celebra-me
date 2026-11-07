@@ -68,14 +68,15 @@ function isAfterResponseContext(value: unknown): value is AfterResponseContext {
 }
 
 /**
- * Reads the execution context the Cloudflare adapter exposes as `locals.runtime.ctx`.
+ * Reads the execution context the Cloudflare adapter exposes as `locals.cfContext`.
  * Returns `null` on any other host; `runAfterResponse` then falls back by itself.
+ *
+ * Never read `locals.runtime`: since Astro v6 the adapter keeps it only as getters that
+ * throw, so touching `locals.runtime.ctx` turns every caller's request into a 500.
  */
 export function resolveAfterResponseContext(locals: unknown): AfterResponseContext | null {
 	if (typeof locals !== 'object' || locals === null) return null;
-	const runtime = (locals as { runtime?: unknown }).runtime;
-	if (typeof runtime !== 'object' || runtime === null) return null;
-	const ctx = (runtime as { ctx?: unknown }).ctx;
+	const ctx = (locals as { cfContext?: unknown }).cfContext;
 	if (!isAfterResponseContext(ctx)) return null;
 	return { waitUntil: (promise) => ctx.waitUntil(promise) };
 }

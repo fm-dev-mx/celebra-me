@@ -15,6 +15,7 @@ import { createMockRequest } from '../helpers/api-mocks';
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	getAuthUserAdminById: jest.fn(),
+	revokeAuthSessions: jest.fn(),
 	signInWithPassword: jest.fn(),
 }));
 
@@ -28,6 +29,7 @@ jest.mock('@/lib/rsvp/services/user-admin.service', () => ({
 }));
 
 jest.mock('@/lib/rsvp/auth/auth', () => ({
+	...jest.requireActual('@/lib/rsvp/auth/auth'),
 	getHostSessionFromRequest: jest.fn(),
 	getSessionDebugSnapshotFromRequest: jest.fn(),
 }));
@@ -227,6 +229,42 @@ describe('auth endpoints', () => {
 		expect(setCookieHeader).toContain('sb-access-token=');
 		expect(setCookieHeader).toContain('sb-refresh-token=');
 	});
+
+	it.each([false, true])(
+		'revokes global sessions and clears cookies even on upstream failure (%s)',
+		async (fail) => {
+			const warn = jest.spyOn(console, 'error').mockImplementation(() => {});
+			jest.mocked(authApi.revokeAuthSessions).mockReset();
+			if (fail)
+				jest.mocked(authApi.revokeAuthSessions).mockRejectedValueOnce(
+					new Error('private upstream detail'),
+				);
+			const response = await logout({
+				request: createMockRequest(
+					undefined,
+					{
+						Origin: 'http://localhost:4321',
+						Host: 'localhost:4321',
+						Cookie: 'sb-access-token=session-token',
+					},
+					'http://localhost:4321/api/auth/logout',
+				),
+				url: new URL('http://localhost:4321/api/auth/logout'),
+			} as never);
+			expect(authApi.revokeAuthSessions).toHaveBeenCalledWith({
+				accessToken: 'session-token',
+				scope: 'global',
+			});
+			expect(response.status).toBe(200);
+			expect(response.headers.get('set-cookie')).toContain('sb-access-token=;');
+			expect(response.headers.get('set-cookie')).toContain('sb-refresh-token=;');
+			if (fail) {
+				expect(warn).toHaveBeenCalled();
+				expect(JSON.stringify(warn.mock.calls)).not.toContain('private upstream detail');
+			}
+			warn.mockRestore();
+		},
+	);
 
 	it('logout endpoint rejects cross-origin requests', async () => {
 		const response = await logout({

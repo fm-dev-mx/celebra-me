@@ -53,6 +53,46 @@ const RULES = [
 		label: 'PRIVATE KEY block',
 		pattern: /-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----/,
 	},
+	{
+		id: 'aws-key',
+		label: 'AWS access key',
+		pattern: /\bAKIA[0-9A-Z]{16}\b/,
+	},
+	{
+		id: 'google-api-key',
+		label: 'Google API key',
+		pattern: /\bAIza[0-9A-Za-z_-]{35}\b/,
+	},
+	{
+		id: 'cloudinary-url',
+		label: 'Cloudinary URL with secret',
+		pattern: /\bcloudinary:\/\/[0-9]+:[A-Za-z0-9_-]+@[A-Za-z0-9_-]+/,
+	},
+	{
+		id: 'slack-token',
+		label: 'Slack token',
+		pattern: /\bxox[bp]-[0-9a-zA-Z-]{10,}/,
+	},
+	{
+		id: 'meta-token',
+		label: 'Meta/Facebook access token',
+		pattern: /\bEAA[A-Za-z0-9]{20,}/,
+	},
+	{
+		id: 'resend-key',
+		label: 'Resend API key',
+		pattern: /\bre_[A-Za-z0-9]{20,}/,
+	},
+	{
+		id: 'sendgrid-key',
+		label: 'SendGrid API key',
+		pattern: /\bSG\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}/,
+	},
+	{
+		id: 'postgres-password-url',
+		label: 'PostgreSQL connection string with password',
+		pattern: /\bpostgres(?:ql)?:\/\/[^:\s]+:[^@\s]+@[^\s]+/,
+	},
 ];
 
 // Supabase's public demo JWTs for the local stack; only the `jwt` rule is waived here.
@@ -61,12 +101,20 @@ const ALLOWED = new Map([
 	['tests/db/public-rsvp-http-wiring-db.test.ts', new Set(['jwt'])],
 ]);
 
+// Path patterns where specific rules are waived (test fixtures, docs with placeholder URLs).
+const RULE_PATH_EXEMPTIONS = new Map([
+	['postgres-password-url', [/^tests\//, /^scripts\/db\//, /^scripts\/manual\//, /^docs\//]],
+]);
+
 const UNREAD_DIRECTORIES = ['.secrets/', '.vercel/', '.backups/'];
 
 const isEnvFile = (repoFile) => path.posix.basename(repoFile).startsWith('.env');
 const isEnvTemplate = (repoFile) => isEnvFile(repoFile) && repoFile.endsWith('.example');
+const isDevVars = (repoFile) => path.posix.basename(repoFile) === '.dev.vars';
+const isKeyFile = (repoFile) => /\.(pem|key)$/.test(repoFile);
 const isUnread = (repoFile) =>
 	isEnvFile(repoFile) ||
+	isDevVars(repoFile) ||
 	UNREAD_DIRECTORIES.some((dir) => repoFile.startsWith(dir) || repoFile.includes(`/${dir}`));
 
 const errors = [];
@@ -90,6 +138,18 @@ for (const repoFile of files) {
 				`remove it with git rm --cached and rotate every value it held.`,
 		);
 	}
+	if (isDevVars(repoFile)) {
+		errors.push(
+			`${repoFile} is a versioned .dev.vars file. Worker secrets must not be in Git; ` +
+				`remove it with git rm --cached and rotate every value it held.`,
+		);
+	}
+	if (isKeyFile(repoFile)) {
+		errors.push(
+			`${repoFile} is a versioned key/certificate file. Private keys must not be in Git; ` +
+				`remove it with git rm --cached and rotate the key.`,
+		);
+	}
 	if (isUnread(repoFile)) continue;
 
 	const absolute = path.join(PROJECT_ROOT, repoFile);
@@ -103,12 +163,15 @@ for (const repoFile of files) {
 	const lines = buffer.toString('utf8').split(/\r?\n/);
 	for (const rule of RULES) {
 		if (allowed.has(rule.id)) continue;
-		const lineIndex = lines.findIndex((line) => rule.pattern.test(line));
-		if (lineIndex !== -1) {
-			errors.push(
-				`${repoFile}:${lineIndex + 1} holds a ${rule.label}. Move it to an env file or a ` +
-					`secret store and rotate it; never paste the value here.`,
-			);
+		const pathPatterns = RULE_PATH_EXEMPTIONS.get(rule.id);
+		if (pathPatterns?.some((re) => re.test(repoFile))) continue;
+		for (let i = 0; i < lines.length; i++) {
+			if (rule.pattern.test(lines[i])) {
+				errors.push(
+					`${repoFile}:${i + 1} holds a ${rule.label}. Move it to an env file or a ` +
+						`secret store and rotate it; never paste the value here.`,
+				);
+			}
 		}
 	}
 }

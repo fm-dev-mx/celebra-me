@@ -9,13 +9,17 @@ import {
 	type AuthRequestErrorKind,
 } from '@/lib/rsvp/core/errors';
 import { isRecord } from '@/lib/shared/data-utils';
+import {
+	buildTemporaryPasswordExpiry,
+	TEMP_PASSWORD_EXPIRES_KEY,
+} from '@/lib/rsvp/auth/temporary-password';
 
 export const AUTH_REQUEST_TIMEOUT_MS = 5_000;
 
 interface AuthApiOptions<T> {
 	operation: AuthOperation;
 	path: string;
-	method?: 'GET' | 'POST' | 'PUT';
+	method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
 	body?: unknown;
 	authToken?: string;
 	useServiceRole?: boolean;
@@ -144,7 +148,7 @@ async function authRequest<T>(options: AuthApiOptions<T>): Promise<T> {
 
 		let parsed: unknown;
 		try {
-			parsed = await response.json();
+			parsed = response.status === 204 ? null : await response.json();
 		} catch {
 			throw new AuthRequestError({
 				kind: timedOut ? 'timeout' : 'invalid_response',
@@ -240,6 +244,114 @@ export async function refreshAccessToken(input: {
 	});
 }
 
+export async function revokeAuthSessions(input: {
+	accessToken: string;
+	scope: 'global' | 'others';
+}): Promise<void> {
+	await authRequest({
+		operation: 'sign_out',
+		path: `logout?scope=${input.scope}`,
+		authToken: input.accessToken,
+		validate: (value): value is null => value === null,
+	});
+}
+
+export interface MfaFactorRecord {
+	id: string;
+	status: string;
+	factor_type: string;
+	created_at?: string;
+}
+
+export interface MfaTotpEnrollment {
+	id: string;
+	qrCode: string;
+	secret: string;
+}
+
+export interface MfaVerifiedSession {
+	accessToken: string;
+	refreshToken: string;
+}
+
+const isMfaFactorRecord = (value: unknown): value is MfaFactorRecord =>
+	isRecord(value) &&
+	typeof value.id === 'string' &&
+	typeof value.status === 'string' &&
+	typeof value.factor_type === 'string';
+
+/** Lists the MFA factors of the account owning the (AAL1) access token. */
+export async function listMfaFactors(accessToken: string): Promise<MfaFactorRecord[]> {
+	const user = await authRequest({
+		operation: 'mfa_list_factors',
+		path: 'user',
+		method: 'GET',
+		authToken: accessToken,
+		validate: isRecord,
+	});
+	const factors = Array.isArray(user.factors) ? user.factors : [];
+	return factors.filter(isMfaFactorRecord);
+}
+
+export async function unenrollMfaFactor(accessToken: string, factorId: string): Promise<void> {
+	await authRequest({
+		operation: 'mfa_unenroll',
+		path: `factors/${encodeURIComponent(factorId)}`,
+		method: 'DELETE',
+		authToken: accessToken,
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars -- any body is acceptable here
+		validate: (_value): _value is unknown => true,
+	});
+}
+
+export async function enrollMfaTotp(accessToken: string): Promise<MfaTotpEnrollment> {
+	const response = await authRequest({
+		operation: 'mfa_enroll',
+		path: 'factors',
+		authToken: accessToken,
+		body: { factor_type: 'totp' },
+		validate: (value): value is Record<string, unknown> =>
+			isRecord(value) &&
+			typeof value.id === 'string' &&
+			isRecord(value.totp) &&
+			typeof value.totp.qr_code === 'string' &&
+			typeof value.totp.secret === 'string',
+	});
+	const totp = response.totp as { qr_code: string; secret: string };
+	return { id: response.id as string, qrCode: totp.qr_code, secret: totp.secret };
+}
+
+export async function challengeMfaFactor(accessToken: string, factorId: string): Promise<string> {
+	const response = await authRequest({
+		operation: 'mfa_challenge',
+		path: `factors/${encodeURIComponent(factorId)}/challenge`,
+		authToken: accessToken,
+		body: {},
+		validate: (value): value is { id: string } =>
+			isRecord(value) && typeof value.id === 'string',
+	});
+	return response.id;
+}
+
+export async function verifyMfaFactor(input: {
+	accessToken: string;
+	factorId: string;
+	challengeId: string;
+	code: string;
+}): Promise<MfaVerifiedSession> {
+	const response = await authRequest({
+		operation: 'mfa_verify',
+		path: `factors/${encodeURIComponent(input.factorId)}/verify`,
+		authToken: input.accessToken,
+		body: { challenge_id: input.challengeId, code: input.code },
+		validate: (value): value is { access_token: string; refresh_token: string } =>
+			isRecord(value) &&
+			typeof value.access_token === 'string' &&
+			typeof value.refresh_token === 'string',
+	});
+	return { accessToken: response.access_token, refreshToken: response.refresh_token };
+}
+
 async function fetchAuthUsers(): Promise<AuthAdminUserRecord[]> {
 	const response = await authRequest({
 		operation: 'list_users',
@@ -307,7 +419,10 @@ export async function createAuthUserByAdmin(input: {
 			password: input.password,
 			email_confirm: true,
 			user_metadata: input.loginAlias ? { login_alias: input.loginAlias } : undefined,
-			app_metadata: { must_change_password: true },
+			app_metadata: {
+				must_change_password: true,
+				[TEMP_PASSWORD_EXPIRES_KEY]: buildTemporaryPasswordExpiry(),
+			},
 		},
 		validate: isCreateAuthUserResponse,
 	});
@@ -342,6 +457,11 @@ async function updateAuthUserAdmin(input: {
 		},
 	};
 	if (input.password !== undefined) body.password = input.password;
+	if (!input.mustChangePassword) {
+		delete body.app_metadata[TEMP_PASSWORD_EXPIRES_KEY];
+	} else if (input.password !== undefined) {
+		body.app_metadata[TEMP_PASSWORD_EXPIRES_KEY] = buildTemporaryPasswordExpiry();
+	}
 	if (input.passwordResetOperationId) {
 		body.user_metadata = {
 			...(existingUser.user_metadata || {}),

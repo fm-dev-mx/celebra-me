@@ -283,8 +283,7 @@ export default {
 		if (!body) return errorResponse('invalid_request', 400);
 		try {
 			return await handleRetrievalRequest(env, body);
-		} catch (error) {
-			console.error('[memories-retrieve] Request failed:', error);
+		} catch {
 			return errorResponse('unavailable', 503);
 		}
 	},

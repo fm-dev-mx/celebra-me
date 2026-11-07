@@ -1,0 +1,11 @@
+{
+    "PARA USTED": "Qué hará: cambia el código para «{titulo}», lo prueba y abre un PR a {base}.\nUsted: nada; el coordinador une el PR cuando otra sesión lo revisa y lo aprueba.\nRiesgo: bajo; el cambio llega solo a {base}, no a Producción.",
+    "QUÉ SE BUSCA": "El cambio que describe la tarea {id} (T{num}): «{titulo}».\nTerminado cuando: el cambio está en un PR a {base}, con pruebas que lo cubren y las comprobaciones del proyecto en verde.",
+    "ANTES DE EMPEZAR": "Carril {carril} (carpeta {carpeta}), rama {rama} desde {base}.\nCompruebe que la rev de esta tarea (tablero show {id}) sigue en la de «tablero:» de METADATOS; si cambió por otra tarea u otra sesión, pare y léala de nuevo.\n  git switch -c {rama} origin/{base}\n  tablero claim {id} --agente={agente} --carril={carril} --rama={rama}   (desde la carpeta del carril)",
+    "PASOS": "1. Haga el cambio de QUÉ SE BUSCA con sus pruebas.\n2. Compruebe el cambio con las validaciones del proyecto.\n3. Commit, push de {rama} y PR a {base}.",
+    "AUTORIZO": "Commit, push de {rama} y PR a {base}. La unión la hace el coordinador con la revisión aprobada.\nMerge normal de origin/{base} en {rama} para resolver un conflicto o un atraso (sin rebase, sin force).",
+    "NO HAGAS": "- No toque otras ramas ni carriles, ni la rama {base} directamente.\n- No lea archivos de credenciales ni imprima secretos.\n- No cree tareas de seguimiento: un seguimiento es una fase o un paso de esta misma tarea.",
+    "DECISIONES": "- Ninguna todavía: pregunte al inicio en una sola ronda.",
+    "PARE Y PREGUNTE SI": "Hace falta algo fuera de AUTORIZO o una comprobación falla sin causa clara. Pregunte al dueño y anote la pregunta también con tablero msg {id} --de={agente} --para=dueno --texto=\"<pregunta de una línea>\" --opcion=\"<la recomendada>\" --opcion=\"<otra>\" --detalle=\"<detalle técnico>\".",
+    "AL TERMINAR": "1. Deje en verde las comprobaciones del proyecto sobre el cambio.\n2. Abra el PR y cierre: tablero close {id} --agente={agente} --resumen=\"<1 a 4 líneas>\" --comprobacion=\"<lo que corrió>\" --saltada=\"<lo que no>\" --pendiente=\"<texto> T<n>\" --pr=<n> --sha=<40 caracteres>   (use «ninguna» en una lista vacía).\n3. Pida la revisión a otro agente sobre el SHA exacto del PR.\n4. Respuesta: qué cambió, comprobaciones corridas y saltadas, riesgos."
+}

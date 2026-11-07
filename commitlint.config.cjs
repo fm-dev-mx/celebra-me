@@ -72,16 +72,16 @@ const SCOPES = [
 const fullMessage = (parsed) =>
 	[parsed.header, parsed.body, parsed.footer].filter(Boolean).join('\n');
 
-// Dependabot writes its own commit messages: a sentence-case "Bump" and, for a group with one
+// Dependabot writes its own commit messages: a "Bump" or "bump" verb and, for a group with one
 // update, a header cut to the package name ("Bump sass-embedded") with the group in the body
 // ("Bumps the tooling group with 1 update in the / directory: …").
 // Only these signed-off Dependabot shapes skip linting; any other "Bump …" commit is still linted.
 const DEPENDABOT_SIGN_OFF = /^Signed-off-by: dependabot\[bot\] <support@github\.com>$/m;
 const DEPENDABOT_HEADERS = [
-	/^chore\(deps(-dev)?\): Bump \S+ from \S+ to \S+$/,
-	/^chore\(deps(-dev)?\): Bump the \S+ group( across \d+ director(y|ies))? with \d+ updates?$/,
+	/^chore\(deps(-dev)?\): [Bb]ump \S+ from \S+ to \S+$/,
+	/^chore\(deps(-dev)?\): [Bb]ump the \S+ group( across \d+ director(y|ies))? with \d+ updates?$/,
 ];
-const DEPENDABOT_SINGLE_GROUP_HEADER = /^chore\(deps(-dev)?\): Bump \S+$/;
+const DEPENDABOT_SINGLE_GROUP_HEADER = /^chore\(deps(-dev)?\): [Bb]ump \S+$/;
 const DEPENDABOT_SINGLE_GROUP_BODY =
 	/^Bumps the \S+ group with 1 update( in the \S+ directory)?: /m;
 

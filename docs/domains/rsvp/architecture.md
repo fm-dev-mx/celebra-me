@@ -37,7 +37,9 @@ short code is available and emits the short URL when `shortId` exists.
 - `POST /api/auth/login-host`
 - `GET /api/auth/session`
 - `POST /api/auth/logout`
-- `POST /api/auth/sync-session`
+- `POST /api/auth/logout-all`
+- `POST /api/auth/mfa/enroll`
+- `POST /api/auth/mfa/verify`
 
 The middleware refreshes an expiring session from the refresh-token cookie; there is no separate
 refresh endpoint.

@@ -231,39 +231,46 @@ romantic display), and the client's own emerald gown reference (colour and spark
 
 ## Photograph Inventory
 
-Source label: `source:ai-session` (opaque). The client has no XV photo session until February or
-March 2027, so the owner chose an AI session built from her WhatsApp snapshots (D2). The snapshots
-are references only and never become assets. The AI photographs replace nothing real; they can be
-swapped for the professional session later.
+Source label: `source:andrea-round-3` (opaque). The owner selected ten replacement AI-assisted
+photographs on 2026-11-05 for T645 andrea-fotos-ronda-3. These replace the earlier photo rounds.
+Originals remain outside the repository and are unchanged.
 
-| source filename            | dims      | format | orientation | weight | quality          | role      | duplicate   | processing                                     | derivative                              |
-| -------------------------- | --------- | ------ | ----------- | ------ | ---------------- | --------- | ----------- | ---------------------------------------------- | --------------------------------------- |
-| 01-ficha-rostro.png        | 1122×1402 | PNG    | portrait    | 2.1 MB | production-ready | gallery   | no          | Lanczos 2× + light unsharp; WebP q80           | gallery-01.webp 1441×1800 159 KiB       |
-| 02-ficha-cuerpo-entero.png | 1122×1402 | PNG    | portrait    | 2.2 MB | production-ready | gallery   | no          | Lanczos 2× + light unsharp; WebP q72           | gallery-02.webp 1441×1800 131 KiB       |
-| 03-portada.png             | 941×1672  | PNG    | portrait    | 2.2 MB | production-ready | hero      | no          | Lanczos 2×, arch crop; WebP q84                | hero-arch.webp 1843×2560 290 KiB        |
-| 03-portada.png             | 941×1672  | PNG    | portrait    | 2.2 MB | production-ready | og-share  | intentional | 1200×630 crop of the cover                     | og-share.webp 1200×630 27 KiB           |
-| 04-familia.png             | 1536×1024 | PNG    | landscape   | 2.1 MB | production-ready | family    | no          | Lanczos 2× + light unsharp; WebP               | family.webp 2200×1467 163 KiB           |
-| 05-cierre.png              | 1122×1402 | PNG    | portrait    | 2.1 MB | production-ready | thank-you | no          | Lanczos 2× + light unsharp; WebP q80           | thank-you.webp 1761×2200 211 KiB        |
-| 06-lamina-jardin.png       | 1122×1402 | PNG    | portrait    | 2.4 MB | production-ready | interlude | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | interlude-garden.webp 1440×1800 168 KiB |
-| 07-lamina-detalle.png      | 1122×1402 | PNG    | portrait    | 2.4 MB | production-ready | interlude | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | interlude-detail.webp 1440×1800 184 KiB |
-| 08-album-escalera.png      | 1122×1402 | PNG    | portrait    | 2.3 MB | production-ready | gallery   | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q72 | album-staircase.webp 1440×1800 139 KiB  |
-| 09-album-ventanal.png      | 1122×1402 | PNG    | portrait    | 2.6 MB | production-ready | gallery   | no          | Crop 4:5, Lanczos 2× + light unsharp; WebP q76 | album-window.webp 960×1200 130 KiB      |
+| source     | dimensions | quality          | role      | processing                          | derivative            | delivery             |
+| ---------- | ---------- | ---------------- | --------- | ----------------------------------- | --------------------- | -------------------- |
+| round-3-01 | 1122×1402  | production-ready | gallery   | Native dimensions; WebP q80         | gallery-01.webp       | 1122×1402; 153.3 KiB |
+| round-3-02 | 1122×1402  | production-ready | gallery   | Downsample to role budget; WebP q72 | album-window.webp     | 1024×1280; 167.9 KiB |
+| round-3-03 | 1448×1086  | production-ready | family    | Native dimensions; WebP q84         | family.webp           | 1448×1086; 196.2 KiB |
+| round-3-04 | 1122×1402  | production-ready | gallery   | Native dimensions; WebP q80         | gallery-02.webp       | 1122×1402; 176.8 KiB |
+| round-3-05 | 1122×1402  | production-ready | hero      | Native dimensions; WebP q84         | hero-arch.webp        | 1122×1402; 218.0 KiB |
+| round-3-06 | 1122×1402  | production-ready | interlude | Native dimensions; WebP q84         | interlude-detail.webp | 1122×1402; 261.2 KiB |
+| round-3-07 | 1122×1402  | production-ready | interlude | Native dimensions; WebP q84         | interlude-garden.webp | 1122×1402; 246.5 KiB |
+| round-3-08 | 1672×941   | production-ready | og-share  | Centre crop to 1200×630; WebP q84   | og-share.webp         | 1200×630; 52.6 KiB   |
+| round-3-09 | 1122×1402  | production-ready | thank-you | Native dimensions; WebP q84         | thank-you.webp        | 1122×1402; 198.3 KiB |
+| round-3-10 | 1122×1402  | production-ready | gallery   | Native dimensions; WebP q76         | album-staircase.webp  | 1122×1402; 167.1 KiB |
 
-The upscale is a plain resampling filter (Lanczos 2× with a light unsharp mask); it adds no detail
-and was checked to keep the faces unchanged. Every derivative is inside its role budget. Assets live
-in `src/invitations/clients/andrea/assets/`; the sources and the 2× intermediates stay outside the
-repository.
+No enlargement or generated detail was added. All ten files decode successfully and meet their role
+weight ceilings. Production-ready describes source and encoding quality; browser capture is
+mechanical evidence and does not replace human creative acceptance. The social card uses its own
+landscape source, with the central square reserved for the portrait.
+
+On 2026-11-05, the owner accepted the hero's current 1122×1402 resolution and requested that the
+gold arch follow that photograph's proportions. The profile keeps the image's natural aspect ratio
+on mobile and desktop; the asset remains unchanged.
 
 ### Uniqueness table (required before READY_*)
 
-| role      | source         | derivative                                                  | intentional multi-role?    |
-| --------- | -------------- | ----------------------------------------------------------- | -------------------------- |
-| hero      | 03-portada.png | hero-arch.webp                                              | yes — og-share is its crop |
-| og-share  | 03-portada.png | og-share.webp                                               | yes — social card of cover |
-| family    | 04-familia.png | family.webp                                                 | no                         |
-| thank-you | 05-cierre.png  | thank-you.webp                                              | no                         |
-| gallery   | 01, 02, 08, 09 | gallery-01, gallery-02, album-staircase, album-window .webp | no                         |
-| interlude | 06, 07         | interlude-garden.webp, interlude-detail.webp                | no                         |
+| role      | source     | derivative            | intentional multi-role? |
+| --------- | ---------- | --------------------- | ----------------------- |
+| gallery   | round-3-01 | gallery-01.webp       | no                      |
+| gallery   | round-3-02 | album-window.webp     | no                      |
+| family    | round-3-03 | family.webp           | no                      |
+| gallery   | round-3-04 | gallery-02.webp       | no                      |
+| hero      | round-3-05 | hero-arch.webp        | no                      |
+| interlude | round-3-06 | interlude-detail.webp | no                      |
+| interlude | round-3-07 | interlude-garden.webp | no                      |
+| og-share  | round-3-08 | og-share.webp         | no                      |
+| thank-you | round-3-09 | thank-you.webp        | no                      |
+| gallery   | round-3-10 | album-staircase.webp  | no                      |
 
 ---
 

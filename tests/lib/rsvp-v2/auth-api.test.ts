@@ -7,6 +7,7 @@ import {
 	findAuthUserByLoginIdentifier,
 	getAuthUserByAccessToken,
 	refreshAccessToken,
+	revokeAuthSessions,
 	signInWithPassword,
 } from '@/lib/rsvp/auth/auth-api';
 import { AuthRequestError } from '@/lib/rsvp/core/errors';
@@ -26,6 +27,35 @@ describe('rsvp authApi', () => {
 		process.env = { ...originalEnv };
 		jest.useRealTimers();
 		jest.restoreAllMocks();
+	});
+
+	it.each(['global', 'others'] as const)(
+		'revokes %s sessions with a bodyless 204 response',
+		async (scope) => {
+			global.fetch = jest.fn().mockResolvedValue(new Response(null, { status: 204 }));
+			await expect(
+				revokeAuthSessions({ accessToken: 'session-token', scope }),
+			).resolves.toBeUndefined();
+			expect(global.fetch).toHaveBeenCalledWith(
+				`https://project.supabase.co/auth/v1/logout?scope=${scope}`,
+				expect.objectContaining({
+					method: 'POST',
+					headers: expect.objectContaining({
+						Authorization: 'Bearer session-token',
+						apikey: 'anon',
+					}),
+					signal: expect.any(AbortSignal),
+				}),
+			);
+		},
+	);
+
+	it('reports revocation failures without retrying', async () => {
+		global.fetch = jest.fn().mockResolvedValue(new Response(null, { status: 503 }));
+		await expect(
+			revokeAuthSessions({ accessToken: 'session-token', scope: 'others' }),
+		).rejects.toMatchObject({ operation: 'sign_out', status: 503, retryable: true });
+		expect(global.fetch).toHaveBeenCalledTimes(1);
 	});
 
 	it('signs in with the expected auth payload', async () => {
@@ -98,11 +128,13 @@ describe('rsvp authApi', () => {
 			}),
 		}) as typeof fetch;
 
+		jest.useFakeTimers({ now: new Date('2026-04-01T12:00:00.000Z') });
 		const user = await createAuthUserByAdmin({
 			email: 'created@test.com',
 			password: 'TempPass123!',
 			loginAlias: 'ximena_meza',
 		});
+		jest.useRealTimers();
 
 		expect(global.fetch).toHaveBeenCalledWith(
 			'https://project.supabase.co/auth/v1/admin/users',
@@ -121,6 +153,7 @@ describe('rsvp authApi', () => {
 					},
 					app_metadata: {
 						must_change_password: true,
+						temp_password_expires_at: '2026-04-02T12:00:00.000Z',
 					},
 				}),
 			}),
@@ -185,11 +218,13 @@ describe('rsvp authApi', () => {
 				}),
 			}) as typeof fetch;
 
+		jest.useFakeTimers({ now: new Date('2026-04-01T12:00:00.000Z') });
 		await adminResetAuthUserPassword({
 			userId: 'u-existing',
 			password: 'TempSecurePass!234',
 			mustChangePassword: true,
 		});
+		jest.useRealTimers();
 
 		expect(global.fetch).toHaveBeenNthCalledWith(
 			2,
@@ -201,6 +236,7 @@ describe('rsvp authApi', () => {
 						role: 'host_client',
 						custom_flag: 'keep-me',
 						must_change_password: true,
+						temp_password_expires_at: '2026-04-02T12:00:00.000Z',
 					},
 					password: 'TempSecurePass!234',
 				}),
