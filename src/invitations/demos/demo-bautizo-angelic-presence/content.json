@@ -5,24 +5,37 @@
     "visualProfileId": "demo-bautizo-angelic-presence",
     "_assetSlug": "demo-bautizo-angelic-presence",
     "title": "Bautizo — María Santos",
-    "description": "Una propuesta delicada y familiar para compartir ceremonia, padrinos y recepción con la calidez de sus seres queridos.",
+    "description": "María recibe el bautismo. Domingo 22 de octubre de 2028, Ciudad de México: una mañana de luz, lino y familia reunida en torno a la fuente.",
     "theme": {
         "preset": "angelic-presence"
     },
     "sectionOrder": [
         "quote",
-        "personalizedAccess",
-        "family",
-        "gallery",
         "countdown",
         "location",
         "itinerary",
-        "rsvp",
+        "family",
+        "gallery",
         "gifts",
+        "personalizedAccess",
+        "rsvp",
         "thankYou"
     ],
     "composition": {
-        "intersections": {}
+        "intersections": {
+            "interlude-after-quote": {
+                "family": "overlap",
+                "source": "quote"
+            },
+            "family": {
+                "family": "atmospheric-blend",
+                "source": "itinerary"
+            },
+            "thankYou": {
+                "family": "arch",
+                "source": "rsvp"
+            }
+        }
     },
     "eventTiming": {
         "localDateTime": "2028-10-22T10:00",
@@ -30,15 +43,23 @@
         "startsAtUtc": "2028-10-22T16:00:00.000Z"
     },
     "hero": {
-        "presentation": { "venueIndex": 1 },
+        "variant": "framed-portrait",
         "name": "María Santos",
         "label": "Bautismo",
         "date": "2028-10-22T10:00:00.000Z",
         "backgroundImage": "hero",
-        "variant": "standard"
+        "focalPoint": "50% 40%",
+        "focalPointMobile": "50% 40%",
+        "presentation": {
+            "venueIndex": 0,
+            "nameLeadWords": 1
+        },
+        "scrollLabel": "Acompáñenos"
     },
     "location": {
-        "accessPolicy": { "visibility": "public" },
+        "accessPolicy": {
+            "visibility": "public"
+        },
         "indicationsHeading": "Indicaciones",
         "indications": [
             {
@@ -106,7 +127,9 @@
             "godparentsTitle": "Padrinos",
             "sectionMessage": "Gracias por acompañarnos en este día de fe y alegría. Su amor, su guía y sus bendiciones hacen más luminoso este sacramento."
         },
-        "variant": "standard"
+        "variant": "standard",
+        "presentation": "with-photo",
+        "featuredImageAlt": "María en brazos de sus padres, vestidos de lino claro, frente a una cortina de luz."
     },
     "gallery": {
         "eyebrow": "Galería",
@@ -124,6 +147,10 @@
             {
                 "image": "gallery06",
                 "caption": "Bendición en familia"
+            },
+            {
+                "image": "gallery03",
+                "caption": "Un instante de calma"
             },
             {
                 "image": "gallery02",
@@ -227,7 +254,7 @@
     "interludes": [
         {
             "image": "interlude01",
-            "afterSection": "personalizedAccess",
+            "afterSection": "quote",
             "alt": "Detalle de manos y encaje del bautismo",
             "height": "tall",
             "focalPoint": "50% 58%"
