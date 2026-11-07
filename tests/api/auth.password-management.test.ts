@@ -240,9 +240,25 @@ describe('Password Management & Recovery', () => {
 	});
 
 	describe('3. Authenticated Password Change API (/api/auth/change-password)', () => {
-		it.each([false, true])(
-			'changes password and fails closed when revoking other sessions fails (%s)',
-			async (revocationFails) => {
+		let errorLog: jest.SpyInstance;
+		beforeEach(() => {
+			errorLog = jest.spyOn(console, 'error').mockImplementation(() => {});
+		});
+		afterEach(() => {
+			errorLog.mockRestore();
+		});
+
+		it.each([
+			['success', undefined],
+			[
+				'provider rejection',
+				new AuthRequestError({ operation: 'sign_out', kind: 'http', status: 503 }),
+			],
+			['timeout', new AuthRequestError({ operation: 'sign_out', kind: 'timeout' })],
+			['unexpected failure', new Error('sensitive-provider-details')],
+		])(
+			'issues the new session after changing the password despite revocation result: %s',
+			async (_result, revocationError) => {
 				requireSessionContextMock.mockResolvedValue({
 					userId: 'user-123',
 					email: 'client@example.com',
@@ -273,10 +289,8 @@ describe('Password Management & Recovery', () => {
 					id: 'user-123',
 					email: 'client@example.com',
 				});
-				if (revocationFails)
-					jest.mocked(authApi.revokeAuthSessions).mockRejectedValueOnce(
-						new AuthRequestError({ operation: 'sign_out', kind: 'http', status: 503 }),
-					);
+				if (revocationError)
+					jest.mocked(authApi.revokeAuthSessions).mockRejectedValueOnce(revocationError);
 
 				const response = await changePassword({
 					request: createMockRequest(
@@ -291,15 +305,16 @@ describe('Password Management & Recovery', () => {
 					url: new URL('http://localhost:4321/api/auth/change-password'),
 				} as never);
 
-				if (revocationFails) {
-					expect(response.status).toBe(503);
-					expect(response.headers.get('set-cookie')).toBeNull();
-					return;
-				}
 				expect(response.status).toBe(200);
 				const body = await response.json();
 				expect(body.ok).toBe(true);
+				expect(body.message).toBe('Contraseña actualizada con éxito.');
 				expect(body.next).toBe('/dashboard/invitados');
+				expect(signInWithPasswordMock).toHaveBeenLastCalledWith({
+					email: 'client@example.com',
+					password: 'NewSecurePassword2026!',
+				});
+				expect(authApi.revokeAuthSessions).toHaveBeenCalledTimes(1);
 				expect(authApi.revokeAuthSessions).toHaveBeenCalledWith({
 					accessToken: 'fresh-new-token',
 					scope: 'others',
@@ -311,6 +326,17 @@ describe('Password Management & Recovery', () => {
 					'sb-refresh-token=fresh-refresh-token',
 				);
 				expect(response.headers.get('set-cookie')).toContain('sb-idle-seen=');
+				if (revocationError) {
+					expect(errorLog).toHaveBeenCalledWith(
+						'[change-password] Other session revocation failed:',
+						{ code: expect.any(String), message: expect.any(String) },
+					);
+					expect(JSON.stringify(errorLog.mock.calls)).not.toContain(
+						'sensitive-provider-details',
+					);
+				} else {
+					expect(errorLog).not.toHaveBeenCalled();
+				}
 
 				expect(updateUserPasswordUserAuthMock).toHaveBeenCalledWith({
 					accessToken: 'current-token',
