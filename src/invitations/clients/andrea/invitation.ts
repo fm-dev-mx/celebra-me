@@ -8,9 +8,9 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
  * the garden plate, the sealed-letter print hangs out of it, and the closing rises into the reply
  * card under an arch. Fine gold butterflies are the only motif. The cover frames the portrait in
  * an arch over the name. The photographs come from an AI session edited from the client's
- * snapshots, delivered without enlargement from the owner's third photo round. The song is
- * omitted until its file is hosted on the media domain. The program, gifts, reply deadline and
- * every guest-facing line are drafts for the client's approval. The family section is «Mi
+ * snapshots, delivered without enlargement from the owner's third photo round. The solo-piano
+ * song is hosted on the media domain. The client accepted the copy on 2026-11-03, and the second
+ * adjustment round is live. The family section is «Mi
  * familia» (never «Mis padres») and has no godparents. Adults only, with personalized passes.
  */
 const ANDREA_TIMING = {
