@@ -400,30 +400,23 @@ $andrea-moments: (
 }
 
 // The photo-sharing card as the printed table card: an inner gold hairline inside the frame, the
-// butterfly resting on the top edge, the day rule under the title, a quieter label-set action,
-// and the QR plate ringed in gold. The plate itself stays black on white for every scanner.
+// butterfly inside the frame above the title, the day rule under the title, and the QR plate
+// ringed in gold. The action and the download link close the card together under the QR.
+// The plate itself stays black on white for every scanner.
 .event--andrea .memories-section[data-variant='card'] {
 	.memories-section__inner {
-		position: relative;
 		row-gap: 1rem;
-		margin-top: 1.25rem;
-		padding-top: clamp(2.75rem, 8vw, 3.25rem);
 		box-shadow:
 			inset 0 0 0 6px var(--memories-card-bg),
 			inset 0 0 0 7px rgb(var(--color-leaf-gold-rgb) / 32%);
 
 		&::before {
 			content: '';
-			position: absolute;
-			top: 0;
-			left: 50%;
-			width: 3.5rem;
-			height: 2.75rem;
-			translate: -50% -55%;
-			background:
-				var(--andrea-memories-mark) center / 2.1rem auto no-repeat,
-				var(--memories-card-bg);
-			pointer-events: none;
+			display: block;
+			width: 2.25rem;
+			height: 1.75rem;
+			margin-bottom: -0.25rem;
+			background: var(--andrea-memories-mark) center / contain no-repeat;
 		}
 	}
 
@@ -442,6 +435,7 @@ $andrea-moments: (
 
 	.memories-section__action {
 		max-width: 19rem;
+		order: 2;
 		min-height: 50px;
 		margin-top: 0.5rem;
 		border-radius: 2px;
@@ -455,7 +449,8 @@ $andrea-moments: (
 	}
 
 	.memories-section__qr {
-		margin-top: 1rem;
+		order: 1;
+		margin-top: 0.5rem;
 	}
 
 	.memories-section__qr-frame {
@@ -476,6 +471,8 @@ $andrea-moments: (
 	}
 
 	.memories-section__download {
+		order: 3;
+		margin-top: -0.5rem;
 		color: var(--color-gold-ink);
 		font-size: 0.95rem;
 		letter-spacing: 0.02em;
