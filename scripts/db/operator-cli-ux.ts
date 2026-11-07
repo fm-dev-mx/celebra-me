@@ -96,7 +96,13 @@ export function operatorSymbol(
 
 /** Machine-readable `--json` output on stdout. */
 export function writeJson(value: unknown): void {
-	process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
+	const serialized = `${JSON.stringify(value, null, 2)}\n`;
+	const matches = serialized.match(/postgres(?:ql)?:\/\/[^\s"]+/gi);
+	if (matches && matches.some((url) => !/postgres(?:ql)?:\/\/[^\s"]*:<redacted>@/i.test(url))) {
+		// Defense: never print raw connection strings from accidental fields
+		throw new Error('Refusing to print output that appears to contain secrets.');
+	}
+	process.stdout.write(serialized);
 }
 
 export function writeHuman(message = '', env: NodeJS.ProcessEnv = process.env): void {
