@@ -13,8 +13,8 @@
 
 	// The verse is read slowly as upright serif prose instead of script.
 	.quote-section {
-		--quote-text-font: var(--font-serif);
-		--quote-text-style: normal;
+		--quote-content-font: var(--font-display);
+		--quote-content-style: normal;
 	}
 
 	// Family: one page with the portrait, no card, no shadow.
