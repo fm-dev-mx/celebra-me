@@ -20,13 +20,13 @@ create table public.trusted_devices (
 );
 
 comment on table public.trusted_devices is
-  'Devices that skip the second factor for 30 days. Revocable from the server; service_role only.';
+  'Devices that skip the second factor for 30 days. Revocable from the server, service_role only.';
 comment on column public.trusted_devices.secret_hash is
   'SHA-256 (hex) of the random secret in the sb-trust-device cookie. The secret itself is never stored.';
 comment on column public.trusted_devices.user_agent_hash is
-  'SHA-256 (hex) of the user agent that enrolled the device; a different agent does not match.';
+  'SHA-256 (hex) of the user agent that enrolled the device. A different agent does not match.';
 comment on column public.trusted_devices.revoked_at is
-  'Set when the account closes all trusted devices; a revoked row never validates again.';
+  'Set when the account closes all trusted devices. A revoked row never validates again.';
 
 create index if not exists idx_trusted_devices_user_active
   on public.trusted_devices (user_id)

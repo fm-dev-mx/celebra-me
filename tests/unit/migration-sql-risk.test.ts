@@ -27,6 +27,51 @@ describe('migration SQL risk classification', () => {
 		expect(classifySqlText(sql).map((finding) => finding.kind)).toEqual(['ordinary']);
 	});
 
+	it('allows comments, partial indexes and table grants before the initial revoke', () => {
+		const sql = `begin;
+		create table public.trusted_devices (id uuid primary key, revoked_at timestamptz null);
+		comment on table public.trusted_devices is 'Revocable, service_role only.';
+		comment on column public.trusted_devices.revoked_at is 'Set when revoked.';
+		create index if not exists idx_td_active on public.trusted_devices (id) where revoked_at is null;
+		grant select on table public.trusted_devices to service_role;
+		revoke all on table public.trusted_devices from public, anon, authenticated, service_role;
+		alter table public.trusted_devices enable row level security;
+		grant select, insert, update on table public.trusted_devices to service_role;
+		commit;`;
+		expect(classifySqlText(sql).map((finding) => finding.kind)).toEqual(['ordinary']);
+	});
+
+	it('keeps the revoke guard when a comment or index targets another table', () => {
+		const comment = `begin;
+		create table public.t (id uuid);
+		comment on column public.other.id is 'x';
+		revoke all on table public.t from public;
+		commit;`;
+		const marker = `begin;
+		create table public.t (id uuid);
+		comment on table public.t is 'a -- b';
+		revoke all on table public.t from public;
+		commit;`;
+		const index = `begin;
+		create table public.t (id uuid);
+		create index if not exists i on public.t (id) where lower(id::text) = 'x';
+		revoke all on table public.t from public;
+		commit;`;
+		for (const sql of [comment, marker, index]) {
+			expect(
+				classifySqlText(sql).some((finding) => finding.kind === 'destructive_revoke'),
+			).toBe(true);
+		}
+	});
+
+	it('classifies the trusted_devices migration as ordinary', () => {
+		const sql = fs.readFileSync(
+			path.resolve('supabase/migrations/20261105150000_trusted_devices.sql'),
+			'utf8',
+		);
+		expect(classifySqlText(sql).map((finding) => finding.kind)).toEqual(['ordinary']);
+	});
+
 	it('allows initial permissions on a newly created function in the same transaction', () => {
 		const sql = `BEGIN;
 		CREATE FUNCTION public.new_fn(p_id uuid) RETURNS boolean

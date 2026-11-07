@@ -157,8 +157,19 @@ function excludeNewTablePermissionInitialization(sql: string, scanned: string): 
 		`^alter\\s+table\\s+${qualified}\\s+(?:enable|force)\\s+row\\s+level\\s+security$`,
 		'i',
 	);
+	// Plain or partial index; the WHERE predicate may not hold parentheses (narrow proof).
 	const createIndex = new RegExp(
-		`^create\\s+(?:unique\\s+)?index\\s+${identifier}\\s+on\\s+${qualified}\\s*\\([^()]*\\)$`,
+		`^create\\s+(?:unique\\s+)?index\\s+(?:if\\s+not\\s+exists\\s+)?${identifier}\\s+on\\s+${qualified}\\s*\\([^()]*\\)(?:\\s+where\\s+[^()]*)?$`,
+		'i',
+	);
+	const grantTable = new RegExp(
+		`^grant\\s+(?:select|insert|update|delete)(?:\\s*,\\s*(?:select|insert|update|delete))*\\s+on\\s+(?:table\\s+)?${qualified}\\s+to\\s+${identifier}(?:\\s*,\\s*${identifier})*$`,
+		'i',
+	);
+	// Literals are already blanked to '' in the scanned text, so the comment body is inert.
+	const commentTable = new RegExp(`^comment\\s+on\\s+table\\s+${qualified}\\s+is\\s+''$`, 'i');
+	const commentColumn = new RegExp(
+		`^comment\\s+on\\s+column\\s+${qualified}\\.${identifier}\\s+is\\s+''$`,
 		'i',
 	);
 	const grantFunction = new RegExp(
@@ -169,7 +180,15 @@ function excludeNewTablePermissionInitialization(sql: string, scanned: string): 
 		`^comment\\s+on\\s+function\\s+${qualified}(?:\\s*\\([^()]*\\))?\\s+is\\s+.*$`,
 		'i',
 	);
-	const preservedPatterns = [alterRls, createIndex, grantFunction, commentFunction] as const;
+	const preservedPatterns = [
+		alterRls,
+		createIndex,
+		grantFunction,
+		grantTable,
+		commentFunction,
+		commentTable,
+		commentColumn,
+	] as const;
 	let inTransaction = false;
 	const created = new Set<string>();
 	return scanned
