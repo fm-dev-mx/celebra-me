@@ -222,21 +222,21 @@
             "image": "interlude01",
             "afterSection": "personalizedAccess",
             "alt": "Detalle floral que acompaña la invitación de Primera Comunión",
-            "height": "tall",
+            "presentation": "framed",
             "focalPoint": "50% 58%"
         },
         {
             "image": "interlude02",
             "afterSection": "gallery",
             "alt": "Momento luminoso de la preparación para la comunión",
-            "height": "screen",
+            "presentation": "framed",
             "focalPoint": "53% 55%"
         },
         {
             "image": "interlude03",
             "afterSection": "location",
             "alt": "Decoración sacra para la Primera Comunión",
-            "height": "medium",
+            "presentation": "framed",
             "focalPoint": "50% 45%"
         }
     ],
