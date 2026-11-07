@@ -5,12 +5,12 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
  * XV invitation on the storybook-emerald preset, staged as a printed photo album: ivory paper and
  * sage mist alternate by section, the countdown is one short emerald night between two framed
  * plates, and the closing is the night again. Three joins carry the story: the night rises under
- * the garden plate, the sealed-letter print hangs out of it, and the closing rises into the reply
- * card under an arch. Fine gold butterflies are the only motif. The cover frames the portrait in
- * an arch over the name. The photographs come from an AI session edited from the client's
- * snapshots, delivered without enlargement from the owner's third photo round. The song is
- * omitted until its file is hosted on the media domain. The program, gifts, reply deadline and
- * every guest-facing line are drafts for the client's approval. The family section is «Mi
+ * the garden plate, the sealed-letter print hangs out of it, and the closing rises into the guest
+ * memories card under an arch. Fine gold butterflies are the only motif. The cover frames the
+ * portrait in an arch over the name. The photographs come from an AI session edited from the client's
+ * snapshots, delivered without enlargement from the owner's third photo round. The client
+ * accepted the copy on 2026-11-03. Guests share photos through the memory space `andrea`
+ * (QR add-on), between the reply card and the closing. The family section is «Mi
  * familia» (never «Mis padres») and has no godparents. Adults only, with personalized passes.
  */
 const ANDREA_TIMING = {
@@ -39,6 +39,7 @@ const content: CanonicalEventContentInput = {
 		'gifts',
 		'personalizedAccess',
 		'rsvp',
+		'memories',
 		'thankYou',
 	],
 	composition: {
@@ -47,10 +48,11 @@ const content: CanonicalEventContentInput = {
 			// Three joins in a bridge, bridge, climax cadence; every other boundary is a clean cut
 			// between ivory and sage. The night rises on a slow horizon under the garden plate, the
 			// sealed-letter print hangs out of the night into the paper, and the closing rises into
-			// the reply card under an arch. The profile draws the horizon and reserves each depth.
+			// the guest memories card under an arch. The profile draws the horizon and reserves each
+			// depth.
 			countdown: { family: 'overlap', source: 'interlude-after-quote' },
 			'interlude-after-countdown': { family: 'overlap', source: 'countdown' },
-			thankYou: { family: 'arch', source: 'rsvp' },
+			thankYou: { family: 'arch', source: 'memories' },
 		},
 	},
 	interludes: [
@@ -263,6 +265,14 @@ const content: CanonicalEventContentInput = {
 				subtitle: 'Gracias por avisarme.',
 			},
 		},
+	},
+	memories: {
+		// Same space and wording as the printed 5×7 table card; first person, like the rest.
+		variant: 'card',
+		publicSlug: 'andrea',
+		title: 'Comparta sus fotos de mi noche',
+		description:
+			'Ayúdeme a guardar cada momento. Suba aquí sus fotos y videos; solo mi familia y usted podrán verlos.',
 	},
 	thankYou: {
 		// She looks back over her shoulder: the story closes on the same gown, seen from behind.
