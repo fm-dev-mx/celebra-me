@@ -15,6 +15,7 @@
         "preview": "astro preview",
         "astro": "astro",
         "test": "jest",
+        "auth:migrate-login-alias": "node scripts/auth/migrate-login-alias.mjs",
         "test:changed": "node scripts/run-related-tests.mjs",
         "test:e2e": "playwright test",
         "test:workerd": "tsx scripts/ops/cloudflare-worker-local-check.ts",

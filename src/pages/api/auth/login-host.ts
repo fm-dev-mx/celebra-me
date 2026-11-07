@@ -12,7 +12,8 @@ import {
 	assertSameOrigin,
 	assertValidLoginIdentifier,
 	assertValidPassword,
-	enforceAuthRateLimit,
+	enforceLoginRateLimit,
+	enforceLoginAccountRateLimit,
 	normalizeLoginIdentifier,
 	sanitizePassword,
 } from '@/lib/rsvp/security/auth-security';
@@ -55,11 +56,9 @@ export const POST: APIRoute = async ({ request, url }) => {
 
 		const identifier = normalizeLoginIdentifier(body.email as string);
 		assertValidLoginIdentifier(identifier);
-		await enforceAuthRateLimit({
+		await enforceLoginRateLimit({
 			request,
-			entityId: `login:${identifier}`,
-			maxHits: 8,
-			windowSec: 60,
+			identifier,
 		});
 
 		const password = sanitizePassword(body.password as string);
@@ -69,6 +68,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 			logSecurityEvent('login_failed', { route: 'login-host' });
 			return errorResponse(new ApiError(401, 'unauthorized', 'Credenciales inválidas.'));
 		}
+		await enforceLoginAccountRateLimit(authEmail);
 		let auth: Awaited<ReturnType<typeof signInWithPassword>>;
 		try {
 			auth = await signInWithPassword({

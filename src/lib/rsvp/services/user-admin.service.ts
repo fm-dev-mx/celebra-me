@@ -220,7 +220,7 @@ async function reserveManagedLoginAlias(seed?: string): Promise<string> {
 
 	for (const candidate of candidates) {
 		const [existingByIdentifier, existingByEmail] = await Promise.all([
-			findAuthUserByLoginIdentifier({ identifier: candidate }),
+			findAuthUserByLoginIdentifier({ identifier: candidate, fresh: true }),
 			findAuthUserByEmail({ email: buildManagedHostEmail(candidate) }),
 		]);
 		if (!existingByIdentifier && !existingByEmail) {
@@ -231,7 +231,7 @@ async function reserveManagedLoginAlias(seed?: string): Promise<string> {
 	for (let attempt = 0; attempt < 5; attempt += 1) {
 		const candidate = generateManagedLoginAlias();
 		const [existingByIdentifier, existingByEmail] = await Promise.all([
-			findAuthUserByLoginIdentifier({ identifier: candidate }),
+			findAuthUserByLoginIdentifier({ identifier: candidate, fresh: true }),
 			findAuthUserByEmail({ email: buildManagedHostEmail(candidate) }),
 		]);
 		if (!existingByIdentifier && !existingByEmail) {
@@ -518,12 +518,12 @@ export async function updateUserLoginAliasAdmin(input: {
 
 	const existingAuth = await getAuthUserAdminById(userId);
 	const existingMappedAlias =
-		typeof existingAuth.user_metadata?.login_alias === 'string'
-			? existingAuth.user_metadata.login_alias.trim().toLowerCase()
+		typeof existingAuth.app_metadata?.login_alias === 'string'
+			? existingAuth.app_metadata.login_alias.trim().toLowerCase()
 			: undefined;
 	const existingOperationId =
-		typeof existingAuth.user_metadata?.login_alias_operation_id === 'string'
-			? existingAuth.user_metadata.login_alias_operation_id
+		typeof existingAuth.app_metadata?.login_alias_operation_id === 'string'
+			? existingAuth.app_metadata.login_alias_operation_id
 			: null;
 
 	if (!isManagedHostEmail(existingAuth.email)) {
@@ -553,7 +553,7 @@ export async function updateUserLoginAliasAdmin(input: {
 	try {
 		if (!authAlreadyApplied) {
 			const [existingByIdentifier, existingByEmail] = await Promise.all([
-				findAuthUserByLoginIdentifier({ identifier: requestedAlias }),
+				findAuthUserByLoginIdentifier({ identifier: requestedAlias, fresh: true }),
 				findAuthUserByEmail({ email: targetEmail }),
 			]);
 			if (

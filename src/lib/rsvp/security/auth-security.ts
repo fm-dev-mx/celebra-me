@@ -140,3 +140,53 @@ export async function enforceAuthRateLimit(input: {
 		);
 	}
 }
+
+function assertLoginAllowed(allowed: boolean): void {
+	if (!allowed)
+		throw new ApiError(
+			429,
+			'rate_limited',
+			'Demasiados intentos. Inténtelo de nuevo más tarde.',
+		);
+}
+
+export async function enforceLoginRateLimit(input: {
+	request: Request;
+	identifier: string;
+}): Promise<void> {
+	const ip = getClientIp(input.request) ?? 'unknown';
+	assertLoginAllowed(
+		await checkRateLimit({
+			namespace: 'auth',
+			entityId: 'login-ip',
+			ip,
+			maxHits: 30,
+			windowSec: 600,
+		}),
+	);
+	await enforceAuthRateLimit({
+		request: input.request,
+		entityId: `login:${input.identifier}`,
+		maxHits: 8,
+		windowSec: 60,
+	});
+	assertLoginAllowed(
+		await checkRateLimit({
+			namespace: 'auth',
+			entityId: `login-identifier:${input.identifier}`,
+			maxHits: 10,
+			windowSec: 900,
+		}),
+	);
+}
+
+export async function enforceLoginAccountRateLimit(email: string): Promise<void> {
+	assertLoginAllowed(
+		await checkRateLimit({
+			namespace: 'auth',
+			entityId: `login-account:${email.trim().toLowerCase()}`,
+			maxHits: 10,
+			windowSec: 900,
+		}),
+	);
+}

@@ -500,6 +500,7 @@ describe('rsvp user admin service', () => {
 
 		expect(findAuthUserByLoginIdentifierMock).toHaveBeenCalledWith({
 			identifier: 'ximena_meza',
+			fresh: true,
 		});
 		expect(createAuthUserByAdminMock).toHaveBeenCalledWith({
 			email: expect.stringMatching(/@clientes\.celebra\.invalid$/),
@@ -530,8 +531,7 @@ describe('rsvp user admin service', () => {
 				id: 'user-host',
 				email: 'abril_michelle_becerra_rea@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
-				user_metadata: { login_alias: 'abril_michelle_becerra_rea' },
-				app_metadata: { role: 'host_client' },
+				app_metadata: { login_alias: 'abril_michelle_becerra_rea', role: 'host_client' },
 			});
 			findAuthUserByLoginIdentifierMock.mockResolvedValue(null);
 			findAuthUserByEmailMock.mockResolvedValue(null);
@@ -571,8 +571,7 @@ describe('rsvp user admin service', () => {
 				id: 'user-host',
 				email: 'abril_becerra@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
-				user_metadata: { login_alias: 'abril_becerra' },
-				app_metadata: { role: 'host_client' },
+				app_metadata: { login_alias: 'abril_becerra', role: 'host_client' },
 			});
 
 			const result = await updateUserLoginAliasAdmin({
@@ -618,8 +617,7 @@ describe('rsvp user admin service', () => {
 				id: 'user-email',
 				email: 'cliente@ejemplo.com',
 				created_at: '2026-04-01T00:00:00.000Z',
-				user_metadata: { login_alias: 'cliente_ejemplo' },
-				app_metadata: { role: 'host_client' },
+				app_metadata: { login_alias: 'cliente_ejemplo', role: 'host_client' },
 			});
 
 			await expect(
@@ -642,8 +640,7 @@ describe('rsvp user admin service', () => {
 				id: 'user-host',
 				email: 'abril_becerra@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
-				user_metadata: { login_alias: 'abril_becerra' },
-				app_metadata: { role: 'host_client' },
+				app_metadata: { login_alias: 'abril_becerra', role: 'host_client' },
 			});
 			findAuthUserByLoginIdentifierMock.mockResolvedValue({
 				id: 'other-user',
@@ -668,8 +665,7 @@ describe('rsvp user admin service', () => {
 				id: 'user-host',
 				email: 'abril_anterior@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
-				user_metadata: { login_alias: 'abril_anterior' },
-				app_metadata: { role: 'host_client' },
+				app_metadata: { login_alias: 'abril_anterior', role: 'host_client' },
 			});
 			findAuthUserByLoginIdentifierMock.mockResolvedValue(null);
 			findAuthUserByEmailMock.mockResolvedValue(null);
@@ -704,8 +700,7 @@ describe('rsvp user admin service', () => {
 				id: 'user-host',
 				email: 'abril_anterior@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
-				user_metadata: { login_alias: 'abril_anterior' },
-				app_metadata: { role: 'host_client' },
+				app_metadata: { login_alias: 'abril_anterior', role: 'host_client' },
 			});
 			findAuthUserByLoginIdentifierMock.mockResolvedValue(null);
 			findAuthUserByEmailMock.mockResolvedValue(null);
@@ -740,11 +735,11 @@ describe('rsvp user admin service', () => {
 				id: 'user-host',
 				email: 'abril_becerra@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
-				user_metadata: {
+				app_metadata: {
+					role: 'host_client',
 					login_alias: 'abril_becerra',
 					login_alias_operation_id: OPERATION_ID,
 				},
-				app_metadata: { role: 'host_client' },
 			});
 			findMutationOperationReceiptMock.mockResolvedValue({
 				operationId: OPERATION_ID,
