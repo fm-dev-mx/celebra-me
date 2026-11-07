@@ -1,10 +1,13 @@
 @use '../../../global/mixins' as mixins;
 
-:where(.invitation-hero)[data-variant='framed-portrait'] {
+:where(.invitation-hero):is([data-variant='framed-portrait'], [data-variant='cased-portrait']) {
 	--hero-title-size-fallback: clamp(4rem, 10vw, 6.5rem);
 }
 
-.invitation-hero.framed-portrait-hero[data-variant='framed-portrait'] {
+.invitation-hero.framed-portrait-hero:is(
+		[data-variant='framed-portrait'],
+		[data-variant='cased-portrait']
+	) {
 	position: relative;
 	isolation: isolate;
 	box-sizing: border-box;

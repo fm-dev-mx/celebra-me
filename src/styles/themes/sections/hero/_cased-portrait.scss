@@ -1,0 +1,222 @@
+// `cased-portrait` hero: a case lined with a soft fabric. The whole hero is the lining; the portrait
+// rests in a gilded double-bevel frame, and the title is a card of laid paper laid over the lining,
+// overlapping the frame's foot, so the page never splits in two. It shares the framed-portrait
+// markup and base layout; the geometry below belongs to the variant, never to a preset. Presets
+// supply only the materials, through the `--case-*` tokens (all optional, with neutral fallbacks):
+//   --case-lining-rgb     fabric colour           --case-gold-rgb / --case-gold-bright-rgb  bevel metal
+//   --case-glow-rgb       light pooled behind     --case-sheen-rgb   weave highlight
+//   --case-ink-rgb        text on the card        --case-card-bg     card paper layers (background)
+//   --case-card-mask      card edge (mask-image)
+@use 'framed-portrait';
+@use '../../../global/mixins' as mixins;
+
+.invitation-hero.framed-portrait-hero[data-variant='cased-portrait'] {
+	$gold: rgb(var(--case-gold-rgb, var(--color-action-accent-rgb)));
+	$gold-soft: rgb(var(--case-gold-rgb, var(--color-action-accent-rgb)) / 55%);
+	$gold-bright: rgb(
+		var(--case-gold-bright-rgb, var(--case-gold-rgb, var(--color-action-accent-rgb)))
+	);
+	$glow: rgb(var(--case-glow-rgb, var(--case-gold-rgb, var(--color-action-accent-rgb))));
+	$velvet-deep: color-mix(
+		in srgb,
+		rgb(var(--case-lining-rgb, var(--color-text-primary-rgb, 40 20 24))) 82%,
+		black
+	);
+	$radius: clamp(1rem, 2.6vw, 1.5rem);
+	$pad: clamp(0.625rem, 1.8vw, 1.125rem);
+	$inset: 0.3125rem;
+
+	--hero-letter-align: center;
+	--hero-title-max-width: none;
+	--hero-scroll-align: center;
+	--hero-scroll-display: grid;
+
+	// A candle pool lights the velvet behind the portrait.
+	&::before {
+		inset: 0;
+		height: auto;
+		border-radius: 0;
+		background: radial-gradient(
+			ellipse 70% 42% at 50% 30%,
+			rgb(var(--case-pool-rgb, var(--case-lining-rgb, 40 20 24)) / 40%),
+			transparent 72%
+		);
+		opacity: 100%;
+	}
+
+	.framed-portrait-hero__photograph {
+		// A cushioned case with softly rounded corners (never an arch); nothing needs clipping, and
+		// without its own stacking context the velvet bed below paints under the case and over the
+		// hero's ground.
+		isolation: auto;
+		overflow: visible;
+		padding: #{$pad};
+		border-radius: #{$radius};
+		background:
+			linear-gradient(145deg, rgb(255 255 255 / 6%), transparent 40%),
+			#{$velvet-deep};
+
+		// Double bevel: a bright outer lip, a dark cut, the gold face, a velvet channel and a fine
+		// inner bezel around the photo, then the case's shadow and a candle halo on the velvet.
+		box-shadow:
+			inset 0 0 0 1px #{$gold-bright},
+			inset 0 0 0 2px color-mix(in srgb, #{$gold} 55%, black),
+			inset 0 0 0 4px #{$gold},
+			inset 0 0 0 5px color-mix(in srgb, #{$gold} 45%, black),
+			inset 0 1px 12px 5px rgb(0 0 0 / 45%),
+			0 0 0 1px rgb(0 0 0 / 35%),
+			0 30px 48px -16px rgb(0 0 0 / 55%),
+			0 0 120px 30px #{color-mix(in srgb, $glow 10%, transparent)};
+
+		// The velvet bed covers the whole hero (the hero clips it); a fine crossed weave and a soft
+		// sheen give it the pile of velvet.
+		&::before {
+			content: '';
+			position: absolute;
+			inset: -100vh -100vw;
+			z-index: -1;
+			pointer-events: none;
+			background:
+				linear-gradient(
+					115deg,
+					transparent 40%,
+					rgb(var(--case-sheen-rgb, 255 255 255) / 6%) 50%,
+					transparent 60%
+				),
+				repeating-linear-gradient(
+					45deg,
+					rgb(var(--case-sheen-rgb, 255 255 255) / 4%) 0 1px,
+					transparent 1px 3px
+				),
+				repeating-linear-gradient(-45deg, rgb(0 0 0 / 14%) 0 1px, transparent 1px 4px),
+				#{$velvet-deep};
+		}
+
+		img {
+			border-radius: calc(#{$radius} - #{$pad} + 0.25rem);
+			box-shadow:
+				0 0 0 1px #{$gold-soft},
+				0 0 0 3px rgb(0 0 0 / 30%);
+		}
+
+		// A fine gold hairline runs inside the bevel, following the case's rounded corners.
+		&::after {
+			content: '';
+			position: absolute;
+			inset: #{$inset};
+			z-index: 1;
+			border: 1px solid #{color-mix(in srgb, $gold 70%, transparent)};
+			border-radius: calc(#{$radius} - #{$inset});
+			pointer-events: none;
+		}
+	}
+
+	// The title card: the letter's deckled laid paper. The deckle mask would cut a box shadow, so
+	// the paper lives on a layer behind the copy and the card casts its shadow as a filter.
+	.framed-portrait-hero__letter {
+		position: relative;
+		z-index: 1;
+		isolation: isolate;
+		justify-self: center;
+		width: 100%;
+		max-width: 26rem;
+		padding: clamp(1.5rem, 3vw, 2.25rem) clamp(1.25rem, 3vw, 2.5rem);
+		filter: drop-shadow(0 1px 1px rgb(0 0 0 / 30%))
+			drop-shadow(0 1.25rem 1.5rem rgb(0 0 0 / 45%));
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			z-index: -1;
+			background: var(--case-card-bg, var(--color-surface-primary));
+			mask: var(--case-card-mask, none);
+		}
+	}
+
+	// The name reads in two lines of one upright serif: the given names, then the family name.
+	.framed-portrait-hero__name {
+		margin-inline: auto;
+	}
+
+	.framed-portrait-hero__name-lead,
+	.framed-portrait-hero__name-rest {
+		display: block;
+		font-weight: 500;
+	}
+
+	// A gold rule with a small diamond sets the date apart from the name, echoing the case's
+	// hairline; the venue follows the date in the same small capitals.
+	.framed-portrait-hero__details {
+		--hero-details-venue-display: block;
+
+		&::before {
+			content: '';
+			display: block;
+			width: 4.5rem;
+			height: 9px;
+			margin: 1rem auto 0.875rem;
+			background: #{$gold};
+			mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 9'%3E%3Cpath d='M0 4h42v1H0zM54 4h42v1H54zM48 0l4.5 4.5L48 9l-4.5-4.5z'/%3E%3C/svg%3E")
+				center / 100% 100% no-repeat;
+		}
+	}
+
+	.framed-portrait-hero__details-venue {
+		margin-top: 0.25rem;
+		color: rgb(var(--case-ink-rgb, var(--case-lining-rgb, 40 20 24)) / 82%);
+	}
+
+	// The cue: a small label over a chevron at the foot of the case, in candle gold on the velvet.
+	.framed-portrait-hero__invitation {
+		gap: 0.375rem;
+		color: #{color-mix(in srgb, $gold-bright 88%, transparent)};
+	}
+
+	@include mixins.respond-below(lg) {
+		--hero-portrait-max-width: none;
+		--hero-portrait-width-mobile: 100%;
+		--hero-portrait-height-mobile: auto;
+		--hero-title-size-fallback: clamp(2.25rem, 10vw, 3rem);
+
+		.framed-portrait-hero__photograph {
+			width: min(85%, 22rem);
+			margin-inline: auto;
+
+			img {
+				aspect-ratio: 4 / 5;
+				object-fit: cover;
+			}
+		}
+
+		// The card overlaps the frame's foot and runs a little narrower than the case.
+		.framed-portrait-hero__letter {
+			width: min(92%, 24rem);
+			margin-top: -2.5rem;
+		}
+	}
+
+	@include mixins.respond-to(lg) {
+		--hero-title-size-fallback: clamp(3rem, 4.6vw, 4.25rem);
+
+		.framed-portrait-hero__layout {
+			align-items: center;
+		}
+
+		.framed-portrait-hero__photograph {
+			justify-self: end;
+		}
+
+		// The card leans on the case from the right, overlapping its edge.
+		.framed-portrait-hero__letter {
+			justify-self: start;
+			max-width: 30rem;
+			margin-left: -4rem;
+		}
+
+		// The occasion keeps one line at the desktop script size.
+		.framed-portrait-hero__occasion {
+			white-space: nowrap;
+		}
+	}
+}

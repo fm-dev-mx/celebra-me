@@ -71,7 +71,7 @@
         "focalPointMobile": "50% 30%",
         "focalPointTablet": "50% 28%",
         "focalPointDesktop": "50% 26%",
-        "variant": "framed-portrait"
+        "variant": "cased-portrait"
     },
     "location": {
         "accessPolicy": {

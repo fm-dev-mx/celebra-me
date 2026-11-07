@@ -89,7 +89,8 @@ const {
 } = Astro.props;
 
 const isEditorialCover = variant === 'editorial-cover';
-const isFramedPortrait = variant === 'framed-portrait' || variant === 'bleed-portrait';
+const isFramedPortrait =
+	variant === 'framed-portrait' || variant === 'bleed-portrait' || variant === 'cased-portrait';
 const isCeremonialPortrait = variant === 'ceremonial-portrait';
 const isNightArch = variant === 'night-arch';
 // The cover-approach scene pins the standard cover while its picture closes in.
@@ -195,7 +196,7 @@ if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
 	isCeremonialPortrait ? (
 	<CeremonialPortraitHero {...Astro.props} />
 	) : isFramedPortrait ? (
-	<FramedPortraitHero {...Astro.props} variant={variant === 'bleed-portrait' ? 'bleed-portrait' : 'framed-portrait'} />
+	<FramedPortraitHero {...Astro.props} variant={variant === 'bleed-portrait' || variant === 'cased-portrait' ? variant : 'framed-portrait'} />
 	) : isEditorialCover ? (
 	<EditorialCoverHero
 		{...Astro.props}

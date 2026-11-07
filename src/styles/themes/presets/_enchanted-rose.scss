@@ -1,4 +1,21 @@
+@use '../sections/theme-shell/enchanted-rose-paper' as paper;
+
 .theme-preset--enchanted-rose {
+	// Materials for the `cased-portrait` hero (geometry lives in the variant, not here).
+	--case-lining-rgb: 75 21 34;
+	--case-pool-rgb: 142 31 47;
+	--case-gold-bright-rgb: 230 184 92;
+	--case-glow-rgb: 230 184 92;
+	--case-sheen-rgb: 234 183 200;
+	--case-ink-rgb: 75 21 34;
+	--case-card-bg:
+		#{paper.$grain} 0 0 / 180px 180px, #{paper.$fibres} 0 0 / 240px 240px,
+		repeating-linear-gradient(0deg, transparent 0 2px, rgb(90 53 33 / 3.5%) 2px 3px),
+		linear-gradient(90deg, rgb(90 53 33 / 8%), transparent 12% 88%, rgb(90 53 33 / 10%)),
+		radial-gradient(ellipse 80% 60% at 50% 0%, rgb(255 255 255 / 50%), transparent 70%),
+		color-mix(in srgb, rgb(247 239 228) 88%, rgb(200 154 69));
+	--case-card-mask: #{paper.$deckle} center / 100% 100% no-repeat;
+
 	// Motion recipe
 	--motion-reveal-distance: 18px;
 	--motion-reveal-duration: var(--duration-reveal);
