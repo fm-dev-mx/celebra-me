@@ -206,8 +206,9 @@ internal traffic kept out. No database migrations are included.
 
 - Tracking: browser conversion events reach the Meta Conversions API right after the tracking
   response, with the scheduled job kept as fallback; `package_viewed` fires once per package per
-  browser session; a `super_admin` sign-in or the `?interno=1` link marks the device as internal
-  traffic and stops every Pixel, client and server event (`?interno=0` clears it) (#743).
+  browser session; a `super_admin` sign-in or the `https://www.celebra-me.com/interno` link marks
+  the device as internal traffic and stops every Pixel, client and server event
+  (`https://www.celebra-me.com/interno?salir=1` clears it) (#743).
 - Tooling: four generic lanes plus Preview and release (#737), the board keeps only its config and
   launcher (#742) and the board core pin advances (#738, #741, #744, #745, #746); the consent
   withdrawal pgTAP runs in CI and the backup provider filter is documented (#739).
