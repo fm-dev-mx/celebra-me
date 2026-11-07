@@ -15,6 +15,7 @@ function createTestHarness(
 		initialGuestData: {
 			fullName?: string;
 			maxAllowedAttendees?: number;
+			maxAllowedChildren?: number;
 			inviteId?: string;
 			attendanceStatus?: 'pending' | 'confirmed' | 'declined';
 			attendeeCount?: number;
@@ -150,6 +151,21 @@ describe('RSVP guest count behavior', () => {
 			getHook()!.setAttendanceStatus('confirmed');
 		});
 		expect(getHook()!.attendeeCount).toBe('3');
+	});
+
+	it('never asks for children on a single-place pass', () => {
+		const { getHook } = createTestHarness({
+			guestCap: 1,
+			initialGuestData: { maxAllowedAttendees: 1, maxAllowedChildren: 1 },
+		});
+		expect(getHook()?.maxChildren).toBe(0);
+	});
+
+	it('keeps the children allowance on a multi-place pass', () => {
+		const { getHook } = createTestHarness({
+			initialGuestData: { maxAllowedAttendees: 3, maxAllowedChildren: 1 },
+		});
+		expect(getHook()?.maxChildren).toBe(1);
 	});
 
 	it('defaults to 1 when effectiveGuestCap is 1 (no plus-ones)', () => {

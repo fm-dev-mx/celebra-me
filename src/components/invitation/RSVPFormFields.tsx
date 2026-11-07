@@ -382,6 +382,7 @@ export function ConfirmedFields(props: {
 								'{count}',
 								String(effectiveGuestCap),
 							)}
+							{showChildren && ' Abajo indique cuántos de ellos son niños.'}
 						</p>
 					</>
 				)}

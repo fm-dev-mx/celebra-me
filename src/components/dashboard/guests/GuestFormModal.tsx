@@ -332,11 +332,17 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 									decrementLabel="Un niño menos"
 									incrementLabel="Un niño más"
 									onChange={setChildrenInput}
+									describedBy={
+										fieldErrors.children ? 'guest-children-error' : undefined
+									}
 									invalid={Boolean(fieldErrors.children)}
 									compact
 								/>
 								{fieldErrors.children && (
-									<span className="guest-field-error guest-form__people-error">
+									<span
+										id="guest-children-error"
+										className="guest-field-error guest-form__people-error"
+									>
 										{fieldErrors.children}
 									</span>
 								)}

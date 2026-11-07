@@ -57,7 +57,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | godparents            | Christina y Anthony Macías                                                                   | ambiguous      | wa-export     | Client wrote «Macias»; role not stated, shown as «Padrinos»           |
 | dressCode             | Formal                                                                                       | verified       | wa-export     | Client correction 04-11                                               |
 | reservedColor         | Rosa — Reservado para la quinceañera                                                         | inferred       | owner-session | Agent draft, pending client approval (D4)                             |
-| adultsOnly            | —                                                                                            | missing        | wa-export     | Not stated; omitted until the client confirms (D4)                    |
+| adultsOnly            | No — children allowed, counted per pass                                                      | verified       | wa-export     | Client asked for per-pass children (2 adultos y 1 niño), 05-11        |
 | clientColors          | Rosa y plateado                                                                              | verified       | wa-export     |                                                                       |
 | dressColor            | Rosa pálido con brillo, corona plateada                                                      | verified       | wa-export     | From the photographs                                                  |
 | rsvpConfirmationMode  | api                                                                                          | verified       | wa-export     | Personal, non-transferable pass per guest; host panel                 |
@@ -85,7 +85,8 @@ inferred. The seven client photographs are inventoried and declared final by the
 
 - Music: the client named the song by link only (So This Is Love, Cinderella); the file is encoded
   to 64 kbps and hosted on the media domain.
-- Adults-only rule and gifts: unknown; gifts drafted, adults-only omitted until the client answers.
+- Gifts: drafted. Children are allowed: the host sets how many of each guest's passes are for
+  children in the dashboard («+ Incluye niños»); the pass and RSVP show the breakdown.
 - Godparents' role and the accent in «Macías».
 - Program, RSVP deadline and all guest-facing copy are agent drafts for client approval.
 
@@ -133,7 +134,7 @@ payment.
 | requested              | location (two venues), family (parents + godparents), dress code «De gala», personal passes     |
 | inferred / recommended | envelope, hero, quote, countdown, itinerary, gallery, gifts, personalizedAccess, rsvp, thankYou |
 | client-provided        | music: YouTube link; encoded to 64 kbps and hosted on the media domain                          |
-| omitted                | adults-only rule (unknown), check-in QR (not in the package)                                    |
+| omitted                | check-in QR (not in the package)                                                                |
 | unresolved             | —                                                                                               |
 
 Guest-facing copy (agent draft, D4; pending client approval). Voice: Naomi in the first person,
