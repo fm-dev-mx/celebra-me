@@ -34,6 +34,8 @@ const RETIRED_PROVIDER_ALLOWLIST = new Set([
 	'tests/unit/deployment-workflow-contract.test.ts',
 	'tests/unit/post-deploy-smoke.test.ts',
 	'tests/scripts/operational-contracts.test.ts',
+	// Board config protects the legacy .vercel/ folder from agents.
+	'tablero.config.json',
 	// .vercel/ gitignore pattern and @vercel/* transitive dependency overrides.
 	'.gitignore',
 	'pnpm-workspace.yaml',
