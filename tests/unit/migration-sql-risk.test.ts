@@ -157,6 +157,51 @@ COMMIT;`;
 		expect(result.risk.isDestructive).toBe(false);
 	});
 
+	it('allows the trusted devices table as an expand migration', () => {
+		const version = '20261105150000';
+		const registry = JSON.parse(
+			fs.readFileSync(path.resolve('supabase/migration-rollout-registry.json'), 'utf8'),
+		) as MigrationRolloutRegistry;
+		const result = evaluateMigrationSqlRisk({ version, registry });
+		expect(registry.migrations[version].phase).toBe('expand');
+		expect(result.blocked).toBe(false);
+		expect(result.risk.isDestructive).toBe(false);
+	});
+
+	it('keeps table comments and partial indexes of the new table inside the initial-permission proof', () => {
+		const sql = `begin;
+		create table public.new_table (id uuid primary key, note text check (note ~ '^[a-z]+$'), revoked_at timestamptz);
+		comment on table public.new_table is 'New table, service role only, it''s private.';
+		comment on column public.new_table.note is 'Free text.';
+		create index if not exists idx_new_table_active on public.new_table (id) where revoked_at is null;
+		revoke all on table public.new_table from public, anon, authenticated, service_role;
+		alter table public.new_table enable row level security;
+		grant select on table public.new_table to service_role;
+		commit;`;
+		expect(classifySqlText(sql)).toEqual([
+			{ kind: 'ordinary', evidence: 'no destructive DDL/DCL patterns detected' },
+		]);
+	});
+
+	it.each([
+		['a comment on another table', `comment on table public.old_table is 'x';`],
+		[
+			'a comment on a column of another table',
+			`comment on column public.old_table.note is 'x';`,
+		],
+		[
+			'an index on another table',
+			`create index if not exists idx_old on public.old_table (id);`,
+		],
+	])('still flags the initial revoke after %s', (_label, interloper) => {
+		const sql = `begin;
+		create table public.new_table (id uuid primary key);
+		${interloper}
+		revoke all on table public.new_table from public, anon;
+		commit;`;
+		expect(classifySqlText(sql).map((finding) => finding.kind)).toContain('destructive_revoke');
+	});
+
 	it('treats additive SQL as ordinary', () => {
 		const findings = classifySqlText(
 			'CREATE TABLE public.example (id uuid PRIMARY KEY);\nGRANT SELECT ON public.example TO authenticated;',
