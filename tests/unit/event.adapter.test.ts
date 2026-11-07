@@ -225,7 +225,7 @@ describe('adaptEvent', () => {
 		const viewModel = adaptEvent(contentDocumentFromEntry(event));
 
 		expect(viewModel.id).toBe('demo-primera-comunion-angelic-presence');
-		expect(viewModel.theme.preset).toBe('angelic-presence');
+		expect(viewModel.theme.preset).toBe('eucharistic-grace');
 		expect(viewModel.hero.backgroundImage.src).toEqual(expect.any(String));
 		expect(
 			viewModel.sections.location?.venues.find((venue) => venue.image)?.image?.src,

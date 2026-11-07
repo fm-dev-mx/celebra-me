@@ -1,0 +1,136 @@
+@use '../../../global/mixins' as mixins;
+@use '../../../invitation/section-primitives' as primitives;
+
+.theme-preset--eucharistic-grace .gallery-section {
+	@include primitives.normalized-section-spacing;
+
+	--gallery-title-font-fallback: var(--font-display);
+	--gallery-title-color-fallback: var(--color-grace-ink);
+	--gallery-title-transform: none;
+	--gallery-title-letter-spacing: 0.02em;
+	--gallery-title-size: clamp(2rem, 5vw, 3.5rem);
+	--gallery-subtitle-font: var(--font-body);
+	--gallery-subtitle-size: var(--section-subtitle-size);
+	--gallery-subtitle-color-fallback: rgb(var(--color-grace-ink-rgb) / 80%);
+	--gallery-subtitle-transform: uppercase;
+	--gallery-subtitle-letter-spacing: 0.12em;
+	--gallery-item-bg: rgb(var(--color-grace-cream-rgb) / 74%);
+	--gallery-item-border: 1px solid rgb(var(--color-grace-gold-rgb) / 22%);
+	--gallery-item-border-color: rgb(var(--color-grace-gold-rgb) / 22%);
+	--gallery-item-radius: 8px;
+	--gallery-item-padding: 8px;
+	--gallery-item-shadow: 0 12px 36px rgb(var(--color-grace-ink-rgb) / 10%);
+	--gallery-item-backdrop-filter: blur(10px) saturate(140%);
+	--gallery-item-emphasis-transform: translateY(-4px) scale(1.01);
+	--gallery-item-hover-transform: translateY(-6px) scale(1.02);
+	--gallery-item-emphasis-border-color: rgb(var(--color-grace-gold-rgb) / 50%);
+	--gallery-item-hover-border-color: var(--color-grace-gold);
+	--gallery-item-image-radius: 4px;
+	--gallery-item-aspect-ratio: 4 / 5;
+	--gallery-item-aspect-ratio-standard: 4 / 5;
+	--gallery-item-image-position: 50% 42%;
+	--gallery-item-image-filter-rest: saturate(0.94) contrast(1.02) brightness(1.02) sepia(0.04);
+	--gallery-item-image-filter-in-view: saturate(0.98) contrast(1.03) brightness(1.03) sepia(0.04);
+	--gallery-caption-font: var(--font-display);
+	--gallery-caption-color: var(--color-grace-ink);
+	--gallery-caption-size: 0.82rem;
+	--gallery-caption-letter-spacing: 0.04em;
+
+	.gallery-section__title {
+		background: linear-gradient(
+			135deg,
+			var(--color-grace-ink) 0%,
+			var(--color-grace-gold) 50%,
+			var(--color-grace-ink) 100%
+		);
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		text-shadow: 0 2px 12px rgb(var(--color-grace-gold-rgb) / 20%);
+	}
+
+	.gallery-section__header {
+		margin-bottom: clamp(2.5rem, 6vw, 4.5rem);
+	}
+
+	.gallery-section__header::after {
+		content: '';
+		display: block;
+		width: min(8rem, 40vw);
+		height: 1px;
+		margin: clamp(1rem, 2vw, 1.5rem) auto 0;
+		background: linear-gradient(
+			90deg,
+			transparent,
+			rgb(var(--color-grace-gold-rgb) / 45%),
+			transparent
+		);
+	}
+
+	.gallery-grid__item {
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	.gallery-grid__item:nth-child(1) {
+		--gallery-item-image-position: 50% 38%;
+	}
+
+	.gallery-grid__item:nth-child(2) {
+		--gallery-item-image-position: 50% 56%;
+	}
+
+	.gallery-grid__item:nth-child(3) {
+		--gallery-item-image-position: 52% 42%;
+	}
+
+	.gallery-grid__item:nth-child(4) {
+		--gallery-item-image-position: 50% 42%;
+	}
+
+	.gallery-grid__item:nth-child(5) {
+		--gallery-item-image-position: 49% 45%;
+	}
+
+	.gallery-grid__item::after {
+		content: '';
+		position: absolute;
+		inset: 6px;
+		border: 1px solid rgb(var(--color-grace-gold-rgb) / 12%);
+		border-radius: 6px;
+		pointer-events: none;
+		z-index: 2;
+	}
+
+	@include mixins.respond-below(md) {
+		--gallery-section-padding-block: clamp(4.75rem, 15vw, 6rem);
+		--gallery-grid-row-gap: 1rem;
+		--gallery-item-aspect-ratio-standard: 5 / 4;
+
+		.gallery-grid__item:nth-child(1),
+		.gallery-grid__item:nth-child(3),
+		.gallery-grid__item:nth-child(5) {
+			--gallery-item-aspect-ratio-standard: 4 / 5;
+		}
+
+		.gallery-grid__item:nth-child(2) {
+			--gallery-item-image-position: 50% 58%;
+		}
+
+		.gallery-grid__item:nth-child(4) {
+			--gallery-item-aspect-ratio-standard: 4 / 5;
+			--gallery-item-image-position: 50% 40%;
+		}
+	}
+
+	@include mixins.respond-below(xs) {
+		--gallery-item-padding: 6px;
+
+		.gallery-grid__item:nth-child(3) {
+			--gallery-item-image-position: 52% 40%;
+		}
+
+		.gallery-grid__item:nth-child(5) {
+			--gallery-item-image-position: 48% 42%;
+		}
+	}
+}

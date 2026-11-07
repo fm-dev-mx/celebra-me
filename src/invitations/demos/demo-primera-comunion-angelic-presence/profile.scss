@@ -1,0 +1,30 @@
+// ==========================================================================
+// DEMO PRIMERA COMUNIÓN — EUCHARISTIC GRACE
+// Visual profile: pearl, gold, sage — communion sacrament
+// ==========================================================================
+
+.event--demo-primera-comunion-angelic-presence.theme-preset--eucharistic-grace {
+	// ---- Intersection tokens ----
+
+	// Arch into family: pearl fill rising from the interlude
+	.invitation-section-wrapper[data-intersection='arch'][data-section-kind='family'] {
+		--intersection-surface: var(--color-grace-cream);
+		--intersection-arch-height: clamp(2.75rem, 5.5vw, 5.25rem);
+	}
+
+	// Atmospheric blend into thankYou: soft gold glow fading from rsvp
+	.invitation-section-wrapper[data-intersection='atmospheric-blend'][data-section-kind='thankYou'] {
+		--intersection-blend: radial-gradient(
+			ellipse 80% 60% at 42% 0%,
+			rgb(var(--color-grace-gold-rgb) / 14%) 0%,
+			rgb(var(--color-grace-sage-rgb) / 6%) 40%,
+			transparent 80%
+		);
+		--intersection-depth: clamp(3.5rem, 7vw, 6.5rem);
+	}
+
+	// ---- Hero focal point for mobile ----
+	.invitation-hero[data-variant='standard'] {
+		--hero-focal-point-default: 50% 30%;
+	}
+}

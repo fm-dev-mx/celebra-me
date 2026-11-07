@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-05T17:09:42.955Z",
+    "generatedAt": "2026-11-07T01:34:16.944Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "7c84f51b04d62997217843b1d52e5397057cde44194d1349e4e111b7b6e1fc91",
-        "cssSha256": "0e9df3a5df905b4cf14bc47206c72ea4c9c66691988c3bdec32575ae714238cb",
+        "cssSha256": "fe55507b7daced13c975de60d6939bdddb0edf161fc5593af57eef8b12585f36",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -20,7 +20,7 @@
     "status": "ACCEPTED",
     "mode": "accepted",
     "totalCaptures": 192,
-    "matrixHash": "0a83b0497ced1b6280aa6e97c0a8b942af61069df9a3f9ce8bd042b0bc57dcd2",
+    "matrixHash": "7e681e2005a93367f7a5d472e689519c437adf4b7de8febac7d9c98c08351339",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2464,11 +2464,11 @@
             "kind": "demo",
             "slug": "demo-primera-comunion-angelic-presence",
             "eventType": "primera-comunion",
-            "preset": "angelic-presence",
+            "preset": "eucharistic-grace",
             "viewport": "mobile",
             "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
-            "sha256": "1f21d95539323cd161ac0afb36cd3f456932a4ec1b8430ea220d66f045433c94",
-            "contentHash": "a926dbed4e0b0aaab77484e4e3c79bbe5d91734d689a1b6446776d44660d378e",
+            "sha256": "77b9d757225470d5e42cfaace2179f73d6442868b96ad49ef95814f4c9a8ae3c",
+            "contentHash": "55aaa30b0ae538efc58429724d6fecc94efc17c3524133da9fe90b9e3298f2a7",
             "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
             "comparisonResult": "ACCEPTED"
         },
@@ -2476,11 +2476,11 @@
             "kind": "demo",
             "slug": "demo-primera-comunion-angelic-presence",
             "eventType": "primera-comunion",
-            "preset": "angelic-presence",
+            "preset": "eucharistic-grace",
             "viewport": "desktop",
             "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-desktop.png",
-            "sha256": "3f5dda535fb6e4146b6ec32dd17f056ce5cbb2748f06a86d9ab9d98c794eb18c",
-            "contentHash": "a926dbed4e0b0aaab77484e4e3c79bbe5d91734d689a1b6446776d44660d378e",
+            "sha256": "99dc03e029d35605500208739ba4960e4968bbf57da69c5aa97863a7d901d2fb",
+            "contentHash": "55aaa30b0ae538efc58429724d6fecc94efc17c3524133da9fe90b9e3298f2a7",
             "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
             "comparisonResult": "ACCEPTED"
         },
@@ -2605,9 +2605,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "046e8ce0f19ee98e4d89ce1f2be5e9766d889ade",
+    "referenceSha": "37a74de05a1cbf814f0df66ebb1f326fb4f86ecc",
     "variantManifest": {
-        "generatedAt": "2026-11-05T17:09:42.955Z",
+        "generatedAt": "2026-11-07T01:34:16.944Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2620,7 +2620,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "7c84f51b04d62997217843b1d52e5397057cde44194d1349e4e111b7b6e1fc91",
-            "cssSha256": "0e9df3a5df905b4cf14bc47206c72ea4c9c66691988c3bdec32575ae714238cb",
+            "cssSha256": "fe55507b7daced13c975de60d6939bdddb0edf161fc5593af57eef8b12585f36",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4565,10 +4565,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "046e8ce0f19ee98e4d89ce1f2be5e9766d889ade"
+        "referenceSha": "37a74de05a1cbf814f0df66ebb1f326fb4f86ecc"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-05T17:09:42.963Z",
+        "generatedAt": "2026-11-07T01:34:16.951Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4581,7 +4581,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "7c84f51b04d62997217843b1d52e5397057cde44194d1349e4e111b7b6e1fc91",
-            "cssSha256": "0e9df3a5df905b4cf14bc47206c72ea4c9c66691988c3bdec32575ae714238cb",
+            "cssSha256": "fe55507b7daced13c975de60d6939bdddb0edf161fc5593af57eef8b12585f36",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4589,7 +4589,7 @@
         "status": "CANDIDATE",
         "mode": "candidate",
         "totalCaptures": 54,
-        "matrixHash": "c7019704ded465af9e4e41196e939bc4400db7d8bc65656d384642188139cbe9",
+        "matrixHash": "3cc016b2f09134b3def76900e329caff80991de2076b41326457991e95f27693",
         "cases": 27,
         "captures": [
             {
@@ -4959,9 +4959,9 @@
                 "preset": "storybook-emerald",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-andrea-mobile.png",
-                "sha256": "2417e6edc7facc25dabc6c5e9241c32c5b1acebfef75bea7b807a84dd5bab1d0",
-                "contentHash": "02aa02cadacb321568b261ef6071bc10ce25dd32ae995f4fce15c4ac96c38ade",
-                "assetHash": "6eaf429aaf40d6defb0466419cb9b921b638bce1f8f7f9288710b3293df60bb8",
+                "sha256": "2e379100c39d553af6cb7fc53fcc033c7a1f8e4e6cc45df0fa2af348349ee906",
+                "contentHash": "65c5ebee8591ddfd40b17a59414f9e0baba5624681d397e260abfec974432a1a",
+                "assetHash": "ea0add655c9a7cc521cedb540acf945fd6cf69bf793475720672cdef2484208b",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -4971,9 +4971,9 @@
                 "preset": "storybook-emerald",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-andrea-desktop.png",
-                "sha256": "98336e68c83ad8ad966343f4f323212d97a02d3b9771760ddc82b1a627baf74f",
-                "contentHash": "02aa02cadacb321568b261ef6071bc10ce25dd32ae995f4fce15c4ac96c38ade",
-                "assetHash": "6eaf429aaf40d6defb0466419cb9b921b638bce1f8f7f9288710b3293df60bb8",
+                "sha256": "fb32b17ffb178e5390932b76043595042f59c190a424d54954fa1d40e63a90af",
+                "contentHash": "65c5ebee8591ddfd40b17a59414f9e0baba5624681d397e260abfec974432a1a",
+                "assetHash": "ea0add655c9a7cc521cedb540acf945fd6cf69bf793475720672cdef2484208b",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -5100,11 +5100,11 @@
                 "kind": "demo",
                 "slug": "demo-primera-comunion-angelic-presence",
                 "eventType": "primera-comunion",
-                "preset": "angelic-presence",
+                "preset": "eucharistic-grace",
                 "viewport": "mobile",
                 "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
-                "sha256": "1f21d95539323cd161ac0afb36cd3f456932a4ec1b8430ea220d66f045433c94",
-                "contentHash": "a926dbed4e0b0aaab77484e4e3c79bbe5d91734d689a1b6446776d44660d378e",
+                "sha256": "77b9d757225470d5e42cfaace2179f73d6442868b96ad49ef95814f4c9a8ae3c",
+                "contentHash": "55aaa30b0ae538efc58429724d6fecc94efc17c3524133da9fe90b9e3298f2a7",
                 "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5112,11 +5112,11 @@
                 "kind": "demo",
                 "slug": "demo-primera-comunion-angelic-presence",
                 "eventType": "primera-comunion",
-                "preset": "angelic-presence",
+                "preset": "eucharistic-grace",
                 "viewport": "desktop",
                 "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-desktop.png",
-                "sha256": "3f5dda535fb6e4146b6ec32dd17f056ce5cbb2748f06a86d9ab9d98c794eb18c",
-                "contentHash": "a926dbed4e0b0aaab77484e4e3c79bbe5d91734d689a1b6446776d44660d378e",
+                "sha256": "99dc03e029d35605500208739ba4960e4968bbf57da69c5aa97863a7d901d2fb",
+                "contentHash": "55aaa30b0ae538efc58429724d6fecc94efc17c3524133da9fe90b9e3298f2a7",
                 "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5241,9 +5241,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "046e8ce0f19ee98e4d89ce1f2be5e9766d889ade"
+        "referenceSha": "37a74de05a1cbf814f0df66ebb1f326fb4f86ecc"
     },
-    "candidateManifestSha256": "c4f12463d001286344600d35e8e13efbfaf387e7b3ee432583715f658e373cbe",
-    "acceptedFromCommit": "046e8ce0f19ee98e4d89ce1f2be5e9766d889ade",
-    "acceptedAt": "2026-11-05T17:13:17.409Z"
+    "candidateManifestSha256": "8a1d1e4e3ef5984c81af19ee98e3f445e54ee26d5ddd6da849ee7e83c817025c",
+    "acceptedFromCommit": "37a74de05a1cbf814f0df66ebb1f326fb4f86ecc",
+    "acceptedAt": "2026-11-07T15:54:30.213Z"
 }
