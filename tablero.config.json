@@ -4,7 +4,6 @@
     "prompts": ".agent/templates/tablero",
     "protegidos": [".vercel/", ".backups/"],
     "puerto": 4320,
-    "protegidos": [".vercel/", ".backups/"],
     "wipMax": 6,
     "agentes": [
         {
