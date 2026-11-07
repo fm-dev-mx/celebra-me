@@ -321,19 +321,22 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 						)}
 						{showChildren ? (
 							<div className="guest-form__children">
-								<label htmlFor="guest-children">De ellos, niños</label>
-								<input
+								<div className="guest-form__people-text">
+									<label htmlFor="guest-children">De ellos, niños</label>
+								</div>
+								<GuestPeopleStepper
 									id="guest-children"
-									type="number"
-									inputMode="numeric"
+									value={childrenInput}
 									min={0}
 									max={liveMaxAttendees}
-									value={childrenInput}
-									onChange={(event) => setChildrenInput(event.target.value)}
-									aria-invalid={Boolean(fieldErrors.children)}
+									decrementLabel="Un niño menos"
+									incrementLabel="Un niño más"
+									onChange={setChildrenInput}
+									invalid={Boolean(fieldErrors.children)}
+									compact
 								/>
 								{fieldErrors.children && (
-									<span className="guest-field-error">
+									<span className="guest-field-error guest-form__people-error">
 										{fieldErrors.children}
 									</span>
 								)}
@@ -362,7 +365,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							inputRef={phoneInputRef}
 						/>
 						{!fieldErrors.phone && !phone.trim() && (
-							<span className="guest-field-hint">
+							<span className="guest-field-hint guest-form__phone-hint">
 								Sin teléfono, podrá elegir el contacto al enviar.
 							</span>
 						)}
