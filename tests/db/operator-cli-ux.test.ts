@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
 import {
 	NO_PRODUCTION_CHANGES,
 	formatOperatorFailure,
@@ -7,6 +7,7 @@ import {
 	labelBackupRequirement,
 	parsePorcelainDirtyFiles,
 	shortSha,
+	writeJson,
 } from '../../scripts/db/operator-cli-ux.ts';
 import { buildMigrationPlan } from '../../scripts/db/migration-plan.ts';
 import { formatPlanReview, formatPlanReviewCompact } from '../../scripts/db/migrate-plan-format.ts';
@@ -98,5 +99,85 @@ describe('migrate plan presentation', () => {
 		expect(full).toContain('supabase_cli_push');
 		expect(full).toContain('production_owner_tty');
 		expect(full).toContain(plan.sourceHead);
+	});
+});
+
+describe('writeJson', () => {
+	it('prints normal JSON to stdout', () => {
+		const stdoutSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+		try {
+			writeJson({ ok: true, count: 42 });
+			expect(stdoutSpy).toHaveBeenCalledTimes(1);
+			expect(stdoutSpy).toHaveBeenCalledWith(
+				`${JSON.stringify({ ok: true, count: 42 }, null, 2)}\n`,
+			);
+		} finally {
+			stdoutSpy.mockRestore();
+		}
+	});
+
+	it('throws with unredacted postgres:// credentials and writes nothing', () => {
+		const stdoutSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+		try {
+			expect(() => {
+				writeJson({ url: 'postgres://user:pass@host:5432/db' });
+			}).toThrow('Refusing to print output that appears to contain secrets.');
+			expect(stdoutSpy).not.toHaveBeenCalled();
+		} finally {
+			stdoutSpy.mockRestore();
+		}
+	});
+
+	it('throws with unredacted postgresql:// credentials and writes nothing', () => {
+		const stdoutSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+		try {
+			expect(() => {
+				writeJson({ url: 'postgresql://admin:secret@db.supabase.co:5432/postgres' });
+			}).toThrow('Refusing to print output that appears to contain secrets.');
+			expect(stdoutSpy).not.toHaveBeenCalled();
+		} finally {
+			stdoutSpy.mockRestore();
+		}
+	});
+
+	it('allows properly redacted postgres URLs to pass', () => {
+		const stdoutSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+		try {
+			writeJson({ url: 'postgres://user:<redacted>@host:5432/db' });
+			expect(stdoutSpy).toHaveBeenCalledTimes(1);
+			expect(stdoutSpy).toHaveBeenCalledWith(
+				`${JSON.stringify({ url: 'postgres://user:<redacted>@host:5432/db' }, null, 2)}\n`,
+			);
+		} finally {
+			stdoutSpy.mockRestore();
+		}
+	});
+
+	it('allows properly redacted postgresql URLs to pass', () => {
+		const stdoutSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+		try {
+			writeJson({ url: 'postgresql://admin:<redacted>@db.supabase.co:5432/postgres' });
+			expect(stdoutSpy).toHaveBeenCalledTimes(1);
+			expect(stdoutSpy).toHaveBeenCalledWith(
+				`${JSON.stringify({ url: 'postgresql://admin:<redacted>@db.supabase.co:5432/postgres' }, null, 2)}\n`,
+			);
+		} finally {
+			stdoutSpy.mockRestore();
+		}
+	});
+
+	it('throws if any URL in multi-URL output is unredacted', () => {
+		const stdoutSpy = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+		try {
+			expect(() => {
+				writeJson({
+					safe: 'postgres://user:<redacted>@host:5432/db',
+					unsafe: 'postgres://user:pass@host:5432/db',
+				});
+			}).toThrow('Refusing to print output that appears to contain secrets.');
+			expect(stdoutSpy).not.toHaveBeenCalled();
+		} finally {
+			stdoutSpy.mockRestore();
+		}
 	});
 });

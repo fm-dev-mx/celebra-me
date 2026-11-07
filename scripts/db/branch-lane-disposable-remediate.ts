@@ -16,6 +16,7 @@ import {
 	type ClassificationResult,
 } from './db-target-config.ts';
 import { createFinding, type Finding } from './branch-lane-status.ts';
+import { writeJson } from './operator-cli-ux.ts';
 
 export interface DisposableTargetCheck {
 	id: string;
@@ -271,18 +272,6 @@ export function executeVerifiedDisposableRebuild(input?: {
 	};
 }
 
-function printJson(value: unknown): void {
-	const serialized = `${JSON.stringify(value, null, 2)}\n`;
-	if (
-		/postgres(ql)?:\/\//i.test(serialized) &&
-		!/postgres(ql)?:\/\/[^\s"]*:<redacted>@/i.test(serialized)
-	) {
-		// Defense: never print raw connection strings from accidental fields
-		throw new Error('Refusing to print output that appears to contain secrets.');
-	}
-	process.stdout.write(serialized);
-}
-
 function main(): number {
 	const args = process.argv.slice(2);
 	if (args.includes('--help') || args.includes('-h')) {
@@ -297,7 +286,7 @@ Verifies disposable-test identity before any rebuild. Never targets other databa
 
 	if (args.includes('--verify-only')) {
 		const verification = verifyDisposableRebuildTarget();
-		printJson({
+		writeJson({
 			kind: 'disposable-target-verification',
 			verified: verification.verified,
 			status: verification.status,
@@ -309,7 +298,7 @@ Verifies disposable-test identity before any rebuild. Never targets other databa
 
 	if (args.includes('--execute')) {
 		const result = executeVerifiedDisposableRebuild();
-		printJson({
+		writeJson({
 			kind: 'disposable-remediation',
 			verified: result.verification.verified,
 			executed: result.executed,
