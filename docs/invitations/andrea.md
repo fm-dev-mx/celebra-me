@@ -57,7 +57,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | godparents            | —                                                                                                                     | not_applicable | wa-export     | "No hay padrinos"                                                   |
 | dressCode             | Formal: vestido largo y traje con corbata                                                                             | verified       | wa-export     | Client-requested silhouettes; first adjustment round, 2026-10-25/27 |
 | dressCodeNote         | Favor de respetar el código de vestimenta                                                                             | verified       | wa-export     | Restored at the client request, 2026-10-25/27                       |
-| reservedColor         | Verde esmeralda y dorado — Reservados para la quinceañera                                                             | inferred       | owner-session | Shortened from client wording; approval pending (D4)                |
+| reservedColor         | Verde esmeralda y dorado — Reservados para la quinceañera                                                             | inferred       | owner-session | Shortened from client wording; client accepted all copy 2026-11-03  |
 | adultsOnly            | NO NIÑOS                                                                                                              | verified       | wa-export     | Uppercase, mandatory for the client; kept verbatim                  |
 | clientColors          | Verde esmeralda, dorado pálido; mariposas discretas                                                                   | verified       | wa-export     | Butterflies very subtle                                             |
 | dressColor            | Verde esmeralda                                                                                                       | verified       | wa-export     | Similar to a client reference, with more sparkle                    |
@@ -65,10 +65,10 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | rsvpGuestCap          | 2                                                                                                                     | inferred       | owner-session | Fallback only; per-guest passes govern seats                        |
 | rsvpWhatsappPhone     | —                                                                                                                     | not_applicable | owner-session | No WhatsApp confirmation flow                                       |
 | rsvpDeadline          | 2027-06-18 (viernes 18 de junio)                                                                                      | inferred       | owner-session | 15 days before, as in recent XV invitations (D4)                    |
-| gifts                 | Lluvia de sobres                                                                                                      | inferred       | owner-session | Agent draft, pending client approval (D4)                           |
+| gifts                 | Lluvia de sobres o regalo (opcional)                                                                                  | verified       | wa-export     | Second adjustment round (A7), 2026-11-03                            |
 | itinerary             | Misa 17:30, Recepción 20:00, Vals 20:15, Cena 21:30, Baile sorpresa 22:30, Fiesta con espectáculo 23:00, Cierre 01:00 | verified       | wa-export     | First adjustment round; performance names translated into Spanish   |
 | musicUrl              | «Beauty and the Beast», solo piano version                                                                            | verified       | wa-export     | Owner supplies the file (D5); 64 kbps                               |
-| specialMessages       | Copy proposed by agent                                                                                                | inferred       | owner-session | Pending client approval (D4)                                        |
+| specialMessages       | Copy proposed by agent                                                                                                | verified       | wa-export     | Client accepted all copy 2026-11-03                                 |
 
 ---
 
@@ -145,20 +145,20 @@ Guest-facing copy (agent draft, D4; pending client approval). Voice: Andrea in t
 "usted" register, warm and formal.
 
 - Envelope: «Abra su invitación».
-- Quote: «Hay noches que se esperan toda la vida. La mía llega el 3 de julio, y quiero que usted
-  esté ahí.»
+- Quote: «Hay noches que se esperan toda la vida. La mía llega el 3 de julio, y quiero que estés
+  ahí.» (exception A6, at the client's request)
 - Family: «Mi familia» · «Con amor y gratitud» · Daniel · Gloria · «Gracias por acompañarme en cada
   paso hasta esta noche.»
 - Countdown: «Faltan N días para mi gran noche».
 - Location: «Dónde y cuándo» · «Primero daremos gracias en misa y después celebraremos juntos.»
 - Indications: «Vestimenta» · «Etiqueta: Formal» · «Verde esmeralda y dorado — Reservados para la
-  quinceañera» · «NO NIÑOS». Shortened at the owner's request; the shortened lines await client
-  approval (D4).
-- Program: «Así será mi noche» · Misa 17:30 · Recepción 20:00 · Vals 21:30 · Cena 22:30 · Cierre
-  01:00.
+  quinceañera» · «NO NIÑOS». Shortened at the owner's request; the client accepted them on
+  2026-11-03.
+- Program: «Así será mi noche» · Misa 17:30 · Recepción 20:00 · Vals 20:15 · Cena 21:30 · Baile
+  sorpresa 22:30 · Fiesta con espectáculo 23:00 · Cierre 01:00.
 - Gallery: «Antes de mi gran noche».
-- Gifts: «Lluvia de sobres» · «Su presencia es mi mejor regalo. Si desea tener un detalle conmigo,
-  habrá lluvia de sobres.»
+- Gifts: «Lluvia de sobres o regalo» · «Su presencia es mi mejor regalo. Si desea tener un detalle
+  conmigo, habrá lluvia de sobres.»
 - Pass: «Su lugar ya está apartado».
 - RSVP: «¿Me acompaña?» · «Le agradeceré confirmar antes del viernes 18 de junio.»
 - Closing: «Gracias por ser parte de mis quince años. Le espero el 3 de julio.» · «Andrea».
@@ -362,6 +362,9 @@ live in `src/invitations/clients/andrea/`; the shared `storybook-emerald` preset
 - Pending outside the code: photo edits B1 and B3 (dress sparkle to gold, light makeup polish; edit,
   never regenerate), the 5×7 table card with the photo-upload QR built in (C1, under the $399 QR
   service C2), Production re-enable, Preview and client approval.
+- 2026-11-05: the client replied «Excelente» on the updated link (implicit approval of round 2).
+  2026-11-06: she picked the staircase photo, with a new background and butterflies, for the 5×7
+  card (C1).
 
 ### Design refinements — 2026-11-04
 
