@@ -1,6 +1,8 @@
 {
     "proyecto": "Celebra-me",
     "datos": ".agent/tmp/tablero",
+    "prompts": ".agent/templates/tablero",
+    "protegidos": [".vercel/", ".backups/"],
     "puerto": 4320,
     "wipMax": 6,
     "agentes": [
@@ -344,15 +346,9 @@
     ],
     "ciclo": {
         "revisores": {
-            "claude": [
-                "codex"
-            ],
-            "codex": [
-                "claude"
-            ],
-            "gemini": [
-                "codex"
-            ]
+            "claude": ["codex"],
+            "codex": ["claude"],
+            "gemini": ["codex"]
         },
         "unir": "develop",
         "rojo": [

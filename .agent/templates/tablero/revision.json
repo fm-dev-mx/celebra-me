@@ -1,0 +1,11 @@
+{
+    "PARA USTED": "Qué hará: revisa el PR #{pr} de otra sesión sin cambiar código y publica lo que encuentre.\nUsted: nada; el coordinador une el PR cuando la revisión lo aprueba.\nRiesgo: ninguno; la revisión solo lee el código.",
+    "QUÉ SE BUSCA": "Un veredicto fundado sobre el PR #{pr} de la tarea {id} (T{num}): «{titulo}».\nTerminado cuando: el veredicto (aprobado, cambios o bloqueado) está registrado sobre el SHA exacto de la cabeza del PR, con sus hallazgos.",
+    "ANTES DE EMPEZAR": "Anote el SHA de la cabeza del PR; si cambia durante la revisión, pare y vuelva a empezar sobre el nuevo.\n  tablero claim {id} --agente={agente}",
+    "PASOS": "1. Revise corrección, regresiones, pruebas y las reglas del proyecto en el diff del PR.\n2. Publique los hallazgos en el PR.\n3. Clasifique cada hallazgo de P0 (bloquea) a P3 (menor); una aprobación no tiene P0 ni P1.",
+    "AUTORIZO": "(solo lectura) Publicar la revisión del PR.",
+    "NO HAGAS": "- No edite el carril del autor ni una el PR.\n- No lea archivos de credenciales ni imprima secretos.",
+    "DECISIONES": "- Ninguna todavía: pregunte al inicio en una sola ronda.",
+    "PARE Y PREGUNTE SI": "La cabeza del PR cambió o falta evidencia para decidir. Pregunte al dueño y anote la pregunta también con tablero msg {id} --de={agente} --para=dueno --texto=\"<pregunta de una línea>\" --opcion=\"<la recomendada>\" --opcion=\"<otra>\".",
+    "AL TERMINAR": "1. Registre el veredicto: tablero close {id} --agente={agente} --resumen=\"<una línea>\" --comprobacion=\"<lo que revisó>\" --saltada=ninguna --pendiente=ninguna --veredicto=aprobado|cambios|bloqueado --sha=<40 caracteres> --hallazgo=\"P2|archivo:línea|texto\"\n2. Respuesta: veredicto, SHA revisado y hallazgos."
+}
