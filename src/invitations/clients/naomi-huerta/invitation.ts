@@ -264,7 +264,7 @@ const content: CanonicalEventContentInput = {
 			stepDetails: '¿Cuántos llegan, contándose usted?',
 			// The client asked for the names of everyone attending; the notes step collects them.
 			notesLabel: 'Nombres de quienes asistirán',
-			notesPlaceholder: 'Escriba el nombre de cada persona que llegará',
+			notesPlaceholder: 'Escriba el nombre de cada persona que llegará, también de los niños',
 		},
 		confirmationMessage: 'Le espero el viernes 18 de diciembre, desde la misa de las 18:30.',
 		responseMessages: {

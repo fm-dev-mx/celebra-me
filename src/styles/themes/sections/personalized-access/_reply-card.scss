@@ -204,6 +204,12 @@
 		color: var(--reply-card-ink, var(--color-text-primary));
 	}
 
+	.access-card__party {
+		font-family: var(--font-body);
+		font-style: italic;
+		color: var(--reply-card-ink, var(--color-text-primary));
+	}
+
 	.access-card__footer,
 	.access-card__note {
 		display: none;
