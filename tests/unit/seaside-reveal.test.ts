@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { envelopeSchema } from '@/lib/schemas/content/envelope.schema';
 import { invitationCompositionSchema } from '@/lib/invitation/composition-contract';
 import { interludeSchema } from '@/lib/schemas/content/interludes.schema';
@@ -43,6 +44,23 @@ describe('seaside-lineart reveal contract', () => {
 			'celestial-blue',
 		);
 		expect(resolveEnvelopeDataVariant(undefined, 'jewelry-box')).toBe('jewelry-box');
+	});
+
+	it('keeps the Rose pocket placement on the effective variant, not the preset', () => {
+		// An explicit opening variant on an Enchanted Rose preset must not inherit the jewel box.
+		expect(resolveEnvelopeDataVariant('satin-filigree', 'enchanted-rose')).toBe(
+			'satin-filigree',
+		);
+		expect(resolveEnvelopeDataVariant('seaside-lineart', 'enchanted-rose')).toBe(
+			'seaside-lineart',
+		);
+		expect(resolveEnvelopeDataVariant(undefined, 'enchanted-rose')).toBe('enchanted-rose');
+		const reveal = readFileSync('src/components/invitation/EnvelopeReveal.astro', 'utf8');
+		expect(reveal).toMatch(
+			/dataVariant = resolveEnvelopeDataVariant\(revealVariant, variant\)/,
+		);
+		expect(reveal).toMatch(/letterInPocket = [^;]*dataVariant === 'enchanted-rose'/);
+		expect(reveal).not.toMatch(/letterInPocket = [^;]*\bvariant === 'enchanted-rose'/);
 	});
 
 	it('loads the seaside reveal stylesheet independently of the theme bundle', () => {

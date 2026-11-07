@@ -1,3 +1,7 @@
+// Photo provenance: every image here is AI-generated and shows fictional people only. The set
+// comes from the creative-ops demo photo sessions (garden-in-pink XV session), cropped and
+// converted to WebP for this demo; no client or stock photography is used.
+
 import ceremony from './assets/ceremony.webp';
 import family from './assets/family.webp';
 import gallery01 from './assets/gallery-01.webp';
