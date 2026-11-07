@@ -829,6 +829,18 @@ describe('Middleware: Authentication & Authorization', () => {
 			expect(mockCookies.set).not.toHaveBeenCalled();
 			expect(mockNext).toHaveBeenCalledTimes(2);
 		});
+
+		it('delegates dedicated /interno requests to the route handler', async () => {
+			await middleware(markerContext('/interno') as unknown as APIContext, mockNext);
+			await middleware(
+				markerContext('/interno?interno=0') as unknown as APIContext,
+				mockNext,
+			);
+
+			expect(mockCookies.set).not.toHaveBeenCalled();
+			expect(mockCookies.delete).not.toHaveBeenCalled();
+			expect(mockNext).toHaveBeenCalledTimes(2);
+		});
 	});
 
 	it('requires MFA setup for superadmin with only OTP evidence', async () => {

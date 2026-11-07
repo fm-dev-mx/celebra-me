@@ -104,7 +104,7 @@ function environmentAllowsMeta(): boolean {
 	return document.body.dataset.metaDeliveryBlocked !== 'true';
 }
 
-/** Owner devices carry the internal-traffic cookie (super_admin sign-in or the ?interno=1 link). */
+/** Owner devices carry the internal-traffic cookie (super_admin sign-in or the /interno link). */
 function deviceAllowsMeta(): boolean {
 	return !hasIgnoreCookie(document.cookie);
 }

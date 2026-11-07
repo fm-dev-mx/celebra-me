@@ -2,6 +2,42 @@ import type { HostedDeployEnvironment } from '@/lib/server/deploy-identity';
 import type { TrackingRouteClass } from '@/lib/tracking/route-policy';
 
 export const COOKIE_NAME_IGNORE_TRACKING = 'cm_ignore_tracking';
+export const IGNORE_TRACKING_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+
+export type IgnoreTrackingCookieOptions = {
+	path: string;
+	httpOnly: boolean;
+	sameSite: 'lax';
+	maxAge: number;
+	secure: boolean;
+};
+
+export function buildIgnoreTrackingCookieOptions(isLocal = false): IgnoreTrackingCookieOptions {
+	return {
+		path: '/',
+		httpOnly: false,
+		sameSite: 'lax',
+		maxAge: IGNORE_TRACKING_MAX_AGE_SECONDS,
+		secure: !isLocal,
+	};
+}
+
+export interface CookieStoreLike {
+	set(
+		name: string,
+		value: string,
+		options: IgnoreTrackingCookieOptions | Record<string, unknown>,
+	): void;
+	delete(name: string, options: { path: string } | Record<string, unknown>): void;
+}
+
+export function setIgnoreTrackingCookie(cookies: CookieStoreLike, isLocal = false): void {
+	cookies.set(COOKIE_NAME_IGNORE_TRACKING, 'true', buildIgnoreTrackingCookieOptions(isLocal));
+}
+
+export function clearIgnoreTrackingCookie(cookies: CookieStoreLike): void {
+	cookies.delete(COOKIE_NAME_IGNORE_TRACKING, { path: '/' });
+}
 
 export interface InternalExclusionInput {
 	cookieHeader?: string | null;

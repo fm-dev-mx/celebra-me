@@ -273,9 +273,9 @@ Notes:
   marks a device as the owner's. With it, the client tracker sends no first-party events, the Pixel
   neither loads nor forwards, and server ingestion drops anything that still arrives, so the owner's
   own visits never reach Meta. Signing in as `super_admin` sets it. For a phone or any browser
-  without signing in, open `https://www.celebra-me.com/?interno=1` once on that device; the
-  middleware sets the cookie and redirects to the same URL without the param. Repeat after clearing
-  cookies or site data; `?interno=0` removes the mark.
+  without signing in, open `https://www.celebra-me.com/interno` once on that device; the route sets
+  the cookie and redirects to `/`. Repeat after clearing cookies or site data; `/interno?salir=1`
+  (or `?interno=0`) removes the mark.
 
 ### Guest-route isolation
 
