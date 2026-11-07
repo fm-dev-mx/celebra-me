@@ -2,6 +2,7 @@ import { sanitize, parseCookieHeader } from '@/lib/rsvp/core/utils';
 import { ApiError, isRejectedAuthCredential } from '@/lib/rsvp/core/errors';
 import { getAuthUserByAccessToken, type SupabaseAuthUser } from '@/lib/rsvp/auth/auth-api';
 import { normalizeAppRole, isSuperAdminRole } from '@/lib/rsvp/auth/roles';
+import { isTemporaryPasswordExpired } from '@/lib/rsvp/auth/temporary-password';
 import type { AppUserRole } from '@/interfaces/auth/session.interface';
 
 export interface HostSession {
@@ -14,6 +15,7 @@ export interface SessionContext extends HostSession {
 	role: AppUserRole | null;
 	isSuperAdmin: boolean;
 	mustChangePassword?: boolean;
+	temporaryPasswordExpired?: boolean;
 	amr?: Array<{ method?: string }>;
 }
 
@@ -126,6 +128,7 @@ export async function getSessionDebugSnapshotFromRequest(
 			role,
 			isSuperAdmin: isSuperAdminRole(role),
 			mustChangePassword: user.app_metadata?.must_change_password === true,
+			temporaryPasswordExpired: isTemporaryPasswordExpired(user.app_metadata),
 			amr: user.amr,
 		},
 	};

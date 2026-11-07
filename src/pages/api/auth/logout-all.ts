@@ -38,6 +38,11 @@ export const POST: APIRoute = async ({ request, url }) => {
 			await revokeAuthSessions({ accessToken: session.accessToken, scope: 'global' });
 		} catch (error) {
 			console.error('[logout-all] Session revocation failed:', safeErr(error));
+			throw new ApiError(
+				503,
+				'service_unavailable',
+				'No se pudo cerrar la sesión en todos los dispositivos. Inténtelo de nuevo.',
+			);
 		}
 
 		const headers = new Headers({ 'Content-Type': 'application/json' });

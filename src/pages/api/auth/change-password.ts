@@ -28,6 +28,13 @@ export const POST: APIRoute = async ({ request, url }) => {
 		assertSameOrigin(request, url.origin);
 
 		const session = await requireSessionContext(request);
+		if (session.temporaryPasswordExpired) {
+			throw new ApiError(
+				401,
+				'unauthorized',
+				'La contraseña temporal venció. Solicite una nueva al administrador.',
+			);
+		}
 		await enforceAuthRateLimit({
 			request,
 			entityId: `change_password:${session.userId}`,

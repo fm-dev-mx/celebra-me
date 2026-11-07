@@ -78,6 +78,15 @@ describe('logout-all and server-side MFA', () => {
 		expect(authApi.revokeAuthSessions).not.toHaveBeenCalled();
 	});
 
+	it('logout-all fails with 503 and keeps cookies when global session revocation fails', async () => {
+		(authApi.revokeAuthSessions as jest.Mock).mockRejectedValueOnce(new Error('auth down'));
+
+		const res = await call(logoutAll, '/api/auth/logout-all');
+
+		expect(res.status).toBe(503);
+		expect(res.headers.getSetCookie()).toHaveLength(0);
+	});
+
 	it('mfa enroll rejects non super admins', async () => {
 		sessionMock.mockResolvedValue({ userId: 'u', accessToken: 'a', isSuperAdmin: false });
 

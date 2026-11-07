@@ -356,6 +356,35 @@ describe('Password Management & Recovery', () => {
 			expect(body.error.message).toBe('La contraseña actual es incorrecta.');
 		});
 
+		it('rejects password change once the temporary password has expired', async () => {
+			requireSessionContextMock.mockResolvedValue({
+				userId: 'user-123',
+				email: 'client@example.com',
+				accessToken: 'current-token',
+				role: 'host_client',
+				isSuperAdmin: false,
+				mustChangePassword: true,
+				temporaryPasswordExpired: true,
+			});
+
+			const response = await changePassword({
+				request: createMockRequest(
+					{
+						currentPassword: 'TempPassword123!',
+						newPassword: 'NewSecurePassword2026!',
+						confirmPassword: 'NewSecurePassword2026!',
+					},
+					{ Origin: 'http://localhost:4321', Host: 'localhost:4321' },
+					'http://localhost:4321/api/auth/change-password',
+				),
+				url: new URL('http://localhost:4321/api/auth/change-password'),
+			} as never);
+
+			expect(response.status).toBe(401);
+			expect(updateUserPasswordUserAuthMock).not.toHaveBeenCalled();
+			expect(adminSetUserMustChangePasswordMock).not.toHaveBeenCalled();
+		});
+
 		it('rejects password change when password confirmation does not match', async () => {
 			requireSessionContextMock.mockResolvedValue({
 				userId: 'user-123',
