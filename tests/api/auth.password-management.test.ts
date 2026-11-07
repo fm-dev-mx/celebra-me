@@ -127,16 +127,16 @@ describe('Password Management & Recovery', () => {
 	});
 
 	describe('1. Temporary Password Generator Contract', () => {
-		it('generates short memorable Word-####! temporary passwords', () => {
+		it('generates 12+ character CSPRNG temporary passwords', () => {
 			const passwords = new Set<string>();
-			const pattern = /^[A-Z][a-z]+-\d{4}[!@#$%*]$/;
+			const pattern = /^[A-HJ-NP-Za-km-z2-9]{5}(-[A-HJ-NP-Za-km-z2-9]{5}){2}$/;
 
 			for (let i = 0; i < 20; i += 1) {
 				const password = generateTemporaryPassword();
 				passwords.add(password);
 
 				expect(password).toMatch(pattern);
-				expect(password.length).toBeLessThanOrEqual(16);
+				expect(password.length).toBeGreaterThanOrEqual(12);
 				expect(password).not.toContain('client2026');
 				expect(password).not.toContain('celebra2026');
 			}
@@ -177,7 +177,7 @@ describe('Password Management & Recovery', () => {
 			const body = await response.json();
 			expect(body.userId).toBe('550e8400-e29b-41d4-a716-446655440000');
 			expect(body.credentials.temporaryPassword).toBeDefined();
-			expect(body.credentials.temporaryPassword).toMatch(/^[A-Z][a-z]+-\d{4}[!@#$%*]$/);
+			expect(body.credentials.temporaryPassword).toMatch(/^[A-Za-z2-9-]{17}$/);
 			expect(adminResetAuthUserPasswordMock).toHaveBeenCalledWith(
 				expect.objectContaining({
 					userId: '550e8400-e29b-41d4-a716-446655440000',
@@ -354,6 +354,35 @@ describe('Password Management & Recovery', () => {
 			expect(response.status).toBe(401);
 			const body = await response.json();
 			expect(body.error.message).toBe('La contraseña actual es incorrecta.');
+		});
+
+		it('rejects password change once the temporary password has expired', async () => {
+			requireSessionContextMock.mockResolvedValue({
+				userId: 'user-123',
+				email: 'client@example.com',
+				accessToken: 'current-token',
+				role: 'host_client',
+				isSuperAdmin: false,
+				mustChangePassword: true,
+				temporaryPasswordExpired: true,
+			});
+
+			const response = await changePassword({
+				request: createMockRequest(
+					{
+						currentPassword: 'TempPassword123!',
+						newPassword: 'NewSecurePassword2026!',
+						confirmPassword: 'NewSecurePassword2026!',
+					},
+					{ Origin: 'http://localhost:4321', Host: 'localhost:4321' },
+					'http://localhost:4321/api/auth/change-password',
+				),
+				url: new URL('http://localhost:4321/api/auth/change-password'),
+			} as never);
+
+			expect(response.status).toBe(401);
+			expect(updateUserPasswordUserAuthMock).not.toHaveBeenCalled();
+			expect(adminSetUserMustChangePasswordMock).not.toHaveBeenCalled();
 		});
 
 		it('rejects password change when password confirmation does not match', async () => {

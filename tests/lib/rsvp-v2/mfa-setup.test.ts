@@ -3,7 +3,8 @@ import {
 	pickLatestVerifiedTotpFactor,
 	pickUnverifiedTotpFactors,
 	renderMfaPanel,
-	syncMfaSession,
+	startMfaChallenge,
+	verifyMfaCode,
 } from '@/lib/client/mfa-setup';
 
 describe('mfa setup client helpers', () => {
@@ -82,35 +83,39 @@ describe('mfa setup client helpers', () => {
 		expect(verifyButton).toHaveTextContent('Verificar y activar');
 	});
 
-	it('posts elevated tokens to sync the verified mfa session', async () => {
+	it('asks the server to prepare the challenge without sending tokens', async () => {
 		const fetchMock = global.fetch as jest.Mock;
 		fetchMock.mockResolvedValueOnce({
 			ok: true,
-			json: async () => ({ ok: true }),
+			json: async () => ({ ok: true, mode: 'enroll', factorId: 'f', challengeId: 'c' }),
 		} as Response);
 
-		await syncMfaSession('access-token', 'refresh-token');
+		const challenge = await startMfaChallenge();
 
+		expect(challenge.factorId).toBe('f');
 		expect(fetchMock).toHaveBeenCalledWith(
-			'/api/auth/sync-session',
-			expect.objectContaining({
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					accessToken: 'access-token',
-					refreshToken: 'refresh-token',
-				}),
-			}),
+			'/api/auth/mfa/enroll',
+			expect.objectContaining({ method: 'POST', credentials: 'same-origin', body: '{}' }),
 		);
 	});
 
-	it('surfaces backend sync-session errors', async () => {
+	it('posts the code to the server and surfaces its error message', async () => {
 		const fetchMock = global.fetch as jest.Mock;
+		fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) } as Response);
+		await verifyMfaCode({ factorId: 'f', challengeId: 'c', code: '123456' });
+		expect(fetchMock).toHaveBeenCalledWith(
+			'/api/auth/mfa/verify',
+			expect.objectContaining({
+				body: JSON.stringify({ factorId: 'f', challengeId: 'c', code: '123456' }),
+			}),
+		);
+
 		fetchMock.mockResolvedValueOnce({
 			ok: false,
-			json: async () => ({ message: 'Sync failed.' }),
+			json: async () => ({ message: 'Código inválido.' }),
 		} as Response);
-
-		await expect(syncMfaSession('access-token')).rejects.toThrow('Sync failed.');
+		await expect(verifyMfaCode({ factorId: 'f', code: '000000' })).rejects.toThrow(
+			'Código inválido.',
+		);
 	});
 });
