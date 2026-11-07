@@ -46,6 +46,27 @@ const CSP_REPORT_ONLY_DIRECTIVES = [
 
 export const CSP_REPORT_ONLY_VALUE = CSP_REPORT_ONLY_DIRECTIVES.join('; ');
 
+/** Directives that load Supabase resources: storage images, API calls and stored media. */
+const SUPABASE_RESOURCE_DIRECTIVES = new Set(['img-src', 'connect-src', 'media-src']);
+
+/**
+ * The report-only policy with one extra origin allowed for Supabase resources. Local and CI runs
+ * serve storage from Local Supabase (`http://127.0.0.1:54321`), which the hosted allowlist omits.
+ */
+export function buildCspReportOnlyValue(extraSupabaseOrigin?: string): string {
+	if (!extraSupabaseOrigin) return CSP_REPORT_ONLY_VALUE;
+	return CSP_REPORT_ONLY_DIRECTIVES.map((directive) =>
+		SUPABASE_RESOURCE_DIRECTIVES.has(directive.split(' ')[0])
+			? `${directive} ${extraSupabaseOrigin}`
+			: directive,
+	).join('; ');
+}
+
+export interface SecurityHeaderOptions {
+	/** Origin of Local Supabase, set only when the server talks to it. */
+	readonly localSupabaseOrigin?: string;
+}
+
 /** Security headers applied to every response except the same-origin frames below. */
 export const SECURITY_HEADERS: readonly HeaderEntry[] = [
 	['X-Content-Type-Options', 'nosniff'],
@@ -87,10 +108,20 @@ function isDemoShortRoutePath(pathname: string): boolean {
 	return routeSlug !== undefined && findDemoByRouteSlug(routeSlug) !== undefined;
 }
 
-export function resolveSecurityHeaders(pathname: string): readonly HeaderEntry[] {
-	return isInvitationPreviewPath(pathname) || isDemoShortRoutePath(pathname)
-		? INVITATION_PREVIEW_SECURITY_HEADERS
-		: SECURITY_HEADERS;
+export function resolveSecurityHeaders(
+	pathname: string,
+	options: SecurityHeaderOptions = {},
+): readonly HeaderEntry[] {
+	const entries =
+		isInvitationPreviewPath(pathname) || isDemoShortRoutePath(pathname)
+			? INVITATION_PREVIEW_SECURITY_HEADERS
+			: SECURITY_HEADERS;
+	if (!options.localSupabaseOrigin) return entries;
+
+	const policy = buildCspReportOnlyValue(options.localSupabaseOrigin);
+	return entries.map(([name, value]): HeaderEntry =>
+		name === 'Content-Security-Policy-Report-Only' ? [name, policy] : [name, value],
+	);
 }
 
 function hasMutableHeaderApi(response: unknown): response is Response {
@@ -106,10 +137,14 @@ function hasMutableHeaderApi(response: unknown): response is Response {
  * an immutable header guard, so those are rewrapped before the headers are added.
  * Values that are not real `Response` objects are returned untouched.
  */
-export function withSecurityHeaders(pathname: string, response: Response): Response {
+export function withSecurityHeaders(
+	pathname: string,
+	response: Response,
+	options: SecurityHeaderOptions = {},
+): Response {
 	if (!hasMutableHeaderApi(response)) return response;
 
-	const entries = resolveSecurityHeaders(pathname);
+	const entries = resolveSecurityHeaders(pathname, options);
 	try {
 		for (const [name, value] of entries) response.headers.set(name, value);
 		return response;

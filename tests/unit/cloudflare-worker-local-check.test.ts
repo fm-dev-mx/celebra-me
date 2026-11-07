@@ -16,6 +16,7 @@ interface FakeWorkerOptions {
 	healthStatus?: number;
 	scheduledBody?: string;
 	contactLocation?: string;
+	localSupabaseOrigin?: string;
 }
 
 /** Answers like a healthy local Worker; options break one behavior at a time. */
@@ -25,7 +26,9 @@ function fakeWorker(options: FakeWorkerOptions = {}) {
 		const url = new URL(String(input));
 		requested.push(`${url.pathname}${url.search}`);
 		const headers = new Headers(
-			resolveSecurityHeaders(url.pathname)
+			resolveSecurityHeaders(url.pathname, {
+				localSupabaseOrigin: url.pathname === '/' ? undefined : options.localSupabaseOrigin,
+			})
 				.filter(([name]) => name !== options.dropHeader)
 				.map(([name, value]) => [name, value]),
 		);
@@ -79,6 +82,28 @@ describe('cloudflare-worker-local-check', () => {
 				`${SCHEDULED_HANDLER_PATH}?cron=${encodeURIComponent(cron)}`,
 			);
 		}
+	});
+
+	it('expects the report-only CSP that allows the Local Supabase origin', async () => {
+		const localSupabaseOrigin = 'http://127.0.0.1:54321';
+		const { fetchImpl } = fakeWorker({ localSupabaseOrigin });
+
+		await expect(
+			runLocalWorkerChecks({
+				origin: ORIGIN,
+				fetchImpl,
+				expectedSha: SHA,
+				localSupabaseOrigin,
+			}),
+		).resolves.toEqual([]);
+		const failures = await runLocalWorkerChecks({ origin: ORIGIN, fetchImpl });
+		expect(failures).toContain(
+			`/login: header Content-Security-Policy-Report-Only is ${
+				resolveSecurityHeaders('/login', { localSupabaseOrigin }).find(
+					([name]) => name === 'Content-Security-Policy-Report-Only',
+				)?.[1]
+			}`,
+		);
 	});
 
 	it('reports a security header the Worker drops', async () => {
