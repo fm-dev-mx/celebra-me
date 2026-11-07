@@ -34,10 +34,10 @@ const RETIRED_PROVIDER_ALLOWLIST = new Set([
 	'tests/unit/deployment-workflow-contract.test.ts',
 	'tests/unit/post-deploy-smoke.test.ts',
 	'tests/scripts/operational-contracts.test.ts',
-	// Board config protects the legacy .vercel/ folder from agents.
-	'tablero.config.json',
-	// .vercel/ gitignore pattern and @vercel/* transitive dependency overrides.
+	// .vercel/ gitignore pattern, .vercel/ as a board-protected path, and @vercel/* transitive
+	// dependency overrides.
 	'.gitignore',
+	'tablero.config.json',
 	'pnpm-workspace.yaml',
 	// Proves the schema rejects live Cloudinary rows and keeps soft-deleted ones as history.
 	'supabase/tests/invitation_assets_r2_provider.test.sql',
