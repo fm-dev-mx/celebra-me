@@ -232,10 +232,8 @@ async function createInvitationHostAuthUser(input: {
 			email: input.email,
 			password,
 			email_confirm: true,
-			user_metadata: {
-				login_alias: input.loginAlias,
-			},
 			app_metadata: {
+				login_alias: input.loginAlias,
 				provider: 'email',
 				providers: ['email'],
 				role: 'host_client',

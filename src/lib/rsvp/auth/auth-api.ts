@@ -353,13 +353,14 @@ export async function verifyMfaFactor(input: {
 }
 
 const AUTH_USERS_PAGE_SIZE = 100;
+const AUTH_USERS_MAX_PAGES = 100;
 const ALIAS_CACHE_TTL_MS = 30_000;
 let aliasDirectory:
 	{ url: string; expiresAt: number; users: Promise<AuthAdminUserRecord[]> } | undefined;
 
 async function fetchAuthUsers(): Promise<AuthAdminUserRecord[]> {
 	const users: AuthAdminUserRecord[] = [];
-	for (let page = 1; ; page++) {
+	for (let page = 1; page <= AUTH_USERS_MAX_PAGES; page++) {
 		const response = await authRequest({
 			operation: 'list_users',
 			path: `admin/users?page=${page}&per_page=${AUTH_USERS_PAGE_SIZE}`,
@@ -370,6 +371,8 @@ async function fetchAuthUsers(): Promise<AuthAdminUserRecord[]> {
 		users.push(...response.users);
 		if (response.users.length < AUTH_USERS_PAGE_SIZE) return users;
 	}
+	// Never resolve aliases or validate uniqueness against a truncated directory.
+	throw new Error('Auth user directory exceeded the pagination limit.');
 }
 
 function cachedAliasUsers(): Promise<AuthAdminUserRecord[]> {

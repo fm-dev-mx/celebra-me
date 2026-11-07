@@ -239,6 +239,33 @@ describe('rsvp authApi', () => {
 		expect(global.fetch).toHaveBeenCalledTimes(4);
 	});
 
+	it('bounds ignored pagination, rejects partial matches, and retries after a failed cache load', async () => {
+		process.env.SUPABASE_URL = 'https://pagination-limit.example.test';
+		global.fetch = jest.fn().mockImplementation(async () => ({
+			ok: true,
+			json: async () => ({
+				users: Array.from({ length: 100 }, (_, i) => ({
+					id: `u${i}`,
+					app_metadata: { login_alias: i === 0 ? 'alice' : `alias${i}` },
+				})),
+			}),
+		}));
+		await expect(findAuthUserByLoginIdentifier({ identifier: 'alice' })).rejects.toThrow(
+			'Auth user directory exceeded the pagination limit.',
+		);
+		expect(global.fetch).toHaveBeenCalledTimes(100);
+		expect(global.fetch).toHaveBeenLastCalledWith(
+			expect.stringContaining('page=100&per_page=100'),
+			expect.anything(),
+		);
+		(global.fetch as jest.Mock).mockResolvedValue({
+			ok: true,
+			json: async () => ({ users: [] }),
+		});
+		await expect(findAuthUserByLoginIdentifier({ identifier: 'alice' })).resolves.toBeNull();
+		expect(global.fetch).toHaveBeenCalledTimes(101);
+	});
+
 	it('preserves unrelated app_metadata when resetting password and clearing must_change_password', async () => {
 		const existingUser = {
 			id: 'u-existing',
