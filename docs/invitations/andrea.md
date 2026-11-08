@@ -365,6 +365,9 @@ live in `src/invitations/clients/andrea/`; the shared `storybook-emerald` preset
 - 2026-11-05: the client replied «Excelente» on the updated link (implicit approval of round 2).
   2026-11-06: she picked the staircase photo, with a new background and butterflies, for the 5×7
   card (C1).
+- 2026-11-07: the memories space `andrea` exists in Production (Ampliada quota). The invitation
+  shows the `memories` card between the reply and the closing; the same QR
+  (`https://celebra-me.com/r/andrea`) goes on the 5×7 card.
 
 ### Design refinements — 2026-11-04
 
