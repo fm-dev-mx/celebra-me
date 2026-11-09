@@ -252,7 +252,7 @@
         "ts-jest": "^29.4.15",
         "tsx": "^4.23.15",
         "typescript": "npm:@typescript/typescript6@6.0.2",
-        "typescript-eslint": "^8.70.1",
+        "typescript-eslint": "^8.72.1",
         "vite": "8.3.5",
         "wrangler": "4.158.0"
     },
