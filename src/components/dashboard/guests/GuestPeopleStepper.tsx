@@ -5,6 +5,10 @@ interface GuestPeopleStepperProps {
 	/** Raw text so the host can clear the field while typing a larger number. */
 	value: string;
 	max: number;
+	/** Lowest allowed value; party size starts at 1, children at 0. */
+	min?: number;
+	decrementLabel?: string;
+	incrementLabel?: string;
 	onChange: (value: string) => void;
 	describedBy?: string;
 	invalid?: boolean;
@@ -17,23 +21,26 @@ const GuestPeopleStepper: React.FC<GuestPeopleStepperProps> = ({
 	id,
 	value,
 	max,
+	min = 1,
+	decrementLabel = 'Una persona menos',
+	incrementLabel = 'Una persona más',
 	onChange,
 	describedBy,
 	invalid,
 	compact = false,
 }) => {
 	const current = parseInt(value, 10);
-	const safe = Number.isNaN(current) ? 1 : current;
-	const step = (delta: number) => onChange(String(Math.min(max, Math.max(1, safe + delta))));
+	const safe = Number.isNaN(current) ? min : current;
+	const step = (delta: number) => onChange(String(Math.min(max, Math.max(min, safe + delta))));
 
 	return (
 		<div className={`guest-people-stepper${compact ? ' guest-people-stepper--compact' : ''}`}>
 			<button
 				type="button"
 				className="guest-people-stepper__button"
-				aria-label="Una persona menos"
+				aria-label={decrementLabel}
 				aria-controls={id}
-				disabled={safe <= 1}
+				disabled={safe <= min}
 				onClick={() => step(-1)}
 			>
 				<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
@@ -50,7 +57,7 @@ const GuestPeopleStepper: React.FC<GuestPeopleStepperProps> = ({
 				type="number"
 				inputMode="numeric"
 				className="guest-people-stepper__input"
-				min={1}
+				min={min}
 				max={max}
 				value={value}
 				aria-describedby={describedBy}
@@ -60,7 +67,7 @@ const GuestPeopleStepper: React.FC<GuestPeopleStepperProps> = ({
 			<button
 				type="button"
 				className="guest-people-stepper__button guest-people-stepper__button--add"
-				aria-label="Una persona más"
+				aria-label={incrementLabel}
 				aria-controls={id}
 				disabled={safe >= max}
 				onClick={() => step(1)}
