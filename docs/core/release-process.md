@@ -278,13 +278,29 @@ complete the alias backfill in the target environment. Run `pnpm auth:migrate-lo
 Local and Preview use `pnpm auth:migrate-login-alias --apply` with their respective environment
 credentials supplied externally. Do not put credentials in the PR or release evidence.
 
-Production requires the separately authorized owner workflow for the equivalent
-`pnpm auth:migrate-login-alias --apply` operation. The script intentionally rejects direct
-Production apply; this prerequisite does not authorize bypassing that guard. If the owner workflow
-or successful backfill evidence is unavailable, keep activation blocked. Record the target,
-successful migration verification and ordering in both the application PR and release handoff. There
-is no runtime fallback to user-editable `user_metadata` aliases; activating first prevents
-unmigrated hosts from logging in by alias.
+Production uses the owner patch workflow, because the script intentionally rejects direct Production
+apply and this prerequisite does not authorize bypassing that guard. The owner plans and applies
+`scripts/manual/production-patches/20261109_auth_login_alias_app_metadata_backfill.sql`:
+
+```bash
+pnpm auth:migrate-login-alias --dry-run
+pnpm prod:apply -- --patch "scripts/manual/production-patches/20261109_auth_login_alias_app_metadata_backfill.sql"
+pnpm prod:apply -- --patch "scripts/manual/production-patches/20261109_auth_login_alias_app_metadata_backfill.sql" --apply
+```
+
+The patch copies each legacy alias into `app_metadata` with the same normalization as the script,
+never overwrites a protected alias, and stops without writing when two accounts share an alias. The
+critical backup stores the previous `auth.users` metadata. After apply the plan must report zero
+target rows and the script dry-run must report `planned: 0`; alias login returns within 30 seconds,
+once each Worker instance reloads its alias directory. Keep administrative alias changes paused
+between plan and apply.
+
+If the backfill evidence is unavailable, keep activation blocked. Record the target, successful
+migration verification and ordering in both the application PR and release handoff. There is no
+runtime fallback to user-editable `user_metadata` aliases; activating first prevents unmigrated
+hosts from logging in by alias. Until the backfill is applied, an affected host can still log in
+with the account email (`<alias>@clientes.celebra.invalid` for managed host accounts) instead of the
+alias.
 
 The login throttle also has operational limits: the identifier/account bucket (10 attempts per 900
 seconds, without IP) lets a third party temporarily block a known host's login. The IP bucket (30

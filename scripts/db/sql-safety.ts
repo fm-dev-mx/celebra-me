@@ -130,6 +130,12 @@ function validateManifestOperation(manifest: SqlManifest): string[] {
 	return errors;
 }
 
+/**
+ * Tables a production patch may mutate: any `public` table, plus `auth.users` for owner-reviewed
+ * Auth metadata corrections (the critical backup covers it). No other schema is patchable.
+ */
+const PATCH_TABLE_PATTERN = /^(?:public\.[a-z_][a-z0-9_]*|auth\.users)$/i;
+
 function validateManifestTables(manifest: SqlManifest): string[] {
 	const errors: string[] = [];
 	const tables = manifest.tables;
@@ -140,11 +146,11 @@ function validateManifestTables(manifest: SqlManifest): string[] {
 			.filter(Boolean);
 		if (
 			entries.length === 0 ||
-			entries.some((table) => !/^public\.[a-z_][a-z0-9_]*$/i.test(table)) ||
+			entries.some((table) => !PATCH_TABLE_PATTERN.test(table)) ||
 			new Set(entries.map((table) => table.toLowerCase())).size !== entries.length
 		) {
 			errors.push(
-				'@tables must be a unique comma-separated list of public.<table> identifiers.',
+				'@tables must be a unique comma-separated list of public.<table> identifiers or auth.users.',
 			);
 		}
 	}
@@ -390,7 +396,9 @@ function mutationTargetTables(statements: ParsedSqlStatement[]): Set<string> {
 	const mutationTables = new Set<string>();
 	for (const statement of statements) {
 		const match = statement.inspection.match(
-			/^\s*(?:update|insert\s+into|delete\s+from)\s+(?:only\s+)?(public\.[a-z_][a-z0-9_]*)\b/i,
+			// Any schema-qualified target counts, so a mutation outside the patchable tables can never
+			// match the validated @tables list.
+			/^\s*(?:update|insert\s+into|delete\s+from)\s+(?:only\s+)?([a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*)\b/i,
 		);
 		if (match?.[1]) mutationTables.add(match[1].toLowerCase());
 	}
