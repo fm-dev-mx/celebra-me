@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { DATA_PREREQUISITES_PATH } from './data-prerequisites.ts';
 import { normalizeVisualPath, visualImpactFiles } from './visual-impact.ts';
 
 type ReleaseCategory = 'tooling-only' | 'application' | 'schema-dependent' | 'invitation-content';
@@ -61,6 +62,9 @@ export function classifyReleaseFiles(
 			'exact Production deployment and smoke',
 			'owner apply and backup',
 		);
+	// An extra gate only: the manifest is evidence about data, so it never changes the category.
+	if (files.some((file) => file.path === DATA_PREREQUISITES_PATH))
+		applicableGates.push('data prerequisites verified for Production');
 	if (category === 'invitation-content')
 		applicableGates.push(
 			'lifecycle',

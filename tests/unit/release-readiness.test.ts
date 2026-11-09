@@ -2,6 +2,7 @@ import {
 	CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE,
 	STATIC_CAPABILITY_CHECK,
 	isRemoteEvidenceUnavailable,
+	loadDataPrerequisiteManifest,
 	loadLatestProductionDeployment,
 	loadRemoteChecks,
 	parseReleaseChecksArgs,
@@ -12,6 +13,7 @@ import {
 	requireReleaseChecks,
 	REQUIRED_RELEASE_CHECKS,
 } from '../../scripts/ops/release-readiness.ts';
+import { requireDataPrerequisites } from '../../scripts/ops/data-prerequisites.ts';
 
 const sha = 'a'.repeat(40);
 const passing = () =>
@@ -368,6 +370,80 @@ describe('release check evidence', () => {
 			state: 'success',
 			trusted: false,
 		});
+	});
+});
+
+describe('data prerequisite manifest at the release SHA', () => {
+	const contentsKey = `contents/supabase/data-prerequisites.json?ref=${sha}`;
+	const fileResponse = (text: string) => ({
+		type: 'file',
+		encoding: 'base64',
+		// GitHub wraps base64 content in lines; the decoder must tolerate the breaks.
+		content: Buffer.from(text, 'utf8')
+			.toString('base64')
+			.replace(/(.{60})/gu, '$1\n'),
+	});
+	const manifestWith = (status: string) =>
+		JSON.stringify({
+			version: 1,
+			authAppMetadataKeys: {},
+			prerequisites: [
+				{
+					id: 'example-backfill',
+					summary: 'Every account has the example value.',
+					introducedBy: 'https://example.test/pull/1',
+					verify: 'pnpm example:check',
+					environments: {
+						production:
+							status === 'verified'
+								? { status, verifiedAt: '2026-11-09', evidence: 'Applied.' }
+								: { status },
+					},
+				},
+			],
+		});
+
+	it('reads the manifest from the exact SHA, not from the working tree', () => {
+		const text = manifestWith('verified');
+		const requests: string[] = [];
+		const runner = ghRunner({ [contentsKey]: fileResponse(text) });
+		const recording = (args: string[]) => {
+			requests.push(args.join(' '));
+			return runner(args);
+		};
+		expect(loadDataPrerequisiteManifest(sha, recording)).toBe(text);
+		expect(requests).toContain(`api repos/celebra-me/test/${contentsKey}`);
+		expect(() =>
+			requireDataPrerequisites(loadDataPrerequisiteManifest(sha, recording)),
+		).not.toThrow();
+	});
+
+	it('blocks the release when the manifest at that SHA has a pending prerequisite', () => {
+		const runner = ghRunner({ [contentsKey]: fileResponse(manifestWith('pending')) });
+		expect(() => requireDataPrerequisites(loadDataPrerequisiteManifest(sha, runner))).toThrow(
+			/not verified for production; do not activate this release:\n- example-backfill/,
+		);
+	});
+
+	it('blocks the release when the commit has no manifest or GitHub cannot serve it', () => {
+		// ghRunner throws for an unknown request, as `gh api` does on a 404.
+		const missing = loadDataPrerequisiteManifest(sha, ghRunner({}));
+		expect(missing).toBeNull();
+		expect(() => requireDataPrerequisites(missing)).toThrow('Data prerequisites are unknown');
+		for (const response of [
+			[],
+			{ type: 'dir' },
+			{ type: 'file', encoding: 'none', content: '' },
+		])
+			expect(
+				loadDataPrerequisiteManifest(sha, ghRunner({ [contentsKey]: response })),
+			).toBeNull();
+	});
+
+	it('requires an exact SHA', () => {
+		expect(() => loadDataPrerequisiteManifest('main', ghRunner({}))).toThrow(
+			'An exact release SHA is required.',
+		);
 	});
 });
 

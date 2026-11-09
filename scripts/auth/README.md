@@ -19,6 +19,45 @@ the plan review, backup coverage, and the owner gate (see "Protected login alias
 [`docs/core/release-process.md`](../../docs/core/release-process.md)). Do not activate alias-only
 login in Production until that backfill is complete.
 
+## Read-only check
+
+```sh
+pnpm auth:check-login-alias
+```
+
+`--check` only reads the account directory of the environment named by `SUPABASE_URL` and prints
+totals, never an alias, an email or an account id:
+
+```json
+{
+  "target": "preview",
+  "accounts": 120,
+  "protectedAliases": 40,
+  "legacyOnly": 0,
+  "duplicates": 0,
+  "ok": true
+}
+```
+
+- `target`: the environment `SUPABASE_URL` belongs to (`local`, `preview`, `production` or
+  `unknown`). Check it before recording evidence: a result is proof only for that environment.
+- `legacyOnly`: accounts whose alias is only in `user_metadata`. They cannot log in by alias.
+- `duplicates`: aliases owned by more than one account. Login rejects them.
+- Exit code 0 only when both are zero and the directory is not empty; otherwise 1, with "Login alias
+  prerequisite is NOT met". An empty directory usually means the wrong target or key.
+
+It may be run against any environment, Production included, because it never writes; it cannot be
+combined with `--apply`. Its output is the evidence recorded for the `auth-login-alias-app-metadata`
+entry of `supabase/data-prerequisites.json`: see "Data prerequisites" in
+[`docs/core/release-process.md`](../../docs/core/release-process.md) for how to record it and what
+to do when it fails.
+
+Resetting a password from the admin panel keeps an alias that is already in `app_metadata` and does
+not copy one from `user_metadata`: a reset is not a repair for a legacy-only alias. Run the
+backfill.
+
+## Migration
+
 The default is dry-run. Review the target and existing alias ownership before applying: legacy user
 metadata was user-writable and cannot prove legitimate ownership. Duplicate effective aliases block
 every write and list the conflicting IDs for owner resolution. Existing protected aliases take
