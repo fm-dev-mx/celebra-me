@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-07T23:36:36.079Z",
+    "generatedAt": "2026-11-09T20:25:44.134Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -2443,8 +2443,8 @@
             "preset": "luxury-hacienda",
             "viewport": "mobile",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-            "sha256": "b318d396abd987ac60ff431650ea1db28b2fbd39bea0bd45ab36b37ef3213127",
-            "contentHash": "35eea541e519067d46ef5eb65e249db3661a0bfa02983427a91432f169cbd34e",
+            "sha256": "f2d26c9ecc8e0fa2dfcf955eeac7c3980074114c3cea249983987e4f73e74549",
+            "contentHash": "69d5cc1a4c477776d8b193372e6d51e93184341cf3333087e9a6061730bcc06d",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
         },
@@ -2455,8 +2455,8 @@
             "preset": "luxury-hacienda",
             "viewport": "desktop",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-            "sha256": "187b236909422bb46b99ecd0d5dd0e0535d4f8eeded6d36a27bf0db0d94ffb4b",
-            "contentHash": "35eea541e519067d46ef5eb65e249db3661a0bfa02983427a91432f169cbd34e",
+            "sha256": "1858f4bf76f71f92c18c751943bae5afdc95ad40bfa8907490d364d5977af32c",
+            "contentHash": "69d5cc1a4c477776d8b193372e6d51e93184341cf3333087e9a6061730bcc06d",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
         },
@@ -2605,9 +2605,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "77471fefbde7e5b0cc256b5df5f5fe96a7887d87",
+    "referenceSha": "10c15850e67325e3c14c6241ed2d4d7852dbfb7d",
     "variantManifest": {
-        "generatedAt": "2026-11-07T23:36:36.079Z",
+        "generatedAt": "2026-11-09T20:25:44.134Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4565,10 +4565,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "77471fefbde7e5b0cc256b5df5f5fe96a7887d87"
+        "referenceSha": "10c15850e67325e3c14c6241ed2d4d7852dbfb7d"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-07T23:36:36.084Z",
+        "generatedAt": "2026-11-09T20:25:44.140Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -5079,8 +5079,8 @@
                 "preset": "luxury-hacienda",
                 "viewport": "mobile",
                 "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-                "sha256": "b318d396abd987ac60ff431650ea1db28b2fbd39bea0bd45ab36b37ef3213127",
-                "contentHash": "35eea541e519067d46ef5eb65e249db3661a0bfa02983427a91432f169cbd34e",
+                "sha256": "f2d26c9ecc8e0fa2dfcf955eeac7c3980074114c3cea249983987e4f73e74549",
+                "contentHash": "69d5cc1a4c477776d8b193372e6d51e93184341cf3333087e9a6061730bcc06d",
                 "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5091,8 +5091,8 @@
                 "preset": "luxury-hacienda",
                 "viewport": "desktop",
                 "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-                "sha256": "187b236909422bb46b99ecd0d5dd0e0535d4f8eeded6d36a27bf0db0d94ffb4b",
-                "contentHash": "35eea541e519067d46ef5eb65e249db3661a0bfa02983427a91432f169cbd34e",
+                "sha256": "1858f4bf76f71f92c18c751943bae5afdc95ad40bfa8907490d364d5977af32c",
+                "contentHash": "69d5cc1a4c477776d8b193372e6d51e93184341cf3333087e9a6061730bcc06d",
                 "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5241,9 +5241,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "77471fefbde7e5b0cc256b5df5f5fe96a7887d87"
+        "referenceSha": "10c15850e67325e3c14c6241ed2d4d7852dbfb7d"
     },
-    "candidateManifestSha256": "36e7afc05fb0d5a74d420bde6c21c7ac3697d49ad2e9d73b410fb56a1f7cc8db",
-    "acceptedFromCommit": "77471fefbde7e5b0cc256b5df5f5fe96a7887d87",
-    "acceptedAt": "2026-11-07T23:39:53.607Z"
+    "candidateManifestSha256": "e0dcf580fce51512f0246069ec3e619fdbaf469027af3e5ecb0d3964c4b1baf6",
+    "acceptedFromCommit": "10c15850e67325e3c14c6241ed2d4d7852dbfb7d",
+    "acceptedAt": "2026-11-09T20:32:28.440Z"
 }
