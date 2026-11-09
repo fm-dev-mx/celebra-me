@@ -248,7 +248,7 @@
         "sharp": "^0.35.5",
         "stylelint": "17.16.0",
         "stylelint-config-standard-scss": "^17.0.0",
-        "supabase": "2.122.0",
+        "supabase": "2.122.1",
         "ts-jest": "^29.4.15",
         "tsx": "^4.23.15",
         "typescript": "npm:@typescript/typescript6@6.0.2",
