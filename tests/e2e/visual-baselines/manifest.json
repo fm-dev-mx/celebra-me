@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-07T23:36:36.079Z",
+    "generatedAt": "2026-11-09T14:12:24.428Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -19,8 +19,8 @@
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 192,
-    "matrixHash": "7e681e2005a93367f7a5d472e689519c437adf4b7de8febac7d9c98c08351339",
+    "totalCaptures": 194,
+    "matrixHash": "7c14412dac41bc50864da9ddd2012cf80a064b1429862037f20bbc7377719a8d",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2222,6 +2222,30 @@
         },
         {
             "kind": "invitation",
+            "slug": "destenid-sofia",
+            "eventType": "xv",
+            "preset": "editorial-magazine",
+            "viewport": "mobile",
+            "file": "pages/invitation-xv-destenid-sofia-mobile.png",
+            "sha256": "d188a181ead7d5209bfe8523fcd7792b7f94e9b22724c2c02b1ecb4130397f8e",
+            "contentHash": "75e757f293e1e3f444913a09ef9fbc0035352e7800ce53de470ff5db9589f48b",
+            "assetHash": "49192ff1d04942cfd2dfdc127ac3fb522c93d958459f1035a39ddb479c770803",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "destenid-sofia",
+            "eventType": "xv",
+            "preset": "editorial-magazine",
+            "viewport": "desktop",
+            "file": "pages/invitation-xv-destenid-sofia-desktop.png",
+            "sha256": "13dddd2dac0d3570d9c38cb47642e0f7f366cf1ef95cbea874864c2eed9cc152",
+            "contentHash": "75e757f293e1e3f444913a09ef9fbc0035352e7800ce53de470ff5db9589f48b",
+            "assetHash": "49192ff1d04942cfd2dfdc127ac3fb522c93d958459f1035a39ddb479c770803",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
             "slug": "mia-pintor",
             "eventType": "xv",
             "preset": "celestial-blue",
@@ -2605,9 +2629,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "77471fefbde7e5b0cc256b5df5f5fe96a7887d87",
+    "referenceSha": "1847845b46bea16baba117fe7d07ad7d679cffd8",
     "variantManifest": {
-        "generatedAt": "2026-11-07T23:36:36.079Z",
+        "generatedAt": "2026-11-09T14:12:24.428Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4565,10 +4589,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "77471fefbde7e5b0cc256b5df5f5fe96a7887d87"
+        "referenceSha": "1847845b46bea16baba117fe7d07ad7d679cffd8"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-07T23:36:36.084Z",
+        "generatedAt": "2026-11-09T14:12:24.437Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4588,9 +4612,9 @@
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 54,
-        "matrixHash": "3cc016b2f09134b3def76900e329caff80991de2076b41326457991e95f27693",
-        "cases": 27,
+        "totalCaptures": 56,
+        "matrixHash": "bdf345d81099c9e4ee8285727d2b04773b5ddc4b5d7b2a5e109fa9927b56d2f8",
+        "cases": 28,
         "captures": [
             {
                 "kind": "invitation",
@@ -4854,6 +4878,30 @@
                 "sha256": "f6887c97b51bb1dd8a2956ed55930e9c7977bcbc795c6eb2791cb66197416fe3",
                 "contentHash": "94624c955260991a70d8dffa9e1c0252e59906595b884d165bf285ec414b5360",
                 "assetHash": "5808e0044eda5d5caee731e22323c81b00e6f847376e926cbe1563c4253bb641",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "destenid-sofia",
+                "eventType": "xv",
+                "preset": "editorial-magazine",
+                "viewport": "mobile",
+                "file": "pages/invitation-xv-destenid-sofia-mobile.png",
+                "sha256": "d188a181ead7d5209bfe8523fcd7792b7f94e9b22724c2c02b1ecb4130397f8e",
+                "contentHash": "75e757f293e1e3f444913a09ef9fbc0035352e7800ce53de470ff5db9589f48b",
+                "assetHash": "49192ff1d04942cfd2dfdc127ac3fb522c93d958459f1035a39ddb479c770803",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "destenid-sofia",
+                "eventType": "xv",
+                "preset": "editorial-magazine",
+                "viewport": "desktop",
+                "file": "pages/invitation-xv-destenid-sofia-desktop.png",
+                "sha256": "13dddd2dac0d3570d9c38cb47642e0f7f366cf1ef95cbea874864c2eed9cc152",
+                "contentHash": "75e757f293e1e3f444913a09ef9fbc0035352e7800ce53de470ff5db9589f48b",
+                "assetHash": "49192ff1d04942cfd2dfdc127ac3fb522c93d958459f1035a39ddb479c770803",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -5241,9 +5289,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "77471fefbde7e5b0cc256b5df5f5fe96a7887d87"
+        "referenceSha": "1847845b46bea16baba117fe7d07ad7d679cffd8"
     },
-    "candidateManifestSha256": "36e7afc05fb0d5a74d420bde6c21c7ac3697d49ad2e9d73b410fb56a1f7cc8db",
-    "acceptedFromCommit": "77471fefbde7e5b0cc256b5df5f5fe96a7887d87",
-    "acceptedAt": "2026-11-07T23:39:53.607Z"
+    "candidateManifestSha256": "6b0368779f52817835ac7095c9d8ab56d87036c43a1b3c5a757046dab4650887",
+    "acceptedFromCommit": "1847845b46bea16baba117fe7d07ad7d679cffd8",
+    "acceptedAt": "2026-11-09T14:19:16.600Z"
 }
