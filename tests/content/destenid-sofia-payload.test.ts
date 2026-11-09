@@ -17,7 +17,7 @@ describe('Destenid Sofía managed definition', () => {
 	it('resolves from the managed registry', () => {
 		expect(getInvitationDefinition('destenid-sofia')).toBe(destenidInvitation);
 		expect(destenidInvitation.hostLoginAlias).toBe('destenid_sofia');
-		expect(destenidInvitation.lifecycle).toBe('in_progress');
+		expect(destenidInvitation.lifecycle).toBe('published');
 		expect(destenidInvitation.deliveryScope).toBe('content-and-assets');
 	});
 
