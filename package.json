@@ -254,7 +254,7 @@
         "typescript": "npm:@typescript/typescript6@6.0.2",
         "typescript-eslint": "^8.70.1",
         "vite": "8.3.5",
-        "wrangler": "4.154.0"
+        "wrangler": "4.158.0"
     },
     "lint-staged": {
         "*.{ts,tsx,js,jsx,mjs,cjs}": ["eslint --fix --cache", "prettier --write"],
