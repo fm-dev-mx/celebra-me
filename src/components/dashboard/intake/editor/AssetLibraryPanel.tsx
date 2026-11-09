@@ -89,7 +89,7 @@ function InlineEditField({
 	return (
 		<span className="asset-library__edit-inline">
 			<label className="asset-library__edit-label">
-				<span className="asset-library__sr-only">{inputLabel}</span>
+				<span className="sr-only">{inputLabel}</span>
 				<input
 					type="text"
 					className="asset-library__edit-input"

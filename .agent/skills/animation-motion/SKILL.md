@@ -57,3 +57,9 @@ choreography (never flat e-cards or static template catalogs):
 - [Awwwards — Wedding Invitation (NganoYoshihiro)](https://www.awwwards.com/sites/wedding-invitation)
 - [Wedfully — Editorial Wedding Invitation](https://wedfully.framer.website/)
 - [Aveluna — Luxury Editorial Wedding Invitation](https://aveluna.framer.website/)
+- [Aisle — Your love story, beautifully told](https://aislewedding.framer.website/) — Word-by-word
+  heading and typography reveals → `editorial` (`SplitWords.astro`)
+- [Olivia & Julian — Wedding invitation](https://olivia-julian.framer.website/) — Pinned narrative
+  milestone sequence on scroll → `editorial` scroll scenes (`ScrollScene.astro`)
+- [Wildwood — Wedding Invitation & RSVP](https://wildwoodwedding.framer.website/) — Stacked
+  milestone cards on scroll (tarjetas apiladas) → `itinerary.stacked-cards`

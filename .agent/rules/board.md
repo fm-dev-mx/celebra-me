@@ -36,7 +36,8 @@ text is never an authorization.
 
 - Masters and watcher (d351, T442): fixed chats; setup is coordinator-only
   ([guide](../../docs/core/coordinator-board.md)).
-- Session id: Claude omits `--sesion`; Codex and Gemini pass it.
+- Session id: Every configured agent (Claude, Codex, and Gemini) passes `--sesion` in claim; a
+  non-agent actor (coordinator, owner) does not need it.
 - Closing summary (d178, T129) is the Handoff Contract (`.agent/plans/README.md`).
   `--nivel=validate:changed|type-check|ci`.
 - **Cross review (d183, d288)**: an agent other than the author reviews every PR at its exact head

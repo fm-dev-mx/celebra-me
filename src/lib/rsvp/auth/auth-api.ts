@@ -9,13 +9,17 @@ import {
 	type AuthRequestErrorKind,
 } from '@/lib/rsvp/core/errors';
 import { isRecord } from '@/lib/shared/data-utils';
+import {
+	buildTemporaryPasswordExpiry,
+	TEMP_PASSWORD_EXPIRES_KEY,
+} from '@/lib/rsvp/auth/temporary-password';
 
 export const AUTH_REQUEST_TIMEOUT_MS = 5_000;
 
 interface AuthApiOptions<T> {
 	operation: AuthOperation;
 	path: string;
-	method?: 'GET' | 'POST' | 'PUT';
+	method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
 	body?: unknown;
 	authToken?: string;
 	useServiceRole?: boolean;
@@ -144,7 +148,7 @@ async function authRequest<T>(options: AuthApiOptions<T>): Promise<T> {
 
 		let parsed: unknown;
 		try {
-			parsed = await response.json();
+			parsed = response.status === 204 ? null : await response.json();
 		} catch {
 			throw new AuthRequestError({
 				kind: timedOut ? 'timeout' : 'invalid_response',
@@ -198,7 +202,7 @@ async function authRequest<T>(options: AuthApiOptions<T>): Promise<T> {
 }
 
 function mapAuthAdminUser(user: AuthAdminUserRecord): AuthAdminUser {
-	const rawAlias = user.user_metadata?.login_alias;
+	const rawAlias = user.app_metadata?.login_alias;
 	return {
 		id: user.id,
 		email: user.email,
@@ -240,15 +244,148 @@ export async function refreshAccessToken(input: {
 	});
 }
 
-async function fetchAuthUsers(): Promise<AuthAdminUserRecord[]> {
-	const response = await authRequest({
-		operation: 'list_users',
-		path: 'admin/users?page=1&per_page=1000',
-		method: 'GET',
-		useServiceRole: true,
-		validate: isAuthUserListResponse,
+export async function revokeAuthSessions(input: {
+	accessToken: string;
+	scope: 'global' | 'others';
+}): Promise<void> {
+	await authRequest({
+		operation: 'sign_out',
+		path: `logout?scope=${input.scope}`,
+		authToken: input.accessToken,
+		validate: (value): value is null => value === null,
 	});
-	return response.users;
+}
+
+export interface MfaFactorRecord {
+	id: string;
+	status: string;
+	factor_type: string;
+	created_at?: string;
+}
+
+export interface MfaTotpEnrollment {
+	id: string;
+	qrCode: string;
+	secret: string;
+}
+
+export interface MfaVerifiedSession {
+	accessToken: string;
+	refreshToken: string;
+}
+
+const isMfaFactorRecord = (value: unknown): value is MfaFactorRecord =>
+	isRecord(value) &&
+	typeof value.id === 'string' &&
+	typeof value.status === 'string' &&
+	typeof value.factor_type === 'string';
+
+/** Lists the MFA factors of the account owning the (AAL1) access token. */
+export async function listMfaFactors(accessToken: string): Promise<MfaFactorRecord[]> {
+	const user = await authRequest({
+		operation: 'mfa_list_factors',
+		path: 'user',
+		method: 'GET',
+		authToken: accessToken,
+		validate: isRecord,
+	});
+	const factors = Array.isArray(user.factors) ? user.factors : [];
+	return factors.filter(isMfaFactorRecord);
+}
+
+export async function unenrollMfaFactor(accessToken: string, factorId: string): Promise<void> {
+	await authRequest({
+		operation: 'mfa_unenroll',
+		path: `factors/${encodeURIComponent(factorId)}`,
+		method: 'DELETE',
+		authToken: accessToken,
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars -- any body is acceptable here
+		validate: (_value): _value is unknown => true,
+	});
+}
+
+export async function enrollMfaTotp(accessToken: string): Promise<MfaTotpEnrollment> {
+	const response = await authRequest({
+		operation: 'mfa_enroll',
+		path: 'factors',
+		authToken: accessToken,
+		body: { factor_type: 'totp' },
+		validate: (value): value is Record<string, unknown> =>
+			isRecord(value) &&
+			typeof value.id === 'string' &&
+			isRecord(value.totp) &&
+			typeof value.totp.qr_code === 'string' &&
+			typeof value.totp.secret === 'string',
+	});
+	const totp = response.totp as { qr_code: string; secret: string };
+	return { id: response.id as string, qrCode: totp.qr_code, secret: totp.secret };
+}
+
+export async function challengeMfaFactor(accessToken: string, factorId: string): Promise<string> {
+	const response = await authRequest({
+		operation: 'mfa_challenge',
+		path: `factors/${encodeURIComponent(factorId)}/challenge`,
+		authToken: accessToken,
+		body: {},
+		validate: (value): value is { id: string } =>
+			isRecord(value) && typeof value.id === 'string',
+	});
+	return response.id;
+}
+
+export async function verifyMfaFactor(input: {
+	accessToken: string;
+	factorId: string;
+	challengeId: string;
+	code: string;
+}): Promise<MfaVerifiedSession> {
+	const response = await authRequest({
+		operation: 'mfa_verify',
+		path: `factors/${encodeURIComponent(input.factorId)}/verify`,
+		authToken: input.accessToken,
+		body: { challenge_id: input.challengeId, code: input.code },
+		validate: (value): value is { access_token: string; refresh_token: string } =>
+			isRecord(value) &&
+			typeof value.access_token === 'string' &&
+			typeof value.refresh_token === 'string',
+	});
+	return { accessToken: response.access_token, refreshToken: response.refresh_token };
+}
+
+const AUTH_USERS_PAGE_SIZE = 100;
+const AUTH_USERS_MAX_PAGES = 100;
+const ALIAS_CACHE_TTL_MS = 30_000;
+let aliasDirectory:
+	{ url: string; expiresAt: number; users: Promise<AuthAdminUserRecord[]> } | undefined;
+
+async function fetchAuthUsers(): Promise<AuthAdminUserRecord[]> {
+	const users: AuthAdminUserRecord[] = [];
+	for (let page = 1; page <= AUTH_USERS_MAX_PAGES; page++) {
+		const response = await authRequest({
+			operation: 'list_users',
+			path: `admin/users?page=${page}&per_page=${AUTH_USERS_PAGE_SIZE}`,
+			method: 'GET',
+			useServiceRole: true,
+			validate: isAuthUserListResponse,
+		});
+		users.push(...response.users);
+		if (response.users.length < AUTH_USERS_PAGE_SIZE) return users;
+	}
+	// Never resolve aliases or validate uniqueness against a truncated directory.
+	throw new Error('Auth user directory exceeded the pagination limit.');
+}
+
+function cachedAliasUsers(): Promise<AuthAdminUserRecord[]> {
+	const url = getSupabaseUrl();
+	if (!aliasDirectory || aliasDirectory.url !== url || aliasDirectory.expiresAt <= Date.now()) {
+		const users = fetchAuthUsers();
+		const entry = { url, expiresAt: Date.now() + ALIAS_CACHE_TTL_MS, users };
+		aliasDirectory = entry;
+		void users.catch(() => {
+			if (aliasDirectory === entry) aliasDirectory = undefined;
+		});
+	}
+	return aliasDirectory.users;
 }
 
 export async function findAuthUserByEmail(input: { email: string }): Promise<AuthAdminUser | null> {
@@ -260,16 +397,25 @@ export async function findAuthUserByEmail(input: { email: string }): Promise<Aut
 
 export async function findAuthUserByLoginIdentifier(input: {
 	identifier: string;
+	fresh?: boolean;
 }): Promise<AuthAdminUser | null> {
-	const users = await fetchAuthUsers();
+	const users = await (input.fresh ? fetchAuthUsers() : cachedAliasUsers());
 	const wanted = input.identifier.trim().toLowerCase();
-	const user = users.find((item) => {
+	const matches = users.filter((item) => {
 		const mapped = mapAuthAdminUser(item);
 		return (
 			mapped.login_alias === wanted || (mapped.email || '').trim().toLowerCase() === wanted
 		);
 	});
-	return user ? mapAuthAdminUser(user) : null;
+	if (input.fresh && matches.length > 1) {
+		throw new Error('Ambiguous login identifier; administrative alias allocation is blocked.');
+	}
+	if (matches.length !== 1) return null;
+	// Revalidate cached identities so a renamed or deleted alias never routes to its former owner.
+	const current = mapAuthAdminUser(await getAuthUserAdminById(matches[0].id));
+	return current.login_alias === wanted || current.email?.trim().toLowerCase() === wanted
+		? current
+		: null;
 }
 
 export async function listAuthUsers(input?: {
@@ -306,11 +452,15 @@ export async function createAuthUserByAdmin(input: {
 			email: input.email,
 			password: input.password,
 			email_confirm: true,
-			user_metadata: input.loginAlias ? { login_alias: input.loginAlias } : undefined,
-			app_metadata: { must_change_password: true },
+			app_metadata: {
+				...(input.loginAlias ? { login_alias: input.loginAlias } : {}),
+				must_change_password: true,
+				[TEMP_PASSWORD_EXPIRES_KEY]: buildTemporaryPasswordExpiry(),
+			},
 		},
 		validate: isCreateAuthUserResponse,
 	});
+	aliasDirectory = undefined;
 	return mapAuthAdminUser(extractAuthAdminUser(response));
 }
 
@@ -342,6 +492,11 @@ async function updateAuthUserAdmin(input: {
 		},
 	};
 	if (input.password !== undefined) body.password = input.password;
+	if (!input.mustChangePassword) {
+		delete body.app_metadata[TEMP_PASSWORD_EXPIRES_KEY];
+	} else if (input.password !== undefined) {
+		body.app_metadata[TEMP_PASSWORD_EXPIRES_KEY] = buildTemporaryPasswordExpiry();
+	}
 	if (input.passwordResetOperationId) {
 		body.user_metadata = {
 			...(existingUser.user_metadata || {}),
@@ -357,6 +512,7 @@ async function updateAuthUserAdmin(input: {
 		body,
 		validate: isCreateAuthUserResponse,
 	});
+	aliasDirectory = undefined;
 	return mapAuthAdminUser(extractAuthAdminUser(response));
 }
 
@@ -375,15 +531,15 @@ export async function adminUpdateManagedLoginAlias(input: {
 		body: {
 			email: input.email,
 			email_confirm: true,
-			user_metadata: {
-				...(existingUser.user_metadata || {}),
+			app_metadata: {
+				...(existingUser.app_metadata || {}),
 				login_alias: input.loginAlias,
 				...(input.operationId ? { login_alias_operation_id: input.operationId } : {}),
 			},
-			app_metadata: { ...(existingUser.app_metadata || {}) },
 		},
 		validate: isCreateAuthUserResponse,
 	});
+	aliasDirectory = undefined;
 	return mapAuthAdminUser(extractAuthAdminUser(response));
 }
 

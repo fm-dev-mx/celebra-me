@@ -7,6 +7,7 @@ import {
 	findAuthUserByLoginIdentifier,
 	getAuthUserByAccessToken,
 	refreshAccessToken,
+	revokeAuthSessions,
 	signInWithPassword,
 } from '@/lib/rsvp/auth/auth-api';
 import { AuthRequestError } from '@/lib/rsvp/core/errors';
@@ -26,6 +27,35 @@ describe('rsvp authApi', () => {
 		process.env = { ...originalEnv };
 		jest.useRealTimers();
 		jest.restoreAllMocks();
+	});
+
+	it.each(['global', 'others'] as const)(
+		'revokes %s sessions with a bodyless 204 response',
+		async (scope) => {
+			global.fetch = jest.fn().mockResolvedValue(new Response(null, { status: 204 }));
+			await expect(
+				revokeAuthSessions({ accessToken: 'session-token', scope }),
+			).resolves.toBeUndefined();
+			expect(global.fetch).toHaveBeenCalledWith(
+				`https://project.supabase.co/auth/v1/logout?scope=${scope}`,
+				expect.objectContaining({
+					method: 'POST',
+					headers: expect.objectContaining({
+						Authorization: 'Bearer session-token',
+						apikey: 'anon',
+					}),
+					signal: expect.any(AbortSignal),
+				}),
+			);
+		},
+	);
+
+	it('reports revocation failures without retrying', async () => {
+		global.fetch = jest.fn().mockResolvedValue(new Response(null, { status: 503 }));
+		await expect(
+			revokeAuthSessions({ accessToken: 'session-token', scope: 'others' }),
+		).rejects.toMatchObject({ operation: 'sign_out', status: 503, retryable: true });
+		expect(global.fetch).toHaveBeenCalledTimes(1);
 	});
 
 	it('signs in with the expected auth payload', async () => {
@@ -56,7 +86,7 @@ describe('rsvp authApi', () => {
 						{
 							id: 'u-admin',
 							email: 'admin@test.com',
-							user_metadata: { login_alias: 'admin' },
+							app_metadata: { login_alias: 'admin' },
 						},
 					],
 				}),
@@ -68,12 +98,20 @@ describe('rsvp authApi', () => {
 						{
 							id: 'u-admin',
 							email: 'admin@test.com',
-							user_metadata: { login_alias: 'admin' },
+							app_metadata: { login_alias: 'admin' },
 						},
 					],
 				}),
 			}) as unknown as typeof fetch;
 
+		(global.fetch as jest.Mock).mockResolvedValueOnce({
+			ok: true,
+			json: async () => ({
+				id: 'u-admin',
+				email: 'admin@test.com',
+				app_metadata: { login_alias: 'admin' },
+			}),
+		});
 		const user = await findAuthUserByEmail({
 			email: 'admin@test.com',
 		});
@@ -93,16 +131,18 @@ describe('rsvp authApi', () => {
 					id: 'u-created',
 					email: 'created@test.com',
 					created_at: '2026-04-01T00:00:00.000Z',
-					user_metadata: { login_alias: 'ximena_meza' },
+					app_metadata: { login_alias: 'ximena_meza' },
 				},
 			}),
 		}) as typeof fetch;
 
+		jest.useFakeTimers({ now: new Date('2026-04-01T12:00:00.000Z') });
 		const user = await createAuthUserByAdmin({
 			email: 'created@test.com',
 			password: 'TempPass123!',
 			loginAlias: 'ximena_meza',
 		});
+		jest.useRealTimers();
 
 		expect(global.fetch).toHaveBeenCalledWith(
 			'https://project.supabase.co/auth/v1/admin/users',
@@ -116,11 +156,10 @@ describe('rsvp authApi', () => {
 					email: 'created@test.com',
 					password: 'TempPass123!',
 					email_confirm: true,
-					user_metadata: {
-						login_alias: 'ximena_meza',
-					},
 					app_metadata: {
+						login_alias: 'ximena_meza',
 						must_change_password: true,
+						temp_password_expires_at: '2026-04-02T12:00:00.000Z',
 					},
 				}),
 			}),
@@ -131,6 +170,100 @@ describe('rsvp authApi', () => {
 			created_at: '2026-04-01T00:00:00.000Z',
 			login_alias: 'ximena_meza',
 		});
+	});
+
+	it('ignores user-controlled aliases, shares misses, and expires the directory cache', async () => {
+		process.env.SUPABASE_URL = 'https://cache.example.test';
+		jest.useFakeTimers();
+		global.fetch = jest.fn().mockImplementation(async () => ({
+			ok: true,
+			json: async () => ({
+				users: [{ id: 'attacker', user_metadata: { login_alias: 'victim' } }],
+			}),
+		}));
+		await expect(findAuthUserByLoginIdentifier({ identifier: 'victim' })).resolves.toBeNull();
+		await expect(findAuthUserByLoginIdentifier({ identifier: 'random' })).resolves.toBeNull();
+		expect(global.fetch).toHaveBeenCalledTimes(1);
+		jest.advanceTimersByTime(30_001);
+		await findAuthUserByLoginIdentifier({ identifier: 'victim' });
+		expect(global.fetch).toHaveBeenCalledTimes(2);
+	});
+
+	it('rejects duplicate aliases for login and blocks administrative allocation', async () => {
+		process.env.SUPABASE_URL = 'https://duplicates.example.test';
+		global.fetch = jest.fn().mockImplementation(async () => ({
+			ok: true,
+			json: async () => ({
+				users: ['first', 'second'].map((id) => ({
+					id,
+					app_metadata: { login_alias: 'alice' },
+				})),
+			}),
+		}));
+		await expect(findAuthUserByLoginIdentifier({ identifier: 'alice' })).resolves.toBeNull();
+		await expect(
+			findAuthUserByLoginIdentifier({ identifier: 'alice', fresh: true }),
+		).rejects.toThrow('Ambiguous login identifier');
+	});
+
+	it('paginates past 100 users and rejects a renamed cached alias', async () => {
+		process.env.SUPABASE_URL = 'https://pagination.example.test';
+		const target = {
+			id: 'owner',
+			email: 'owner@example.test',
+			app_metadata: { login_alias: 'alice' },
+		};
+		global.fetch = jest
+			.fn()
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					users: Array.from({ length: 100 }, (_, i) => ({ id: `u${i}` })),
+				}),
+			})
+			.mockResolvedValueOnce({ ok: true, json: async () => ({ users: [target] }) })
+			.mockResolvedValueOnce({ ok: true, json: async () => target })
+			.mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({ ...target, app_metadata: { login_alias: 'bob' } }),
+			});
+		await expect(findAuthUserByLoginIdentifier({ identifier: 'alice' })).resolves.toMatchObject(
+			{ id: 'owner' },
+		);
+		await expect(findAuthUserByLoginIdentifier({ identifier: 'alice' })).resolves.toBeNull();
+		expect(global.fetch).toHaveBeenNthCalledWith(
+			2,
+			expect.stringContaining('page=2&per_page=100'),
+			expect.anything(),
+		);
+		expect(global.fetch).toHaveBeenCalledTimes(4);
+	});
+
+	it('bounds ignored pagination, rejects partial matches, and retries after a failed cache load', async () => {
+		process.env.SUPABASE_URL = 'https://pagination-limit.example.test';
+		global.fetch = jest.fn().mockImplementation(async () => ({
+			ok: true,
+			json: async () => ({
+				users: Array.from({ length: 100 }, (_, i) => ({
+					id: `u${i}`,
+					app_metadata: { login_alias: i === 0 ? 'alice' : `alias${i}` },
+				})),
+			}),
+		}));
+		await expect(findAuthUserByLoginIdentifier({ identifier: 'alice' })).rejects.toThrow(
+			'Auth user directory exceeded the pagination limit.',
+		);
+		expect(global.fetch).toHaveBeenCalledTimes(100);
+		expect(global.fetch).toHaveBeenLastCalledWith(
+			expect.stringContaining('page=100&per_page=100'),
+			expect.anything(),
+		);
+		(global.fetch as jest.Mock).mockResolvedValue({
+			ok: true,
+			json: async () => ({ users: [] }),
+		});
+		await expect(findAuthUserByLoginIdentifier({ identifier: 'alice' })).resolves.toBeNull();
+		expect(global.fetch).toHaveBeenCalledTimes(101);
 	});
 
 	it('preserves unrelated app_metadata when resetting password and clearing must_change_password', async () => {
@@ -185,11 +318,13 @@ describe('rsvp authApi', () => {
 				}),
 			}) as typeof fetch;
 
+		jest.useFakeTimers({ now: new Date('2026-04-01T12:00:00.000Z') });
 		await adminResetAuthUserPassword({
 			userId: 'u-existing',
 			password: 'TempSecurePass!234',
 			mustChangePassword: true,
 		});
+		jest.useRealTimers();
 
 		expect(global.fetch).toHaveBeenNthCalledWith(
 			2,
@@ -201,6 +336,7 @@ describe('rsvp authApi', () => {
 						role: 'host_client',
 						custom_flag: 'keep-me',
 						must_change_password: true,
+						temp_password_expires_at: '2026-04-02T12:00:00.000Z',
 					},
 					password: 'TempSecurePass!234',
 				}),

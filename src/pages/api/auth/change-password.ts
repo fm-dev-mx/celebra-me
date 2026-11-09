@@ -4,6 +4,7 @@ import { errorResponse, parseJsonBody } from '@/lib/rsvp/core/http';
 import {
 	adminSetUserMustChangePassword,
 	signInWithPassword,
+	revokeAuthSessions,
 	updateUserPasswordUserAuth,
 } from '@/lib/rsvp/auth/auth-api';
 import { requireSessionContext } from '@/lib/rsvp/auth/auth';
@@ -21,12 +22,20 @@ import {
 } from '@/lib/rsvp/security/auth-security';
 import { ChangePasswordSchema } from '@/lib/schemas';
 import { logSecurityEvent } from '@/lib/server/security-events';
+import { safeErr } from '@/lib/server/safe-error';
 
 export const POST: APIRoute = async ({ request, url }) => {
 	try {
 		assertSameOrigin(request, url.origin);
 
 		const session = await requireSessionContext(request);
+		if (session.temporaryPasswordExpired) {
+			throw new ApiError(
+				401,
+				'unauthorized',
+				'La contraseña temporal venció. Solicite una nueva al administrador.',
+			);
+		}
 		await enforceAuthRateLimit({
 			request,
 			entityId: `change_password:${session.userId}`,
@@ -99,6 +108,13 @@ export const POST: APIRoute = async ({ request, url }) => {
 			email: session.email,
 			password: sanitizedNew,
 		});
+		// Keep the freshly issued session and revoke every previous session, including password verification.
+		try {
+			await revokeAuthSessions({ accessToken: freshAuth.access_token, scope: 'others' });
+		} catch (error) {
+			// The password already changed; preserve the new session instead of reporting a failed change.
+			console.error('[change-password] Other session revocation failed:', safeErr(error));
+		}
 
 		const payload = {
 			ok: true,

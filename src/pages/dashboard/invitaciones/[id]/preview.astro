@@ -26,6 +26,10 @@ import '@/styles/invitation/_preview-banner.scss';
 import { evaluatePreviewRevision } from '@/lib/editor/preview-revision';
 import { resolveInvitationTheme } from '@/lib/intake/services/invitation-preset-resolver';
 
+if (!Astro.locals.session?.isSuperAdmin) {
+	return Astro.redirect('/dashboard/invitados');
+}
+
 const { id } = Astro.params;
 Astro.response.headers.set('Cache-Control', 'no-store, private');
 

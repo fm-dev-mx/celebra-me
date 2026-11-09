@@ -4,8 +4,9 @@ import type { SessionContext } from '@/lib/rsvp/auth/auth';
 import { hasMfaEvidence } from '@/lib/rsvp/auth/auth-mfa-evidence';
 import { refreshAccessToken } from '@/lib/rsvp/auth/auth-api';
 import { normalizeAppRole } from '@/lib/rsvp/auth/roles';
+import { isTemporaryPasswordExpired } from '@/lib/rsvp/auth/temporary-password';
 import type { AppUserRole } from '@/interfaces/auth/session.interface';
-import { verifyTrustedDeviceToken } from '@/lib/rsvp/security/trusted-device';
+import { verifyTrustedDevice } from '@/lib/rsvp/security/trusted-device';
 import { setCsrfToken } from '@/lib/rsvp/security/csrf';
 import { ApiError, isAuthRequestError, isRejectedAuthCredential } from '@/lib/rsvp/core/errors';
 import { errorResponse } from '@/lib/rsvp/core/http';
@@ -15,10 +16,14 @@ import {
 	withPrivateNoStore,
 } from '@/lib/http/private-cache-path';
 import { isDevMfaBypassEnabled } from '@/lib/server/dev-mfa-bypass';
-import { isLocalProcess } from '@/lib/server/deploy-identity';
+import { isLocalProcess, isLocalSupabaseUrl } from '@/lib/server/deploy-identity';
+import { getEnv } from '@/lib/server/env';
 import { isPreviewMfaBypassEnabled } from '@/lib/server/preview-mfa-bypass';
 import { resolvePermanentRedirect, withSecurityHeaders } from '@/lib/server/security-headers';
-import { COOKIE_NAME_IGNORE_TRACKING } from '@/lib/tracking/internal-exclusion';
+import {
+	clearIgnoreTrackingCookie,
+	setIgnoreTrackingCookie,
+} from '@/lib/tracking/internal-exclusion';
 
 interface CookieStore {
 	get(name: string): { value: string } | undefined;
@@ -34,13 +39,35 @@ interface AuthContext {
 }
 
 const IDLE_TIMEOUT_SECONDS = 60 * 30;
-const MFA_TEMP_MAX_AGE_SECONDS = 60 * 5;
 const TRUST_DEVICE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
 const ADMIN_ONLY_PATHS = ['/dashboard/admin', '/dashboard/usuarios', '/dashboard/invitaciones'];
 
+/**
+ * Normalize a URL pathname for safe prefix comparison: decode percent-encoding,
+ * collapse consecutive slashes, resolve `.`/`..` segments, and lowercase.
+ */
+function normalizePathname(raw: string): string {
+	let decoded: string;
+	try {
+		decoded = decodeURIComponent(raw);
+	} catch {
+		decoded = raw;
+	}
+	const collapsed = decoded.replace(/\/\/+/g, '/');
+	const segments: string[] = [];
+	for (const seg of collapsed.split('/')) {
+		if (seg === '..') segments.pop();
+		else if (seg !== '.') segments.push(seg);
+	}
+	return segments.join('/').toLowerCase() || '/';
+}
+
 function isAdminOnlyPath(pathname: string): boolean {
-	return ADMIN_ONLY_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+	const normalized = normalizePathname(pathname);
+	return ADMIN_ONLY_PATHS.some(
+		(path) => normalized === path || normalized.startsWith(`${path}/`),
+	);
 }
 
 function shouldHandleAuth(pathname: string): boolean {
@@ -123,8 +150,6 @@ function finalizeMiddlewareResponse(pathname: string, response: Response): Respo
 	);
 }
 
-const IGNORE_TRACKING_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
-
 function buildCookieOptions(maxAge: number) {
 	return {
 		path: '/',
@@ -141,23 +166,22 @@ const INTERNAL_MARKER_PARAM = 'interno';
  * Marker link for the owner's devices: `?interno=1` sets the internal-traffic cookie without
  * signing in, `?interno=0` clears it. Either way the visit redirects to the same URL without the
  * param, so the marker never lands in analytics or a shared link.
+ * The dedicated `/interno` SSR route handles its own redirection and cookie assignment.
  */
 function handleInternalTrafficMarker(
 	url: URL,
 	method: string | undefined,
 	cookies: CookieStore,
 ): Response | null {
+	if (normalizePathname(url.pathname) === '/interno') return null;
 	if (method !== 'GET' && method !== 'HEAD') return null;
 	const marker = url.searchParams.get(INTERNAL_MARKER_PARAM);
 	if (marker !== '1' && marker !== '0') return null;
 
 	if (marker === '1') {
-		cookies.set(COOKIE_NAME_IGNORE_TRACKING, 'true', {
-			...buildCookieOptions(IGNORE_TRACKING_MAX_AGE_SECONDS),
-			httpOnly: false,
-		});
+		setIgnoreTrackingCookie(cookies, isLocalProcess());
 	} else {
-		cookies.delete(COOKIE_NAME_IGNORE_TRACKING, { path: '/' });
+		clearIgnoreTrackingCookie(cookies);
 	}
 
 	const target = new URL(url);
@@ -185,8 +209,13 @@ function clearIdleSessionCookies(cookies: CookieStore) {
 
 function isIdleSessionExpired(cookies: CookieStore, now: number) {
 	const idleSeenRaw = cookies.get('sb-idle-seen')?.value || '';
-	const idleSeenAt = Number.parseInt(idleSeenRaw, 10);
-	return Number.isFinite(idleSeenAt) && idleSeenAt > 0 && now - idleSeenAt > IDLE_TIMEOUT_SECONDS;
+	const idleSeenAt = Number(idleSeenRaw);
+	return (
+		!Number.isFinite(idleSeenAt) ||
+		idleSeenAt <= 0 ||
+		idleSeenAt > now ||
+		now - idleSeenAt > IDLE_TIMEOUT_SECONDS
+	);
 }
 
 async function refreshUserSession(cookies: CookieStore, refreshToken: string) {
@@ -213,26 +242,7 @@ async function refreshUserSession(cookies: CookieStore, refreshToken: string) {
 	}
 }
 
-function applyMfaSetupCookies(cookies: CookieStore, accessToken: string, refreshToken: string) {
-	cookies.set('sb-mfa-session', accessToken, {
-		path: '/dashboard/mfa-setup',
-		httpOnly: false,
-		sameSite: 'strict',
-		maxAge: MFA_TEMP_MAX_AGE_SECONDS,
-		secure: !isLocalProcess(),
-	});
-
-	if (refreshToken) {
-		cookies.set('sb-mfa-refresh', refreshToken, {
-			path: '/dashboard/mfa-setup',
-			httpOnly: false,
-			sameSite: 'strict',
-			maxAge: MFA_TEMP_MAX_AGE_SECONDS,
-			secure: !isLocalProcess(),
-		});
-	}
-}
-
+// The MFA setup now runs on /api/auth/mfa/*; these only retire cookies set by older deployments.
 function clearMfaSetupCookies(cookies: CookieStore) {
 	cookies.delete('sb-mfa-session', { path: '/dashboard/mfa-setup' });
 	cookies.delete('sb-mfa-refresh', { path: '/dashboard/mfa-setup' });
@@ -425,18 +435,18 @@ function authHtmlFailure(status: 500 | 502 | 503): Response {
 	return response;
 }
 
-function resolveAuthContext(
+async function resolveAuthContext(
 	cookies: CookieStore,
 	request: Request,
 	user: NonNullable<Awaited<ReturnType<typeof getSupabaseUserByAccessToken>>>,
 	accessToken: string,
-): AuthContext {
+): Promise<AuthContext> {
 	const role = normalizeAppRole(user.app_metadata?.role);
 	const hasMfa = hasMfaEvidence({ token: accessToken, amr: user.amr });
 	const trustCookie = cookies.get('sb-trust-device')?.value || '';
 	const trustedDevice =
 		role === 'super_admin' && trustCookie
-			? verifyTrustedDeviceToken({
+			? await verifyTrustedDevice({
 					token: trustCookie,
 					userId: user.id,
 					userAgent: request.headers.get('user-agent') || '',
@@ -479,10 +489,7 @@ function syncPostAuthCookies(
 	// Owner devices stop sending landing analytics and Meta events. The cookie is readable by
 	// the client tracker on purpose; the server ingestion reads the same flag.
 	if (authContext.role === 'super_admin') {
-		cookies.set(COOKIE_NAME_IGNORE_TRACKING, 'true', {
-			...buildCookieOptions(IGNORE_TRACKING_MAX_AGE_SECONDS),
-			httpOnly: false,
-		});
+		setIgnoreTrackingCookie(cookies, isLocalProcess());
 	}
 }
 
@@ -536,6 +543,26 @@ function handleUnauthenticatedResponse(
 	return url.pathname === '/login' ? null : privateRedirect(redirect, '/login');
 }
 
+function clearLegacyMfaCookies(cookies: CookieStore): void {
+	if (cookies.get('sb-mfa-session') || cookies.get('sb-mfa-refresh')) {
+		clearMfaSetupCookies(cookies);
+	}
+}
+
+/** A temporary password past its 24h window ends the session instead of letting it continue. */
+function rejectExpiredTemporaryPassword(
+	user: { app_metadata?: Record<string, unknown> },
+	url: URL,
+	cookies: CookieStore,
+	redirect: (path: string) => Response,
+): Response | null {
+	if (!isTemporaryPasswordExpired(user.app_metadata)) return null;
+	clearPrimaryAuthCookies(cookies);
+	const isApiRoute = url.pathname.startsWith('/api/dashboard');
+	if (!isApiRoute) return privateRedirect(redirect, '/login?reason=temporary_password_expired');
+	return handleUnauthenticatedResponse(url, isApiRoute, redirect);
+}
+
 async function handleProtectedAuthRequest(
 	url: URL,
 	cookies: CookieStore,
@@ -554,17 +581,25 @@ async function handleProtectedAuthRequest(
 		return null;
 	}
 
-	if (!isApiRoute && isIdleSessionExpired(cookies, now)) {
+	if (isIdleSessionExpired(cookies, now)) {
 		clearIdleSessionCookies(cookies);
+		if (isApiRoute) {
+			return errorResponse(
+				new ApiError(401, 'unauthorized', 'Su sesión ha expirado. Inicie sesión de nuevo.'),
+			);
+		}
 		return privateRedirect(redirect, '/login');
 	}
 
-	const { accessToken, refreshToken, user } = await resolveAuthenticatedUser(cookies);
+	const { accessToken, user } = await resolveAuthenticatedUser(cookies);
 	if (!user) {
 		return handleUnauthenticatedResponse(url, isApiRoute, redirect);
 	}
 
-	const authContext = resolveAuthContext(cookies, request, user, accessToken);
+	const expired = rejectExpiredTemporaryPassword(user, url, cookies, redirect);
+	if (expired) return expired;
+
+	const authContext = await resolveAuthContext(cookies, request, user, accessToken);
 	if (!authContext.role) {
 		clearPrimaryAuthCookies(cookies);
 		if (!isApiRoute)
@@ -588,9 +623,7 @@ async function handleProtectedAuthRequest(
 		return response;
 	}
 
-	if (authContext.role === 'super_admin' && !effectiveAdminStrongAuth) {
-		applyMfaSetupCookies(cookies, accessToken, refreshToken);
-	}
+	clearLegacyMfaCookies(cookies);
 
 	if (!isApiRoute) {
 		const redirectTarget = resolveAuthenticatedRedirect(
@@ -680,10 +713,19 @@ async function handleRequest(
 	return finalizeMiddlewareResponse(url.pathname, response);
 }
 
+/** Local Supabase origin for the report-only CSP, so local and CI storage images are allowed. */
+function resolveLocalSupabaseOrigin(): string | undefined {
+	const supabaseUrl = getEnv('SUPABASE_URL');
+	return supabaseUrl && isLocalSupabaseUrl(supabaseUrl) ? new URL(supabaseUrl).origin : undefined;
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
+	const headerOptions = { localSupabaseOrigin: resolveLocalSupabaseOrigin() };
 	const permanentRedirect = resolvePermanentRedirect(context.url);
-	if (permanentRedirect) return withSecurityHeaders(context.url.pathname, permanentRedirect);
+	if (permanentRedirect) {
+		return withSecurityHeaders(context.url.pathname, permanentRedirect, headerOptions);
+	}
 
 	const response = await handleRequest(context, next);
-	return withSecurityHeaders(context.url.pathname, response);
+	return withSecurityHeaders(context.url.pathname, response, headerOptions);
 });

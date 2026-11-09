@@ -92,6 +92,19 @@ class AuthBridgeApi {
 			throw new Error(getErrorMessage(data, 'Unable to sign out.'));
 		}
 	}
+
+	async logoutAllDevices(): Promise<void> {
+		const response = await fetch('/api/auth/logout-all', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			credentials: 'same-origin',
+		});
+
+		if (!response.ok) {
+			const data = await parseJsonSafe(response);
+			throw new Error(getErrorMessage(data, 'Unable to sign out of all devices.'));
+		}
+	}
 }
 
 export const authBridgeApi = new AuthBridgeApi();

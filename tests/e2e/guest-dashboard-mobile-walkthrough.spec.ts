@@ -199,7 +199,10 @@ async function openGuestDashboard(
 
 	await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
 	const token = await resolveAuthToken();
-	await page.context().addCookies([{ name: 'sb-access-token', value: token, url: baseURL }]);
+	await page.context().addCookies([
+		{ name: 'sb-access-token', value: token, url: baseURL },
+		{ name: 'sb-idle-seen', value: String(Math.floor(Date.now() / 1000)), url: baseURL },
+	]);
 
 	// GuestDashboardApp fetches guests from a mount effect; network idle alone cannot prove hydration.
 	await gotoAfterIslandEffect(page, ROUTE, '**/api/dashboard/guests?*');

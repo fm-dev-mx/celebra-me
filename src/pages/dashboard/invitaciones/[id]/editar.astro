@@ -5,6 +5,10 @@ import InvitationEditor from '@/components/dashboard/intake/editor/InvitationEdi
 import { getInvitationEditorContext } from '@/lib/intake/services/invitation-editor.service';
 import { toErrorMessage } from '@/lib/rsvp/core/errors';
 
+if (!Astro.locals.session?.isSuperAdmin) {
+	return Astro.redirect('/dashboard/invitados');
+}
+
 const rawId = Astro.params.id;
 
 if (!rawId) {

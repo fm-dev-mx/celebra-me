@@ -18,11 +18,7 @@ export function decodeJwtPayload(token: string): Record<string, unknown> | null 
 
 export function hasMfaEvidence(input: MfaEvidenceInput): boolean {
 	const hasMfaMethod = (input.amr || []).some(
-		(item) =>
-			item?.method === 'mfa' ||
-			item?.method === 'totp' ||
-			item?.method === 'otp' ||
-			item?.method === 'phone',
+		(item) => item?.method === 'mfa' || item?.method === 'totp',
 	);
 	if (hasMfaMethod) return true;
 

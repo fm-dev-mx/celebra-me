@@ -157,8 +157,15 @@ function excludeNewTablePermissionInitialization(sql: string, scanned: string): 
 		`^alter\\s+table\\s+${qualified}\\s+(?:enable|force)\\s+row\\s+level\\s+security$`,
 		'i',
 	);
+	// Partial indexes keep the guard narrow: the predicate may not hold parentheses or literals.
 	const createIndex = new RegExp(
-		`^create\\s+(?:unique\\s+)?index\\s+${identifier}\\s+on\\s+${qualified}\\s*\\([^()]*\\)$`,
+		`^create\\s+(?:unique\\s+)?index\\s+(?:if\\s+not\\s+exists\\s+)?${identifier}\\s+on\\s+(?:only\\s+)?${qualified}(?:\\s+using\\s+${identifier})?\\s*\\([^()]*\\)(?:\\s+where\\s+[^()';]*)?$`,
+		'i',
+	);
+	// Literals are already blanked to '' by normalizeSqlForRiskScan.
+	const commentTable = new RegExp(`^comment\\s+on\\s+table\\s+${qualified}\\s+is\\s+''$`, 'i');
+	const commentColumn = new RegExp(
+		`^comment\\s+on\\s+column\\s+${qualified}\\.${identifier}\\s+is\\s+''$`,
 		'i',
 	);
 	const grantFunction = new RegExp(
@@ -169,7 +176,14 @@ function excludeNewTablePermissionInitialization(sql: string, scanned: string): 
 		`^comment\\s+on\\s+function\\s+${qualified}(?:\\s*\\([^()]*\\))?\\s+is\\s+.*$`,
 		'i',
 	);
-	const preservedPatterns = [alterRls, createIndex, grantFunction, commentFunction] as const;
+	const preservedPatterns = [
+		alterRls,
+		createIndex,
+		grantFunction,
+		commentFunction,
+		commentTable,
+		commentColumn,
+	] as const;
 	let inTransaction = false;
 	const created = new Set<string>();
 	return scanned

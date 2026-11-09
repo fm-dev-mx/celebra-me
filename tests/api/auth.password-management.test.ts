@@ -6,6 +6,7 @@ import * as authApi from '@/lib/rsvp/auth/auth-api';
 import * as authorization from '@/lib/rsvp/auth/authorization';
 import * as auth from '@/lib/rsvp/auth/auth';
 import { ApiError, AuthRequestError } from '@/lib/rsvp/core/errors';
+import { resetRateLimitProviderForTests } from '@/lib/rsvp/security/rate-limit-provider';
 import { createMockRequest } from '../helpers/api-mocks';
 import * as mutationOperationService from '@/lib/intake/services/mutation-operation.service';
 import * as mutationOperationRepository from '@/lib/intake/repositories/mutation-operation.repository';
@@ -17,6 +18,7 @@ jest.mock('@/lib/rsvp/repositories/role-membership.repository', () => ({
 
 jest.mock('@/lib/rsvp/auth/auth-api', () => ({
 	signInWithPassword: jest.fn(),
+	revokeAuthSessions: jest.fn(),
 	updateUserPasswordUserAuth: jest.fn(),
 	adminSetUserMustChangePassword: jest.fn(),
 	adminResetAuthUserPassword: jest.fn(),
@@ -88,6 +90,8 @@ describe('Password Management & Recovery', () => {
 	>;
 
 	beforeEach(() => {
+		resetRateLimitProviderForTests();
+		jest.mocked(authApi.revokeAuthSessions).mockReset().mockResolvedValue(undefined);
 		jest.mocked(findAppUserRoleByUserIdService).mockResolvedValue({
 			userId: '550e8400-e29b-41d4-a716-446655440000',
 			role: 'host_client',
@@ -123,16 +127,16 @@ describe('Password Management & Recovery', () => {
 	});
 
 	describe('1. Temporary Password Generator Contract', () => {
-		it('generates short memorable Word-####! temporary passwords', () => {
+		it('generates 12+ character CSPRNG temporary passwords', () => {
 			const passwords = new Set<string>();
-			const pattern = /^[A-Z][a-z]+-\d{4}[!@#$%*]$/;
+			const pattern = /^[A-HJ-NP-Za-km-z2-9]{5}(-[A-HJ-NP-Za-km-z2-9]{5}){2}$/;
 
 			for (let i = 0; i < 20; i += 1) {
 				const password = generateTemporaryPassword();
 				passwords.add(password);
 
 				expect(password).toMatch(pattern);
-				expect(password.length).toBeLessThanOrEqual(16);
+				expect(password.length).toBeGreaterThanOrEqual(12);
 				expect(password).not.toContain('client2026');
 				expect(password).not.toContain('celebra2026');
 			}
@@ -173,7 +177,7 @@ describe('Password Management & Recovery', () => {
 			const body = await response.json();
 			expect(body.userId).toBe('550e8400-e29b-41d4-a716-446655440000');
 			expect(body.credentials.temporaryPassword).toBeDefined();
-			expect(body.credentials.temporaryPassword).toMatch(/^[A-Z][a-z]+-\d{4}[!@#$%*]$/);
+			expect(body.credentials.temporaryPassword).toMatch(/^[A-Za-z2-9-]{17}$/);
 			expect(adminResetAuthUserPasswordMock).toHaveBeenCalledWith(
 				expect.objectContaining({
 					userId: '550e8400-e29b-41d4-a716-446655440000',
@@ -236,66 +240,115 @@ describe('Password Management & Recovery', () => {
 	});
 
 	describe('3. Authenticated Password Change API (/api/auth/change-password)', () => {
-		it('successfully changes password and clears must_change_password flag', async () => {
-			requireSessionContextMock.mockResolvedValue({
-				userId: 'user-123',
-				email: 'client@example.com',
-				accessToken: 'current-token',
-				role: 'host_client',
-				isSuperAdmin: false,
-				mustChangePassword: true,
-			});
+		let errorLog: jest.SpyInstance;
+		beforeEach(() => {
+			errorLog = jest.spyOn(console, 'error').mockImplementation(() => {});
+		});
+		afterEach(() => {
+			errorLog.mockRestore();
+		});
 
-			signInWithPasswordMock
-				.mockResolvedValueOnce({
-					access_token: 'valid-current-token',
-					refresh_token: 'refresh-token',
-					user: { id: 'user-123', email: 'client@example.com' },
-				})
-				.mockResolvedValueOnce({
-					access_token: 'fresh-new-token',
-					refresh_token: 'fresh-refresh-token',
-					user: { id: 'user-123', email: 'client@example.com' },
+		it.each([
+			['success', undefined],
+			[
+				'provider rejection',
+				new AuthRequestError({ operation: 'sign_out', kind: 'http', status: 503 }),
+			],
+			['timeout', new AuthRequestError({ operation: 'sign_out', kind: 'timeout' })],
+			['unexpected failure', new Error('sensitive-provider-details')],
+		])(
+			'issues the new session after changing the password despite revocation result: %s',
+			async (_result, revocationError) => {
+				requireSessionContextMock.mockResolvedValue({
+					userId: 'user-123',
+					email: 'client@example.com',
+					accessToken: 'current-token',
+					role: 'host_client',
+					isSuperAdmin: false,
+					mustChangePassword: true,
 				});
 
-			updateUserPasswordUserAuthMock.mockResolvedValue({
-				id: 'user-123',
-				email: 'client@example.com',
-			});
+				signInWithPasswordMock
+					.mockResolvedValueOnce({
+						access_token: 'valid-current-token',
+						refresh_token: 'refresh-token',
+						user: { id: 'user-123', email: 'client@example.com' },
+					})
+					.mockResolvedValueOnce({
+						access_token: 'fresh-new-token',
+						refresh_token: 'fresh-refresh-token',
+						user: { id: 'user-123', email: 'client@example.com' },
+					});
 
-			adminSetUserMustChangePasswordMock.mockResolvedValue({
-				id: 'user-123',
-				email: 'client@example.com',
-			});
+				updateUserPasswordUserAuthMock.mockResolvedValue({
+					id: 'user-123',
+					email: 'client@example.com',
+				});
 
-			const response = await changePassword({
-				request: createMockRequest(
-					{
-						currentPassword: 'CurrentTempPass123!',
-						newPassword: 'NewSecurePassword2026!',
-						confirmPassword: 'NewSecurePassword2026!',
-					},
-					{ Origin: 'http://localhost:4321', Host: 'localhost:4321' },
-					'http://localhost:4321/api/auth/change-password',
-				),
-				url: new URL('http://localhost:4321/api/auth/change-password'),
-			} as never);
+				adminSetUserMustChangePasswordMock.mockResolvedValue({
+					id: 'user-123',
+					email: 'client@example.com',
+				});
+				if (revocationError)
+					jest.mocked(authApi.revokeAuthSessions).mockRejectedValueOnce(revocationError);
 
-			expect(response.status).toBe(200);
-			const body = await response.json();
-			expect(body.ok).toBe(true);
-			expect(body.next).toBe('/dashboard/invitados');
+				const response = await changePassword({
+					request: createMockRequest(
+						{
+							currentPassword: 'CurrentTempPass123!',
+							newPassword: 'NewSecurePassword2026!',
+							confirmPassword: 'NewSecurePassword2026!',
+						},
+						{ Origin: 'http://localhost:4321', Host: 'localhost:4321' },
+						'http://localhost:4321/api/auth/change-password',
+					),
+					url: new URL('http://localhost:4321/api/auth/change-password'),
+				} as never);
 
-			expect(updateUserPasswordUserAuthMock).toHaveBeenCalledWith({
-				accessToken: 'current-token',
-				password: 'NewSecurePassword2026!',
-			});
+				expect(response.status).toBe(200);
+				const body = await response.json();
+				expect(body.ok).toBe(true);
+				expect(body.message).toBe('Contraseña actualizada con éxito.');
+				expect(body.next).toBe('/dashboard/invitados');
+				expect(signInWithPasswordMock).toHaveBeenLastCalledWith({
+					email: 'client@example.com',
+					password: 'NewSecurePassword2026!',
+				});
+				expect(authApi.revokeAuthSessions).toHaveBeenCalledTimes(1);
+				expect(authApi.revokeAuthSessions).toHaveBeenCalledWith({
+					accessToken: 'fresh-new-token',
+					scope: 'others',
+				});
+				expect(response.headers.get('set-cookie')).toContain(
+					'sb-access-token=fresh-new-token',
+				);
+				expect(response.headers.get('set-cookie')).toContain(
+					'sb-refresh-token=fresh-refresh-token',
+				);
+				expect(response.headers.get('set-cookie')).toContain('sb-idle-seen=');
+				if (revocationError) {
+					expect(errorLog).toHaveBeenCalledWith(
+						'[change-password] Other session revocation failed:',
+						{ code: expect.any(String), message: expect.any(String) },
+					);
+					expect(JSON.stringify(errorLog.mock.calls)).not.toContain(
+						'sensitive-provider-details',
+					);
+				} else {
+					expect(errorLog).not.toHaveBeenCalled();
+				}
 
-			expect(adminSetUserMustChangePasswordMock).toHaveBeenCalledWith({
-				userId: 'user-123',
-				mustChangePassword: false,
-			});
-		});
+				expect(updateUserPasswordUserAuthMock).toHaveBeenCalledWith({
+					accessToken: 'current-token',
+					password: 'NewSecurePassword2026!',
+				});
+
+				expect(adminSetUserMustChangePasswordMock).toHaveBeenCalledWith({
+					userId: 'user-123',
+					mustChangePassword: false,
+				});
+			},
+		);
 
 		it('rejects password change when current password is incorrect', async () => {
 			requireSessionContextMock.mockResolvedValue({
@@ -327,6 +380,35 @@ describe('Password Management & Recovery', () => {
 			expect(response.status).toBe(401);
 			const body = await response.json();
 			expect(body.error.message).toBe('La contraseña actual es incorrecta.');
+		});
+
+		it('rejects password change once the temporary password has expired', async () => {
+			requireSessionContextMock.mockResolvedValue({
+				userId: 'user-123',
+				email: 'client@example.com',
+				accessToken: 'current-token',
+				role: 'host_client',
+				isSuperAdmin: false,
+				mustChangePassword: true,
+				temporaryPasswordExpired: true,
+			});
+
+			const response = await changePassword({
+				request: createMockRequest(
+					{
+						currentPassword: 'TempPassword123!',
+						newPassword: 'NewSecurePassword2026!',
+						confirmPassword: 'NewSecurePassword2026!',
+					},
+					{ Origin: 'http://localhost:4321', Host: 'localhost:4321' },
+					'http://localhost:4321/api/auth/change-password',
+				),
+				url: new URL('http://localhost:4321/api/auth/change-password'),
+			} as never);
+
+			expect(response.status).toBe(401);
+			expect(updateUserPasswordUserAuthMock).not.toHaveBeenCalled();
+			expect(adminSetUserMustChangePasswordMock).not.toHaveBeenCalled();
 		});
 
 		it('rejects password change when password confirmation does not match', async () => {

@@ -270,6 +270,28 @@ the exact promoted deployment is `VERIFIED`. Do not force-update an existing tag
 
 ## Database-dependent releases
 
+### Protected login aliases
+
+Before activating code that reads login aliases exclusively from `app_metadata`, the owner must
+complete the alias backfill in the target environment. Run `pnpm auth:migrate-login-alias`
+(dry-run), resolve any duplicate aliases, then apply and verify the backfill before activation.
+Local and Preview use `pnpm auth:migrate-login-alias --apply` with their respective environment
+credentials supplied externally. Do not put credentials in the PR or release evidence.
+
+Production requires the separately authorized owner workflow for the equivalent
+`pnpm auth:migrate-login-alias --apply` operation. The script intentionally rejects direct
+Production apply; this prerequisite does not authorize bypassing that guard. If the owner workflow
+or successful backfill evidence is unavailable, keep activation blocked. Record the target,
+successful migration verification and ordering in both the application PR and release handoff. There
+is no runtime fallback to user-editable `user_metadata` aliases; activating first prevents
+unmigrated hosts from logging in by alias.
+
+The login throttle also has operational limits: the identifier/account bucket (10 attempts per 900
+seconds, without IP) lets a third party temporarily block a known host's login. The IP bucket (30
+per 600 seconds) and account buckets use per-instance memory because Workers rate-limit bindings do
+not support those windows. Limits are not shared across isolates, and the missing binding warning is
+emitted once per isolate in Production.
+
 When application code depends on a migration, use the staged contract order:
 
 1. Apply and validate the `expand` migration against local/Preview environments.

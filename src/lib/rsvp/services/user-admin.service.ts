@@ -24,7 +24,7 @@ import {
 import type { UserAssignedEventDTO, UserListItemDTO } from '@/lib/dashboard/dto/users';
 import { listAllEventsService } from '@/lib/rsvp/repositories/event.repository';
 import { logAdminAction, logAdminActionStrict } from '@/lib/rsvp/services/audit-logger.service';
-import { createHash, createHmac, randomBytes, randomInt } from 'node:crypto';
+import { createHash, randomBytes, randomInt } from 'node:crypto';
 import { sanitize } from '@/lib/rsvp/core/utils';
 import { ApiError, isAuthRequestError } from '@/lib/rsvp/core/errors';
 import {
@@ -40,14 +40,9 @@ import {
 	normalizeHostLoginAlias,
 } from '@/lib/auth/login-alias';
 import type { InvitationMutationCommandContext } from '@/lib/intake/mutations/command-context';
-import {
-	TEMP_PASSWORD_SYMBOLS,
-	TEMP_PASSWORD_WORDS,
-} from '@/lib/rsvp/services/user-admin-passwords';
 import { createMutationOutcome, type MutationOutcome } from '@/lib/intake/mutations/outcome';
 import { recordInvitationMutationOutcome } from '@/lib/intake/services/mutation-operation.service';
 import { findMutationOperationReceipt } from '@/lib/intake/repositories/mutation-operation.repository';
-import { getSupabaseServiceRoleKey } from '@/lib/server/supabase-credentials';
 
 export async function listAdminUsers(input?: {
 	page?: number;
@@ -114,7 +109,7 @@ export async function changeUserRoleAdmin(input: {
 	const existing = await findAppUserRoleByUserIdService(userId);
 	const next = await upsertUserRoleService({ userId, role });
 
-	await logAdminAction({
+	await logAdminActionStrict({
 		actorId: sanitize(input.actorUserId, 120),
 		action: 'change_user_role',
 		targetTable: 'app_user_roles',
@@ -132,30 +127,30 @@ export async function changeUserRoleAdmin(input: {
 	};
 }
 
+const TEMP_PASSWORD_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+const TEMP_PASSWORD_GROUPS = 3;
+const TEMP_PASSWORD_GROUP_LENGTH = 5;
+
 /**
- * Generates a short, memorable temporary password using CSPRNG.
- * Format: Word-####! (easy to dictate; change required on first login).
+ * Generates a random temporary password from the CSPRNG: three dash-separated groups of five
+ * unambiguous characters (17 characters, about 85 bits). It is never derived from any secret, so
+ * it cannot be recomputed later; the change is forced on first login and the password expires.
  */
 export function generateTemporaryPassword(): string {
-	const raw = TEMP_PASSWORD_WORDS[randomInt(0, TEMP_PASSWORD_WORDS.length)];
-	const word = raw.charAt(0).toUpperCase() + raw.slice(1);
-	const digits = String(randomInt(0, 10_000)).padStart(4, '0');
-	const symbol = TEMP_PASSWORD_SYMBOLS[randomInt(0, TEMP_PASSWORD_SYMBOLS.length)];
-	return `${word}-${digits}${symbol}`;
-}
-
-export function deriveTemporaryPasswordForOperation(
-	operationId: string,
-	secret = getSupabaseServiceRoleKey(),
-): string {
-	const digest = createHmac('sha256', secret)
-		.update(`celebra-me:password-reset:${operationId}`)
-		.digest();
-	const raw = TEMP_PASSWORD_WORDS[digest.readUInt16BE(0) % TEMP_PASSWORD_WORDS.length]!;
-	const word = raw.charAt(0).toUpperCase() + raw.slice(1);
-	const digits = String(digest.readUInt16BE(2) % 10_000).padStart(4, '0');
-	const symbol = TEMP_PASSWORD_SYMBOLS[digest[4]! % TEMP_PASSWORD_SYMBOLS.length]!;
-	return `${word}-${digits}${symbol}`;
+	for (;;) {
+		const groups: string[] = [];
+		for (let g = 0; g < TEMP_PASSWORD_GROUPS; g += 1) {
+			let group = '';
+			for (let i = 0; i < TEMP_PASSWORD_GROUP_LENGTH; i += 1) {
+				group += TEMP_PASSWORD_ALPHABET[randomInt(0, TEMP_PASSWORD_ALPHABET.length)];
+			}
+			groups.push(group);
+		}
+		const password = groups.join('-');
+		if (/[A-Z]/.test(password) && /[a-z]/.test(password) && /[0-9]/.test(password)) {
+			return password;
+		}
+	}
 }
 
 async function recordIdentityMutation(input: {
@@ -225,7 +220,7 @@ async function reserveManagedLoginAlias(seed?: string): Promise<string> {
 
 	for (const candidate of candidates) {
 		const [existingByIdentifier, existingByEmail] = await Promise.all([
-			findAuthUserByLoginIdentifier({ identifier: candidate }),
+			findAuthUserByLoginIdentifier({ identifier: candidate, fresh: true }),
 			findAuthUserByEmail({ email: buildManagedHostEmail(candidate) }),
 		]);
 		if (!existingByIdentifier && !existingByEmail) {
@@ -236,7 +231,7 @@ async function reserveManagedLoginAlias(seed?: string): Promise<string> {
 	for (let attempt = 0; attempt < 5; attempt += 1) {
 		const candidate = generateManagedLoginAlias();
 		const [existingByIdentifier, existingByEmail] = await Promise.all([
-			findAuthUserByLoginIdentifier({ identifier: candidate }),
+			findAuthUserByLoginIdentifier({ identifier: candidate, fresh: true }),
 			findAuthUserByEmail({ email: buildManagedHostEmail(candidate) }),
 		]);
 		if (!existingByIdentifier && !existingByEmail) {
@@ -351,7 +346,8 @@ export async function resetUserPasswordAdmin(input: {
 	assertAccountAccess(roleRecord?.role ?? null, existingAuth.app_metadata?.role);
 
 	const rootOperationId = input.credentialOperationId;
-	const temporaryPassword = deriveTemporaryPasswordForOperation(rootOperationId);
+	// Random, never recomputable: a replayed operation cannot show the password again.
+	const temporaryPassword = generateTemporaryPassword();
 	const completedSteps: string[] = [];
 	let authAlreadyApplied: boolean;
 	try {
@@ -421,7 +417,7 @@ export async function resetUserPasswordAdmin(input: {
 		});
 		return {
 			userId,
-			credentials: { temporaryPassword },
+			...(authAlreadyApplied ? {} : { credentials: { temporaryPassword } }),
 			outcome: createMutationOutcome({
 				operationId: input.commandContext.operationId,
 				status: 'partial',
@@ -442,7 +438,7 @@ export async function resetUserPasswordAdmin(input: {
 	if (!receiptPersisted) {
 		return {
 			userId,
-			credentials: { temporaryPassword },
+			...(authAlreadyApplied ? {} : { credentials: { temporaryPassword } }),
 			outcome: createMutationOutcome({
 				operationId: input.commandContext.operationId,
 				status: 'partial',
@@ -455,7 +451,7 @@ export async function resetUserPasswordAdmin(input: {
 	}
 	return {
 		userId,
-		credentials: { temporaryPassword },
+		...(authAlreadyApplied ? {} : { credentials: { temporaryPassword } }),
 		outcome: createMutationOutcome({
 			operationId: input.commandContext.operationId,
 			status,
@@ -522,12 +518,12 @@ export async function updateUserLoginAliasAdmin(input: {
 
 	const existingAuth = await getAuthUserAdminById(userId);
 	const existingMappedAlias =
-		typeof existingAuth.user_metadata?.login_alias === 'string'
-			? existingAuth.user_metadata.login_alias.trim().toLowerCase()
+		typeof existingAuth.app_metadata?.login_alias === 'string'
+			? existingAuth.app_metadata.login_alias.trim().toLowerCase()
 			: undefined;
 	const existingOperationId =
-		typeof existingAuth.user_metadata?.login_alias_operation_id === 'string'
-			? existingAuth.user_metadata.login_alias_operation_id
+		typeof existingAuth.app_metadata?.login_alias_operation_id === 'string'
+			? existingAuth.app_metadata.login_alias_operation_id
 			: null;
 
 	if (!isManagedHostEmail(existingAuth.email)) {
@@ -557,7 +553,7 @@ export async function updateUserLoginAliasAdmin(input: {
 	try {
 		if (!authAlreadyApplied) {
 			const [existingByIdentifier, existingByEmail] = await Promise.all([
-				findAuthUserByLoginIdentifier({ identifier: requestedAlias }),
+				findAuthUserByLoginIdentifier({ identifier: requestedAlias, fresh: true }),
 				findAuthUserByEmail({ email: targetEmail }),
 			]);
 			if (

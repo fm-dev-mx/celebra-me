@@ -1,5 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
-
 export interface MfaFactor {
 	id: string;
 	status: 'verified' | 'unverified';
@@ -53,22 +51,6 @@ export function getMfaElements(): MfaElements | null {
 	};
 }
 
-export function getCookie(name: string) {
-	const value = `; ${document.cookie}`;
-	const parts = value.split(`; ${name}=`);
-	return parts.length === 2 ? (parts.pop()?.split(';').shift() ?? null) : null;
-}
-
-export function createMfaClient(url: string, key: string) {
-	return createClient(url, key, {
-		auth: {
-			autoRefreshToken: false,
-			persistSession: false,
-			detectSessionInUrl: false,
-		},
-	});
-}
-
 export function pickLatestVerifiedTotpFactor(allFactors: MfaFactor[]) {
 	const verifiedTotp = allFactors.filter(
 		(item) => item.status === 'verified' && item.factor_type === 'totp',
@@ -110,33 +92,53 @@ export function buildMfaQrImageSrc(qrCode: string) {
 	return `data:image/svg+xml;utf-8,${encodeURIComponent(normalized)}`;
 }
 
-export async function syncMfaSession(accessToken: string, refreshToken?: string) {
-	const response = await fetch('/api/auth/sync-session', {
+export interface MfaChallenge {
+	mode: 'enroll' | 'verify';
+	factorId: string;
+	challengeId: string;
+	qrCode?: string;
+	secret?: string;
+}
+
+async function postMfa<T>(
+	path: string,
+	body: Record<string, unknown>,
+	fallback: string,
+): Promise<T> {
+	const response = await fetch(path, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({
-			accessToken,
-			refreshToken,
-		}),
+		credentials: 'same-origin',
+		body: JSON.stringify(body),
 	});
-
-	if (response.ok) {
-		return;
-	}
-
+	let payload: { message?: string; error?: { message?: string } } = {};
 	try {
-		const payload = (await response.json()) as { message?: string };
-		throw new Error(
-			`sync-session: ${payload.message || 'No se pudo sincronizar la sesión MFA.'}`,
-		);
-	} catch (error) {
-		if (error instanceof Error && error.message) {
-			throw error;
-		}
-		throw new Error('sync-session: No se pudo sincronizar la sesión MFA.', {
-			cause: error,
-		});
+		payload = await response.json();
+	} catch {
+		// keep the fallback message
 	}
+	if (!response.ok) {
+		throw new Error(payload.message || payload.error?.message || fallback);
+	}
+	return payload as T;
+}
+
+/** Asks the server to prepare the TOTP step; the session tokens stay in httpOnly cookies. */
+export function startMfaChallenge(): Promise<MfaChallenge> {
+	return postMfa<MfaChallenge>(
+		'/api/auth/mfa/enroll',
+		{},
+		'No se pudo preparar la verificación en dos pasos.',
+	);
+}
+
+/** Sends the TOTP code to the server, which verifies it and elevates the session cookies. */
+export async function verifyMfaCode(input: {
+	factorId: string;
+	challengeId?: string;
+	code: string;
+}): Promise<void> {
+	await postMfa('/api/auth/mfa/verify', input, 'No se pudo validar el código.');
 }
 
 export function getMfaErrorMessage(error: unknown): string {

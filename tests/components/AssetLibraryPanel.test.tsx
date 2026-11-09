@@ -153,6 +153,9 @@ describe('AssetLibraryPanel', () => {
 		const editButton = screen.getByLabelText('Editar nombre: Foto 1');
 		fireEvent.click(editButton);
 
+		const labelText = screen.getByText('Nombre visible');
+		expect(labelText).toHaveClass('sr-only');
+
 		const input = screen.getByLabelText('Nombre visible');
 		fireEvent.change(input, { target: { value: 'Foto renombrada' } });
 

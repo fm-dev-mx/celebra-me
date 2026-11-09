@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from '@/lib/schemas/zod-jitless';
 import {
 	CONSENT_DECIDED_AT_PATTERN,
 	normalizeConsentSnapshot,

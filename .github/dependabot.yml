@@ -27,12 +27,16 @@ updates:
           # `vite` moves with Astro: a root pin older than Astro's own vite installs two copies, and
           # the Cloudflare plugin's rolldown `esmExternalRequirePlugin` from the other copy is
           # silently ignored, leaving `require("fs")` in the Worker bundle (HTTP 500).
+          # `wrangler` moves with `@cloudflare/vite-plugin`, which asserts a minimum wrangler at
+          # config load: bumping the plugin alone stops Astro from loading its config.
           astro-platform:
               patterns:
                   - 'vite'
                   - 'astro'
                   - 'astro-*'
                   - '@astrojs/*'
+                  - '@cloudflare/*'
+                  - 'wrangler'
               update-types:
                   - 'minor'
                   - 'patch'
