@@ -163,7 +163,7 @@ describe('native permission adapters', () => {
 		expect(out.wrote).toBe(false);
 	});
 
-	it('refuses parent directory junctions/symlinks', () => {
+	it('skips linked parent directories with a warning and keeps other agents', () => {
 		const dir = home();
 		const external = home();
 		fs.symlinkSync(
@@ -171,8 +171,11 @@ describe('native permission adapters', () => {
 			path.join(dir, '.claude'),
 			process.platform === 'win32' ? 'junction' : 'dir',
 		);
-		expect(cli(dir, '--apply').stderr).toContain('Linked configuration refused');
+		const result = cli(dir, '--apply');
+		expect(result.status).toBe(0);
+		expect(result.stderr).toContain('Linked configuration skipped');
 		expect(fs.readdirSync(external)).toEqual([]);
+		expect(fs.readdirSync(dir).length).toBeGreaterThan(1);
 	});
 
 	it('rejects contradictory modes, unknown options and policy injection', () => {

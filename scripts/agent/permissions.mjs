@@ -220,13 +220,13 @@ function mergePermissions(before, generated) {
 	return { after: JSON.stringify(settings, null, 2) + '\n', added, removed };
 }
 
-/** Never follow links/junctions, including parent directories, into another configuration. */
+/** Never follow links/junctions, including parent directories: returns null so the caller skips it. */
 function safeTarget(home, relative) {
 	let target = path.resolve(home);
 	for (const part of ['', ...relative.split('/')]) {
 		target = path.join(target, part);
 		if (fs.existsSync(target) && fs.lstatSync(target).isSymbolicLink()) {
-			throw new Error(`Linked configuration refused: ${relative}`);
+			return null;
 		}
 	}
 	if (fs.existsSync(target) && !fs.lstatSync(target).isFile()) {
@@ -240,8 +240,12 @@ export function planPermissions({
 	policy = JSON.parse(fs.readFileSync(POLICY, 'utf8')),
 } = {}) {
 	const compiled = compilePolicy(policy);
-	return Object.entries(TARGETS).map(([adapter, relative]) => {
+	return Object.entries(TARGETS).flatMap(([adapter, relative]) => {
 		const target = safeTarget(home, relative);
+		if (target === null) {
+			process.stderr.write(`Linked configuration skipped: ${relative}\n`);
+			return [];
+		}
 		const exists = fs.existsSync(target);
 		const before = exists ? fs.readFileSync(target, 'utf8') : '';
 		if (adapter === 'codex' || adapter === 'gemini') {
@@ -307,6 +311,7 @@ export function applyPermissions(plans, home = os.homedir()) {
 	const verify = (p) => {
 		const target = safeTarget(home, p.relative);
 		if (
+			target === null ||
 			target !== p.target ||
 			fs.existsSync(target) !== p.exists ||
 			(p.exists && fs.readFileSync(target, 'utf8') !== p.before)
