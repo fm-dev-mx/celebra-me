@@ -12,10 +12,12 @@ pnpm auth:migrate-login-alias --apply
 ```
 
 Apply accepts only the canonical Local and Preview API identities. Production and unknown hosted
-targets are rejected before any API call in apply mode. Production remains dry-run only here: its
-Auth backfill must first be integrated with the exclusive `pnpm prod:apply` owner workflow,
-including release evidence, backup coverage, and the owner gate. Do not activate alias-only login in
-Production until that integration and backfill are complete.
+targets are rejected before any API call in apply mode. Production remains dry-run only here: the
+owner applies its backfill through `pnpm prod:apply -- --patch` with
+`scripts/manual/production-patches/20261109_auth_login_alias_app_metadata_backfill.sql`, which adds
+the plan review, backup coverage, and the owner gate (see "Protected login aliases" in
+[`docs/core/release-process.md`](../../docs/core/release-process.md)). Do not activate alias-only
+login in Production until that backfill is complete.
 
 The default is dry-run. Review the target and existing alias ownership before applying: legacy user
 metadata was user-writable and cannot prove legitimate ownership. Duplicate effective aliases block

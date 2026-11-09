@@ -196,7 +196,7 @@ production patches.
 -- @purpose: one sentence describing the production correction
 -- @env: production
 -- @ticket: issue, PR, incident, or operator note reference
--- @tables: comma-separated public tables touched
+-- @tables: comma-separated public tables touched (auth.users is the only other table allowed)
 -- @operation: update | insert | delete | select-only
 -- @expected-rows-min: 0
 -- @expected-rows-max: 0
@@ -212,7 +212,8 @@ production patches.
 - `@env` must be exactly `production`.
 - `@ticket` must point to the review, incident, or operator record that approved preparing the
   patch.
-- `@tables` must name every table the SQL could touch.
+- `@tables` must name every table the SQL could touch. Only `public.<table>` and `auth.users` are
+  patchable; the linter rejects any other schema.
 - `@operation` must match the highest-risk operation in the file.
 - `@expected-rows-min` and `@expected-rows-max` must bound the intended row count.
 - `@requires-backup` must be `true`.

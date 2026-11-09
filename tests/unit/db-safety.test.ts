@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import {
 	lintProductionPatchSql,
 	parseSqlManifest,
@@ -258,6 +259,67 @@ update public.example set name = 'safe' where name is distinct from 'safe';
 		expect(result.errors).toContain(
 			'@dry-run-query must include the mutation IS DISTINCT FROM predicate semantics.',
 		);
+	});
+
+	const authPatch = (table: string, statement: string) => `
+-- @script-id: auth-metadata
+-- @purpose: Correct Auth metadata
+-- @env: production
+-- @ticket: OPS-1
+-- @tables: ${table}
+-- @operation: update
+-- @expected-rows-min: 1
+-- @expected-rows-max: 2
+-- @requires-backup: true
+-- @dry-run-query: select id from ${table} where raw_app_meta_data->>'login_alias' is null
+-- @rollback: restore from backup
+${statement}
+`;
+
+	it('accepts auth.users as the only patchable table outside public', () => {
+		const result = lintProductionPatchSql(
+			authPatch(
+				'auth.users',
+				"update auth.users set raw_app_meta_data = '{}'::jsonb where raw_app_meta_data->>'login_alias' is null;",
+			),
+		);
+
+		expect(result.errors).toEqual([]);
+		expect(result.ok).toBe(true);
+	});
+
+	it('rejects other schemas in @tables and as mutation targets', () => {
+		const declared = lintProductionPatchSql(
+			authPatch(
+				'auth.identities',
+				"update auth.identities set provider = 'email' where provider is null;",
+			),
+		);
+		expect(declared.errors).toContain(
+			'@tables must be a unique comma-separated list of public.<table> identifiers or auth.users.',
+		);
+
+		const undeclared = lintProductionPatchSql(
+			authPatch(
+				'auth.users',
+				"update auth.identities set provider = 'email' where provider is null;",
+			),
+		);
+		expect(undeclared.ok).toBe(false);
+		expect(undeclared.errors).toContain(
+			'@tables must match the complete set of mutation target tables.',
+		);
+	});
+
+	it('lints the login alias backfill patch', () => {
+		const sql = readFileSync(
+			'scripts/manual/production-patches/20261109_auth_login_alias_app_metadata_backfill.sql',
+			'utf8',
+		);
+		const result = lintProductionPatchSql(sql);
+
+		expect(result.errors).toEqual([]);
+		expect(parseSqlManifest(sql).tables).toBe('auth.users');
 	});
 });
 
