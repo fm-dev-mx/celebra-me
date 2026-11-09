@@ -3,7 +3,7 @@ import ModalShell from '@/components/dashboard/ModalShell';
 import PhoneInputGroup from '@/components/shared/PhoneInputGroup';
 import GuestPeopleStepper from '@/components/dashboard/guests/GuestPeopleStepper';
 import { MAX_CUSTOM_ATTENDEES } from '@/components/dashboard/guests/guest-form-constants';
-import { maxConfirmableChildren, reservationIssue } from '@/lib/rsvp/guest-cap';
+import { formatParty, maxConfirmableChildren, reservationIssue } from '@/lib/rsvp/guest-cap';
 import { resolvePhonePayload } from '@/lib/phone/resolve-phone-payload';
 import { getVisibleTags, isSystemTag } from '@/lib/guests/guest-tags';
 import GuestTagChips from '@/components/dashboard/guests/GuestTagChips';
@@ -137,6 +137,21 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 	const liveMaxChildren = showChildren
 		? Math.max(0, Math.min(parseInt(childrenInput, 10) || 0, liveMaxAttendees))
 		: 0;
+
+	// Live reading of both counters, shown only while they describe a valid party with children.
+	const partyBreakdown = ((): string | null => {
+		if (!showChildren) return null;
+		const people = parseInt(peopleInput, 10);
+		const children = parseInt(childrenInput, 10);
+		if (!(people >= 1 && people <= MAX_CUSTOM_ATTENDEES)) return null;
+		if (!(children > 0 && children <= people)) return null;
+		return `${formatParty(people, { unit: 'persona' })}: ${formatParty(people, { children })}`;
+	})();
+
+	const childrenDescribedBy =
+		[fieldErrors.children && 'guest-children-error', partyBreakdown && 'guest-party-breakdown']
+			.filter(Boolean)
+			.join(' ') || undefined;
 
 	const resolveMaxChildren = (passes: number): { value: number; error?: string } => {
 		if (!showChildren) return { value: 0 };
@@ -302,7 +317,9 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 						<div className="guest-form__people-text">
 							<label htmlFor="guest-people">¿Cuántas personas?</label>
 							<span id="guest-people-hint" className="guest-field-hint">
-								Incluya al invitado principal.
+								{showChildren
+									? 'Incluya al invitado principal y a los niños.'
+									: 'Incluya al invitado principal.'}
 							</span>
 						</div>
 						<GuestPeopleStepper
@@ -332,9 +349,7 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 									decrementLabel="Un niño menos"
 									incrementLabel="Un niño más"
 									onChange={setChildrenInput}
-									describedBy={
-										fieldErrors.children ? 'guest-children-error' : undefined
-									}
+									describedBy={childrenDescribedBy}
 									invalid={Boolean(fieldErrors.children)}
 									compact
 								/>
@@ -355,6 +370,15 @@ const GuestFormModal: React.FC<GuestFormModalProps> = ({
 							>
 								+ Incluye niños
 							</button>
+						)}
+						{partyBreakdown && (
+							<span
+								id="guest-party-breakdown"
+								className="guest-field-hint guest-form__people-breakdown"
+								role="status"
+							>
+								{partyBreakdown}
+							</span>
 						)}
 					</div>
 
