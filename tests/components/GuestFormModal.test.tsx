@@ -83,6 +83,23 @@ describe('GuestFormModal — party size stepper', () => {
 		expect(peopleInput()).toHaveValue(2);
 	});
 
+	it('counts children with the same stepper, from zero up to the party size', () => {
+		render(<GuestFormModal {...defaultProps} />);
+		fireEvent.click(screen.getByRole('button', { name: 'Una persona más' }));
+		fireEvent.click(screen.getByRole('button', { name: /Incluye niños/ }));
+		const childrenInput = screen.getByLabelText('De ellos, niños');
+		const fewer = screen.getByRole('button', { name: 'Un niño menos' });
+		const more = screen.getByRole('button', { name: 'Un niño más' });
+		expect(childrenInput).toHaveValue(0);
+		expect(fewer).toBeDisabled();
+		fireEvent.click(more);
+		fireEvent.click(more);
+		expect(childrenInput).toHaveValue(2);
+		expect(more).toBeDisabled();
+		fireEvent.click(fewer);
+		expect(childrenInput).toHaveValue(1);
+	});
+
 	it.each([
 		['', 'Escriba cuántas personas vienen.'],
 		['0', 'Escriba cuántas personas vienen.'],

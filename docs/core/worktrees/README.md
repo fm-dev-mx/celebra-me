@@ -32,6 +32,20 @@ are retired (`carrilesRetirados`, owner 2026-10-31): their folders stay, the gua
 unknown and refuse sessions there, and the worktree sweep (`pnpm ops:status`) does not flag them for
 removal.
 
+## Naming: branches, lanes and sessions
+
+This is the one place that names them; other docs link here.
+
+- **Lane:** the folder id in `carriles` (`f06-landing`, `agente-claude`); the key is `fNN`.
+- **Branch:** one per task, `<agent-or-topic>/<task-slug>` (for example
+  `claude/permisos-merge-deny-sin-stash`), created from `origin/develop`. Never prefix it with a PR
+  number.
+- **Session:** `fNN · Txxx · Título` (for example `f08 · T504 · Demo editorial`), with no PR number.
+  A session without a lane or task keeps a plain role name (for example `Despachador`).
+- **Merge and stash:** only the board cycle merges PRs (`gh pr merge` is denied to agents in
+  `.agent/permissions/policy.json`). Agents do not use `git stash`: it is shared across worktrees,
+  so set work aside with a WIP commit on the task branch.
+
 Roles are defaults, not permissions or domain restrictions. Explicit assignment and scoped
 authorization are required before inspecting or changing a second checkout. Clean or detached does
 not establish idle task ownership. Never allocate a lane or create a new directory automatically.

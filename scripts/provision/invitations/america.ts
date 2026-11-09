@@ -9,7 +9,7 @@ import type { CanonicalEventContentInput } from '../../../src/lib/schemas/conten
  * no characters. Map links are address searches until
  * the client sends pins; the song is omitted until supplied. The program uses the moments and
  * hours most common across our XV invitations (owner-approved placeholder until the client
- * confirms them), gifts are a gift or cash (client pick), and replies close 15 days before the event.
+ * confirms them), gifts are a gift or cash (client pick), and replies close on Sunday, 15 November 2026 (owner request, 2026-11-09).
  * Adults only, with personalized passes of fixed seats.
  */
 const AMERICA_TIMING = {
@@ -281,9 +281,9 @@ const content: CanonicalEventContentInput = {
 		// Pass and confirmation read as one printed reply card; seats are fixed per guest.
 		variant: 'reply-card',
 		title: '¿Me acompaña?',
-		// Replies close 15 days before the event (owner decision); the canonical RSVP block has no
+		// Replies close on 2026-11-15 (owner request, 2026-11-09); the canonical RSVP block has no
 		// deadline field, so the date lives in the copy and the reminder.
-		subcopy: 'Confírmeme antes del viernes 6 de noviembre.',
+		subcopy: 'Confírmeme antes del domingo 15 de noviembre.',
 		lockedMessage:
 			'Esta invitación es personal. Si le llegó directo de mí, abra su enlace para ver su lugar.',
 		guestCap: 2,
@@ -353,7 +353,7 @@ const content: CanonicalEventContentInput = {
 			invitation:
 				'Hola, {{invitado}}: cumplo quince y usted está en mi lista. Aquí va su invitación, con su pase y la opción para confirmar:\n\n{{enlace}}',
 			reminder:
-				'Hola, {{invitado}}: {{hora_evento}} Las linternas ya casi están listas.\n\nSi aún no confirma, tiene hasta el viernes 6 de noviembre:\n{{enlace}}',
+				'Hola, {{invitado}}: {{hora_evento}} Las linternas ya casi están listas.\n\nSi aún no confirma, tiene hasta el domingo 15 de noviembre:\n{{enlace}}',
 		},
 	},
 };

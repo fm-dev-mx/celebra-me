@@ -183,7 +183,7 @@ test.describe('America XV invitation interactions', () => {
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto(personalizedUrl, { waitUntil: 'load' });
 		const rsvp = await openReplyCard(page);
-		await expect(rsvp).toContainText('Avíseme antes del viernes 6 de noviembre');
+		await expect(rsvp).toContainText('Confírmeme antes del domingo 15 de noviembre');
 
 		await page
 			.locator('#attendance-yes')
