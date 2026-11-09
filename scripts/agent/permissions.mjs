@@ -181,6 +181,14 @@ function moveDenyToAsk(permissions, askList) {
 	return toMove;
 }
 
+/** A command now denied by policy must not linger in a stale Ask list from an older apply. */
+function dropStaleAsk(permissions, denyList) {
+	if (!Array.isArray(permissions.ask)) return [];
+	const stale = permissions.ask.filter((s) => denyList.includes(s));
+	if (stale.length > 0) permissions.ask = permissions.ask.filter((s) => !denyList.includes(s));
+	return stale;
+}
+
 function mergePermissions(before, generated) {
 	let settings;
 	try {
@@ -191,7 +199,10 @@ function mergePermissions(before, generated) {
 	const targetKeys = unique([...Object.keys(generated), 'allow', 'deny']);
 	const permissions = assertValidPermissions(settings, targetKeys);
 	const moved = moveDenyToAsk(permissions, generated.ask);
-	const removed = moved.length ? { deny: moved } : {};
+	const stale = dropStaleAsk(permissions, generated.deny ?? []);
+	const removed = {};
+	if (moved.length) removed.deny = moved;
+	if (stale.length) removed.ask = stale;
 	const added = {};
 
 	for (const key of targetKeys) {
