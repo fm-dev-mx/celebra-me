@@ -41,6 +41,27 @@ function renderStrip(overrides: Partial<React.ComponentProps<typeof GuestOvervie
 }
 
 describe('GuestOverviewStrip', () => {
+	it('breaks the confirmed people into adults and children when children are coming', () => {
+		const withChildren = computeGuestSummary([
+			makeGuest({
+				attendanceStatus: 'confirmed',
+				maxAllowedAttendees: 3,
+				maxAllowedChildren: 1,
+				attendeeCount: 3,
+				childrenCount: 1,
+			}),
+		]);
+		renderStrip({ summary: withChildren });
+
+		expect(screen.getByText('2 adultos y 1 niño')).toBeInTheDocument();
+	});
+
+	it('omits the adults and children line when no children are confirmed', () => {
+		renderStrip();
+
+		expect(screen.queryByText(/adulto|niño/)).not.toBeInTheDocument();
+	});
+
 	it('leads with confirmed passes and the share of assigned passes', () => {
 		renderStrip();
 		expect(screen.getByText('3')).toBeInTheDocument();

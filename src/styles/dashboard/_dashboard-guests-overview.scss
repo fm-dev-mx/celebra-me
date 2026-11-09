@@ -173,9 +173,14 @@
 	font-variant-numeric: tabular-nums;
 }
 
-.guest-overview__of {
+.guest-overview__of,
+.guest-overview__party {
 	color: var(--color-text-secondary);
 	font-size: 1.0625rem;
+}
+
+.guest-overview__party {
+	flex-basis: 100%;
 }
 
 .guest-overview__legend {
@@ -614,9 +619,14 @@ $strip-control-size: 0.9375rem;
 	font-variant-numeric: tabular-nums;
 }
 
-.guest-strip__of {
+.guest-strip__of,
+.guest-strip__party {
 	color: var(--color-text-secondary);
 	font-size: $strip-text-size;
+}
+
+.guest-strip__party {
+	flex-basis: 100%;
 }
 
 /* One scrollable row; the cut-off pill at the edge signals there is more */
