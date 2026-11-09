@@ -89,6 +89,8 @@
                 "D:/code/celebra-me/.git",
                 "--add-dir",
                 "C:/Users/fmdevmx/AppData/Local/node/corepack",
+                "--add-dir",
+                "C:/Users/fmdevmx/AppData/Local/pnpm/config",
                 "-c",
                 "mcp_servers.celebra-board.tools.messages.approval_mode=\"approve\"",
                 "-c",
@@ -213,7 +215,7 @@
                 "--mode",
                 "accept-edits",
                 "--settings",
-                "{\"permissions\":{\"allow\":[\"command(*)\",\"mcp(*)\"]}}",
+                "{\"permissions\":{\"allow\":[\"command(*)\",\"mcp(*)\",\"read_file(*)\"]}}",
                 "--model",
                 "gemini-3.8-flash-medium",
                 "--add-dir",
@@ -346,7 +348,8 @@
             "id": "tablero",
             "nombre": "Tablero",
             "github": {
-                "repo": "fm-dev-mx/tablero"
+                "repo": "fm-dev-mx/tablero",
+                "unir": "main"
             }
         },
         {
@@ -356,9 +359,9 @@
     ],
     "ciclo": {
         "revisores": {
-            "claude": ["codex"],
+            "claude": ["gemini", "codex"],
             "codex": ["claude"],
-            "gemini": ["codex"]
+            "gemini": ["claude"]
         },
         "unir": "develop",
         "rojo": [
