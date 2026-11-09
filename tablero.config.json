@@ -89,6 +89,8 @@
                 "D:/code/celebra-me/.git",
                 "--add-dir",
                 "C:/Users/fmdevmx/AppData/Local/node/corepack",
+                "--add-dir",
+                "C:/Users/fmdevmx/AppData/Local/pnpm/config",
                 "-c",
                 "mcp_servers.celebra-board.tools.messages.approval_mode=\"approve\"",
                 "-c",
