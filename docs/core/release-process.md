@@ -335,13 +335,54 @@ Add an entry to `prerequisites` in the pull request that introduces the dependen
 `pending` (or has no entry) for Production blocks the release on purpose: that is the state in which
 the code must not be activated.
 
+#### August 12, 2026 patch prerequisites
+
+The manifest also declares these historical dependencies, initially `pending` for Production and
+Preview. A historical patch or migration file is not evidence that its result exists in either
+environment. Do not activate a release until the target's evidence has been reviewed and recorded.
+
+| Prerequisite                                      | Source                                                                                              | Read-only verification file                                        |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `20260812-itinerary-gallery-structural-contracts` | `scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql`          | `scripts/manual/data-prerequisites/20260812_itinerary_gallery.sql` |
+| `20260812-thankyou-editorial-back-cover`          | `scripts/manual/production-patches/20260812_thankyou_editorial_back_cover_structural_contracts.sql` | `scripts/manual/data-prerequisites/20260812_thankyou.sql`          |
+| `20260812-guest-invitation-phone-objects`         | `supabase/migrations/20260812210000_reconcile_guest_invitation_phone_objects.sql`                   | `scripts/manual/data-prerequisites/20260812_guest_phone.sql`       |
+
+After the required-database availability preflight and target identity check in
+`.agent/rules/database.md`, an authorized operator runs the manifest's `psql` command from the
+repository root with the target connection supplied externally through PostgreSQL connection
+variables. Use a role that can read all relevant rows without RLS filtering. Do not put credentials
+in the command, evidence, or repository. Each SQL file starts a read-only transaction, returns one
+row of totals and `ok`, then rolls back. Exit code 0 alone is insufficient: require `ok = true`. An
+SQL error, missing result, unavailable connection, or `ok = false` leaves the entry `pending`.
+
+The content queries require exactly one active published row per original target (four itinerary
+targets and three Thank You targets). They check every active published row and every existing
+active draft for the explicit variants set by the source patch; the itinerary query requires a
+gallery variant only for the three celestial targets. Missing or ambiguous published targets fail
+instead of silently passing an empty query. Drafts are optional, matching the original patches.
+Share only `invalid_published_targets`, `checked_rows`, `mismatched_rows`, and `ok` as evidence.
+
+The phone query checks the actual canonical nonunique, valid, nonpartial, single-column
+`btree(phone)` index without included columns, absence of the legacy or unexpected equivalent index,
+and the validated pair CHECK's normalized expression. Migration history alone cannot prove these
+objects still exist or have the right definition. This is a schema postcondition rather than a data
+backfill; it is declared here to cover the historical reconciliation explicitly. Share only
+`target_tables`, `canonical_indexes`, `unexpected_indexes`, `validated_pair_checks`, and `ok`.
+
+Do not rerun these historical content patches automatically. Resolve a mismatch through the current
+guarded workflow (managed content or schema as appropriate), then verify again. If targets are
+absent intentionally in an environment, keep the prerequisite pending until a reviewer accepts
+specific `not-applicable` evidence; absence alone never proves the patch is applied.
+
 #### Record evidence
 
-1. If needed, repair the data for the environment through its authorized guarded workflow
-   (Production: the owner patch workflow below). A read-only check may already pass without repair.
+1. Verify the current state first; a read-only check may already pass without repair. If a repair or
+   backfill is needed, run it for the environment through its authorized guarded workflow
+   (Production: the owner patch workflow below).
 2. Run the `verify` command against that environment and confirm it exits with code 0 and, for the
-   Auth checks, that `target` names that environment. Its output contains totals only, so paste it
-   into the pull request that records the evidence.
+   Auth checks, that `target` names that environment. For the SQL verifications, also require
+   `ok = true` as described above. Its output contains totals only, so paste it into the pull
+   request that records the evidence.
 3. Set the environment to `verified` with the date and what was done:
 
    ```json
