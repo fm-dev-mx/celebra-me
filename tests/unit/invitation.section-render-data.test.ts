@@ -511,7 +511,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		expect(personalizedAccessDescriptor?.props.guestName).toBe(DEMO_GUEST_NAME);
 	});
 
-	it('gives the child-friendly demos a pass with children and the adults-only line to the rest', () => {
+	it('gives the child-friendly demos a pass with children and keeps adults-only line off for demos', () => {
 		const passOf = (slug: string) =>
 			buildInvitationSectionRenderDescriptors(setupDemoPageContext(slug)).find(
 				isPersonalizedAccessDescriptor,
@@ -525,7 +525,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		}
 		expect(passOf('demo-cumple-luxury-hacienda')).toMatchObject({
 			maxAllowedChildren: 0,
-			adultsOnlyLabel: true,
+			adultsOnlyLabel: false,
 		});
 	});
 
@@ -534,9 +534,10 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		const labelFor = (id: string) =>
 			buildInvitationSectionRenderDescriptors({
 				...base,
-				viewModel: { ...base.viewModel, id },
+				viewModel: { ...base.viewModel, id, isDemo: false },
 			}).find(isPersonalizedAccessDescriptor)?.props.adultsOnlyLabel;
 		expect(labelFor('andrea')).toBe(false);
+		expect(labelFor('destenid-sofia')).toBe(false);
 		expect(labelFor('naomi-huerta')).toBe(false);
 		expect(labelFor('a-new-client')).toBe(true);
 	});

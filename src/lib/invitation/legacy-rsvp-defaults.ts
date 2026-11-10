@@ -35,11 +35,12 @@ const LEGACY_RSVP_DEFAULT_SLUGS: ReadonlySet<string> = new Set([
 /*
   Invitations whose pass keeps its original text: no «Pase solo para adultos» line on a pass with
   no child places. It is the legacy list above plus client invitations published afterwards and
-  before the line shipped. Every other invitation (new clients, demos) shows the line. Never add
-  an entry; an entry leaves only when its invitation is deleted.
+  before the line shipped. Every future client invitation shows the line. Never add an entry;
+  an entry leaves only when its invitation is deleted.
 */
 const LEGACY_PASS_TEXT_SLUGS: ReadonlySet<string> = new Set([
 	...LEGACY_RSVP_DEFAULT_SLUGS,
+	'destenid-sofia',
 	'naomi-huerta',
 	'yireh-ana',
 ]);

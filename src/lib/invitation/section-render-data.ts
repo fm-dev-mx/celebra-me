@@ -186,6 +186,11 @@ function resolvePassChildren(
 	return isDemoPreview ? (demoChildren ?? 0) : 0;
 }
 
+/** Real client invitations published after the legacy list show the adults-only line on childless passes. */
+function resolveAdultsOnlyLabel(isDemo: boolean, slug: string): boolean {
+	return !isDemo && !keepsLegacyPassText(slug);
+}
+
 function renderPersonalizedAccess(pageContext: InvitationPageContext): DescriptorData | null {
 	const config = resolvePersonalizedAccessConfig(pageContext);
 	if (!config) return null;
@@ -214,7 +219,10 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 				isDemoPreview,
 				rsvpSection?.demoMaxChildren,
 			),
-			adultsOnlyLabel: !keepsLegacyPassText(pageContext.viewModel.id),
+			adultsOnlyLabel: resolveAdultsOnlyLabel(
+				pageContext.viewModel.isDemo,
+				pageContext.viewModel.id,
+			),
 			eventYear,
 			editionMark: pageContext.edition?.mark,
 			isDemoPreview,
