@@ -7,8 +7,7 @@
             "reason": "Written together with a new alias by the admin alias update; an absent value only means no update is in flight."
         },
         "role": {
-            "migration": "none",
-            "reason": "Maintained by the app_user_roles trigger since migration 20260215000800. Synchronization of rows older than the trigger is not verified by any command."
+            "prerequisite": "auth-role-app-metadata"
         },
         "must_change_password": {
             "migration": "none",
@@ -20,6 +19,16 @@
         }
     },
     "prerequisites": [
+        {
+            "id": "auth-role-app-metadata",
+            "summary": "Every Auth account has a valid app_user_roles.role matching app_metadata.role, with no orphan application roles.",
+            "introducedBy": "scripts/auth/check-role-app-metadata.mjs",
+            "verify": "pnpm auth:check-role-app-metadata",
+            "environments": {
+                "production": { "status": "pending" },
+                "preview": { "status": "pending" }
+            }
+        },
         {
             "id": "auth-login-alias-app-metadata",
             "summary": "Every account that logs in by alias has the alias in app_metadata.login_alias; login never reads user_metadata.",

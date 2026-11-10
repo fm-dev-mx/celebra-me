@@ -89,10 +89,34 @@ describe('committed data prerequisite manifest', () => {
 		parsed.prerequisites = parsed.prerequisites.filter(
 			(entry) => entry.id === 'auth-login-alias-app-metadata',
 		);
+		parsed.authAppMetadataKeys = Object.fromEntries(
+			Object.entries(parsed.authAppMetadataKeys).filter(
+				([, mapping]) =>
+					!('prerequisite' in mapping) ||
+					mapping.prerequisite === 'auth-login-alias-app-metadata',
+			),
+		);
 		expect(parsed.prerequisites).toHaveLength(1);
 		expect(() => requireDataPrerequisites(JSON.stringify(parsed))).not.toThrow();
 		expect(() => requireDataPrerequisites(JSON.stringify(parsed), 'preview')).not.toThrow();
 	});
+
+	it.each(['production', 'preview'])(
+		'blocks %s until role synchronization is verified',
+		(environment) => {
+			const parsed = parseDataPrerequisiteManifest(committedManifest);
+			expect(parsed.authAppMetadataKeys.role).toEqual({
+				prerequisite: 'auth-role-app-metadata',
+			});
+			expect(
+				parsed.prerequisites.find(({ id }) => id === 'auth-role-app-metadata')
+					?.environments[environment].status,
+			).toBe('pending');
+			expect(() => requireDataPrerequisites(committedManifest, environment)).toThrow(
+				/auth-role-app-metadata: .*`pnpm auth:check-role-app-metadata`/,
+			);
+		},
+	);
 });
 
 describe('app_metadata key scanner', () => {
