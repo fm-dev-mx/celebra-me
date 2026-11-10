@@ -63,3 +63,14 @@ choreography (never flat e-cards or static template catalogs):
   milestone sequence on scroll → `editorial` scroll scenes (`ScrollScene.astro`)
 - [Wildwood — Wedding Invitation & RSVP](https://wildwoodwedding.framer.website/) — Stacked
   milestone cards on scroll (tarjetas apiladas) → `itinerary.stacked-cards`
+
+### Promoting a radar reference
+
+Promote only references explicitly marked **Me gusta** by the owner in the radar's verdict table.
+For each approved reference, submit a separate PR from `docs/radar-<slug>` to `develop`, adding it
+to the benchmark list above with its URL, the motion it contributes, and the existing canonical
+recipe that translates it. Do not introduce new recipes or change the invitation creation contract.
+Merge only after green CI and approval by another agent at the PR's exact head SHA; the coordinator
+performs the merge. The merged skill preserves the reference across machines and worktrees. Radar
+reports and `radar-evaluated-urls.json` under `.agent/tmp/reports/` remain ignored drafts, never
+sources of truth. Benchmarks remain non-authoritative; `motion.md` owns the motion contract.
