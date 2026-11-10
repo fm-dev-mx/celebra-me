@@ -511,7 +511,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		expect(personalizedAccessDescriptor?.props.guestName).toBe(DEMO_GUEST_NAME);
 	});
 
-	it('gives the child-friendly demos a pass with children and keeps adults-only line off for demos', () => {
+	it('gives one demo per event type a pass with children', () => {
 		const passOf = (slug: string) =>
 			buildInvitationSectionRenderDescriptors(setupDemoPageContext(slug)).find(
 				isPersonalizedAccessDescriptor,
@@ -523,10 +523,32 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		]) {
 			expect(passOf(slug)).toMatchObject({ maxAllowedAttendees: 4, maxAllowedChildren: 2 });
 		}
-		expect(passOf('demo-cumple-luxury-hacienda')).toMatchObject({
-			maxAllowedChildren: 0,
-			adultsOnlyLabel: false,
+		expect(passOf('demo-brisa')).toMatchObject({
+			maxAllowedAttendees: 2,
+			maxAllowedChildren: 1,
 		});
+		expect(passOf('demo-cumple-luxury-hacienda')).toMatchObject({
+			maxAllowedAttendees: 8,
+			maxAllowedChildren: 2,
+		});
+	});
+
+	it('shows the adults-only line on childless demo passes', () => {
+		const base = setupDemoPageContext('demo-xv-editorial');
+		const childless = {
+			...base,
+			viewModel: {
+				...base.viewModel,
+				sections: {
+					...base.viewModel.sections,
+					rsvp: { ...base.viewModel.sections.rsvp, demoMaxChildren: 0 },
+				},
+			},
+		} as typeof base;
+		const props = buildInvitationSectionRenderDescriptors(childless).find(
+			isPersonalizedAccessDescriptor,
+		)?.props;
+		expect(props).toMatchObject({ maxAllowedChildren: 0, adultsOnlyLabel: true });
 	});
 
 	it('keeps the original pass text on published invitations', () => {
