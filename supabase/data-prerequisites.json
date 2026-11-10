@@ -54,7 +54,6 @@
         },
         {
             "id": "auth-must-change-password",
-            "severity": "advisory",
             "summary": "Accounts with must_change_password open are reported before release so authentication changes do not leave them locked out.",
             "introducedBy": "https://github.com/fm-dev-mx/celebra-me/pull/884",
             "verify": "pnpm auth:check-pending-passwords",

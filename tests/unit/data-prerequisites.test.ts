@@ -117,6 +117,23 @@ describe('committed data prerequisite manifest', () => {
 			);
 		},
 	);
+
+	it.each(['production', 'preview'])(
+		'blocks %s until pending password audit is verified',
+		(environment) => {
+			const parsed = parseDataPrerequisiteManifest(committedManifest);
+			expect(parsed.authAppMetadataKeys.must_change_password).toEqual({
+				prerequisite: 'auth-must-change-password',
+			});
+			expect(
+				parsed.prerequisites.find(({ id }) => id === 'auth-must-change-password')
+					?.environments[environment].status,
+			).toBe('pending');
+			expect(() => requireDataPrerequisites(committedManifest, environment)).toThrow(
+				/auth-must-change-password: .*`pnpm auth:check-pending-passwords`/,
+			);
+		},
+	);
 });
 
 describe('app_metadata key scanner', () => {
@@ -194,24 +211,6 @@ describe('data prerequisite release gate', () => {
 	])('refuses a prerequisite that is %s and names the verification', (_, entry) => {
 		expect(() => requireDataPrerequisites(manifest([entry]))).toThrow(
 			/not verified for production; do not activate this release:\n- example-backfill: .*`pnpm example:check`/,
-		);
-	});
-
-	it('allows an advisory prerequisite in pending status without blocking release', () => {
-		const advisory = {
-			...prerequisite({ status: 'pending' }),
-			severity: 'advisory',
-		};
-		expect(() => requireDataPrerequisites(manifest([advisory]))).not.toThrow();
-	});
-
-	it('refuses an advisory prerequisite with an invalid severity value', () => {
-		const invalidSeverity = {
-			...prerequisite({ status: 'pending' }),
-			severity: 'critical',
-		};
-		expect(() => requireDataPrerequisites(manifest([invalidSeverity]))).toThrow(
-			/severity must be "blocking" or "advisory"/,
 		);
 	});
 

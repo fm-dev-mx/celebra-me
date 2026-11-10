@@ -283,7 +283,7 @@ These checks read the manifest or produce its evidence:
 | Check                                   | When it runs                                          | What it refuses                                                                                        |
 | --------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `tests/unit/data-prerequisites.test.ts` | Every CI run                                          | Code under `src/` that reads an `app_metadata` key the manifest does not declare; an invalid manifest. |
-| `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA   | A release whose manifest has a blocking prerequisite without evidence for Production.                  |
+| `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA   | A release whose manifest has a prerequisite without evidence for Production.                           |
 | `pnpm auth:check-login-alias`           | By hand, against one environment, to produce evidence | Nothing by itself: it reports whether the alias prerequisite holds (exit code 0) or not (exit code 1). |
 | `pnpm auth:check-pending-passwords`     | By hand, against one environment, to produce evidence | Nothing by default: reports open password changes and age in days; fails with `--strict` when pending. |
 | `pnpm auth:check-role-app-metadata`     | By hand, against one environment, to produce evidence | Reports whether Auth metadata matches application roles (exit code 0) or not (exit code 1).            |
@@ -332,11 +332,9 @@ Add an entry to `prerequisites` in the pull request that introduces the dependen
 }
 ```
 
-`verify` is the read-only command that proves the fact in one environment. A prerequisite without
-`"severity": "advisory"` (default is `"blocking"`) that is `pending` (or has no entry) for
-Production blocks the release on purpose: that is the state in which the code must not be activated.
-Prerequisites declared with `"severity": "advisory"` report and warn on pending data without halting
-the release.
+`verify` is the read-only command that proves the fact in one environment. A prerequisite that is
+`pending` (or has no entry) for Production blocks the release on purpose: that is the state in which
+the code must not be activated.
 
 #### August 12, 2026 patch prerequisites
 
