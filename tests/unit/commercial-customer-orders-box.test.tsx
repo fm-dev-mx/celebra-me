@@ -202,6 +202,29 @@ describe('CustomerOrdersBox', () => {
 		expect(screen.getByText('Registrar anticipo')).toBeEnabled();
 	});
 
+	it('associates the received-deposit input with its label and help text', () => {
+		render(<CustomerOrdersBox {...defaultProps} />);
+		const input = screen.getByLabelText('Anticipo recibido ($ MXN)');
+		expect(input).toHaveAttribute('id', 'deposit-received-order-1');
+		expect(input).not.toHaveAttribute('placeholder');
+		expect(input).toHaveAccessibleDescription(/ya pagó/);
+	});
+
+	it('explains why the deposit button is disabled', () => {
+		const { rerender } = render(
+			<CustomerOrdersBox
+				{...defaultProps}
+				customerOrders={[{ ...baseOrder, depositAmount: null }]}
+			/>,
+		);
+		const button = screen.getByText('Registrar anticipo');
+		expect(button).toBeDisabled();
+		expect(button).toHaveAccessibleDescription(/mayor a \$0/);
+
+		rerender(<CustomerOrdersBox {...defaultProps} />);
+		expect(screen.queryByText(/mayor a \$0/)).not.toBeInTheDocument();
+	});
+
 	it('input displays the order depositAmount as default fallback', () => {
 		const orderWithDeposit: SalesOrder = { ...baseOrder, depositAmount: 899 };
 		render(<CustomerOrdersBox {...defaultProps} customerOrders={[orderWithDeposit]} />);
