@@ -57,6 +57,8 @@ export interface SalesOrder {
 	discountAmount: number;
 	referrerCreditAwarded: number;
 	referrerCreditRedeemed: number;
+	/** Event date taken from the linked lead (orders carry no event date of their own yet). */
+	eventDate?: string | null;
 }
 
 export interface MetaConversionEvent {
@@ -95,6 +97,7 @@ interface SalesOrderRow {
 	discount_amount?: number | string | null;
 	referrer_credit_awarded?: number | string | null;
 	referrer_credit_redeemed?: number | string | null;
+	lead?: { event_date?: string | null } | null;
 }
 
 interface MetaConversionEventRow {
@@ -148,6 +151,7 @@ function toSalesOrder(row: SalesOrderRow): SalesOrder {
 		discountAmount: toNumber(row.discount_amount),
 		referrerCreditAwarded: toNumber(row.referrer_credit_awarded),
 		referrerCreditRedeemed: toNumber(row.referrer_credit_redeemed),
+		eventDate: row.lead?.event_date ?? null,
 	};
 }
 
@@ -253,9 +257,20 @@ export async function findSalesOrdersByCustomerId(customerId: string): Promise<S
 	return rows.map(toSalesOrder);
 }
 
+export interface CommercialOrderListFilters {
+	/** Raw order status (stage): draft, quoted, confirmed, deposit_paid, paid, cancelled, lost. */
+	stage?: string;
+	/** Inclusive event date range (YYYY-MM-DD), read from the linked lead. */
+	eventFrom?: string;
+	eventTo?: string;
+	/** `pending` keeps orders with an outstanding balance; `settled` those fully paid. */
+	balance?: 'pending' | 'settled';
+}
+
 export async function listCommercialSalesOrders(
 	offset: number,
 	status?: string,
+	filters: CommercialOrderListFilters = {},
 ): Promise<{ items: SalesOrder[]; nextOffset: number | null }> {
 	const statuses: Record<string, string> = {
 		quoted: 'draft,quoted,confirmed',
@@ -263,16 +278,28 @@ export async function listCommercialSalesOrders(
 		paid: 'deposit_paid,paid',
 		lost: 'lost,cancelled',
 	};
-	const filter = status && statuses[status] ? `&status=in.(${statuses[status]})` : '';
+	const { stage, eventFrom, eventTo, balance } = filters;
+	const byDate = Boolean(eventFrom || eventTo);
+	let filter = status && statuses[status] ? `&status=in.(${statuses[status]})` : '';
+	if (stage) filter += `&status=eq.${encodeURIComponent(stage)}`;
+	if (eventFrom) filter += `&lead.event_date=gte.${encodeURIComponent(eventFrom)}`;
+	if (eventTo) filter += `&lead.event_date=lte.${encodeURIComponent(eventTo)}`;
+	// An inner join drops orders without a dated lead only when a date range is requested.
+	const embed = byDate ? 'lead:leads!inner(event_date)' : 'lead:leads(event_date)';
 	const rows = await supabaseRestRequest<SalesOrderRow[]>({
-		pathWithQuery: `sales_orders?select=${ORDER_SELECT}&order=created_at.desc,id.desc&limit=50&offset=${offset}${filter}`,
+		pathWithQuery: `sales_orders?select=${ORDER_SELECT},${embed}&order=created_at.desc,id.desc&limit=50&offset=${offset}${filter}`,
 		method: 'GET',
 		useServiceRole: true,
 	});
 	return {
 		items: rows
 			.map(toSalesOrder)
-			.filter((order) => !status || getOrderPaymentStatus(order) === status),
+			.filter((order) => !status || getOrderPaymentStatus(order) === status)
+			.filter((order) => {
+				if (!balance) return true;
+				const pending = order.totalAmount - order.amountPaid > 0;
+				return balance === 'pending' ? pending : !pending;
+			}),
 		nextOffset: rows.length === 50 ? offset + rows.length : null,
 	};
 }

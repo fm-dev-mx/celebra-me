@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { createCommercialSalesOrder } from '@/lib/commercial/orders.service';
+import { ORDER_STAGE_VALUES } from '@/lib/commercial/order-payment-status';
 import {
 	findSalesOrdersByCustomerId,
 	listCommercialSalesOrders,
@@ -75,17 +76,49 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 	}
 };
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+function optionalParam(params: URLSearchParams, name: string): string | undefined {
+	return params.get(name) || undefined;
+}
+
+function parseOrdersListQuery(params: URLSearchParams) {
+	const offset = Number(params.get('offset') ?? '0');
+	if (!Number.isSafeInteger(offset) || offset < 0) return badRequest('Página inválida.');
+	const status = optionalParam(params, 'status');
+	if (status && !['quoted', 'partial', 'paid', 'lost'].includes(status))
+		return badRequest('Estado inválido.');
+	const stage = optionalParam(params, 'stage');
+	if (stage && !ORDER_STAGE_VALUES.includes(stage)) return badRequest('Etapa inválida.');
+	const eventFrom = optionalParam(params, 'eventFrom');
+	const eventTo = optionalParam(params, 'eventTo');
+	if ((eventFrom && !ISO_DATE.test(eventFrom)) || (eventTo && !ISO_DATE.test(eventTo)))
+		return badRequest('Fecha inválida.');
+	const balance = optionalParam(params, 'balance');
+	if (balance && balance !== 'pending' && balance !== 'settled')
+		return badRequest('Saldo inválido.');
+	return {
+		offset,
+		status,
+		filters: {
+			stage,
+			eventFrom,
+			eventTo,
+			balance: balance as 'pending' | 'settled' | undefined,
+		},
+	};
+}
+
 export const GET: APIRoute = async ({ request, url }) => {
 	try {
 		await requireAdminRateLimit(request, 'admin:list');
 		await requireAdminStrongSession(request);
 		if (url.searchParams.get('view') === 'orders') {
-			const offset = Number(url.searchParams.get('offset') ?? '0');
-			if (!Number.isSafeInteger(offset) || offset < 0) return badRequest('Página inválida.');
-			const status = url.searchParams.get('status') || undefined;
-			if (status && !['quoted', 'partial', 'paid', 'lost'].includes(status))
-				return badRequest('Estado inválido.');
-			return successResponse(await listCommercialSalesOrders(offset, status));
+			const query = parseOrdersListQuery(url.searchParams);
+			if (query instanceof Response) return query;
+			return successResponse(
+				await listCommercialSalesOrders(query.offset, query.status, query.filters),
+			);
 		}
 		const customerId = url.searchParams.get('customerId')?.trim();
 		if (!customerId) {
