@@ -1,5 +1,5 @@
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
-import { formatParty } from '@/lib/rsvp/guest-cap';
+import { formatParty, resolveChildrenCap } from '@/lib/rsvp/guest-cap';
 import { generateInvitationLink } from '@/utils/invitation-link';
 import { getVisibleTags } from '@/lib/guests/guest-tags';
 import { isUnconfirmedSharedGuest } from '@/lib/guests/reminder-eligibility';
@@ -240,6 +240,8 @@ export interface GuestSummary {
 	people: {
 		assigned: number;
 		confirmed: number;
+		/** Children among the confirmed people; never a slice of its own. */
+		confirmedChildren: number;
 		declined: number;
 		unused: number;
 		noAnswer: number;
@@ -255,7 +257,14 @@ export function computeGuestSummary(items: DashboardGuestItem[]): GuestSummary {
 	const emptyStage = (): GuestStageCount => ({ invitations: 0, passes: 0 });
 	const summary: GuestSummary = {
 		invitations: items.length,
-		people: { assigned: 0, confirmed: 0, declined: 0, unused: 0, noAnswer: 0 },
+		people: {
+			assigned: 0,
+			confirmed: 0,
+			confirmedChildren: 0,
+			declined: 0,
+			unused: 0,
+			noAnswer: 0,
+		},
 		stages: {
 			'to-send': emptyStage(),
 			unopened: emptyStage(),
@@ -277,6 +286,10 @@ export function computeGuestSummary(items: DashboardGuestItem[]): GuestSummary {
 			case 'confirmed': {
 				const attending = attendingOf(item);
 				summary.people.confirmed += attending;
+				summary.people.confirmedChildren += resolveChildrenCap(
+					item.childrenCount,
+					attending,
+				);
 				summary.people.unused += passes - attending;
 				break;
 			}
