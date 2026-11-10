@@ -100,6 +100,42 @@ describe('GuestFormModal — party size stepper', () => {
 		expect(childrenInput).toHaveValue(1);
 	});
 
+	it('says the total includes children and breaks the party down while typing', () => {
+		render(<GuestFormModal {...defaultProps} />);
+		fireEvent.click(screen.getByRole('button', { name: 'Una persona más' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Una persona más' }));
+		expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole('button', { name: /Incluye niños/ }));
+		expect(
+			screen.getByText('Incluya al invitado principal y a los niños.'),
+		).toBeInTheDocument();
+		// No children yet: nothing to break down.
+		expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole('button', { name: 'Un niño más' }));
+		const breakdown = screen.getByRole('status');
+		expect(breakdown).toHaveTextContent('3 personas: 2 adultos y 1 niño');
+		expect(screen.getByLabelText('De ellos, niños')).toHaveAttribute(
+			'aria-describedby',
+			breakdown.id,
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: 'Un niño menos' }));
+		expect(screen.queryByRole('status')).not.toBeInTheDocument();
+	});
+
+	it('hides the breakdown while the counters do not describe a valid party', () => {
+		render(<GuestFormModal {...defaultProps} />);
+		fireEvent.click(screen.getByRole('button', { name: /Incluye niños/ }));
+		fireEvent.change(peopleInput(), { target: { value: '3' } });
+		fireEvent.change(screen.getByLabelText('De ellos, niños'), { target: { value: '1' } });
+		expect(screen.getByRole('status')).toHaveTextContent('3 personas: 2 adultos y 1 niño');
+
+		fireEvent.change(peopleInput(), { target: { value: '' } });
+		expect(screen.queryByRole('status')).not.toBeInTheDocument();
+	});
+
 	it.each([
 		['', 'Escriba cuántas personas vienen.'],
 		['0', 'Escriba cuántas personas vienen.'],

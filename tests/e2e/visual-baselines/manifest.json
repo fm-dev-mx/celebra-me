@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-07T23:36:36.079Z",
+    "generatedAt": "2026-11-09T20:25:44.134Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -19,8 +19,8 @@
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 192,
-    "matrixHash": "7e681e2005a93367f7a5d472e689519c437adf4b7de8febac7d9c98c08351339",
+    "totalCaptures": 194,
+    "matrixHash": "7c14412dac41bc50864da9ddd2012cf80a064b1429862037f20bbc7377719a8d",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2222,6 +2222,30 @@
         },
         {
             "kind": "invitation",
+            "slug": "destenid-sofia",
+            "eventType": "xv",
+            "preset": "editorial-magazine",
+            "viewport": "mobile",
+            "file": "pages/invitation-xv-destenid-sofia-mobile.png",
+            "sha256": "d188a181ead7d5209bfe8523fcd7792b7f94e9b22724c2c02b1ecb4130397f8e",
+            "contentHash": "75e757f293e1e3f444913a09ef9fbc0035352e7800ce53de470ff5db9589f48b",
+            "assetHash": "49192ff1d04942cfd2dfdc127ac3fb522c93d958459f1035a39ddb479c770803",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "destenid-sofia",
+            "eventType": "xv",
+            "preset": "editorial-magazine",
+            "viewport": "desktop",
+            "file": "pages/invitation-xv-destenid-sofia-desktop.png",
+            "sha256": "13dddd2dac0d3570d9c38cb47642e0f7f366cf1ef95cbea874864c2eed9cc152",
+            "contentHash": "75e757f293e1e3f444913a09ef9fbc0035352e7800ce53de470ff5db9589f48b",
+            "assetHash": "49192ff1d04942cfd2dfdc127ac3fb522c93d958459f1035a39ddb479c770803",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
             "slug": "mia-pintor",
             "eventType": "xv",
             "preset": "celestial-blue",
@@ -2443,8 +2467,8 @@
             "preset": "luxury-hacienda",
             "viewport": "mobile",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-            "sha256": "b318d396abd987ac60ff431650ea1db28b2fbd39bea0bd45ab36b37ef3213127",
-            "contentHash": "35eea541e519067d46ef5eb65e249db3661a0bfa02983427a91432f169cbd34e",
+            "sha256": "f2d26c9ecc8e0fa2dfcf955eeac7c3980074114c3cea249983987e4f73e74549",
+            "contentHash": "69d5cc1a4c477776d8b193372e6d51e93184341cf3333087e9a6061730bcc06d",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
         },
@@ -2455,8 +2479,8 @@
             "preset": "luxury-hacienda",
             "viewport": "desktop",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-            "sha256": "187b236909422bb46b99ecd0d5dd0e0535d4f8eeded6d36a27bf0db0d94ffb4b",
-            "contentHash": "35eea541e519067d46ef5eb65e249db3661a0bfa02983427a91432f169cbd34e",
+            "sha256": "1858f4bf76f71f92c18c751943bae5afdc95ad40bfa8907490d364d5977af32c",
+            "contentHash": "69d5cc1a4c477776d8b193372e6d51e93184341cf3333087e9a6061730bcc06d",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
         },
@@ -2605,9 +2629,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "77471fefbde7e5b0cc256b5df5f5fe96a7887d87",
+    "referenceSha": "10c15850e67325e3c14c6241ed2d4d7852dbfb7d",
     "variantManifest": {
-        "generatedAt": "2026-11-07T23:36:36.079Z",
+        "generatedAt": "2026-11-09T20:25:44.134Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4565,10 +4589,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "77471fefbde7e5b0cc256b5df5f5fe96a7887d87"
+        "referenceSha": "10c15850e67325e3c14c6241ed2d4d7852dbfb7d"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-07T23:36:36.084Z",
+        "generatedAt": "2026-11-09T20:25:44.140Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4588,9 +4612,9 @@
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 54,
-        "matrixHash": "3cc016b2f09134b3def76900e329caff80991de2076b41326457991e95f27693",
-        "cases": 27,
+        "totalCaptures": 56,
+        "matrixHash": "bdf345d81099c9e4ee8285727d2b04773b5ddc4b5d7b2a5e109fa9927b56d2f8",
+        "cases": 28,
         "captures": [
             {
                 "kind": "invitation",
@@ -4858,6 +4882,30 @@
             },
             {
                 "kind": "invitation",
+                "slug": "destenid-sofia",
+                "eventType": "xv",
+                "preset": "editorial-magazine",
+                "viewport": "mobile",
+                "file": "pages/invitation-xv-destenid-sofia-mobile.png",
+                "sha256": "d188a181ead7d5209bfe8523fcd7792b7f94e9b22724c2c02b1ecb4130397f8e",
+                "contentHash": "75e757f293e1e3f444913a09ef9fbc0035352e7800ce53de470ff5db9589f48b",
+                "assetHash": "49192ff1d04942cfd2dfdc127ac3fb522c93d958459f1035a39ddb479c770803",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "destenid-sofia",
+                "eventType": "xv",
+                "preset": "editorial-magazine",
+                "viewport": "desktop",
+                "file": "pages/invitation-xv-destenid-sofia-desktop.png",
+                "sha256": "13dddd2dac0d3570d9c38cb47642e0f7f366cf1ef95cbea874864c2eed9cc152",
+                "contentHash": "75e757f293e1e3f444913a09ef9fbc0035352e7800ce53de470ff5db9589f48b",
+                "assetHash": "49192ff1d04942cfd2dfdc127ac3fb522c93d958459f1035a39ddb479c770803",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
                 "slug": "mia-pintor",
                 "eventType": "xv",
                 "preset": "celestial-blue",
@@ -5079,8 +5127,8 @@
                 "preset": "luxury-hacienda",
                 "viewport": "mobile",
                 "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-                "sha256": "b318d396abd987ac60ff431650ea1db28b2fbd39bea0bd45ab36b37ef3213127",
-                "contentHash": "35eea541e519067d46ef5eb65e249db3661a0bfa02983427a91432f169cbd34e",
+                "sha256": "f2d26c9ecc8e0fa2dfcf955eeac7c3980074114c3cea249983987e4f73e74549",
+                "contentHash": "69d5cc1a4c477776d8b193372e6d51e93184341cf3333087e9a6061730bcc06d",
                 "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5091,8 +5139,8 @@
                 "preset": "luxury-hacienda",
                 "viewport": "desktop",
                 "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-                "sha256": "187b236909422bb46b99ecd0d5dd0e0535d4f8eeded6d36a27bf0db0d94ffb4b",
-                "contentHash": "35eea541e519067d46ef5eb65e249db3661a0bfa02983427a91432f169cbd34e",
+                "sha256": "1858f4bf76f71f92c18c751943bae5afdc95ad40bfa8907490d364d5977af32c",
+                "contentHash": "69d5cc1a4c477776d8b193372e6d51e93184341cf3333087e9a6061730bcc06d",
                 "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5241,9 +5289,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "77471fefbde7e5b0cc256b5df5f5fe96a7887d87"
+        "referenceSha": "10c15850e67325e3c14c6241ed2d4d7852dbfb7d"
     },
-    "candidateManifestSha256": "36e7afc05fb0d5a74d420bde6c21c7ac3697d49ad2e9d73b410fb56a1f7cc8db",
-    "acceptedFromCommit": "77471fefbde7e5b0cc256b5df5f5fe96a7887d87",
-    "acceptedAt": "2026-11-07T23:39:53.607Z"
+    "candidateManifestSha256": "e0dcf580fce51512f0246069ec3e619fdbaf469027af3e5ecb0d3964c4b1baf6",
+    "acceptedFromCommit": "10c15850e67325e3c14c6241ed2d4d7852dbfb7d",
+    "acceptedAt": "2026-11-09T20:32:28.440Z"
 }

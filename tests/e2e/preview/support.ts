@@ -118,6 +118,7 @@ async function parseSuccessfulJson<T>(response: APIResponse, operation: string):
 export async function loginAsPreviewAdmin(
 	page: Page,
 	preview: AuthenticatedPreviewEnvironment,
+	identifier: string = preview.hostLogin,
 ): Promise<void> {
 	await page.goto('/login');
 	await expect(page.locator('#login-submit')).toBeVisible();
@@ -127,7 +128,7 @@ export async function loginAsPreviewAdmin(
 			new URL(response.url()).pathname === '/api/auth/login-host' &&
 			response.request().method() === 'POST',
 	);
-	await page.locator('#login-email').fill(preview.hostLogin);
+	await page.locator('#login-email').fill(identifier);
 	await page.locator('#login-password').fill(preview.hostPassword);
 	await page.locator('#login-submit').click();
 	const loginResponse = await loginResponsePromise;

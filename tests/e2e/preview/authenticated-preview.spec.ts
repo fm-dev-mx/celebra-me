@@ -112,6 +112,23 @@ test.describe.serial('Authenticated external Preview', () => {
 		await expect(page).toHaveURL(/\/login/);
 	});
 
+	// Unit tests feed login a synthetic account, so only this check proves that the alias of a
+	// real Preview account is stored where login reads it (app_metadata.login_alias).
+	test('the Preview account logs in with its login alias', async ({ page }) => {
+		const alias = process.env.PLAYWRIGHT_HOST_LOGIN_ALIAS?.trim() ?? '';
+		test.skip(
+			!alias,
+			'Alias login is NOT checked: set the repository variable PLAYWRIGHT_HOST_LOGIN_ALIAS to the login alias of the Preview account.',
+		);
+		expect(alias, 'PLAYWRIGHT_HOST_LOGIN_ALIAS must be an alias, not an email').not.toContain(
+			'@',
+		);
+
+		await loginAsPreviewAdmin(page, preview, alias);
+		const session = await readSessionIdentity(page);
+		assertExpectedPreviewAccountEmail(session.email);
+	});
+
 	test('handles 20 concurrent anonymous and invalid session validations', async ({ browser }) => {
 		test.setTimeout(120_000);
 		const contexts: BrowserContext[] = [];
