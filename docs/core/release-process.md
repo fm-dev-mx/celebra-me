@@ -280,11 +280,11 @@ are declared and where the evidence that each environment satisfies them is reco
 
 Three checks read the manifest or produce its evidence:
 
-| Check                                   | When it runs                                          | What it refuses                                                                                        |
-| --------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `tests/unit/data-prerequisites.test.ts` | Every CI run                                          | Code under `src/` that reads an `app_metadata` key the manifest does not declare; an invalid manifest. |
-| `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA   | A release whose manifest has a prerequisite without evidence for Production.                           |
-| `pnpm auth:check-login-alias`           | By hand, against one environment, to produce evidence | Nothing by itself: it reports whether the alias prerequisite holds (exit code 0) or not (exit code 1). |
+| Check                                   | When it runs                                          | What it refuses                                                                                          |
+| --------------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `tests/unit/data-prerequisites.test.ts` | Every CI run                                          | Undeclared `app_metadata` key reads in `src/`, `scripts/` or `supabase/functions/`; an invalid manifest. |
+| `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA   | A release whose manifest has a prerequisite without evidence for Production.                             |
+| `pnpm auth:check-login-alias`           | By hand, against one environment, to produce evidence | Nothing by itself: it reports whether the alias prerequisite holds (exit code 0) or not (exit code 1).   |
 
 The release gate reads the manifest from GitHub at the exact SHA being released, so the evidence
 must be merged before the release, not typed during it. A change to the manifest also adds the gate
@@ -293,8 +293,9 @@ release category.
 
 #### Declare an `app_metadata` key
 
-Every key that code under `src/` reads from Auth `app_metadata` needs one entry under
-`authAppMetadataKeys`, in the same pull request that adds the read:
+Every key that code under `src/`, `scripts/`, or `supabase/functions/` reads from Auth
+`app_metadata` needs one entry under `authAppMetadataKeys`, in the same pull request that adds the
+read:
 
 ```json
 "new_flag": { "migration": "none", "reason": "An absent value reads as false." }
@@ -383,9 +384,10 @@ deleting an entry, marking `verified` without running the command, or bypassing
 
 #### What these checks do not see
 
-- The key scanner matches `app_metadata.key`, `app_metadata?.key` and `app_metadata['key']`. It does
-  not see a key held in a constant (`temp_password_expires_at` is declared by hand for that reason),
-  destructuring, or a helper that receives the metadata object. Reviewers still own those.
+- The key scanner uses TypeScript AST across `src/`, `scripts/` and `supabase/functions/` to detect
+  property access, bracket access, constants, destructuring, and helpers receiving or returning the
+  metadata object. It does not see keys computed dynamically at runtime from arbitrary external data
+  or string concatenation. Reviewers still own those.
 - Only Auth `app_metadata` is scanned. A new dependency on the shape of stored JSON anywhere else
   (invitation content, `user_metadata`, settings columns) must be declared as a prerequisite by its
   author; nothing detects it.

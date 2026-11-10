@@ -29,9 +29,13 @@ const manifest = (
 
 describe('committed data prerequisite manifest', () => {
 	it('declares every app_metadata key that application code reads', () => {
-		const sourceRoot = resolve(repositoryRoot, 'src');
-		expect(existsSync(sourceRoot)).toBe(true);
-		const reads = scanAppMetadataKeyReads(sourceRoot);
+		const scanRoots = [
+			resolve(repositoryRoot, 'src'),
+			resolve(repositoryRoot, 'scripts'),
+			resolve(repositoryRoot, 'supabase/functions'),
+		].filter((dir) => existsSync(dir));
+		expect(scanRoots.length).toBeGreaterThan(0);
+		const reads = scanAppMetadataKeyReads(scanRoots, repositoryRoot);
 		// A scan that finds nothing means the scanner broke, not that the code stopped reading.
 		expect(reads.length).toBeGreaterThan(0);
 		expect(new Set(reads.map((read) => read.file)).size).toBeGreaterThan(1);
@@ -64,6 +68,59 @@ describe('app_metadata key scanner', () => {
 			{ key: 'role', file: 'example.ts', line: 2 },
 			{ key: 'must_change_password', file: 'example.ts', line: 3 },
 			{ key: 'temp_flag', file: 'example.ts', line: 4 },
+		]);
+	});
+
+	it('finds keys accessed through constants with their line', () => {
+		const source = [
+			"const ROLE_KEY = 'role';",
+			"const ALIAS_KEY = 'login_alias' as const;",
+			'const a = user.app_metadata[ROLE_KEY];',
+			'const b = user.app_metadata?.[ALIAS_KEY];',
+			'const { [ROLE_KEY]: r } = user.app_metadata;',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'role', file: 'example.ts', line: 3 },
+			{ key: 'login_alias', file: 'example.ts', line: 4 },
+			{ key: 'role', file: 'example.ts', line: 5 },
+		]);
+	});
+
+	it('finds keys extracted through destructuring and nested patterns', () => {
+		const source = [
+			'const { login_alias, role: userRole } = user.app_metadata;',
+			'const { must_change_password } = user.app_metadata ?? {};',
+			'const { app_metadata: { temp_password_expires_at } } = user;',
+			'function authCheck({ app_metadata: { role } }: User) { return role; }',
+			'const { app_metadata: meta } = user;',
+			'const flag = meta.must_change_password;',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'login_alias', file: 'example.ts', line: 1 },
+			{ key: 'role', file: 'example.ts', line: 1 },
+			{ key: 'must_change_password', file: 'example.ts', line: 2 },
+			{ key: 'temp_password_expires_at', file: 'example.ts', line: 3 },
+			{ key: 'role', file: 'example.ts', line: 4 },
+			{ key: 'must_change_password', file: 'example.ts', line: 6 },
+		]);
+	});
+
+	it('finds keys accessed inside helpers receiving or returning app_metadata', () => {
+		const source = [
+			'function isExpired(appMetadata: Record<string, unknown>) {',
+			'    return appMetadata.must_change_password;',
+			'}',
+			'function checkRole(meta: Record<string, unknown>) {',
+			'    return meta.role;',
+			'}',
+			'checkRole(user.app_metadata);',
+			'const getMeta = (u: User) => u.app_metadata;',
+			'const alias = getMeta(user)?.login_alias;',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'must_change_password', file: 'example.ts', line: 2 },
+			{ key: 'role', file: 'example.ts', line: 5 },
+			{ key: 'login_alias', file: 'example.ts', line: 9 },
 		]);
 	});
 
