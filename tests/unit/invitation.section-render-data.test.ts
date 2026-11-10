@@ -511,6 +511,36 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		expect(personalizedAccessDescriptor?.props.guestName).toBe(DEMO_GUEST_NAME);
 	});
 
+	it('gives the child-friendly demos a pass with children and the adults-only line to the rest', () => {
+		const passOf = (slug: string) =>
+			buildInvitationSectionRenderDescriptors(setupDemoPageContext(slug)).find(
+				isPersonalizedAccessDescriptor,
+			)?.props;
+		for (const slug of [
+			'demo-xv-editorial',
+			'demo-bautizo-angelic-presence',
+			'demo-primera-comunion-angelic-presence',
+		]) {
+			expect(passOf(slug)).toMatchObject({ maxAllowedAttendees: 4, maxAllowedChildren: 2 });
+		}
+		expect(passOf('demo-cumple-luxury-hacienda')).toMatchObject({
+			maxAllowedChildren: 0,
+			adultsOnlyLabel: true,
+		});
+	});
+
+	it('keeps the original pass text on published invitations', () => {
+		const base = setupDemoPageContext();
+		const labelFor = (id: string) =>
+			buildInvitationSectionRenderDescriptors({
+				...base,
+				viewModel: { ...base.viewModel, id },
+			}).find(isPersonalizedAccessDescriptor)?.props.adultsOnlyLabel;
+		expect(labelFor('andrea')).toBe(false);
+		expect(labelFor('naomi-huerta')).toBe(false);
+		expect(labelFor('a-new-client')).toBe(true);
+	});
+
 	it('renders RSVP form for demo preview regardless of accessMode', () => {
 		const pageContext = setupDemoPageContext();
 

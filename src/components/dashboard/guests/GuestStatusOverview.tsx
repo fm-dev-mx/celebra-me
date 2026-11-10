@@ -7,6 +7,7 @@ import { formatParty } from '@/lib/rsvp/guest-cap';
 import { writeClipboardText } from '@/hooks/use-clipboard';
 import {
 	buildGuestSummaryShareText,
+	formatPassesWithChildren,
 	type GuestReviewFilterValue,
 	type GuestSummary,
 } from '@/components/dashboard/guests/guest-presenter';
@@ -257,7 +258,7 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 					<p className="guest-overview__headline">
 						<span className="guest-overview__big">{people.confirmed}</span>
 						<span className="guest-overview__of">
-							de {passes(people.assigned)}
+							de {formatPassesWithChildren(people.assigned, people.assignedChildren)}
 							{people.assigned > 0 && ` · ${confirmedPercent} %`}
 						</span>
 						<GuestConfirmedParty people={people} className="guest-overview__party" />
