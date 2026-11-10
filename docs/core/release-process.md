@@ -278,13 +278,14 @@ migration or capability check sees it, and unit tests feed the code synthetic da
 be correct and still lock real accounts out. `supabase/data-prerequisites.json` is where those facts
 are declared and where the evidence that each environment satisfies them is recorded.
 
-Three checks read the manifest or produce its evidence:
+Four checks read the manifest or produce its evidence:
 
 | Check                                   | When it runs                                          | What it refuses                                                                                        |
 | --------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `tests/unit/data-prerequisites.test.ts` | Every CI run                                          | Code under `src/` that reads an `app_metadata` key the manifest does not declare; an invalid manifest. |
-| `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA   | A release whose manifest has a prerequisite without evidence for Production.                           |
+| `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA   | A release whose manifest has a blocking prerequisite without evidence for Production.                  |
 | `pnpm auth:check-login-alias`           | By hand, against one environment, to produce evidence | Nothing by itself: it reports whether the alias prerequisite holds (exit code 0) or not (exit code 1). |
+| `pnpm auth:check-pending-passwords`     | By hand, against one environment, to produce evidence | Nothing by default: reports open password changes and age in days; fails with `--strict` when pending. |
 
 The release gate reads the manifest from GitHub at the exact SHA being released, so the evidence
 must be merged before the release, not typed during it. A change to the manifest also adds the gate
@@ -321,9 +322,11 @@ Add an entry to `prerequisites` in the pull request that introduces the dependen
 }
 ```
 
-`verify` is the read-only command that proves the fact in one environment. A prerequisite that is
-`pending` (or has no entry) for Production blocks the release on purpose: that is the state in which
-the code must not be activated.
+`verify` is the read-only command that proves the fact in one environment. A prerequisite without
+`"severity": "advisory"` (default is `"blocking"`) that is `pending` (or has no entry) for
+Production blocks the release on purpose: that is the state in which the code must not be activated.
+Prerequisites declared with `"severity": "advisory"` report and warn on pending data without halting
+the release.
 
 #### Record evidence
 
@@ -376,6 +379,11 @@ gate like `verified`, so do not use it to mean "not checked yet": that is `pendi
   - **Unblock:** Run the backfill for that environment (see "Protected login aliases"); resolve
     duplicates by hand first; with `accounts: 0`, check `SUPABASE_URL` and the key. Until then,
     affected hosts can log in with the account email, not the alias.
+- **Message starts with:** `Pending password check failed:` (from `auth:check-pending-passwords`)
+  - **Meaning:** With `--strict`, accounts have `must_change_password` open, or the target returned
+    no accounts.
+  - **Unblock:** Review the open changes and their age; ensure affected users complete their
+    password change or re-issue credentials. In advisory mode, verify totals and record evidence.
 
 A gate that blocks is reporting missing evidence, never a judgment about the code. Do not unblock by
 deleting an entry, marking `verified` without running the command, or bypassing

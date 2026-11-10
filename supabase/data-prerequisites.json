@@ -10,10 +10,7 @@
             "migration": "none",
             "reason": "Maintained by the app_user_roles trigger since migration 20260215000800. Synchronization of rows older than the trigger is not verified by any command."
         },
-        "must_change_password": {
-            "migration": "none",
-            "reason": "An absent value reads as false; accounts without a temporary password need no data."
-        },
+        "must_change_password": { "prerequisite": "auth-must-change-password" },
         "temp_password_expires_at": {
             "migration": "none",
             "reason": "An absent value reads as not expired; it is written together with each temporary password."
@@ -35,6 +32,21 @@
                     "status": "verified",
                     "verifiedAt": "2026-11-09",
                     "evidence": "pnpm auth:migrate-login-alias --dry-run (planned 18, duplicates 0, written 0), then --apply (planned 18, written 18, duplicates 0); pnpm auth:check-login-alias afterwards: target preview, accounts 19, protectedAliases 19, legacyOnly 0, duplicates 0, ok true."
+                }
+            }
+        },
+        {
+            "id": "auth-must-change-password",
+            "severity": "advisory",
+            "summary": "Accounts with must_change_password open are reported before release so authentication changes do not leave them locked out.",
+            "introducedBy": "https://github.com/fm-dev-mx/celebra-me/pull/884",
+            "verify": "pnpm auth:check-pending-passwords",
+            "environments": {
+                "production": {
+                    "status": "pending"
+                },
+                "preview": {
+                    "status": "pending"
                 }
             }
         }

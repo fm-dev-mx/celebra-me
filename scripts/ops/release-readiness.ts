@@ -470,8 +470,9 @@ function main(): void {
 				state: 'CHECKS_PASSED',
 				...(candidate ? { candidate } : {}),
 				checks,
-				dataPrerequisites: dataPrerequisites.map(({ id, environments }) => ({
+				dataPrerequisites: dataPrerequisites.map(({ id, severity, environments }) => ({
 					id,
+					...(severity === 'advisory' ? { severity } : {}),
 					production: environments.production,
 				})),
 				note: 'Database compatibility and deployment authorization remain required.',

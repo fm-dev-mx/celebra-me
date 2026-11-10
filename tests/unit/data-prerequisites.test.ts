@@ -128,6 +128,24 @@ describe('data prerequisite release gate', () => {
 		);
 	});
 
+	it('allows an advisory prerequisite in pending status without blocking release', () => {
+		const advisory = {
+			...prerequisite({ status: 'pending' }),
+			severity: 'advisory',
+		};
+		expect(() => requireDataPrerequisites(manifest([advisory]))).not.toThrow();
+	});
+
+	it('refuses an advisory prerequisite with an invalid severity value', () => {
+		const invalidSeverity = {
+			...prerequisite({ status: 'pending' }),
+			severity: 'critical',
+		};
+		expect(() => requireDataPrerequisites(manifest([invalidSeverity]))).toThrow(
+			/severity must be "blocking" or "advisory"/,
+		);
+	});
+
 	it('judges each environment on its own', () => {
 		const entry = prerequisite({
 			status: 'verified',

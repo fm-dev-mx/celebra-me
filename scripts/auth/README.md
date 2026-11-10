@@ -56,6 +56,58 @@ Resetting a password from the admin panel keeps an alias that is already in `app
 not copy one from `user_metadata`: a reset is not a repair for a legacy-only alias. Run the
 backfill.
 
+## Pending password change report
+
+`check-pending-passwords.mjs` checks accounts with `must_change_password` open in `app_metadata`. It
+is read-only and prints anonymous totals and age distributions without user IDs or emails.
+
+```sh
+pnpm auth:check-pending-passwords
+```
+
+Example output:
+
+```json
+{
+  "target": "preview",
+  "accounts": 120,
+  "pendingPasswords": 2,
+  "active": 1,
+  "expired": 1,
+  "ageDays": {
+    "0-1": 1,
+    "2-7": 0,
+    "8-30": 0,
+    ">30": 1
+  },
+  "oldestDays": 35,
+  "newestDays": 0,
+  "ok": true,
+  "clean": false
+}
+```
+
+- `target`: environment detected from `SUPABASE_URL`.
+- `accounts`: total accounts found in the directory.
+- `pendingPasswords`: accounts with `must_change_password: true`.
+- `active`: accounts whose temporary password has not expired.
+- `expired`: accounts whose temporary password has passed its 24h window.
+- `ageDays`: distribution of pending changes grouped by age (0-1 days, 2-7 days, 8-30 days, >30
+  days).
+- `oldestDays` / `newestDays`: age range in days across open changes.
+- `ok`: true if directory returned accounts in advisory mode; requires 0 pending in strict mode.
+- `clean`: true only when `pendingPasswords === 0` and `accounts > 0`.
+
+Use `--strict` to make the check fail with exit code 1 if any account has `must_change_password`
+open:
+
+```sh
+pnpm auth:check-pending-passwords --strict
+```
+
+Its output is evidence for the `auth-must-change-password` prerequisite in
+`supabase/data-prerequisites.json`.
+
 ## Migration
 
 The default is dry-run. Review the target and existing alias ownership before applying: legacy user

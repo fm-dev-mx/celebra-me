@@ -14,6 +14,8 @@ export const DATA_PREREQUISITE_DOCS = 'docs/core/release-process.md ("Data prere
 export type DataPrerequisiteStatus = 'verified' | 'pending' | 'not-applicable';
 const STATUSES: ReadonlySet<string> = new Set(['verified', 'pending', 'not-applicable']);
 
+export type DataPrerequisiteSeverity = 'blocking' | 'advisory';
+
 export interface DataPrerequisiteEnvironment {
 	status: DataPrerequisiteStatus;
 	verifiedAt?: string;
@@ -25,6 +27,7 @@ export interface DataPrerequisite {
 	summary: string;
 	introducedBy: string;
 	verify: string;
+	severity?: DataPrerequisiteSeverity;
 	environments: Record<string, DataPrerequisiteEnvironment>;
 }
 
@@ -78,6 +81,12 @@ function parsePrerequisite(value: unknown): DataPrerequisite {
 	const { id } = value;
 	for (const field of ['summary', 'introducedBy', 'verify'] as const)
 		if (!isText(value[field])) throw invalid(`prerequisite "${id}" needs "${field}".`);
+	let severity: DataPrerequisiteSeverity = 'blocking';
+	if (value.severity !== undefined) {
+		if (value.severity !== 'blocking' && value.severity !== 'advisory')
+			throw invalid(`prerequisite "${id}" severity must be "blocking" or "advisory".`);
+		severity = value.severity;
+	}
 	if (!isRecord(value.environments))
 		throw invalid(`prerequisite "${id}" needs an "environments" object.`);
 	const environments: Record<string, DataPrerequisiteEnvironment> = {};
@@ -88,6 +97,7 @@ function parsePrerequisite(value: unknown): DataPrerequisite {
 		summary: value.summary as string,
 		introducedBy: value.introducedBy as string,
 		verify: value.verify as string,
+		severity,
 		environments,
 	};
 }
@@ -144,6 +154,7 @@ export function requireDataPrerequisites(
 		);
 	const manifest = parseDataPrerequisiteManifest(manifestText);
 	const blocked = manifest.prerequisites.filter((prerequisite) => {
+		if (prerequisite.severity === 'advisory') return false;
 		const status = prerequisite.environments[environment]?.status;
 		return status !== 'verified' && status !== 'not-applicable';
 	});
