@@ -64,9 +64,14 @@ export const OrderBasicsFields: React.FC<{
 				id="order-deposit"
 				type="number"
 				min="0"
+				aria-describedby="order-deposit-help"
 				value={value.depositAmount}
 				onChange={(event) => onChange({ ...value, depositAmount: event.target.value })}
 			/>
+			<small id="order-deposit-help">
+				Monto que se propone cobrar al confirmar. El anticipo realmente recibido se registra
+				después, en la orden.
+			</small>
 		</div>
 	</>
 );
