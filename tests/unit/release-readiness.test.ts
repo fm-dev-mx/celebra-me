@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import {
 	CLOUDFLARE_PRODUCTION_DEPLOYMENT_SMOKE,
 	STATIC_CAPABILITY_CHECK,
@@ -13,7 +15,10 @@ import {
 	requireReleaseChecks,
 	REQUIRED_RELEASE_CHECKS,
 } from '../../scripts/ops/release-readiness.ts';
-import { requireDataPrerequisites } from '../../scripts/ops/data-prerequisites.ts';
+import {
+	DATA_PREREQUISITES_PATH,
+	requireDataPrerequisites,
+} from '../../scripts/ops/data-prerequisites.ts';
 
 const sha = 'a'.repeat(40);
 const passing = () =>
@@ -405,13 +410,19 @@ describe('data prerequisite manifest at the release SHA', () => {
 
 	it('reads the manifest from the exact SHA, not from the working tree', () => {
 		const text = manifestWith('verified');
+		// The manifest on disk must differ from the one served for the SHA; otherwise reading
+		// the disk would return the same text and go unnoticed.
+		const onDisk = readFileSync(resolve(__dirname, '../..', DATA_PREREQUISITES_PATH), 'utf8');
+		expect(onDisk).not.toBe(text);
 		const requests: string[] = [];
 		const runner = ghRunner({ [contentsKey]: fileResponse(text) });
 		const recording = (args: string[]) => {
 			requests.push(args.join(' '));
 			return runner(args);
 		};
-		expect(loadDataPrerequisiteManifest(sha, recording)).toBe(text);
+		const loaded = loadDataPrerequisiteManifest(sha, recording);
+		expect(loaded).toBe(text);
+		expect(loaded).not.toBe(onDisk);
 		expect(requests).toContain(`api repos/celebra-me/test/${contentsKey}`);
 		expect(() =>
 			requireDataPrerequisites(loadDataPrerequisiteManifest(sha, recording)),
