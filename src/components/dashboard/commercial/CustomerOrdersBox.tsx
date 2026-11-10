@@ -88,6 +88,53 @@ const OrderReferralNotes: React.FC<{ order: SalesOrder }> = ({ order }) => {
 	);
 };
 
+/** Deposit capture for an order that has not received its deposit yet. */
+const DepositTrigger: React.FC<{
+	order: SalesOrder;
+	value: string | number;
+	busy: boolean;
+	onAmountChange: (orderId: string, value: string) => void;
+	onMarkDepositPaid: (orderId: string) => void;
+}> = ({ order, value, busy, onAmountChange, onMarkDepositPaid }) => {
+	const amount = typeof value === 'string' ? parseFloat(value) : value;
+	const valid = Number.isFinite(amount) && amount > 0;
+	return (
+		<div className="order-payment-trigger">
+			<div className="order-payment-input-wrap">
+				<label className="order-payment-label" htmlFor={`deposit-received-${order.id}`}>
+					Anticipo recibido ($ MXN)
+				</label>
+				<input
+					id={`deposit-received-${order.id}`}
+					type="number"
+					min="1"
+					aria-describedby={`deposit-received-help-${order.id}`}
+					value={value}
+					onChange={(e) => onAmountChange(order.id, e.target.value)}
+				/>
+				<small id={`deposit-received-help-${order.id}`}>
+					Monto que el cliente ya pagó. Se precarga con el anticipo sugerido; corríjalo si
+					pagó otra cantidad.
+				</small>
+			</div>
+			<button
+				type="button"
+				className="btn-primary"
+				disabled={busy || !valid}
+				aria-describedby={valid ? undefined : `deposit-disabled-reason-${order.id}`}
+				onClick={() => onMarkDepositPaid(order.id)}
+			>
+				{busy ? 'Registrando...' : 'Registrar anticipo'}
+			</button>
+			{!valid && (
+				<small id={`deposit-disabled-reason-${order.id}`}>
+					Capture un anticipo recibido mayor a $0 para poder registrarlo.
+				</small>
+			)}
+		</div>
+	);
+};
+
 const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 	customerOrders,
 	depositAmounts,
@@ -175,39 +222,13 @@ const CustomerOrdersBox: React.FC<CustomerOrdersBoxProps> = ({
 
 						{/* Mark Deposit Paid Action */}
 						{(ord.status === 'confirmed' || ord.status === 'quoted') && (
-							<div className="order-payment-trigger">
-								<div className="order-payment-input-wrap">
-									<label className="order-payment-label">
-										Anticipo recibido ($ MXN)
-									</label>
-									<input
-										type="number"
-										min="1"
-										placeholder="899"
-										value={depositAmounts[ord.id] ?? ord.depositAmount ?? ''}
-										onChange={(e) => onAmountChange(ord.id, e.target.value)}
-									/>
-								</div>
-								<button
-									type="button"
-									className="btn-primary"
-									disabled={
-										markingDepositPaid[ord.id] ||
-										(() => {
-											const raw =
-												depositAmounts[ord.id] ?? ord.depositAmount ?? '';
-											const num =
-												typeof raw === 'string' ? parseFloat(raw) : raw;
-											return !(Number.isFinite(num) && num > 0);
-										})()
-									}
-									onClick={() => onMarkDepositPaid(ord.id)}
-								>
-									{markingDepositPaid[ord.id]
-										? 'Registrando...'
-										: 'Registrar anticipo'}
-								</button>
-							</div>
+							<DepositTrigger
+								order={ord}
+								value={depositAmounts[ord.id] ?? ord.depositAmount ?? ''}
+								busy={!!markingDepositPaid[ord.id]}
+								onAmountChange={onAmountChange}
+								onMarkDepositPaid={onMarkDepositPaid}
+							/>
 						)}
 					</div>
 				);

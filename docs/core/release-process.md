@@ -280,13 +280,13 @@ are declared and where the evidence that each environment satisfies them is reco
 
 These checks read the manifest or produce its evidence:
 
-| Check                                   | When it runs                                          | What it refuses                                                                                        |
-| --------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `tests/unit/data-prerequisites.test.ts` | Every CI run                                          | Code under `src/` that reads an `app_metadata` key the manifest does not declare; an invalid manifest. |
-| `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA   | A release whose manifest has a prerequisite without evidence for Production.                           |
-| `pnpm auth:check-login-alias`           | By hand, against one environment, to produce evidence | Nothing by itself: it reports whether the alias prerequisite holds (exit code 0) or not (exit code 1). |
-| `pnpm auth:check-pending-passwords`     | By hand, against one environment, to produce evidence | Nothing by default: reports open password changes and age in days; fails with `--strict` when pending. |
-| `pnpm auth:check-role-app-metadata`     | By hand, against one environment, to produce evidence | Reports whether Auth metadata matches application roles (exit code 0) or not (exit code 1).            |
+| Check                                   | When it runs                                          | What it refuses                                                                                          |
+| --------------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `tests/unit/data-prerequisites.test.ts` | Every CI run                                          | Undeclared `app_metadata` key reads in `src/`, `scripts/` or `supabase/functions/`; an invalid manifest. |
+| `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA   | A release whose manifest has a prerequisite without evidence for Production.                             |
+| `pnpm auth:check-login-alias`           | By hand, against one environment, to produce evidence | Nothing by itself: it reports whether the alias prerequisite holds (exit code 0) or not (exit code 1).   |
+| `pnpm auth:check-pending-passwords`     | By hand, against one environment, to produce evidence | Nothing by default: reports open password changes and age in days; fails with `--strict` when pending.   |
+| `pnpm auth:check-role-app-metadata`     | By hand, against one environment, to produce evidence | Reports whether Auth metadata matches application roles (exit code 0) or not (exit code 1).              |
 
 The `auth-role-app-metadata` prerequisite compares every Auth account's `app_metadata.role` with
 `public.app_user_roles.role`, joined by `user_id`. The table is authoritative; its insert/update
@@ -304,8 +304,9 @@ release category.
 
 #### Declare an `app_metadata` key
 
-Every key that code under `src/` reads from Auth `app_metadata` needs one entry under
-`authAppMetadataKeys`, in the same pull request that adds the read:
+Every key that code under `src/`, `scripts/`, or `supabase/functions/` reads from Auth
+`app_metadata` needs one entry under `authAppMetadataKeys`, in the same pull request that adds the
+read:
 
 ```json
 "new_flag": { "migration": "none", "reason": "An absent value reads as false." }
@@ -440,9 +441,23 @@ deleting an entry, marking `verified` without running the command, or bypassing
 
 #### What these checks do not see
 
-- The key scanner matches `app_metadata.key`, `app_metadata?.key` and `app_metadata['key']`. It does
-  not see a key held in a constant (`temp_password_expires_at` is declared by hand for that reason),
-  destructuring, or a helper that receives the metadata object. Reviewers still own those.
+- The key scanner uses TypeScript AST across `src/`, `scripts/` and `supabase/functions/` to detect
+  property access, bracket access, local constants, imports using relative paths or `@/*` aliases,
+  destructuring, and intra-file helpers or methods receiving or returning the metadata object. It
+  enforces a fail-closed policy: unresolvable bracket accesses emit an `<unknown>` key read that
+  blocks release until declared or resolved. Real boundaries that require reviewer attention:
+  - **Cross-module helpers:** Helpers defined in another file detect reads only if their parameter
+    or local variable uses canonical metadata naming (`app_metadata`, `appMetadata`,
+    `raw_app_meta_data`); inter-module argument tracking is not performed across file boundaries.
+  - **Cross-module methods and dynamic dispatch:** Method calls on objects or instances imported
+    from other modules are not tracked across module boundaries.
+  - **Custom path aliases:** Only the repository's canonical `@/*` alias (mapped to `src/*`) and
+    relative paths are resolved; arbitrary external path aliases are not supported.
+  - **Astro files:** Only the frontmatter script block (`--- ... ---`) is scanned; template markup
+    is excluded.
+  - **Runtime dynamic keys:** Keys computed dynamically at runtime from external data or string
+    concatenation cannot be statically resolved and emit `<unknown>` if accessed via brackets.
+    Reviewers still own those.
 - Only Auth `app_metadata` is scanned. A new dependency on the shape of stored JSON anywhere else
   (invitation content, `user_metadata`, settings columns) must be declared as a prerequisite by its
   author; nothing detects it.
