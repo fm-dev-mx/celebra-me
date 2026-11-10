@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import AssetUploader from '@/components/dashboard/intake/editor/AssetUploader';
 import { getCsrfToken } from '@/lib/csrf';
+import { goToLoginAfterSessionEnded } from '@/lib/dashboard/session-ended';
 import { useAssetLibrary, type AssetItem } from '@/lib/intake/use-asset-library';
 import {
 	getAssetUsageLabel,
@@ -340,6 +341,10 @@ export default function AssetLibraryPanel({ invitationId }: Props) {
 				body: JSON.stringify(body),
 			},
 		);
+		if (response.status === 401) {
+			goToLoginAfterSessionEnded();
+			return;
+		}
 		if (!response.ok) {
 			const result = await response.json().catch(() => ({}));
 			throw new Error(
@@ -378,6 +383,10 @@ export default function AssetLibraryPanel({ invitationId }: Props) {
 					headers: csrfToken ? { 'X-CSRF-Token': csrfToken } : undefined,
 				},
 			);
+			if (response.status === 401) {
+				goToLoginAfterSessionEnded();
+				return;
+			}
 			if (!response.ok) {
 				const result = await response.json();
 				const message = result?.error?.message || 'No se pudo restaurar la imagen.';
@@ -415,6 +424,10 @@ export default function AssetLibraryPanel({ invitationId }: Props) {
 					headers: csrfToken ? { 'X-CSRF-Token': csrfToken } : undefined,
 				},
 			);
+			if (response.status === 401) {
+				goToLoginAfterSessionEnded();
+				return;
+			}
 			const result = await response.json();
 			if (!response.ok) {
 				const details = result?.error?.details as { sectionRefs?: string[] } | undefined;
