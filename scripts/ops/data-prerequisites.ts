@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- AST metadata scanner and prerequisite release gate share one module boundary. */
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, relative } from 'node:path';
 import ts from 'typescript';
@@ -194,6 +195,19 @@ function normalizeModulePath(p: string): string {
 	return p.replace(/\\/g, '/').replace(/\.(?:ts|tsx|mts|js|mjs|cjs|astro)$/u, '');
 }
 
+/**
+ * Extracts only the frontmatter script from an Astro component source file,
+ * preserving line numbers so reported reads point to the exact source lines.
+ * Returns an empty string if no frontmatter is found.
+ */
+export function extractAstroFrontmatter(source: string): string {
+	const match = source
+		.replace(/^\uFEFF/u, '')
+		.match(/^[ \t]*---[^\r\n]*(\r?\n)([\s\S]*?)\r?\n[ \t]*---(?:\r?\n|$)/u);
+	if (!match) return '';
+	return match[1] + match[2];
+}
+
 interface Scope {
 	parent: Scope | null;
 	constants: Map<string, string>;
@@ -276,8 +290,11 @@ function isAppMetadataTarget(
 			getExpressionStringValue(current.argumentExpression, scope) === 'app_metadata') ||
 		(ts.isIdentifier(current) && isAlias(scope, current.text)) ||
 		(ts.isCallExpression(current) &&
-			ts.isIdentifier(current.expression) &&
-			helpersReturningMeta.has(current.expression.text))
+			(ts.isIdentifier(current.expression)
+				? helpersReturningMeta.has(current.expression.text)
+				: ts.isPropertyAccessExpression(current.expression)
+					? helpersReturningMeta.has(current.expression.name.text)
+					: false))
 	);
 }
 
@@ -289,9 +306,10 @@ function resolveBindingElementKey(elem: ts.BindingElement, scope: Scope): string
 	if (!elem.propertyName) return ts.isIdentifier(elem.name) ? elem.name.text : undefined;
 	if (ts.isIdentifier(elem.propertyName) || ts.isStringLiteral(elem.propertyName))
 		return elem.propertyName.text;
-	return ts.isComputedPropertyName(elem.propertyName)
-		? getExpressionStringValue(elem.propertyName.expression, scope)
-		: undefined;
+	if (ts.isComputedPropertyName(elem.propertyName)) {
+		return getExpressionStringValue(elem.propertyName.expression, scope) ?? '<unknown>';
+	}
+	return undefined;
 }
 
 const getBindingElementName = (elem: ts.BindingElement): string | undefined =>
@@ -346,6 +364,15 @@ function parseExternalConstants(ext?: ExternalConstants): {
 			);
 			moduleMap.set(key, inner);
 			moduleMap.set(normalizeModulePath(key), inner);
+			if (key.startsWith('@/')) {
+				const srcKey = 'src/' + key.slice(2);
+				moduleMap.set(srcKey, inner);
+				moduleMap.set(normalizeModulePath(srcKey), inner);
+			} else if (key.startsWith('src/')) {
+				const atKey = '@/' + key.slice(4);
+				moduleMap.set(atKey, inner);
+				moduleMap.set(normalizeModulePath(atKey), inner);
+			}
 		}
 	}
 	return { moduleMap, fallback };
@@ -356,9 +383,19 @@ function resolveModuleExports(
 	currentFile: string,
 	map: Map<string, Map<string, string>>,
 ): Map<string, string> | undefined {
-	if (map.has(spec)) return map.get(spec);
-	const norm = normalizeModulePath(spec);
-	if (map.has(norm)) return map.get(norm);
+	const candidates: string[] = [spec];
+	if (spec.startsWith('@/')) {
+		candidates.push('src/' + spec.slice(2));
+	} else if (spec.startsWith('@tests/')) {
+		candidates.push('tests/' + spec.slice(7));
+	}
+	for (const cand of candidates) {
+		if (map.has(cand)) return map.get(cand);
+		const norm = normalizeModulePath(cand);
+		if (map.has(norm)) return map.get(norm);
+		const indexNorm = normalizeModulePath(join(cand, 'index'));
+		if (map.has(indexNorm)) return map.get(indexNorm);
+	}
 	const dir = currentFile ? dirname(currentFile) : '';
 	if (!dir) return undefined;
 	const target = normalizeModulePath(join(dir, spec));
@@ -454,6 +491,24 @@ function collectDeclarations(
 				parameters: toParams(node.parameters),
 				scope: getScope(node, nodeToScope, rootScope),
 				body: node.body,
+			});
+		} else if (ts.isMethodDeclaration(node) && ts.isIdentifier(node.name)) {
+			functions.set(node.name.text, {
+				parameters: toParams(node.parameters),
+				scope: getScope(node, nodeToScope, rootScope),
+				body: node.body,
+			});
+		} else if (
+			ts.isPropertyAssignment(node) &&
+			ts.isIdentifier(node.name) &&
+			node.initializer &&
+			(ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer))
+		) {
+			const fn = node.initializer;
+			functions.set(node.name.text, {
+				parameters: toParams(fn.parameters),
+				scope: getScope(fn, nodeToScope, rootScope),
+				body: fn.body,
 			});
 		} else if (
 			ts.isBinaryExpression(node) &&
@@ -574,7 +629,8 @@ function checkHelperReturns(
 			} else if (
 				!ts.isFunctionDeclaration(n) &&
 				!ts.isFunctionExpression(n) &&
-				!ts.isArrowFunction(n)
+				!ts.isArrowFunction(n) &&
+				!ts.isMethodDeclaration(n)
 			) {
 				ts.forEachChild(n, check);
 			}
@@ -589,8 +645,13 @@ function checkCallSite(
 	functions: ReadonlyMap<string, FunctionInfo>,
 	ctx: FileScanContext,
 ): void {
-	if (!ts.isIdentifier(call.expression)) return;
-	const fnInfo = functions.get(call.expression.text);
+	const calleeName = ts.isIdentifier(call.expression)
+		? call.expression.text
+		: ts.isPropertyAccessExpression(call.expression)
+			? call.expression.name.text
+			: undefined;
+	if (!calleeName) return;
+	const fnInfo = functions.get(calleeName);
 	if (!fnInfo) return;
 
 	call.arguments.forEach((arg, idx) => {
@@ -610,6 +671,7 @@ function checkCallSite(
 		} else if (param.pattern) {
 			addRestAliases(param.pattern, fnInfo.scope);
 			for (const elem of param.pattern.elements) {
+				if (elem.dotDotDotToken) continue;
 				const key = resolveBindingElementKey(elem, fnInfo.scope);
 				if (key) addRead(ctx, key, elem);
 			}
@@ -675,7 +737,7 @@ function checkAssignmentRead(node: ts.BinaryExpression, ctx: FileScanContext): v
 				ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name)
 					? prop.name.text
 					: ts.isComputedPropertyName(prop.name)
-						? getExpressionStringValue(prop.name.expression, scope)
+						? (getExpressionStringValue(prop.name.expression, scope) ?? '<unknown>')
 						: undefined;
 			if (key) addRead(ctx, key, prop);
 		}
@@ -694,8 +756,8 @@ function collectAllReads(ctx: FileScanContext): void {
 			ts.isElementAccessExpression(node) &&
 			isAppMetadataTarget(node.expression, scope, ctx.helpersReturningMeta)
 		) {
-			const key = getExpressionStringValue(node.argumentExpression, scope);
-			if (key) addRead(ctx, key, node.argumentExpression);
+			const key = getExpressionStringValue(node.argumentExpression, scope) ?? '<unknown>';
+			addRead(ctx, key, node.argumentExpression);
 		} else if (ts.isVariableDeclaration(node)) {
 			const isTarget =
 				node.initializer &&
@@ -732,13 +794,20 @@ export function findAppMetadataKeyReads(
 	file: string,
 	externalConstants?: ExternalConstants,
 ): AppMetadataKeyRead[] {
+	const effectiveSource = file.endsWith('.astro') ? extractAstroFrontmatter(source) : source;
 	const scriptKind = /\.[tj]sx$|\.astro$/u.test(file)
 		? ts.ScriptKind.TSX
 		: /\.[cm]?js$/u.test(file)
 			? ts.ScriptKind.JS
 			: ts.ScriptKind.TS;
 
-	const sourceFile = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, scriptKind);
+	const sourceFile = ts.createSourceFile(
+		file,
+		effectiveSource,
+		ts.ScriptTarget.Latest,
+		true,
+		scriptKind,
+	);
 	const { moduleMap, fallback } = parseExternalConstants(externalConstants);
 	const rootScope = createScope(null);
 	bindImports(sourceFile, file, rootScope, moduleMap, fallback);
@@ -812,6 +881,11 @@ function collectExportedConstants(
 			const norm = p.replace(/\\/g, '/');
 			moduleExports.set(norm, exports);
 			moduleExports.set(normalizeModulePath(norm), exports);
+			if (norm.startsWith('src/')) {
+				const atNorm = '@/' + norm.slice(4);
+				moduleExports.set(atNorm, exports);
+				moduleExports.set(normalizeModulePath(atNorm), exports);
+			}
 		}
 	};
 
@@ -823,12 +897,11 @@ function collectExportedConstants(
 				if (!IGNORED_DIRS.has(entry.name)) walk(path);
 			} else if (SOURCE_FILE.test(entry.name)) {
 				try {
-					const sf = ts.createSourceFile(
-						path,
-						readFileSync(path, 'utf8'),
-						ts.ScriptTarget.Latest,
-						true,
-					);
+					const text = readFileSync(path, 'utf8');
+					const effective = entry.name.endsWith('.astro')
+						? extractAstroFrontmatter(text)
+						: text;
+					const sf = ts.createSourceFile(path, effective, ts.ScriptTarget.Latest, true);
 					const fileExports = harvestFileExports(sf);
 					if (fileExports.size > 0) register(path, fileExports);
 				} catch {
@@ -846,7 +919,7 @@ export function scanAppMetadataKeyReads(
 	baseDir?: string,
 ): AppMetadataKeyRead[] {
 	const roots = Array.isArray(rootOrRoots) ? rootOrRoots : [rootOrRoots];
-	const exportedConstants = collectExportedConstants(roots);
+	const exportedConstants = collectExportedConstants(roots, baseDir);
 	const reads: AppMetadataKeyRead[] = [];
 
 	const walk = (directory: string, relativePrefix: string): void => {

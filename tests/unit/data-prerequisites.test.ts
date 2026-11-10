@@ -285,6 +285,78 @@ describe('app_metadata key scanner', () => {
 		]);
 	});
 
+	it('resolves constants imported via tsconfig path alias @/ to src/', () => {
+		const source = [
+			"import { ALIAS_KEY } from '@/lib/keys';",
+			'const a = user.app_metadata[ALIAS_KEY];',
+		].join('\n');
+		const externalConstants = {
+			'src/lib/keys': { ALIAS_KEY: 'login_alias' },
+		};
+		expect(findAppMetadataKeyReads(source, 'src/example.ts', externalConstants)).toEqual([
+			{ key: 'login_alias', file: 'src/example.ts', line: 2 },
+		]);
+
+		const externalConstantsByAlias = {
+			'@/lib/keys': { ALIAS_KEY: 'login_alias' },
+		};
+		expect(findAppMetadataKeyReads(source, 'src/example.ts', externalConstantsByAlias)).toEqual(
+			[{ key: 'login_alias', file: 'src/example.ts', line: 2 }],
+		);
+	});
+
+	it('reports <unknown> for unresolved bracket access or dynamic expressions so the gate fails closed', () => {
+		const source = [
+			'const key = getDynamicKey();',
+			'const a = user.app_metadata[key];',
+			"const b = user.app_metadata['prefix_' + suffix];",
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: '<unknown>', file: 'example.ts', line: 2 },
+			{ key: '<unknown>', file: 'example.ts', line: 3 },
+		]);
+	});
+
+	it('finds keys accessed inside same-file methods receiving or returning app_metadata', () => {
+		const source = [
+			'const helper = {',
+			'    check(meta: Record<string, unknown>) {',
+			'        return meta.role;',
+			'    },',
+			'    getMeta(u: User) {',
+			'        return u.app_metadata;',
+			'    },',
+			'};',
+			'helper.check(user.app_metadata);',
+			'const alias = helper.getMeta(user)?.login_alias;',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'role', file: 'example.ts', line: 3 },
+			{ key: 'login_alias', file: 'example.ts', line: 10 },
+		]);
+	});
+
+	it('extracts and scans only frontmatter from .astro files, preserving line numbers', () => {
+		const astroSource = [
+			'---',
+			"import { something } from './something';",
+			'const role = user.app_metadata.role;',
+			'---',
+			'<div class="container">',
+			'    <span>{user.app_metadata.broken_template_should_not_parse}</span>',
+			'    <unclosed-tag invalid syntax >>>',
+			'</div>',
+		].join('\n');
+		expect(findAppMetadataKeyReads(astroSource, 'src/components/Card.astro')).toEqual([
+			{ key: 'role', file: 'src/components/Card.astro', line: 3 },
+		]);
+	});
+
+	it('returns no reads for .astro files without frontmatter', () => {
+		const templateOnly = '<div class="static">Pure HTML without frontmatter</div>';
+		expect(findAppMetadataKeyReads(templateOnly, 'src/components/Static.astro')).toEqual([]);
+	});
+
 	it('reports a read that the manifest does not declare, with the way out', () => {
 		const reads = findAppMetadataKeyReads('user.app_metadata?.new_flag', 'src/example.ts');
 		const undeclared = findUndeclaredAppMetadataKeys(

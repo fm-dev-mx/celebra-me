@@ -436,9 +436,22 @@ deleting an entry, marking `verified` without running the command, or bypassing
 #### What these checks do not see
 
 - The key scanner uses TypeScript AST across `src/`, `scripts/` and `supabase/functions/` to detect
-  property access, bracket access, constants, destructuring, and helpers receiving or returning the
-  metadata object. It does not see keys computed dynamically at runtime from arbitrary external data
-  or string concatenation. Reviewers still own those.
+  property access, bracket access, local constants, imports using relative paths or `@/*` aliases,
+  destructuring, and intra-file helpers or methods receiving or returning the metadata object. It
+  enforces a fail-closed policy: unresolvable bracket accesses emit an `<unknown>` key read that
+  blocks release until declared or resolved. Real boundaries that require reviewer attention:
+  - **Cross-module helpers:** Helpers defined in another file detect reads only if their parameter
+    or local variable uses canonical metadata naming (`app_metadata`, `appMetadata`,
+    `raw_app_meta_data`); inter-module argument tracking is not performed across file boundaries.
+  - **Cross-module methods and dynamic dispatch:** Method calls on objects or instances imported
+    from other modules are not tracked across module boundaries.
+  - **Custom path aliases:** Only the repository's canonical `@/*` alias (mapped to `src/*`) and
+    relative paths are resolved; arbitrary external path aliases are not supported.
+  - **Astro files:** Only the frontmatter script block (`--- ... ---`) is scanned; template markup
+    is excluded.
+  - **Runtime dynamic keys:** Keys computed dynamically at runtime from external data or string
+    concatenation cannot be statically resolved and emit `<unknown>` if accessed via brackets.
+    Reviewers still own those.
 - Only Auth `app_metadata` is scanned. A new dependency on the shape of stored JSON anywhere else
   (invitation content, `user_metadata`, settings columns) must be declared as a prerequisite by its
   author; nothing detects it.
