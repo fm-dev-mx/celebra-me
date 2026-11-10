@@ -140,6 +140,12 @@ describe('Cloudflare Production upload workflow contract', () => {
 		expect(buildEnv).toContain('CELEBRA_DEPLOY_ENV: production');
 	});
 
+	it('declares checks: read permission for release checks verification', () => {
+		expect(workflow).toMatch(
+			/permissions:\s+checks:\s*read\s+contents:\s*read\s+deployments:\s*write\s+statuses:\s*write/u,
+		);
+	});
+
 	it('requires release checks before creating or uploading the Worker version', () => {
 		const uploadJob = workflow.slice(
 			workflow.indexOf('    production:'),

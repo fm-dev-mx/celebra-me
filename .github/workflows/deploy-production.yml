@@ -15,6 +15,7 @@ name: Cloudflare Production Upload
 #   `Cloudflare - celebra-me production smoke` that `pnpm ops:release-status` requires.
 
 permissions:
+    checks: read
     contents: read
     deployments: write
     statuses: write
