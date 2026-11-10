@@ -56,6 +56,31 @@ Resetting a password from the admin panel keeps an alias that is already in `app
 not copy one from `user_metadata`: a reset is not a repair for a legacy-only alias. Run the
 backfill.
 
+## Read-only role synchronization check
+
+```sh
+pnpm auth:check-role-app-metadata
+```
+
+Uses only `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` from the process environment, without
+loading environment files. It performs GET requests only, paginating Auth accounts and
+`public.app_user_roles` (`user_id`, `role`). That table is authoritative: migration `20260215000800`
+copies its role into Auth metadata after inserts and updates; middleware reads `app_metadata.role`
+and account-access verification requires equality.
+
+Output contains only `target`, `accounts`, `matching`, `differing`, `orphanRoles`, and `ok`.
+`differing` includes accounts missing a table role or a valid matching metadata role; two missing
+roles do not count as a match. Only `super_admin` and `host_client` are valid. Orphan table rows
+also fail. Exit code is 0 only for a nonempty directory with no differences or orphans; otherwise
+
+1. Request, pagination, configuration, and malformed-response errors also exit 1 with a sanitized
+   message. No emails, account IDs, credentials, or upstream bodies are printed.
+
+Record evidence for `auth-role-app-metadata` only when `target` names the intended environment and
+`ok` is true. Preview and Production start pending. This audit does not repair data or authorize any
+writes. Because the two directories are read separately, pause administrative account and role
+changes during the check and rerun after any concurrent changes before recording evidence.
+
 ## Migration
 
 The default is dry-run. Review the target and existing alias ownership before applying: legacy user

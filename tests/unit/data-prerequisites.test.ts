@@ -45,9 +45,22 @@ describe('committed data prerequisite manifest', () => {
 		if (undeclared.length > 0) throw new Error(describeUndeclaredAppMetadataKeys(undeclared));
 	});
 
-	it('allows a Production release', () => {
-		expect(() => requireDataPrerequisites(committedManifest)).not.toThrow();
-	});
+	it.each(['production', 'preview'])(
+		'blocks %s until role synchronization is verified',
+		(environment) => {
+			const parsed = parseDataPrerequisiteManifest(committedManifest);
+			expect(parsed.authAppMetadataKeys.role).toEqual({
+				prerequisite: 'auth-role-app-metadata',
+			});
+			expect(
+				parsed.prerequisites.find(({ id }) => id === 'auth-role-app-metadata')
+					?.environments[environment].status,
+			).toBe('pending');
+			expect(() => requireDataPrerequisites(committedManifest, environment)).toThrow(
+				/auth-role-app-metadata: .*`pnpm auth:check-role-app-metadata`/,
+			);
+		},
+	);
 });
 
 describe('app_metadata key scanner', () => {

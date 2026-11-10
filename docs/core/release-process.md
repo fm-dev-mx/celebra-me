@@ -278,13 +278,23 @@ migration or capability check sees it, and unit tests feed the code synthetic da
 be correct and still lock real accounts out. `supabase/data-prerequisites.json` is where those facts
 are declared and where the evidence that each environment satisfies them is recorded.
 
-Three checks read the manifest or produce its evidence:
+These checks read the manifest or produce its evidence:
 
 | Check                                   | When it runs                                          | What it refuses                                                                                        |
 | --------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `tests/unit/data-prerequisites.test.ts` | Every CI run                                          | Code under `src/` that reads an `app_metadata` key the manifest does not declare; an invalid manifest. |
 | `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA   | A release whose manifest has a prerequisite without evidence for Production.                           |
 | `pnpm auth:check-login-alias`           | By hand, against one environment, to produce evidence | Nothing by itself: it reports whether the alias prerequisite holds (exit code 0) or not (exit code 1). |
+| `pnpm auth:check-role-app-metadata`     | By hand, against one environment, to produce evidence | Reports whether Auth metadata matches application roles (exit code 0) or not (exit code 1).            |
+
+The `auth-role-app-metadata` prerequisite compares every Auth account's `app_metadata.role` with
+`public.app_user_roles.role`, joined by `user_id`. The table is authoritative; its insert/update
+trigger copies the role to Auth. Missing or invalid roles, differences, orphan table rows, or an
+empty Auth directory fail the read-only check. It prints only the environment and totals; see
+[`scripts/auth/README.md`](../../scripts/auth/README.md) for output and execution details. Preview
+and Production remain `pending` until their own successful check is recorded. Do not mark them
+verified based on the trigger's existence or unit tests. The command does not repair differences;
+any repair needs separate authorization and the guarded workflow for that environment.
 
 The release gate reads the manifest from GitHub at the exact SHA being released, so the evidence
 must be merged before the release, not typed during it. A change to the manifest also adds the gate
@@ -327,11 +337,11 @@ the code must not be activated.
 
 #### Record evidence
 
-1. Run the backfill for the environment through its guarded workflow (Production: the owner patch
-   workflow below).
-2. Run the `verify` command against that environment and confirm it exits with code 0 and, for
-   `pnpm auth:check-login-alias`, that `target` names that environment. Its output contains totals
-   only, so paste it into the pull request that records the evidence.
+1. If needed, repair the data for the environment through its authorized guarded workflow
+   (Production: the owner patch workflow below). A read-only check may already pass without repair.
+2. Run the `verify` command against that environment and confirm it exits with code 0 and, for the
+   Auth checks, that `target` names that environment. Its output contains totals only, so paste it
+   into the pull request that records the evidence.
 3. Set the environment to `verified` with the date and what was done:
 
    ```json
