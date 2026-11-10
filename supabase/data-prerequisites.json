@@ -32,8 +32,9 @@
                     "evidence": "Owner patch 20261109_auth_login_alias_app_metadata_backfill.sql (PR #880) applied on release 5716c7c24 with UPDATE 28."
                 },
                 "preview": {
-                    "status": "pending",
-                    "evidence": "No backfill run is recorded for Preview."
+                    "status": "verified",
+                    "verifiedAt": "2026-11-09",
+                    "evidence": "pnpm auth:migrate-login-alias --dry-run (planned 18, duplicates 0, written 0), then --apply (planned 18, written 18, duplicates 0); pnpm auth:check-login-alias afterwards: target preview, accounts 19, protectedAliases 19, legacyOnly 0, duplicates 0, ok true."
                 }
             }
         }
