@@ -201,10 +201,23 @@ function clearPrimaryAuthCookies(cookies: CookieStore) {
 	cookies.delete('sb-trust-device', { path: '/' });
 }
 
+/**
+ * Ends an idle session but keeps `sb-trust-device`: the next sign-in asks for the password only,
+ * not for MFA again. The cookie is still verified against the user and browser on every request.
+ */
 function clearIdleSessionCookies(cookies: CookieStore) {
-	clearPrimaryAuthCookies(cookies);
+	cookies.delete('sb-access-token', { path: '/' });
+	cookies.delete('sb-refresh-token', { path: '/' });
 	cookies.delete('sb-mfa-session', { path: '/dashboard/mfa-setup' });
 	cookies.delete('sb-idle-seen', { path: '/' });
+}
+
+/**
+ * Only the super admin has an idle cutoff. Hosts leave the panel for long stretches to share
+ * invitations in other apps, so their session lasts as long as the refresh token (30 days).
+ */
+function hasIdleCutoff(role: ReturnType<typeof normalizeAppRole>): boolean {
+	return role === 'super_admin';
 }
 
 function isIdleSessionExpired(cookies: CookieStore, now: number) {
@@ -563,6 +576,24 @@ function rejectExpiredTemporaryPassword(
 	return handleUnauthenticatedResponse(url, isApiRoute, redirect);
 }
 
+function rejectIdleSession(
+	user: { app_metadata?: Record<string, unknown> },
+	url: URL,
+	cookies: CookieStore,
+	redirect: (path: string) => Response,
+	now: number,
+): Response | null {
+	if (!hasIdleCutoff(normalizeAppRole(user.app_metadata?.role))) return null;
+	if (!isIdleSessionExpired(cookies, now)) return null;
+	clearIdleSessionCookies(cookies);
+	if (url.pathname.startsWith('/api/dashboard')) {
+		return errorResponse(
+			new ApiError(401, 'unauthorized', 'Su sesión ha expirado. Inicie sesión de nuevo.'),
+		);
+	}
+	return privateRedirect(redirect, '/login?reason=session_expired');
+}
+
 async function handleProtectedAuthRequest(
 	url: URL,
 	cookies: CookieStore,
@@ -581,16 +612,6 @@ async function handleProtectedAuthRequest(
 		return null;
 	}
 
-	if (isIdleSessionExpired(cookies, now)) {
-		clearIdleSessionCookies(cookies);
-		if (isApiRoute) {
-			return errorResponse(
-				new ApiError(401, 'unauthorized', 'Su sesión ha expirado. Inicie sesión de nuevo.'),
-			);
-		}
-		return privateRedirect(redirect, '/login');
-	}
-
 	const { accessToken, user } = await resolveAuthenticatedUser(cookies);
 	if (!user) {
 		return handleUnauthenticatedResponse(url, isApiRoute, redirect);
@@ -598,6 +619,9 @@ async function handleProtectedAuthRequest(
 
 	const expired = rejectExpiredTemporaryPassword(user, url, cookies, redirect);
 	if (expired) return expired;
+
+	const idle = rejectIdleSession(user, url, cookies, redirect, now);
+	if (idle) return idle;
 
 	const authContext = await resolveAuthContext(cookies, request, user, accessToken);
 	if (!authContext.role) {

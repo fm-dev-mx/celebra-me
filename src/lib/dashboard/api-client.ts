@@ -1,13 +1,24 @@
 import { fetchJSON, type ApiResult, type FetchJSONInit } from '@/lib/api-client-shared';
 import { getCsrfToken } from '@/lib/csrf';
+import { goToLoginAfterSessionEnded } from '@/lib/dashboard/session-ended';
 
 export { type ApiResult };
 
+/**
+ * A 401 from the panel API means the session ended. The person is sent to the login page with an
+ * explanation instead of staying on a screen where every action fails.
+ */
+function isSessionEnded<T>(url: string, result: ApiResult<T>): boolean {
+	return !result.ok && result.status === 401 && url.startsWith('/api/dashboard');
+}
+
 export class DashboardApiClient {
 	private baseUrl: string;
+	private onSessionEnded: () => void;
 
-	constructor(baseUrl: string = '') {
+	constructor(baseUrl: string = '', onSessionEnded: () => void = goToLoginAfterSessionEnded) {
 		this.baseUrl = baseUrl;
+		this.onSessionEnded = onSessionEnded;
 	}
 
 	/**
@@ -33,8 +44,15 @@ export class DashboardApiClient {
 		return headers;
 	}
 
+	private async request<T>(path: string, init: FetchJSONInit): Promise<ApiResult<T>> {
+		const url = `${this.baseUrl}${path}`;
+		const result = await fetchJSON<T>(url, init);
+		if (isSessionEnded(url, result)) this.onSessionEnded();
+		return result;
+	}
+
 	async get<T>(path: string, init?: FetchJSONInit): Promise<ApiResult<T>> {
-		return fetchJSON<T>(`${this.baseUrl}${path}`, {
+		return this.request<T>(path, {
 			method: 'GET',
 			...init,
 		});
@@ -45,7 +63,7 @@ export class DashboardApiClient {
 		body?: unknown,
 		init?: Omit<RequestInit, 'body'>,
 	): Promise<ApiResult<T>> {
-		return fetchJSON<T>(`${this.baseUrl}${path}`, {
+		return this.request<T>(path, {
 			method: 'POST',
 			...init,
 			headers: this.prepareMutationHeaders(init),
@@ -58,7 +76,7 @@ export class DashboardApiClient {
 		body?: unknown,
 		init?: Omit<RequestInit, 'body'>,
 	): Promise<ApiResult<T>> {
-		return fetchJSON<T>(`${this.baseUrl}${path}`, {
+		return this.request<T>(path, {
 			method: 'PATCH',
 			...init,
 			headers: this.prepareMutationHeaders(init),
@@ -67,7 +85,7 @@ export class DashboardApiClient {
 	}
 
 	async delete<T>(path: string, init?: RequestInit): Promise<ApiResult<T>> {
-		return fetchJSON<T>(`${this.baseUrl}${path}`, {
+		return this.request<T>(path, {
 			method: 'DELETE',
 			...init,
 			headers: this.prepareMutationHeaders(init),
@@ -81,7 +99,7 @@ export class DashboardApiClient {
 			headers['X-CSRF-Token'] = csrfToken;
 		}
 		// Do NOT set Content-Type — browser sets it with boundary for FormData
-		return fetchJSON<T>(`${this.baseUrl}${path}`, {
+		return this.request<T>(path, {
 			method: 'POST',
 			headers,
 			body: formData,
