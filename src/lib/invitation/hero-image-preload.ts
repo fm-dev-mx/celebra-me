@@ -65,7 +65,11 @@ function portraitSource(image: ImageMetadata | ImageAsset): string | null {
  * while rendering, so they keep the plain `<img>` discovery.
  */
 export function buildHeroImagePreloads(hero: HeroImageInput): HeroImagePreload[] {
-	if (hero.variant === 'framed-portrait' || hero.variant === 'bleed-portrait') {
+	if (
+		hero.variant === 'framed-portrait' ||
+		hero.variant === 'bleed-portrait' ||
+		hero.variant === 'cased-portrait'
+	) {
 		const portrait = hero.backgroundImage && portraitSource(hero.backgroundImage);
 		return portrait ? [preload(portrait, undefined, PORTRAIT_HERO_SIZES)] : [];
 	}

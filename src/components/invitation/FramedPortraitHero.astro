@@ -5,6 +5,7 @@ import type { ImageAsset } from '@/lib/assets/asset-registry';
 import CacheSafeImage from '@/components/common/CacheSafeImage.astro';
 import { splitLeadWords } from '@/lib/invitation/name-split';
 import { PORTRAIT_HERO_SIZES } from '@/lib/invitation/hero-image-preload';
+import ScrollConstellation from './ScrollConstellation.astro';
 
 interface Props {
 	name: string;
@@ -16,13 +17,14 @@ interface Props {
 	backgroundImage: ImageMetadata | ImageAsset;
 	scrollLabel?: string;
 	highPriority?: boolean;
-	variant?: 'framed-portrait' | 'bleed-portrait';
+	variant?: 'framed-portrait' | 'bleed-portrait' | 'cased-portrait';
 	time?: string;
 	venueName?: string;
 	venueEvent?: string;
+	scrollCue?: 'chevron' | 'constellation';
 }
 
-const { name, nameLeadWords, secondaryName, label, nickname, date, backgroundImage, scrollLabel: scrollLabelProp, highPriority = true, variant = 'framed-portrait', time, venueName, venueEvent } = Astro.props;
+const { name, nameLeadWords, secondaryName, label, nickname, date, backgroundImage, scrollLabel: scrollLabelProp, highPriority = true, variant = 'framed-portrait', time, venueName, venueEvent, scrollCue } = Astro.props;
 // bleed-portrait: the photograph runs to the edges and the letter states when and where in
 // written form; the scroll cue is a silver line instead of a phrase with an arrow.
 const isBleed = variant === 'bleed-portrait';
@@ -80,6 +82,7 @@ const height = delivery?.height ?? ('height' in backgroundImage ? backgroundImag
 			) : (
 				<div class="framed-portrait-hero__details">
 					<p>{formattedDate}</p>
+					{venueName && <p class="framed-portrait-hero__details-venue">{venueName}</p>}
 				</div>
 			)}
 		</div>
@@ -89,6 +92,11 @@ const height = delivery?.height ?? ('height' in backgroundImage ? backgroundImag
 			<span class="framed-portrait-hero__scroll-prompt">{scrollLabel}</span>
 			<span class="framed-portrait-hero__scroll-line"></span>
 		</div>
+	) : scrollCue === 'constellation' ? (
+		<p class="framed-portrait-hero__constellation">
+			<span class="framed-portrait-hero__constellation-label">{scrollLabel}</span>
+			<ScrollConstellation />
+		</p>
 	) : (
 		<p class="framed-portrait-hero__invitation">{scrollLabel}<span aria-hidden="true"> ↓</span></p>
 	)}

@@ -1,8 +1,32 @@
 @use '../../../global/mixins' as mixins;
 
 .theme-preset--enchanted-rose .quote-section {
-	--quote-corner-opacity: 30%;
-	--quote-corner-color: rgb(var(--color-antique-gold-rgb) / var(--quote-corner-opacity));
+	// A handwritten signature: the phrase in burgundy Cormorant italic, the author signing in deep
+	// gold script under a single hairline with a small diamond. No halo, no corner brackets (the
+	// hero portrait already wears them).
+	--quote-content-font: var(--font-display);
+	--quote-content-weight: 400;
+	--quote-content-style: italic;
+	--quote-content-size: clamp(1.6rem, 4.6vw, 2.5rem);
+	--quote-content-line-height: 1.4;
+	--quote-content-letter-spacing: 0;
+	--quote-content-shadow: none;
+	--quote-text-color: var(--color-velvet-burgundy);
+	--quote-divider-display: none;
+	--quote-ornament-display: none;
+	--quote-author-font: var(--font-calligraphy);
+	--quote-author-size: clamp(1.9rem, 5vw, 2.4rem);
+	--quote-author-transform: none;
+	--quote-author-tracking: 0;
+	--quote-author-weight: 400;
+
+	// Antique gold alone reads 2.2:1 on the ivory; half walnut keeps it gold at about 4.2:1.
+	--quote-author-color: color-mix(
+		in srgb,
+		var(--color-action-accent) 50%,
+		var(--color-walnut-brown)
+	);
+	--quote-author-opacity: 100%;
 
 	&::before {
 		content: '';
@@ -22,15 +46,6 @@
 			);
 	}
 
-	&::after {
-		content: '';
-		position: absolute;
-		inset: clamp(0.75rem, 1vw + 0.25rem, 1.25rem);
-		pointer-events: none;
-
-		@include mixins.corner-brackets(var(--quote-corner-color), clamp(1.2rem, 3vw, 2.2rem));
-	}
-
 	.quote-texture {
 		opacity: 12%;
 		background: var(--rose-satin-sheen);
@@ -40,38 +55,21 @@
 		max-width: 39rem;
 	}
 
-	.quote-content {
-		text-shadow:
-			0 2px 24px rgb(var(--color-rose-shadow-rgb) / 32%),
-			0 0 48px rgb(var(--color-candle-gold-rgb) / 8%);
-	}
+	// The hairline and its diamond sit above the signature.
+	.quote-author-container {
+		flex-direction: column;
+		gap: 0.75rem;
 
-	.quote-divider-top,
-	.quote-divider-bottom {
-		color: var(--color-antique-gold);
-		opacity: 56%;
-		width: clamp(9rem, 24vw, 14rem);
+		&::before {
+			$hairline: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 10'%3E%3Cpath d='M0 5h72M88 5h72' stroke='black' stroke-width='1'/%3E%3Cpath d='M80 1l4 4-4 4-4-4z'/%3E%3C/svg%3E";
 
-		svg {
-			height: clamp(24px, 3vw, 32px);
+			content: '';
+			display: block;
+			width: clamp(7rem, 22vw, 10rem);
+			aspect-ratio: 16;
+			background-color: rgb(var(--color-action-accent-rgb) / 70%);
+			mask: url($hairline) center / 100% 100% no-repeat;
 		}
-	}
-
-	.quote-author {
-		font-family: var(--font-display);
-		letter-spacing: 0.26em;
-		color: var(--color-candle-gold);
-		opacity: 100%;
-	}
-
-	.quote-ornament {
-		width: clamp(2rem, 6vw, 3.5rem);
-		background: linear-gradient(
-			90deg,
-			transparent,
-			rgb(var(--color-candle-gold-rgb) / 54%),
-			transparent
-		);
 	}
 
 	.quote-line.is-visible {

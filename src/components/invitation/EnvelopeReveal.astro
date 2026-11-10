@@ -74,9 +74,11 @@ const isStorybook = revealVariant === 'storybook-lanterns' || revealVariant === 
 const skyMotif = revealVariant === 'storybook-butterflies' ? 'butterflies' : 'lanterns';
 const isNight = revealVariant === 'night-envelope';
 const isCelestialLetter = revealVariant === 'celestial-letter';
-// Storybook, night and celestial letters sit inside the envelope, behind the pocket front, and rise
-// out of it.
-const letterInPocket = isStorybook || isNight || isCelestialLetter;
+// Storybook, night, celestial and Enchanted Rose letters sit inside the envelope, behind the pocket
+// front, and rise out of it.
+// Resolve from the effective variant, so an explicit `revealVariant` override wins over the preset.
+const dataVariant = resolveEnvelopeDataVariant(revealVariant, variant);
+const letterInPocket = isStorybook || isNight || isCelestialLetter || dataVariant === 'enchanted-rose';
 const isWaxRenderer = ['wax-organic', 'wax-medallion'].includes(sealPresentation.renderer);
 // Discrete seal-zone open cue (editorial, not a SaaS tooltip bubble).
 const sealHintText = tooltipText?.trim() || 'Toque el sello';
@@ -95,7 +97,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	]}
 	data-screenshot="reveal-section"
 	data-event-slug={eventSlug}
-	data-variant={resolveEnvelopeDataVariant(revealVariant, variant)}
+	data-variant={dataVariant}
 	data-seal-variant={sealVariant || ''}
 	data-seal-skin={sealPresentation.skin || ''}
 	data-dev-skip={String(import.meta.env.DEV)}

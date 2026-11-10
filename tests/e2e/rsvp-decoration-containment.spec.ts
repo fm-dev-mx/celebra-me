@@ -38,8 +38,15 @@ for (const width of [390, 1440]) {
 			expect(await shell.evaluate((node) => getComputedStyle(node).position)).toBe(
 				'relative',
 			);
+			// No shell paints a ::before layer; only the outer shell paints the foot gradient.
 			expect(await shell.evaluate((node) => getComputedStyle(node, '::before').content)).toBe(
-				'""',
+				'none',
+			);
+			const isOuter = await shell.evaluate(
+				(node) => !node.parentElement?.closest('.rsvp-section'),
+			);
+			expect(await shell.evaluate((node) => getComputedStyle(node, '::after').content)).toBe(
+				isOuter ? '""' : 'none',
 			);
 		}
 	});

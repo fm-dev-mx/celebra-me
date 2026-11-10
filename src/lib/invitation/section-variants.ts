@@ -49,6 +49,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'hero',
+		variant: 'cased-portrait',
+		default: false,
+		prerequisites: ['hero.backgroundImage'],
+		cssOwner: 'src/styles/themes/sections/hero/_cased-portrait.scss',
+	},
+	{
+		section: 'hero',
 		variant: 'bleed-portrait',
 		default: false,
 		prerequisites: ['hero.backgroundImage'],
