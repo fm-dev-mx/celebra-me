@@ -128,6 +128,9 @@ jobs:
                       -f log_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
                       -f description="Uploading Worker version" > /dev/null
 
+            - name: Run release checks
+              run: pnpm ops:release-checks "$GITHUB_SHA"
+
             # `wrangler versions upload` cannot create a Worker. The first run creates it with
             # `wrangler deploy`, which stays unreachable (no routes, no workers.dev host) but also
             # applies the declared cron triggers: recreating the Worker while another host runs its crons
@@ -143,9 +146,6 @@ jobs:
                       cat .tmp-deployments.log >&2
                       exit 1
                   fi
-
-            - name: Run release checks
-              run: pnpm ops:release-checks "$GITHUB_SHA"
 
             - name: Upload Worker version
               id: upload

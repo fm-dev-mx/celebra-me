@@ -140,16 +140,19 @@ describe('Cloudflare Production upload workflow contract', () => {
 		expect(buildEnv).toContain('CELEBRA_DEPLOY_ENV: production');
 	});
 
-	it('requires release checks before uploading the Worker version', () => {
+	it('requires release checks before creating or uploading the Worker version', () => {
 		const uploadJob = workflow.slice(
 			workflow.indexOf('    production:'),
 			workflow.indexOf('    domain-smoke:'),
 		);
 		const releaseChecks = uploadJob.indexOf('- name: Run release checks');
+		const createWorker = uploadJob.indexOf('- name: Create the Worker on the first run');
 		const upload = uploadJob.indexOf('- name: Upload Worker version');
 		expect(releaseChecks).toBeGreaterThan(0);
+		expect(createWorker).toBeGreaterThan(0);
 		expect(upload).toBeGreaterThan(0);
-		expect(releaseChecks).toBeLessThan(upload);
+		expect(releaseChecks).toBeLessThan(createWorker);
+		expect(createWorker).toBeLessThan(upload);
 		expect(uploadJob).toContain('run: pnpm ops:release-checks "$GITHUB_SHA"');
 	});
 });
