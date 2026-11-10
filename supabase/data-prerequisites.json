@@ -1,0 +1,41 @@
+{
+    "version": 1,
+    "authAppMetadataKeys": {
+        "login_alias": { "prerequisite": "auth-login-alias-app-metadata" },
+        "login_alias_operation_id": {
+            "migration": "none",
+            "reason": "Written together with a new alias by the admin alias update; an absent value only means no update is in flight."
+        },
+        "role": {
+            "migration": "none",
+            "reason": "Maintained by the app_user_roles trigger since migration 20260215000800. Synchronization of rows older than the trigger is not verified by any command."
+        },
+        "must_change_password": {
+            "migration": "none",
+            "reason": "An absent value reads as false; accounts without a temporary password need no data."
+        },
+        "temp_password_expires_at": {
+            "migration": "none",
+            "reason": "An absent value reads as not expired; it is written together with each temporary password."
+        }
+    },
+    "prerequisites": [
+        {
+            "id": "auth-login-alias-app-metadata",
+            "summary": "Every account that logs in by alias has the alias in app_metadata.login_alias; login never reads user_metadata.",
+            "introducedBy": "https://github.com/fm-dev-mx/celebra-me/pull/866",
+            "verify": "pnpm auth:check-login-alias",
+            "environments": {
+                "production": {
+                    "status": "verified",
+                    "verifiedAt": "2026-11-09",
+                    "evidence": "Owner patch 20261109_auth_login_alias_app_metadata_backfill.sql (PR #880) applied on release 5716c7c24 with UPDATE 28."
+                },
+                "preview": {
+                    "status": "pending",
+                    "evidence": "No backfill run is recorded for Preview."
+                }
+            }
+        }
+    ]
+}

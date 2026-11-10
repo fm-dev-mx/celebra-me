@@ -270,6 +270,136 @@ the exact promoted deployment is `VERIFIED`. Do not force-update an existing tag
 
 ## Database-dependent releases
 
+### Data prerequisites
+
+A data prerequisite is a fact about stored data, not schema, that released code relies on: for
+example "every account that logs in by alias has the alias in `app_metadata.login_alias`". No
+migration or capability check sees it, and unit tests feed the code synthetic data, so the code can
+be correct and still lock real accounts out. `supabase/data-prerequisites.json` is where those facts
+are declared and where the evidence that each environment satisfies them is recorded.
+
+Three checks read the manifest or produce its evidence:
+
+| Check                                   | When it runs                                          | What it refuses                                                                                        |
+| --------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `tests/unit/data-prerequisites.test.ts` | Every CI run                                          | Code under `src/` that reads an `app_metadata` key the manifest does not declare; an invalid manifest. |
+| `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA   | A release whose manifest has a prerequisite without evidence for Production.                           |
+| `pnpm auth:check-login-alias`           | By hand, against one environment, to produce evidence | Nothing by itself: it reports whether the alias prerequisite holds (exit code 0) or not (exit code 1). |
+
+The release gate reads the manifest from GitHub at the exact SHA being released, so the evidence
+must be merged before the release, not typed during it. A change to the manifest also adds the gate
+"data prerequisites verified for Production" to the release classification; it never changes the
+release category.
+
+#### Declare an `app_metadata` key
+
+Every key that code under `src/` reads from Auth `app_metadata` needs one entry under
+`authAppMetadataKeys`, in the same pull request that adds the read:
+
+```json
+"new_flag": { "migration": "none", "reason": "An absent value reads as false." }
+```
+
+Use `"migration": "none"` when accounts that already exist need no data for the new code to treat
+them correctly; `reason` must say why, in one sentence a reviewer can check against the code. Use
+`{ "prerequisite": "<id>" }` when existing accounts do need data, and add the prerequisite below.
+
+#### Declare a prerequisite
+
+Add an entry to `prerequisites` in the pull request that introduces the dependency:
+
+```json
+{
+  "id": "auth-login-alias-app-metadata",
+  "summary": "Every account that logs in by alias has the alias in app_metadata.login_alias.",
+  "introducedBy": "https://github.com/fm-dev-mx/celebra-me/pull/866",
+  "verify": "pnpm auth:check-login-alias",
+  "environments": {
+    "production": { "status": "pending" },
+    "preview": { "status": "pending" }
+  }
+}
+```
+
+`verify` is the read-only command that proves the fact in one environment. A prerequisite that is
+`pending` (or has no entry) for Production blocks the release on purpose: that is the state in which
+the code must not be activated.
+
+#### Record evidence
+
+1. Run the backfill for the environment through its guarded workflow (Production: the owner patch
+   workflow below).
+2. Run the `verify` command against that environment and confirm it exits with code 0 and, for
+   `pnpm auth:check-login-alias`, that `target` names that environment. Its output contains totals
+   only, so paste it into the pull request that records the evidence.
+3. Set the environment to `verified` with the date and what was done:
+
+   ```json
+   "production": {
+   	"status": "verified",
+   	"verifiedAt": "2026-11-09",
+   	"evidence": "Owner patch 20261109_auth_login_alias_app_metadata_backfill.sql applied on release 5716c7c24 with UPDATE 28."
+   }
+   ```
+
+4. Merge that change before the release that activates the code. The order is always data first,
+   evidence second, code third.
+
+Use `"status": "not-applicable"` with an `evidence` sentence when the environment cannot hold the
+affected data at all (for example, a table that exists only in another environment). It passes the
+gate like `verified`, so do not use it to mean "not checked yet": that is `pending`.
+
+#### Gate messages and how to unblock
+
+- **Message starts with:** `Application code reads Auth app_metadata keys that are not declared:`
+  - **Meaning:** CI found a new `app_metadata` read. The message lists key, file and line.
+  - **Unblock:** Declare each key as described above. If existing accounts need data, this is the
+    moment to plan the backfill.
+- **Message starts with:** `Data prerequisites are not verified for production`
+  - **Meaning:** The release SHA carries a prerequisite that is `pending` or missing for Production.
+    The message lists each one and its `verify` command.
+  - **Unblock:** Do not activate the release. Apply the backfill, run the `verify` command, record
+    the evidence, merge it and release the SHA that contains it.
+- **Message starts with:** `Data prerequisites are unknown`
+  - **Meaning:** The manifest could not be read at the release SHA: the commit predates the
+    manifest, or GitHub did not answer.
+  - **Unblock:** Rerun `pnpm ops:release-checks`. If the SHA really has no manifest, release a newer
+    SHA that has it; a SHA without the manifest cannot prove its data is ready.
+- **Message starts with:** `supabase/data-prerequisites.json is invalid:`
+  - **Meaning:** The manifest breaks its own rules; the message names the entry and the missing
+    field (for example `verified` without `evidence`).
+  - **Unblock:** Fix the named field. The same check runs in CI, so this normally fails the pull
+    request, not the release.
+- **Message starts with:** `Login alias prerequisite is NOT met` (from `auth:check-login-alias`)
+  - **Meaning:** `legacyOnly` accounts have the alias only in `user_metadata`, `duplicates` aliases
+    belong to more than one account, or the target returned no accounts.
+  - **Unblock:** Run the backfill for that environment (see "Protected login aliases"); resolve
+    duplicates by hand first; with `accounts: 0`, check `SUPABASE_URL` and the key. Until then,
+    affected hosts can log in with the account email, not the alias.
+
+A gate that blocks is reporting missing evidence, never a judgment about the code. Do not unblock by
+deleting an entry, marking `verified` without running the command, or bypassing
+`pnpm ops:release-checks`.
+
+#### What these checks do not see
+
+- The key scanner matches `app_metadata.key`, `app_metadata?.key` and `app_metadata['key']`. It does
+  not see a key held in a constant (`temp_password_expires_at` is declared by hand for that reason),
+  destructuring, or a helper that receives the metadata object. Reviewers still own those.
+- Only Auth `app_metadata` is scanned. A new dependency on the shape of stored JSON anywhere else
+  (invitation content, `user_metadata`, settings columns) must be declared as a prerequisite by its
+  author; nothing detects it.
+- The manifest records what a person verified. The gate checks that evidence is written down, not
+  that it is true, and it does not query any database during the release: the review of the pull
+  request that sets `verified` is the control. Evidence is also a point in time; data written later
+  by another path is not re-checked unless someone runs the `verify` command again.
+- The release gate checks Production only. A `pending` entry for Preview blocks nothing.
+- A commit older than the manifest cannot pass the release gate, which includes rolling back to one
+  through `pnpm ops:release-checks`.
+- Alias login is exercised end to end only in Preview, and only when the repository variable
+  `PLAYWRIGHT_HOST_LOGIN_ALIAS` holds the alias of the Preview account; otherwise the deploy run
+  shows the warning "Alias login not checked" and skips that test.
+
 ### Protected login aliases
 
 Before activating code that reads login aliases exclusively from `app_metadata`, the owner must
@@ -291,9 +421,9 @@ pnpm prod:apply -- --patch "scripts/manual/production-patches/20261109_auth_logi
 The patch copies each legacy alias into `app_metadata` with the same normalization as the script,
 never overwrites a protected alias, and stops without writing when two accounts share an alias. The
 critical backup stores the previous `auth.users` metadata. After apply the plan must report zero
-target rows and the script dry-run must report `planned: 0`; alias login returns within 30 seconds,
-once each Worker instance reloads its alias directory. Keep administrative alias changes paused
-between plan and apply.
+target rows and `pnpm auth:check-login-alias` must exit with code 0 and report `legacyOnly: 0`;
+alias login returns within 30 seconds, once each Worker instance reloads its alias directory. Keep
+administrative alias changes paused between plan and apply.
 
 If the backfill evidence is unavailable, keep activation blocked. Record the target, successful
 migration verification and ordering in both the application PR and release handoff. There is no

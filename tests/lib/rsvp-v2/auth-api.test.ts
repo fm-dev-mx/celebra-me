@@ -364,6 +364,102 @@ describe('rsvp authApi', () => {
 		);
 	});
 
+	describe('where the login alias is stored', () => {
+		const directoryOf = (user: Record<string, unknown>) =>
+			jest.fn().mockImplementation(async (url: string) => ({
+				ok: true,
+				json: async () => (url.includes('/admin/users?') ? { users: [user] } : user),
+			})) as unknown as typeof fetch;
+
+		it('finds an account whose alias is in app_metadata', async () => {
+			process.env.SUPABASE_URL = 'https://alias-protected.example.test';
+			global.fetch = directoryOf({
+				id: 'owner',
+				email: 'owner@example.test',
+				app_metadata: { login_alias: 'alice' },
+			});
+			await expect(
+				findAuthUserByLoginIdentifier({ identifier: 'alice' }),
+			).resolves.toMatchObject({ id: 'owner', login_alias: 'alice' });
+		});
+
+		// The state of the 28 accounts of the 2026-11-09 incident. The application refuses it on
+		// purpose (user_metadata is user-writable), so the data must be migrated before release:
+		// see the "auth-login-alias-app-metadata" entry in supabase/data-prerequisites.json.
+		it('does not find an account whose alias is only in user_metadata', async () => {
+			process.env.SUPABASE_URL = 'https://alias-legacy.example.test';
+			global.fetch = directoryOf({
+				id: 'owner',
+				email: 'owner@example.test',
+				app_metadata: { role: 'host_client' },
+				user_metadata: { login_alias: 'alice' },
+			});
+			await expect(
+				findAuthUserByLoginIdentifier({ identifier: 'alice' }),
+			).resolves.toBeNull();
+		});
+
+		it('uses the app_metadata alias when user_metadata holds a different one', async () => {
+			process.env.SUPABASE_URL = 'https://alias-both.example.test';
+			global.fetch = directoryOf({
+				id: 'owner',
+				email: 'owner@example.test',
+				app_metadata: { login_alias: 'alice' },
+				user_metadata: { login_alias: 'mallory' },
+			});
+			await expect(
+				findAuthUserByLoginIdentifier({ identifier: 'alice' }),
+			).resolves.toMatchObject({ id: 'owner', login_alias: 'alice' });
+			await expect(
+				findAuthUserByLoginIdentifier({ identifier: 'mallory' }),
+			).resolves.toBeNull();
+		});
+
+		const resetBody = async (existingUser: Record<string, unknown>) => {
+			global.fetch = jest
+				.fn()
+				.mockResolvedValueOnce({ ok: true, json: async () => existingUser })
+				.mockResolvedValueOnce({
+					ok: true,
+					json: async () => ({ user: existingUser }),
+				}) as unknown as typeof fetch;
+			await adminResetAuthUserPassword({
+				userId: 'owner',
+				password: 'TempSecurePass!234',
+				mustChangePassword: true,
+			});
+			const [url, init] = (global.fetch as jest.Mock).mock.calls[1];
+			expect(url).toBe('https://project.supabase.co/auth/v1/admin/users/owner');
+			expect(init.method).toBe('PUT');
+			return JSON.parse(init.body);
+		};
+
+		it('keeps the app_metadata alias when an administrator resets the password', async () => {
+			const body = await resetBody({
+				id: 'owner',
+				email: 'owner@example.test',
+				app_metadata: { role: 'host_client', login_alias: 'alice' },
+			});
+			expect(body.app_metadata).toMatchObject({
+				role: 'host_client',
+				login_alias: 'alice',
+				must_change_password: true,
+			});
+		});
+
+		it('does not promote a user_metadata alias when an administrator resets the password', async () => {
+			const body = await resetBody({
+				id: 'owner',
+				email: 'owner@example.test',
+				app_metadata: { role: 'host_client' },
+				user_metadata: { login_alias: 'alice' },
+			});
+			expect(body.app_metadata).not.toHaveProperty('login_alias');
+			expect(body.app_metadata).toMatchObject({ role: 'host_client' });
+			expect(body).not.toHaveProperty('user_metadata');
+		});
+	});
+
 	describe('transport failures and observability', () => {
 		it.each([400, 401, 403, 429, 500, 502, 503])(
 			'classifies HTTP %s without reading its body',
