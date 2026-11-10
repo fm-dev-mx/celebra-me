@@ -2,6 +2,10 @@ import { render, screen, waitFor } from '@testing-library/react';
 import GuestDashboardApp from '@/components/dashboard/guests/GuestDashboardApp';
 import { GUEST_DASHBOARD_SESSION_INVALID_MESSAGE } from '@/lib/dashboard/guest-dashboard-events-errors';
 
+import { goToLoginAfterSessionEnded } from '@/lib/dashboard/session-ended';
+
+jest.mock('@/lib/dashboard/session-ended', () => ({ goToLoginAfterSessionEnded: jest.fn() }));
+
 class MockEventSource {
 	addEventListener = jest.fn();
 	close = jest.fn();
@@ -37,5 +41,6 @@ describe('GuestDashboardApp auth states', () => {
 		await waitFor(() => {
 			expect(screen.getByText(GUEST_DASHBOARD_SESSION_INVALID_MESSAGE)).toBeInTheDocument();
 		});
+		expect(goToLoginAfterSessionEnded).toHaveBeenCalled();
 	});
 });
