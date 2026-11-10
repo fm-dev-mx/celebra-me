@@ -1,5 +1,5 @@
 /** @jest-environment node */
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
 	DATA_PREREQUISITES_PATH,
@@ -11,7 +11,9 @@ import {
 	scanAppMetadataKeyReads,
 } from '../../scripts/ops/data-prerequisites.ts';
 
-const committedManifest = readFileSync(resolve(DATA_PREREQUISITES_PATH), 'utf8');
+// Resolve from this file, never from the working directory: Jest may run from any folder.
+const repositoryRoot = resolve(__dirname, '../..');
+const committedManifest = readFileSync(resolve(repositoryRoot, DATA_PREREQUISITES_PATH), 'utf8');
 
 const prerequisite = (production: Record<string, unknown> | undefined) => ({
 	id: 'example-backfill',
@@ -27,8 +29,12 @@ const manifest = (
 
 describe('committed data prerequisite manifest', () => {
 	it('declares every app_metadata key that application code reads', () => {
-		const reads = scanAppMetadataKeyReads(resolve('src'));
+		const sourceRoot = resolve(repositoryRoot, 'src');
+		expect(existsSync(sourceRoot)).toBe(true);
+		const reads = scanAppMetadataKeyReads(sourceRoot);
 		// A scan that finds nothing means the scanner broke, not that the code stopped reading.
+		expect(reads.length).toBeGreaterThan(0);
+		expect(new Set(reads.map((read) => read.file)).size).toBeGreaterThan(1);
 		expect(reads.map((read) => read.key)).toEqual(
 			expect.arrayContaining(['login_alias', 'role', 'must_change_password']),
 		);
