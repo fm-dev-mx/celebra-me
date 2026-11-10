@@ -278,7 +278,7 @@ migration or capability check sees it, and unit tests feed the code synthetic da
 be correct and still lock real accounts out. `supabase/data-prerequisites.json` is where those facts
 are declared and where the evidence that each environment satisfies them is recorded.
 
-Four checks read the manifest or produce its evidence:
+These checks read the manifest or produce its evidence:
 
 | Check                                   | When it runs                                          | What it refuses                                                                                        |
 | --------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -286,6 +286,16 @@ Four checks read the manifest or produce its evidence:
 | `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA   | A release whose manifest has a blocking prerequisite without evidence for Production.                  |
 | `pnpm auth:check-login-alias`           | By hand, against one environment, to produce evidence | Nothing by itself: it reports whether the alias prerequisite holds (exit code 0) or not (exit code 1). |
 | `pnpm auth:check-pending-passwords`     | By hand, against one environment, to produce evidence | Nothing by default: reports open password changes and age in days; fails with `--strict` when pending. |
+| `pnpm auth:check-role-app-metadata`     | By hand, against one environment, to produce evidence | Reports whether Auth metadata matches application roles (exit code 0) or not (exit code 1).            |
+
+The `auth-role-app-metadata` prerequisite compares every Auth account's `app_metadata.role` with
+`public.app_user_roles.role`, joined by `user_id`. The table is authoritative; its insert/update
+trigger copies the role to Auth. Missing or invalid roles, differences, orphan table rows, or an
+empty Auth directory fail the read-only check. It prints only the environment and totals; see
+[`scripts/auth/README.md`](../../scripts/auth/README.md) for output and execution details. Preview
+and Production remain `pending` until their own successful check is recorded. Do not mark them
+verified based on the trigger's existence or unit tests. The command does not repair differences;
+any repair needs separate authorization and the guarded workflow for that environment.
 
 The release gate reads the manifest from GitHub at the exact SHA being released, so the evidence
 must be merged before the release, not typed during it. A change to the manifest also adds the gate
@@ -328,13 +338,54 @@ Production blocks the release on purpose: that is the state in which the code mu
 Prerequisites declared with `"severity": "advisory"` report and warn on pending data without halting
 the release.
 
+#### August 12, 2026 patch prerequisites
+
+The manifest also declares these historical dependencies, initially `pending` for Production and
+Preview. A historical patch or migration file is not evidence that its result exists in either
+environment. Do not activate a release until the target's evidence has been reviewed and recorded.
+
+| Prerequisite                                      | Source                                                                                              | Read-only verification file                                        |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `20260812-itinerary-gallery-structural-contracts` | `scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql`          | `scripts/manual/data-prerequisites/20260812_itinerary_gallery.sql` |
+| `20260812-thankyou-editorial-back-cover`          | `scripts/manual/production-patches/20260812_thankyou_editorial_back_cover_structural_contracts.sql` | `scripts/manual/data-prerequisites/20260812_thankyou.sql`          |
+| `20260812-guest-invitation-phone-objects`         | `supabase/migrations/20260812210000_reconcile_guest_invitation_phone_objects.sql`                   | `scripts/manual/data-prerequisites/20260812_guest_phone.sql`       |
+
+After the required-database availability preflight and target identity check in
+`.agent/rules/database.md`, an authorized operator runs the manifest's `psql` command from the
+repository root with the target connection supplied externally through PostgreSQL connection
+variables. Use a role that can read all relevant rows without RLS filtering. Do not put credentials
+in the command, evidence, or repository. Each SQL file starts a read-only transaction, returns one
+row of totals and `ok`, then rolls back. Exit code 0 alone is insufficient: require `ok = true`. An
+SQL error, missing result, unavailable connection, or `ok = false` leaves the entry `pending`.
+
+The content queries require exactly one active published row per original target (four itinerary
+targets and three Thank You targets). They check every active published row and every existing
+active draft for the explicit variants set by the source patch; the itinerary query requires a
+gallery variant only for the three celestial targets. Missing or ambiguous published targets fail
+instead of silently passing an empty query. Drafts are optional, matching the original patches.
+Share only `invalid_published_targets`, `checked_rows`, `mismatched_rows`, and `ok` as evidence.
+
+The phone query checks the actual canonical nonunique, valid, nonpartial, single-column
+`btree(phone)` index without included columns, absence of the legacy or unexpected equivalent index,
+and the validated pair CHECK's normalized expression. Migration history alone cannot prove these
+objects still exist or have the right definition. This is a schema postcondition rather than a data
+backfill; it is declared here to cover the historical reconciliation explicitly. Share only
+`target_tables`, `canonical_indexes`, `unexpected_indexes`, `validated_pair_checks`, and `ok`.
+
+Do not rerun these historical content patches automatically. Resolve a mismatch through the current
+guarded workflow (managed content or schema as appropriate), then verify again. If targets are
+absent intentionally in an environment, keep the prerequisite pending until a reviewer accepts
+specific `not-applicable` evidence; absence alone never proves the patch is applied.
+
 #### Record evidence
 
-1. Run the backfill for the environment through its guarded workflow (Production: the owner patch
-   workflow below).
-2. Run the `verify` command against that environment and confirm it exits with code 0 and, for
-   `pnpm auth:check-login-alias`, that `target` names that environment. Its output contains totals
-   only, so paste it into the pull request that records the evidence.
+1. Verify the current state first; a read-only check may already pass without repair. If a repair or
+   backfill is needed, run it for the environment through its authorized guarded workflow
+   (Production: the owner patch workflow below).
+2. Run the `verify` command against that environment and confirm it exits with code 0 and, for the
+   Auth checks, that `target` names that environment. For the SQL verifications, also require
+   `ok = true` as described above. Its output contains totals only, so paste it into the pull
+   request that records the evidence.
 3. Set the environment to `verified` with the date and what was done:
 
    ```json
