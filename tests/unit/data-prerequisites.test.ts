@@ -121,6 +121,23 @@ describe('committed data prerequisite manifest', () => {
 			);
 		},
 	);
+
+	it.each(['production', 'preview'])(
+		'blocks %s until pending password audit is verified',
+		(environment) => {
+			const parsed = parseDataPrerequisiteManifest(committedManifest);
+			expect(parsed.authAppMetadataKeys.must_change_password).toEqual({
+				prerequisite: 'auth-must-change-password',
+			});
+			expect(
+				parsed.prerequisites.find(({ id }) => id === 'auth-must-change-password')
+					?.environments[environment].status,
+			).toBe('pending');
+			expect(() => requireDataPrerequisites(committedManifest, environment)).toThrow(
+				/auth-must-change-password: .*`pnpm auth:check-pending-passwords`/,
+			);
+		},
+	);
 });
 
 describe('app_metadata key scanner', () => {

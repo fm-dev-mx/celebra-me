@@ -285,6 +285,7 @@ These checks read the manifest or produce its evidence:
 | `tests/unit/data-prerequisites.test.ts` | Every CI run                                          | Undeclared `app_metadata` key reads in `src/`, `scripts/` or `supabase/functions/`; an invalid manifest. |
 | `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA   | A release whose manifest has a prerequisite without evidence for Production.                             |
 | `pnpm auth:check-login-alias`           | By hand, against one environment, to produce evidence | Nothing by itself: it reports whether the alias prerequisite holds (exit code 0) or not (exit code 1).   |
+| `pnpm auth:check-pending-passwords`     | By hand, against one environment, to produce evidence | Nothing by default: reports open password changes and age in days; fails with `--strict` when pending.   |
 | `pnpm auth:check-role-app-metadata`     | By hand, against one environment, to produce evidence | Reports whether Auth metadata matches application roles (exit code 0) or not (exit code 1).              |
 
 The `auth-role-app-metadata` prerequisite compares every Auth account's `app_metadata.role` with
@@ -428,6 +429,11 @@ gate like `verified`, so do not use it to mean "not checked yet": that is `pendi
   - **Unblock:** Run the backfill for that environment (see "Protected login aliases"); resolve
     duplicates by hand first; with `accounts: 0`, check `SUPABASE_URL` and the key. Until then,
     affected hosts can log in with the account email, not the alias.
+- **Message starts with:** `Pending password check failed:` (from `auth:check-pending-passwords`)
+  - **Meaning:** With `--strict`, accounts have `must_change_password` open, or the target returned
+    no accounts.
+  - **Unblock:** Review the open changes and their age; ensure affected users complete their
+    password change or re-issue credentials. In advisory mode, verify totals and record evidence.
 
 A gate that blocks is reporting missing evidence, never a judgment about the code. Do not unblock by
 deleting an entry, marking `verified` without running the command, or bypassing
