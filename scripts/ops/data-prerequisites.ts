@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { basename, join, relative } from 'node:path';
+import { basename, dirname, join, relative } from 'node:path';
 import ts from 'typescript';
 
 /**
@@ -164,6 +164,7 @@ export function requireDataPrerequisites(
 }
 
 const SOURCE_FILE = /\.(?:ts|tsx|mts|js|mjs|astro)$/u;
+const IGNORED_DIRS = new Set(['node_modules', '.git', 'dist', '.astro']);
 export interface AppMetadataKeyRead {
 	key: string;
 	file: string;
@@ -185,31 +186,71 @@ function unwrapExpression(expr: ts.Expression): ts.Expression {
 	return current;
 }
 
+export type ExternalConstants =
+	| ReadonlyMap<string, string | ReadonlyMap<string, string>>
+	| Record<string, string | Record<string, string>>;
+
+function normalizeModulePath(p: string): string {
+	return p.replace(/\\/g, '/').replace(/\.(?:ts|tsx|mts|js|mjs|cjs|astro)$/u, '');
+}
+
+interface Scope {
+	parent: Scope | null;
+	constants: Map<string, string>;
+	aliases: Set<string>;
+	namespaces: Map<string, Map<string, string>>;
+}
+
+const createScope = (parent: Scope | null = null): Scope => ({
+	parent,
+	constants: new Map(),
+	aliases: new Set(),
+	namespaces: new Map(),
+});
+
+const resolveConstant = (scope: Scope, name: string): string | undefined =>
+	scope.constants.get(name) ?? (scope.parent ? resolveConstant(scope.parent, name) : undefined);
+
+const META_NAMES = new Set(['app_metadata', 'appMetadata', 'raw_app_meta_data']);
+const isAlias = (scope: Scope, name: string): boolean =>
+	META_NAMES.has(name) ||
+	scope.aliases.has(name) ||
+	(scope.parent ? isAlias(scope.parent, name) : false);
+
+const resolveNamespace = (scope: Scope, name: string): Map<string, string> | undefined =>
+	scope.namespaces.get(name) ?? (scope.parent ? resolveNamespace(scope.parent, name) : undefined);
+
+function getScope(node: ts.Node, nodeToScope: Map<ts.Node, Scope>, rootScope: Scope): Scope {
+	let curr: ts.Node | undefined = node;
+	while (curr) {
+		const s = nodeToScope.get(curr);
+		if (s) return s;
+		curr = curr.parent;
+	}
+	return rootScope;
+}
+
 /**
  * Extracts string value from expression (literal, identifier lookup, or type assertions).
  */
 function getExpressionStringValue(
 	expr: ts.Expression | undefined,
-	constants: ReadonlyMap<string, string>,
+	scope: Scope,
 ): string | undefined {
 	if (!expr) return undefined;
 	const current = unwrapExpression(expr);
 	if (ts.isStringLiteral(current) || ts.isNoSubstitutionTemplateLiteral(current)) {
 		return current.text;
 	}
-	if (ts.isIdentifier(current)) {
-		return constants.get(current.text);
+	if (ts.isIdentifier(current)) return resolveConstant(scope, current.text);
+	if (ts.isPropertyAccessExpression(current) && ts.isIdentifier(current.expression)) {
+		return resolveNamespace(scope, current.expression.text)?.get(current.name.text);
+	}
+	if (ts.isElementAccessExpression(current) && ts.isIdentifier(current.expression)) {
+		const prop = getExpressionStringValue(current.argumentExpression, scope);
+		return prop ? resolveNamespace(scope, current.expression.text)?.get(prop) : undefined;
 	}
 	return undefined;
-}
-
-function isAppMetadataIdentifier(text: string, aliases: ReadonlySet<string>): boolean {
-	return (
-		text === 'app_metadata' ||
-		text === 'appMetadata' ||
-		text === 'raw_app_meta_data' ||
-		aliases.has(text)
-	);
 }
 
 /**
@@ -217,128 +258,468 @@ function isAppMetadataIdentifier(text: string, aliases: ReadonlySet<string>): bo
  */
 function isAppMetadataTarget(
 	expr: ts.Expression | undefined,
-	aliases: ReadonlySet<string>,
+	scope: Scope,
 	helpersReturningMeta: ReadonlySet<string>,
-	constants: ReadonlyMap<string, string>,
 ): boolean {
 	if (!expr) return false;
 	const current = unwrapExpression(expr);
-
 	if (
 		ts.isBinaryExpression(current) &&
 		(current.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken ||
 			current.operatorToken.kind === ts.SyntaxKind.BarBarToken)
 	) {
-		return isAppMetadataTarget(current.left, aliases, helpersReturningMeta, constants);
+		return isAppMetadataTarget(current.left, scope, helpersReturningMeta);
 	}
-	if (ts.isPropertyAccessExpression(current)) {
-		return current.name.text === 'app_metadata';
-	}
-	if (ts.isElementAccessExpression(current)) {
-		return getExpressionStringValue(current.argumentExpression, constants) === 'app_metadata';
-	}
-	if (ts.isIdentifier(current)) {
-		return isAppMetadataIdentifier(current.text, aliases);
-	}
-	if (ts.isCallExpression(current) && ts.isIdentifier(current.expression)) {
-		return helpersReturningMeta.has(current.expression.text);
-	}
-	return false;
+	return (
+		(ts.isPropertyAccessExpression(current) && current.name.text === 'app_metadata') ||
+		(ts.isElementAccessExpression(current) &&
+			getExpressionStringValue(current.argumentExpression, scope) === 'app_metadata') ||
+		(ts.isIdentifier(current) && isAlias(scope, current.text)) ||
+		(ts.isCallExpression(current) &&
+			ts.isIdentifier(current.expression) &&
+			helpersReturningMeta.has(current.expression.text))
+	);
 }
 
 /**
  * Extracts property key from a binding element (e.g. `{ login_alias }` or `{ role: myRole }` or `{ [KEY]: val }`).
  */
-function resolveBindingElementKey(
-	elem: ts.BindingElement,
-	constants: ReadonlyMap<string, string>,
-): string | undefined {
-	if (elem.propertyName) {
-		if (ts.isIdentifier(elem.propertyName) || ts.isStringLiteral(elem.propertyName)) {
-			return elem.propertyName.text;
-		}
-		if (ts.isComputedPropertyName(elem.propertyName)) {
-			return getExpressionStringValue(elem.propertyName.expression, constants);
-		}
-	} else if (ts.isIdentifier(elem.name)) {
-		return elem.name.text;
+function resolveBindingElementKey(elem: ts.BindingElement, scope: Scope): string | undefined {
+	if (elem.dotDotDotToken) return undefined;
+	if (!elem.propertyName) return ts.isIdentifier(elem.name) ? elem.name.text : undefined;
+	if (ts.isIdentifier(elem.propertyName) || ts.isStringLiteral(elem.propertyName))
+		return elem.propertyName.text;
+	return ts.isComputedPropertyName(elem.propertyName)
+		? getExpressionStringValue(elem.propertyName.expression, scope)
+		: undefined;
+}
+
+const getBindingElementName = (elem: ts.BindingElement): string | undefined =>
+	(elem.propertyName && ts.isIdentifier(elem.propertyName)
+		? elem.propertyName.text
+		: undefined) ?? (ts.isIdentifier(elem.name) ? elem.name.text : undefined);
+
+interface ParameterInfo {
+	name?: string;
+	pattern?: ts.ObjectBindingPattern;
+}
+
+interface FunctionInfo {
+	parameters: ParameterInfo[];
+	scope: Scope;
+	body?: ts.Node;
+}
+
+interface FileScanContext {
+	sourceFile: ts.SourceFile;
+	file: string;
+	nodeToScope: Map<ts.Node, Scope>;
+	rootScope: Scope;
+	helpersReturningMeta: Set<string>;
+	reads: AppMetadataKeyRead[];
+	seenReads: Set<string>;
+}
+
+function addRead(ctx: FileScanContext, key: string, node: ts.Node): void {
+	const line =
+		ctx.sourceFile.getLineAndCharacterOfPosition(node.getStart(ctx.sourceFile)).line + 1;
+	const signature = `${key}:${line}`;
+	if (!ctx.seenReads.has(signature)) {
+		ctx.seenReads.add(signature);
+		ctx.reads.push({ key, file: ctx.file, line });
 	}
-	return undefined;
 }
 
-function getBindingElementName(elem: ts.BindingElement): string | undefined {
-	if (elem.propertyName && ts.isIdentifier(elem.propertyName)) return elem.propertyName.text;
-	if (ts.isIdentifier(elem.name)) return elem.name.text;
-	return undefined;
-}
-
-interface ScanContext {
-	constants: ReadonlyMap<string, string>;
-	aliases: Set<string>;
-	helpersReturningMeta: ReadonlySet<string>;
-	addRead: (key: string, node: ts.Node) => void;
-}
-
-function scanDestructuredAppMetadata(pattern: ts.ObjectBindingPattern, ctx: ScanContext): void {
-	for (const elem of pattern.elements) {
-		const propName = getBindingElementName(elem);
-		if (propName !== 'app_metadata' && propName !== 'appMetadata') continue;
-		if (ts.isIdentifier(elem.name)) {
-			ctx.aliases.add(elem.name.text);
-		} else if (ts.isObjectBindingPattern(elem.name)) {
-			for (const sub of elem.name.elements) {
-				const key = resolveBindingElementKey(sub, ctx.constants);
-				if (key) ctx.addRead(key, sub);
-			}
-		}
-	}
-}
-
-function checkVariableDeclaration(node: ts.VariableDeclaration, ctx: ScanContext): void {
-	if (!node.initializer) return;
-	const isTarget = isAppMetadataTarget(
-		node.initializer,
-		ctx.aliases,
-		ctx.helpersReturningMeta,
-		ctx.constants,
-	);
-
-	if (ts.isObjectBindingPattern(node.name)) {
-		if (isTarget) {
-			for (const elem of node.name.elements) {
-				const key = resolveBindingElementKey(elem, ctx.constants);
-				if (key) ctx.addRead(key, elem);
-			}
+function parseExternalConstants(ext?: ExternalConstants): {
+	moduleMap: Map<string, Map<string, string>>;
+	fallback: Map<string, string>;
+} {
+	const moduleMap = new Map<string, Map<string, string>>();
+	const fallback = new Map<string, string>();
+	if (!ext) return { moduleMap, fallback };
+	for (const [key, val] of ext instanceof Map ? ext.entries() : Object.entries(ext)) {
+		if (typeof val === 'string') {
+			fallback.set(key, val);
 		} else {
-			scanDestructuredAppMetadata(node.name, ctx);
+			const inner = new Map<string, string>(
+				val instanceof Map ? val.entries() : Object.entries(val),
+			);
+			moduleMap.set(key, inner);
+			moduleMap.set(normalizeModulePath(key), inner);
 		}
-	} else if (ts.isIdentifier(node.name) && isTarget) {
-		ctx.aliases.add(node.name.text);
+	}
+	return { moduleMap, fallback };
+}
+
+function resolveModuleExports(
+	spec: string,
+	currentFile: string,
+	map: Map<string, Map<string, string>>,
+): Map<string, string> | undefined {
+	if (map.has(spec)) return map.get(spec);
+	const norm = normalizeModulePath(spec);
+	if (map.has(norm)) return map.get(norm);
+	const dir = currentFile ? dirname(currentFile) : '';
+	if (!dir) return undefined;
+	const target = normalizeModulePath(join(dir, spec));
+	return map.get(target) ?? map.get(normalizeModulePath(join(target, 'index')));
+}
+
+function bindImports(
+	sf: ts.SourceFile,
+	filePath: string,
+	root: Scope,
+	modules: Map<string, Map<string, string>>,
+	fallback: Map<string, string>,
+): void {
+	for (const stmt of sf.statements) {
+		if (!ts.isImportDeclaration(stmt) || !stmt.importClause) continue;
+		const spec = ts.isStringLiteral(stmt.moduleSpecifier)
+			? stmt.moduleSpecifier.text
+			: undefined;
+		const exports = spec ? resolveModuleExports(spec, filePath, modules) : undefined;
+		const named = stmt.importClause.namedBindings;
+		if (named && ts.isNamedImports(named)) {
+			for (const elem of named.elements) {
+				const exp = elem.propertyName ? elem.propertyName.text : elem.name.text;
+				const val = exports?.get(exp) ?? fallback.get(exp);
+				if (val !== undefined) root.constants.set(elem.name.text, val);
+			}
+		} else if (named && ts.isNamespaceImport(named) && exports) {
+			root.namespaces.set(named.name.text, exports);
+		}
+		if (stmt.importClause.name) {
+			const val = exports?.get('default') ?? fallback.get(stmt.importClause.name.text);
+			if (val !== undefined) root.constants.set(stmt.importClause.name.text, val);
+		}
 	}
 }
 
-function checkAssignment(node: ts.BinaryExpression, ctx: ScanContext): void {
-	if (node.operatorToken.kind !== ts.SyntaxKind.EqualsToken) return;
-	if (!isAppMetadataTarget(node.right, ctx.aliases, ctx.helpersReturningMeta, ctx.constants))
-		return;
+function buildScopeTree(sf: ts.SourceFile, root: Scope): Map<ts.Node, Scope> {
+	const map = new Map<ts.Node, Scope>([[sf, root]]);
+	const walk = (node: ts.Node, current: Scope): void => {
+		const isScope =
+			node !== sf &&
+			(ts.isFunctionDeclaration(node) ||
+				ts.isFunctionExpression(node) ||
+				ts.isArrowFunction(node) ||
+				ts.isMethodDeclaration(node) ||
+				ts.isBlock(node) ||
+				ts.isIterationStatement(node, false));
+		const next = isScope ? createScope(current) : current;
+		if (isScope) map.set(node, next);
+		ts.forEachChild(node, (child) => walk(child, next));
+	};
+	walk(sf, root);
+	return map;
+}
 
+interface ParsedDeclarations {
+	variableDecls: ts.VariableDeclaration[];
+	assignments: ts.BinaryExpression[];
+	calls: ts.CallExpression[];
+	functions: Map<string, FunctionInfo>;
+}
+
+function collectDeclarations(
+	sourceFile: ts.SourceFile,
+	nodeToScope: Map<ts.Node, Scope>,
+	rootScope: Scope,
+): ParsedDeclarations {
+	const variableDecls: ts.VariableDeclaration[] = [];
+	const assignments: ts.BinaryExpression[] = [];
+	const calls: ts.CallExpression[] = [];
+	const functions = new Map<string, FunctionInfo>();
+
+	const toParams = (params: readonly ts.ParameterDeclaration[]): ParameterInfo[] =>
+		params.map((p) => ({
+			...(ts.isIdentifier(p.name) ? { name: p.name.text } : {}),
+			...(ts.isObjectBindingPattern(p.name) ? { pattern: p.name } : {}),
+		}));
+
+	const walk = (node: ts.Node): void => {
+		if (ts.isVariableDeclaration(node)) {
+			variableDecls.push(node);
+			const init = node.initializer;
+			const isFn = init && (ts.isArrowFunction(init) || ts.isFunctionExpression(init));
+			if (ts.isIdentifier(node.name) && isFn) {
+				functions.set(node.name.text, {
+					parameters: toParams(init.parameters),
+					scope: getScope(init, nodeToScope, rootScope),
+					body: init.body,
+				});
+			}
+		} else if (ts.isFunctionDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
+			functions.set(node.name.text, {
+				parameters: toParams(node.parameters),
+				scope: getScope(node, nodeToScope, rootScope),
+				body: node.body,
+			});
+		} else if (
+			ts.isBinaryExpression(node) &&
+			node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+		) {
+			assignments.push(node);
+		} else if (ts.isCallExpression(node)) {
+			calls.push(node);
+		}
+		ts.forEachChild(node, walk);
+	};
+	walk(sourceFile);
+	return { variableDecls, assignments, calls, functions };
+}
+
+function resolveScopeConstants(
+	variableDecls: readonly ts.VariableDeclaration[],
+	nodeToScope: Map<ts.Node, Scope>,
+	rootScope: Scope,
+): void {
+	let changed = true;
+	while (changed) {
+		changed = false;
+		for (const decl of variableDecls) {
+			if (!ts.isIdentifier(decl.name) || !decl.initializer) continue;
+			const scope = getScope(decl, nodeToScope, rootScope);
+			if (scope.constants.has(decl.name.text)) continue;
+			const val = getExpressionStringValue(decl.initializer, scope);
+			if (val !== undefined) {
+				scope.constants.set(decl.name.text, val);
+				changed = true;
+			}
+		}
+	}
+}
+
+function addRestAliases(pattern: ts.ObjectBindingPattern, scope: Scope): void {
+	for (const elem of pattern.elements) {
+		if (elem.dotDotDotToken && ts.isIdentifier(elem.name)) scope.aliases.add(elem.name.text);
+	}
+}
+
+function scanDestructuredMetadataAliases(pattern: ts.ObjectBindingPattern, scope: Scope): void {
+	for (const elem of pattern.elements) {
+		const prop = getBindingElementName(elem);
+		if (prop !== 'app_metadata' && prop !== 'appMetadata') continue;
+		if (ts.isIdentifier(elem.name)) scope.aliases.add(elem.name.text);
+		else if (ts.isObjectBindingPattern(elem.name)) addRestAliases(elem.name, scope);
+	}
+}
+
+function checkDeclAliases(decl: ts.VariableDeclaration, ctx: FileScanContext): void {
+	if (!decl.initializer) return;
+	const isTarget = isAppMetadataTarget(
+		decl.initializer,
+		getScope(decl.initializer, ctx.nodeToScope, ctx.rootScope),
+		ctx.helpersReturningMeta,
+	);
+	const scope = getScope(decl, ctx.nodeToScope, ctx.rootScope);
+	if (ts.isObjectBindingPattern(decl.name)) {
+		if (isTarget) addRestAliases(decl.name, scope);
+		else scanDestructuredMetadataAliases(decl.name, scope);
+	} else if (ts.isIdentifier(decl.name) && isTarget) {
+		scope.aliases.add(decl.name.text);
+	}
+}
+
+function checkAssignmentAliases(node: ts.BinaryExpression, ctx: FileScanContext): void {
+	if (
+		!isAppMetadataTarget(
+			node.right,
+			getScope(node.right, ctx.nodeToScope, ctx.rootScope),
+			ctx.helpersReturningMeta,
+		)
+	) {
+		return;
+	}
 	const left = unwrapExpression(node.left);
+	const scope = getScope(node, ctx.nodeToScope, ctx.rootScope);
 	if (ts.isObjectLiteralExpression(left)) {
 		for (const prop of left.properties) {
-			if (ts.isShorthandPropertyAssignment(prop)) {
-				ctx.addRead(prop.name.text, prop);
-			} else if (ts.isPropertyAssignment(prop)) {
-				if (ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name)) {
-					ctx.addRead(prop.name.text, prop);
-				} else if (ts.isComputedPropertyName(prop.name)) {
-					const key = getExpressionStringValue(prop.name.expression, ctx.constants);
-					if (key) ctx.addRead(key, prop);
-				}
+			if (ts.isSpreadAssignment(prop) && ts.isIdentifier(prop.expression)) {
+				scope.aliases.add(prop.expression.text);
 			}
 		}
 	} else if (ts.isIdentifier(left)) {
-		ctx.aliases.add(left.text);
+		scope.aliases.add(left.text);
 	}
+}
+
+function checkHelperReturns(
+	functions: ReadonlyMap<string, FunctionInfo>,
+	ctx: FileScanContext,
+): void {
+	for (const [name, fnInfo] of functions) {
+		if (ctx.helpersReturningMeta.has(name) || !fnInfo.body) continue;
+		if (!ts.isBlock(fnInfo.body)) {
+			if (
+				isAppMetadataTarget(
+					fnInfo.body as ts.Expression,
+					fnInfo.scope,
+					ctx.helpersReturningMeta,
+				)
+			) {
+				ctx.helpersReturningMeta.add(name);
+			}
+			continue;
+		}
+		let returnsMeta = false;
+		const check = (n: ts.Node): void => {
+			if (returnsMeta) return;
+			if (ts.isReturnStatement(n) && n.expression) {
+				returnsMeta = isAppMetadataTarget(
+					n.expression,
+					getScope(n.expression, ctx.nodeToScope, ctx.rootScope),
+					ctx.helpersReturningMeta,
+				);
+			} else if (
+				!ts.isFunctionDeclaration(n) &&
+				!ts.isFunctionExpression(n) &&
+				!ts.isArrowFunction(n)
+			) {
+				ts.forEachChild(n, check);
+			}
+		};
+		ts.forEachChild(fnInfo.body, check);
+		if (returnsMeta) ctx.helpersReturningMeta.add(name);
+	}
+}
+
+function checkCallSite(
+	call: ts.CallExpression,
+	functions: ReadonlyMap<string, FunctionInfo>,
+	ctx: FileScanContext,
+): void {
+	if (!ts.isIdentifier(call.expression)) return;
+	const fnInfo = functions.get(call.expression.text);
+	if (!fnInfo) return;
+
+	call.arguments.forEach((arg, idx) => {
+		const param = fnInfo.parameters[idx];
+		if (
+			!param ||
+			!isAppMetadataTarget(
+				arg as ts.Expression,
+				getScope(arg, ctx.nodeToScope, ctx.rootScope),
+				ctx.helpersReturningMeta,
+			)
+		) {
+			return;
+		}
+		if (param.name) {
+			fnInfo.scope.aliases.add(param.name);
+		} else if (param.pattern) {
+			addRestAliases(param.pattern, fnInfo.scope);
+			for (const elem of param.pattern.elements) {
+				const key = resolveBindingElementKey(elem, fnInfo.scope);
+				if (key) addRead(ctx, key, elem);
+			}
+		}
+	});
+}
+
+function propagateAliases(decls: ParsedDeclarations, ctx: FileScanContext): void {
+	const total = (): number => {
+		let sum = ctx.helpersReturningMeta.size + ctx.reads.length;
+		for (const s of ctx.nodeToScope.values()) sum += s.aliases.size;
+		return sum;
+	};
+	let prev = -1;
+	while (total() !== prev) {
+		prev = total();
+		for (const d of decls.variableDecls) checkDeclAliases(d, ctx);
+		for (const a of decls.assignments) checkAssignmentAliases(a, ctx);
+		checkHelperReturns(decls.functions, ctx);
+		for (const c of decls.calls) checkCallSite(c, decls.functions, ctx);
+	}
+}
+
+function checkDestructuredElements(
+	pattern: ts.ObjectBindingPattern,
+	scope: Scope,
+	ctx: FileScanContext,
+): void {
+	for (const elem of pattern.elements) {
+		if (elem.dotDotDotToken) continue;
+		const key = resolveBindingElementKey(elem, scope);
+		if (key) addRead(ctx, key, elem);
+	}
+}
+
+function checkPatternReads(
+	pattern: ts.ObjectBindingPattern,
+	scope: Scope,
+	ctx: FileScanContext,
+): void {
+	for (const elem of pattern.elements) {
+		const prop = getBindingElementName(elem);
+		if (
+			(prop === 'app_metadata' || prop === 'appMetadata') &&
+			ts.isObjectBindingPattern(elem.name)
+		) {
+			checkDestructuredElements(elem.name, scope, ctx);
+		}
+	}
+}
+
+function checkAssignmentRead(node: ts.BinaryExpression, ctx: FileScanContext): void {
+	const scope = getScope(node, ctx.nodeToScope, ctx.rootScope);
+	if (!isAppMetadataTarget(node.right, scope, ctx.helpersReturningMeta)) return;
+	const left = unwrapExpression(node.left);
+	if (!ts.isObjectLiteralExpression(left)) return;
+
+	for (const prop of left.properties) {
+		if (ts.isShorthandPropertyAssignment(prop)) {
+			addRead(ctx, prop.name.text, prop);
+		} else if (ts.isPropertyAssignment(prop)) {
+			const key =
+				ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name)
+					? prop.name.text
+					: ts.isComputedPropertyName(prop.name)
+						? getExpressionStringValue(prop.name.expression, scope)
+						: undefined;
+			if (key) addRead(ctx, key, prop);
+		}
+	}
+}
+
+function collectAllReads(ctx: FileScanContext): void {
+	const visit = (node: ts.Node): void => {
+		const scope = getScope(node, ctx.nodeToScope, ctx.rootScope);
+		if (
+			ts.isPropertyAccessExpression(node) &&
+			isAppMetadataTarget(node.expression, scope, ctx.helpersReturningMeta)
+		) {
+			addRead(ctx, node.name.text, node.name);
+		} else if (
+			ts.isElementAccessExpression(node) &&
+			isAppMetadataTarget(node.expression, scope, ctx.helpersReturningMeta)
+		) {
+			const key = getExpressionStringValue(node.argumentExpression, scope);
+			if (key) addRead(ctx, key, node.argumentExpression);
+		} else if (ts.isVariableDeclaration(node)) {
+			const isTarget =
+				node.initializer &&
+				isAppMetadataTarget(
+					node.initializer,
+					getScope(node.initializer, ctx.nodeToScope, ctx.rootScope),
+					ctx.helpersReturningMeta,
+				);
+			if (isTarget && ts.isObjectBindingPattern(node.name)) {
+				checkDestructuredElements(node.name, scope, ctx);
+			} else if (ts.isObjectBindingPattern(node.name)) {
+				checkPatternReads(node.name, scope, ctx);
+			}
+		} else if (ts.isParameter(node) && ts.isObjectBindingPattern(node.name)) {
+			checkPatternReads(node.name, scope, ctx);
+		} else if (
+			ts.isBinaryExpression(node) &&
+			node.operatorToken.kind === ts.SyntaxKind.EqualsToken
+		) {
+			checkAssignmentRead(node, ctx);
+		}
+		ts.forEachChild(node, visit);
+	};
+	visit(ctx.sourceFile);
 }
 
 /**
@@ -349,193 +730,107 @@ function checkAssignment(node: ts.BinaryExpression, ctx: ScanContext): void {
 export function findAppMetadataKeyReads(
 	source: string,
 	file: string,
-	externalConstants?: ReadonlyMap<string, string> | Record<string, string>,
+	externalConstants?: ExternalConstants,
 ): AppMetadataKeyRead[] {
-	const scriptKind = file.endsWith('.tsx')
+	const scriptKind = /\.[tj]sx$|\.astro$/u.test(file)
 		? ts.ScriptKind.TSX
-		: file.endsWith('.jsx')
-			? ts.ScriptKind.JSX
-			: file.endsWith('.js') || file.endsWith('.mjs') || file.endsWith('.cjs')
-				? ts.ScriptKind.JS
-				: file.endsWith('.astro')
-					? ts.ScriptKind.TSX
-					: ts.ScriptKind.TS;
+		: /\.[cm]?js$/u.test(file)
+			? ts.ScriptKind.JS
+			: ts.ScriptKind.TS;
 
 	const sourceFile = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, scriptKind);
+	const { moduleMap, fallback } = parseExternalConstants(externalConstants);
+	const rootScope = createScope(null);
+	bindImports(sourceFile, file, rootScope, moduleMap, fallback);
+	const nodeToScope = buildScopeTree(sourceFile, rootScope);
+	const decls = collectDeclarations(sourceFile, nodeToScope, rootScope);
+	resolveScopeConstants(decls.variableDecls, nodeToScope, rootScope);
 
-	const constants = new Map<string, string>(
-		externalConstants
-			? externalConstants instanceof Map
-				? externalConstants
-				: Object.entries(externalConstants)
-			: [],
-	);
-	const aliases = new Set<string>();
-	const helpersReturningMeta = new Set<string>();
-	const fnParams = new Map<string, { params: (string | null)[]; node: ts.Node }>();
-	const reads: AppMetadataKeyRead[] = [];
-
-	// Pass 1: collect local string constants and function declarations / expressions
-	function pass1(node: ts.Node): void {
-		if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer) {
-			const value = getExpressionStringValue(node.initializer, constants);
-			if (value !== undefined) {
-				constants.set(node.name.text, value);
-			}
-			if (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer)) {
-				const params = node.initializer.parameters.map((p) =>
-					ts.isIdentifier(p.name) ? p.name.text : null,
-				);
-				fnParams.set(node.name.text, { params, node: node.initializer });
-			}
-		}
-		if (ts.isFunctionDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
-			const params = node.parameters.map((p) =>
-				ts.isIdentifier(p.name) ? p.name.text : null,
-			);
-			fnParams.set(node.name.text, { params, node });
-		}
-		ts.forEachChild(node, pass1);
-	}
-	pass1(sourceFile);
-
-	// Check helper return values
-	for (const [name, { node }] of fnParams) {
-		if (
-			ts.isArrowFunction(node) &&
-			!ts.isBlock(node.body) &&
-			isAppMetadataTarget(node.body, aliases, helpersReturningMeta, constants)
-		) {
-			helpersReturningMeta.add(name);
-		} else {
-			const checkReturn = (n: ts.Node): void => {
-				if (
-					ts.isReturnStatement(n) &&
-					n.expression &&
-					isAppMetadataTarget(n.expression, aliases, helpersReturningMeta, constants)
-				) {
-					helpersReturningMeta.add(name);
-				}
-				ts.forEachChild(n, checkReturn);
-			};
-			checkReturn(
-				ts.isArrowFunction(node)
-					? node.body
-					: ((node as ts.FunctionDeclaration).body ?? node),
-			);
-		}
-	}
-
-	// Pass 1.5: find calls to helpers passing app_metadata to bind parameters as aliases
-	function passCalls(node: ts.Node): void {
-		if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
-			const fnInfo = fnParams.get(node.expression.text);
-			if (fnInfo) {
-				node.arguments.forEach((arg, idx) => {
-					if (
-						isAppMetadataTarget(
-							arg as ts.Expression,
-							aliases,
-							helpersReturningMeta,
-							constants,
-						)
-					) {
-						const paramName = fnInfo.params[idx];
-						if (paramName) aliases.add(paramName);
-					}
-				});
-			}
-		}
-		ts.forEachChild(node, passCalls);
-	}
-	passCalls(sourceFile);
-
-	function addRead(key: string, node: ts.Node): void {
-		const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;
-		reads.push({ key, file, line });
-	}
-
-	const scanCtx: ScanContext = {
-		constants,
-		aliases,
-		helpersReturningMeta,
-		addRead,
+	const ctx: FileScanContext = {
+		sourceFile,
+		file,
+		nodeToScope,
+		rootScope,
+		helpersReturningMeta: new Set(),
+		reads: [],
+		seenReads: new Set(),
 	};
 
-	// Pass 2: traverse AST and collect reads
-	function pass2(node: ts.Node): void {
-		if (ts.isPropertyAccessExpression(node)) {
-			if (isAppMetadataTarget(node.expression, aliases, helpersReturningMeta, constants)) {
-				addRead(node.name.text, node.name);
-			}
-		} else if (ts.isElementAccessExpression(node)) {
-			if (isAppMetadataTarget(node.expression, aliases, helpersReturningMeta, constants)) {
-				const key = getExpressionStringValue(node.argumentExpression, constants);
-				if (key) addRead(key, node.argumentExpression);
-			}
-		} else if (ts.isVariableDeclaration(node)) {
-			checkVariableDeclaration(node, scanCtx);
-		} else if (ts.isParameter(node)) {
-			if (ts.isObjectBindingPattern(node.name)) {
-				scanDestructuredAppMetadata(node.name, scanCtx);
-			}
-		} else if (ts.isBinaryExpression(node)) {
-			checkAssignment(node, scanCtx);
-		}
-		ts.forEachChild(node, pass2);
-	}
-	pass2(sourceFile);
+	propagateAliases(decls, ctx);
+	collectAllReads(ctx);
+	return ctx.reads;
+}
 
-	return reads;
+function harvestFileExports(sf: ts.SourceFile): Map<string, string> {
+	const local = new Map<string, string>();
+	const exportedNames = new Map<string, string>();
+	for (const stmt of sf.statements) {
+		if (ts.isVariableStatement(stmt)) {
+			const isExported = stmt.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
+			for (const d of stmt.declarationList.declarations) {
+				if (!ts.isIdentifier(d.name) || !d.initializer) continue;
+				const cur = unwrapExpression(d.initializer);
+				if (ts.isStringLiteral(cur) || ts.isNoSubstitutionTemplateLiteral(cur)) {
+					local.set(d.name.text, cur.text);
+					if (isExported) exportedNames.set(d.name.text, d.name.text);
+				}
+			}
+		} else if (
+			ts.isExportDeclaration(stmt) &&
+			stmt.exportClause &&
+			ts.isNamedExports(stmt.exportClause)
+		) {
+			for (const spec of stmt.exportClause.elements) {
+				exportedNames.set(
+					spec.name.text,
+					spec.propertyName ? spec.propertyName.text : spec.name.text,
+				);
+			}
+		}
+	}
+	const exports = new Map<string, string>();
+	for (const [exp, src] of exportedNames) {
+		const val = local.get(src);
+		if (val !== undefined) exports.set(exp, val);
+	}
+	return exports;
 }
 
 /**
  * Collects exported string constants across all source files in the given roots.
+ * Returns a map of module path -> exported constant name -> string value.
  */
-function collectExportedConstants(roots: readonly string[]): Map<string, string> {
-	const constants = new Map<string, string>();
-	const walk = (directory: string): void => {
-		if (!existsSync(directory)) return;
-		for (const entry of readdirSync(directory, { withFileTypes: true })) {
-			const path = join(directory, entry.name);
+function collectExportedConstants(
+	roots: readonly string[],
+	baseDir?: string,
+): Map<string, Map<string, string>> {
+	const moduleExports = new Map<string, Map<string, string>>();
+	const register = (path: string, exports: Map<string, string>): void => {
+		const targets = [path, relative(process.cwd(), path)];
+		if (baseDir) targets.push(relative(baseDir, path));
+		for (const p of targets) {
+			const norm = p.replace(/\\/g, '/');
+			moduleExports.set(norm, exports);
+			moduleExports.set(normalizeModulePath(norm), exports);
+		}
+	};
+
+	const walk = (dir: string): void => {
+		if (!existsSync(dir)) return;
+		for (const entry of readdirSync(dir, { withFileTypes: true })) {
+			const path = join(dir, entry.name);
 			if (entry.isDirectory()) {
-				if (
-					entry.name !== 'node_modules' &&
-					entry.name !== '.git' &&
-					entry.name !== 'dist' &&
-					entry.name !== '.astro'
-				) {
-					walk(path);
-				}
+				if (!IGNORED_DIRS.has(entry.name)) walk(path);
 			} else if (SOURCE_FILE.test(entry.name)) {
 				try {
-					const text = readFileSync(path, 'utf8');
-					const sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
-					ts.forEachChild(sf, (node) => {
-						if (
-							ts.isVariableStatement(node) &&
-							node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)
-						) {
-							for (const decl of node.declarationList.declarations) {
-								if (ts.isIdentifier(decl.name) && decl.initializer) {
-									let cur = decl.initializer;
-									while (
-										ts.isParenthesizedExpression(cur) ||
-										ts.isAsExpression(cur) ||
-										ts.isTypeAssertionExpression(cur)
-									) {
-										cur = cur.expression;
-									}
-									if (
-										ts.isStringLiteral(cur) ||
-										ts.isNoSubstitutionTemplateLiteral(cur)
-									) {
-										constants.set(decl.name.text, cur.text);
-									}
-								}
-							}
-						}
-					});
+					const sf = ts.createSourceFile(
+						path,
+						readFileSync(path, 'utf8'),
+						ts.ScriptTarget.Latest,
+						true,
+					);
+					const fileExports = harvestFileExports(sf);
+					if (fileExports.size > 0) register(path, fileExports);
 				} catch {
 					// Ignore parse errors during constant harvesting
 				}
@@ -543,7 +838,7 @@ function collectExportedConstants(roots: readonly string[]): Map<string, string>
 		}
 	};
 	for (const root of roots) walk(root);
-	return constants;
+	return moduleExports;
 }
 
 export function scanAppMetadataKeyReads(
@@ -551,7 +846,6 @@ export function scanAppMetadataKeyReads(
 	baseDir?: string,
 ): AppMetadataKeyRead[] {
 	const roots = Array.isArray(rootOrRoots) ? rootOrRoots : [rootOrRoots];
-	const isSingleExplicit = typeof rootOrRoots === 'string';
 	const exportedConstants = collectExportedConstants(roots);
 	const reads: AppMetadataKeyRead[] = [];
 
@@ -561,14 +855,7 @@ export function scanAppMetadataKeyReads(
 			const path = join(directory, entry.name);
 			const name = relativePrefix ? `${relativePrefix}/${entry.name}` : entry.name;
 			if (entry.isDirectory()) {
-				if (
-					entry.name !== 'node_modules' &&
-					entry.name !== '.git' &&
-					entry.name !== 'dist' &&
-					entry.name !== '.astro'
-				) {
-					walk(path, name);
-				}
+				if (!IGNORED_DIRS.has(entry.name)) walk(path, name);
 			} else if (SOURCE_FILE.test(entry.name)) {
 				reads.push(
 					...findAppMetadataKeyReads(readFileSync(path, 'utf8'), name, exportedConstants),
@@ -579,14 +866,8 @@ export function scanAppMetadataKeyReads(
 
 	for (const root of roots) {
 		if (!existsSync(root)) continue;
-		const prefix = isSingleExplicit
-			? baseDir
-				? relative(baseDir, root).replace(/\\/g, '/')
-				: ''
-			: baseDir
-				? relative(baseDir, root).replace(/\\/g, '/')
-				: basename(root);
-		walk(root, prefix);
+		const rel = baseDir ? relative(baseDir, root).replace(/\\/g, '/') : '';
+		walk(root, typeof rootOrRoots === 'string' ? rel : rel || basename(root));
 	}
 
 	return reads;

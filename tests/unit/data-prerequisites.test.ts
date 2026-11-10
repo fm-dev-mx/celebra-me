@@ -124,6 +124,98 @@ describe('app_metadata key scanner', () => {
 		]);
 	});
 
+	it('propagates metadata aliases before analyzing helper calls and resolves call chains', () => {
+		const source = [
+			'function check(meta) {',
+			'    return meta.new_flag;',
+			'}',
+			'const metadata = user.app_metadata;',
+			'check(metadata);',
+			'function inner(val) {',
+			'    return val.temp_flag;',
+			'}',
+			'function outer(m) {',
+			'    return inner(m);',
+			'}',
+			'outer(metadata);',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'new_flag', file: 'example.ts', line: 2 },
+			{ key: 'temp_flag', file: 'example.ts', line: 7 },
+		]);
+	});
+
+	it('resolves constants by symbol and scope, isolating shadowing between functions and top level', () => {
+		const source = [
+			"const KEY = 'new_flag';",
+			'function unrelated() {',
+			"    const KEY = 'role';",
+			'    return user.app_metadata[KEY];',
+			'}',
+			'const a = user.app_metadata[KEY];',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'role', file: 'example.ts', line: 4 },
+			{ key: 'new_flag', file: 'example.ts', line: 6 },
+		]);
+	});
+
+	it('resolves imported constants with renamed aliases and isolates homonymous exports across modules', () => {
+		const source = [
+			"import { REAL_KEY as KEY } from './constants';",
+			"import { KEY as MODULE_A_KEY } from './module-a';",
+			"import { KEY as MODULE_B_KEY } from './module-b';",
+			'const a = user.app_metadata[KEY];',
+			'const b = user.app_metadata[MODULE_A_KEY];',
+			'const c = user.app_metadata[MODULE_B_KEY];',
+		].join('\n');
+		const externalConstants = {
+			'./constants': { REAL_KEY: 'new_flag' },
+			'./module-a': { KEY: 'role' },
+			'./module-b': { KEY: 'must_change_password' },
+		};
+		expect(findAppMetadataKeyReads(source, 'example.ts', externalConstants)).toEqual([
+			{ key: 'new_flag', file: 'example.ts', line: 4 },
+			{ key: 'role', file: 'example.ts', line: 5 },
+			{ key: 'must_change_password', file: 'example.ts', line: 6 },
+		]);
+	});
+
+	it('extracts keys from destructured helper parameters receiving metadata', () => {
+		const source = [
+			'function check({ new_flag }) {',
+			'    return new_flag;',
+			'}',
+			'check(user.app_metadata);',
+			'function checkComplex({ role: userRole, ...rest }) {',
+			'    return rest.temp_flag;',
+			'}',
+			'const meta = user.app_metadata;',
+			'checkComplex(meta);',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'new_flag', file: 'example.ts', line: 1 },
+			{ key: 'role', file: 'example.ts', line: 5 },
+			{ key: 'temp_flag', file: 'example.ts', line: 6 },
+		]);
+	});
+
+	it('treats rest binding elements as remaining metadata aliases, ignoring dotDotDotToken as keys', () => {
+		const source = [
+			'const { role, ...rest } = user.app_metadata;',
+			'const flag = rest.new_flag;',
+			'let remainder;',
+			'({ must_change_password: mcp, ...remainder } = user.app_metadata);',
+			'const alias = remainder.login_alias;',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'role', file: 'example.ts', line: 1 },
+			{ key: 'new_flag', file: 'example.ts', line: 2 },
+			{ key: 'must_change_password', file: 'example.ts', line: 4 },
+			{ key: 'login_alias', file: 'example.ts', line: 5 },
+		]);
+	});
+
 	it('reports a read that the manifest does not declare, with the way out', () => {
 		const reads = findAppMetadataKeyReads('user.app_metadata?.new_flag', 'src/example.ts');
 		const undeclared = findUndeclaredAppMetadataKeys(
