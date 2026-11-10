@@ -7,8 +7,7 @@
             "reason": "Written together with a new alias by the admin alias update; an absent value only means no update is in flight."
         },
         "role": {
-            "migration": "none",
-            "reason": "Maintained by the app_user_roles trigger since migration 20260215000800. Synchronization of rows older than the trigger is not verified by any command."
+            "prerequisite": "auth-role-app-metadata"
         },
         "must_change_password": {
             "migration": "none",
@@ -20,6 +19,16 @@
         }
     },
     "prerequisites": [
+        {
+            "id": "auth-role-app-metadata",
+            "summary": "Every Auth account has a valid app_user_roles.role matching app_metadata.role, with no orphan application roles.",
+            "introducedBy": "scripts/auth/check-role-app-metadata.mjs",
+            "verify": "pnpm auth:check-role-app-metadata",
+            "environments": {
+                "production": { "status": "pending" },
+                "preview": { "status": "pending" }
+            }
+        },
         {
             "id": "auth-login-alias-app-metadata",
             "summary": "Every account that logs in by alias has the alias in app_metadata.login_alias; login never reads user_metadata.",
@@ -36,6 +45,36 @@
                     "verifiedAt": "2026-11-09",
                     "evidence": "pnpm auth:migrate-login-alias --dry-run (planned 18, duplicates 0, written 0), then --apply (planned 18, written 18, duplicates 0); pnpm auth:check-login-alias afterwards: target preview, accounts 19, protectedAliases 19, legacyOnly 0, duplicates 0, ok true."
                 }
+            }
+        },
+        {
+            "id": "20260812-itinerary-gallery-structural-contracts",
+            "summary": "The four targeted XV invitations have explicit timeline-paper itinerary contracts and the three celestial targets have index-choreography galleries in published content and every active draft.",
+            "introducedBy": "scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql",
+            "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20260812_itinerary_gallery.sql",
+            "environments": {
+                "production": { "status": "pending" },
+                "preview": { "status": "pending" }
+            }
+        },
+        {
+            "id": "20260812-thankyou-editorial-back-cover",
+            "summary": "The three targeted invitations have explicit editorial-back-cover Thank You contracts in published content and every active draft.",
+            "introducedBy": "scripts/manual/production-patches/20260812_thankyou_editorial_back_cover_structural_contracts.sql",
+            "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20260812_thankyou.sql",
+            "environments": {
+                "production": { "status": "pending" },
+                "preview": { "status": "pending" }
+            }
+        },
+        {
+            "id": "20260812-guest-invitation-phone-objects",
+            "summary": "Guest invitation phone objects have the canonical btree(phone) index, no legacy or unexpected equivalent index, and the validated phone/country-code pair CHECK.",
+            "introducedBy": "supabase/migrations/20260812210000_reconcile_guest_invitation_phone_objects.sql",
+            "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20260812_guest_phone.sql",
+            "environments": {
+                "production": { "status": "pending" },
+                "preview": { "status": "pending" }
             }
         }
     ]

@@ -49,9 +49,78 @@ describe('committed data prerequisite manifest', () => {
 		if (undeclared.length > 0) throw new Error(describeUndeclaredAppMetadataKeys(undeclared));
 	});
 
-	it('allows a Production release', () => {
-		expect(() => requireDataPrerequisites(committedManifest)).not.toThrow();
+	const patchIds = [
+		'20260812-itinerary-gallery-structural-contracts',
+		'20260812-thankyou-editorial-back-cover',
+		'20260812-guest-invitation-phone-objects',
+	];
+
+	it.each(['production', 'preview'])('declares the August patches for %s', (environment) => {
+		const parsed = parseDataPrerequisiteManifest(committedManifest);
+		for (const id of patchIds) {
+			const entry = parsed.prerequisites.find((item) => item.id === id);
+			// Evidence may advance to verified/not-applicable without changing this contract test.
+			expect(entry?.environments[environment]).toBeDefined();
+			expect(entry?.introducedBy).toMatch(/20260812.*\.sql$/u);
+			const query = entry?.verify.match(/--file=(\S+)/u)?.[1];
+			expect(query).toBeDefined();
+			expect(existsSync(resolve(repositoryRoot, query!))).toBe(true);
+		}
 	});
+
+	it.each(patchIds)('blocks on %s even when every other prerequisite is verified', (id) => {
+		const parsed = parseDataPrerequisiteManifest(committedManifest);
+		for (const entry of parsed.prerequisites) {
+			for (const environment of ['production', 'preview']) {
+				entry.environments[environment] = {
+					status: 'verified',
+					verifiedAt: '2026-11-10',
+					evidence: 'Synthetic verification for the release gate test.',
+				};
+			}
+		}
+		const verified = JSON.stringify(parsed);
+		expect(() => requireDataPrerequisites(verified)).not.toThrow();
+		const entry = parsed.prerequisites.find((item) => item.id === id)!;
+		entry.environments.production = { status: 'pending' };
+		expect(() => requireDataPrerequisites(JSON.stringify(parsed))).toThrow(`- ${id}:`);
+		expect(() => requireDataPrerequisites(JSON.stringify(parsed))).toThrow(entry.verify);
+		expect(() => requireDataPrerequisites(JSON.stringify(parsed), 'preview')).not.toThrow();
+	});
+
+	it('preserves the verified login alias prerequisite independently of pending patches', () => {
+		const parsed = parseDataPrerequisiteManifest(committedManifest);
+		parsed.prerequisites = parsed.prerequisites.filter(
+			(entry) => entry.id === 'auth-login-alias-app-metadata',
+		);
+		parsed.authAppMetadataKeys = Object.fromEntries(
+			Object.entries(parsed.authAppMetadataKeys).filter(
+				([, mapping]) =>
+					!('prerequisite' in mapping) ||
+					mapping.prerequisite === 'auth-login-alias-app-metadata',
+			),
+		);
+		expect(parsed.prerequisites).toHaveLength(1);
+		expect(() => requireDataPrerequisites(JSON.stringify(parsed))).not.toThrow();
+		expect(() => requireDataPrerequisites(JSON.stringify(parsed), 'preview')).not.toThrow();
+	});
+
+	it.each(['production', 'preview'])(
+		'blocks %s until role synchronization is verified',
+		(environment) => {
+			const parsed = parseDataPrerequisiteManifest(committedManifest);
+			expect(parsed.authAppMetadataKeys.role).toEqual({
+				prerequisite: 'auth-role-app-metadata',
+			});
+			expect(
+				parsed.prerequisites.find(({ id }) => id === 'auth-role-app-metadata')
+					?.environments[environment].status,
+			).toBe('pending');
+			expect(() => requireDataPrerequisites(committedManifest, environment)).toThrow(
+				/auth-role-app-metadata: .*`pnpm auth:check-role-app-metadata`/,
+			);
+		},
+	);
 });
 
 describe('app_metadata key scanner', () => {
