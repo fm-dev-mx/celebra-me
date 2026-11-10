@@ -1,6 +1,19 @@
 {
     "$schemaComment": "Migration / deployment compatibility registry. SSOT for expand|neutral|contract phases. Docs: docs/database-workflow.md",
     "migrations": {
+        "20261110120000": {
+            "phase": "neutral",
+            "notes": "Data only: frees storage_path paths (idx_invitation_assets_storage_path) retained by the archived Preview copy b789dbc3 of daniela-y-martin without deleting evidence or remote storage objects. Idempotent Preview-only update by immutable UUID; Production has different IDs and is completely untouched."
+        },
+        "20261110100000": {
+            "phase": "neutral",
+            "notes": "Data only: frees the slug (invitation_projects_slug_key), managed_identity_id (invitations_managed_identity_id_uidx) and provenance (managed_provenance_managed_identity_id_uidx) retained by the archived Preview copy b789dbc3 of daniela-y-martin without deleting evidence. Idempotent Preview-only update by immutable UUID; Production has different IDs and is completely untouched."
+        },
+        "20261105150000": {
+            "phase": "expand",
+            "provides": ["trusted_devices"],
+            "notes": "Adds the service-role-only trusted_devices table (hashed secret, user agent hash, revoked_at) behind the remember-this-device cookie. Additive: the previous signed cookie keeps working until the new app replaces it. Apply before the app that enrolls and validates trusted devices is deployed; without the table the app fails closed and asks for the second factor."
+        },
         "20261030180000": {
             "phase": "expand",
             "provides": ["leads_record_origin", "lead_ad_codes"],

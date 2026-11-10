@@ -152,10 +152,6 @@ const revenueAttribution = dashboardData
 			</div>
 		)}
 
-		<DemoCatalog client:load demos={demoLinks} shareOrigin={resolvePublicSiteOrigin()} />
-		<DemoConversionReport report={demoReport} />
-		<MetaInsightsReport table={metaInsights} />
-		<MetaWeeklyReview report={weeklyReview} />
 		{dashboardData && viewModel && (
 			<>
 				<div class="commercial-tabs" role="tablist" aria-label="Secciones del espacio comercial">
@@ -251,6 +247,9 @@ const revenueAttribution = dashboardData
 							</table>
 						</div>
 					</section>
+
+					<DemoCatalog client:load demos={demoLinks} shareOrigin={resolvePublicSiteOrigin()} />
+					<DemoConversionReport report={demoReport} />
 				</div>
 
 				<div class="tab-content active" id="tab-ventas" role="tabpanel" aria-labelledby="commercial-tab-ventas" tabindex="0">
@@ -259,6 +258,8 @@ const revenueAttribution = dashboardData
 				</div>
 
 				<div class="tab-content" id="tab-atribucion" role="tabpanel" aria-labelledby="commercial-tab-atribucion" tabindex="0" hidden>
+					<MetaInsightsReport table={metaInsights} />
+					<MetaWeeklyReview report={weeklyReview} />
 					<section class="commercial-dashboard__quality">
 						<header class="commercial-dashboard__quality-header">
 							<p class="commercial-dashboard__eyebrow">Decisión comercial</p>

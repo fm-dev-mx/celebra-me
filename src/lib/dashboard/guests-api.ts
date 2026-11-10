@@ -1,4 +1,5 @@
 import { dashboardApi, type ApiResult } from '@/lib/dashboard/api-client';
+import { goToLoginAfterSessionEnded } from '@/lib/dashboard/session-ended';
 import { isDebugMode } from '@/utils/debug';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import type { DashboardEventListResponse } from '@/interfaces/dashboard/admin.interface';
@@ -173,6 +174,11 @@ class GuestsApi {
 	async exportCsv(eventId: string): Promise<void> {
 		const query = new URLSearchParams({ eventId });
 		const response = await fetch(`/api/dashboard/guests/export.csv?${query.toString()}`);
+
+		if (response.status === 401) {
+			goToLoginAfterSessionEnded();
+			throw new Error('Error al exportar CSV');
+		}
 
 		if (!response.ok) {
 			throw new Error('Error al exportar CSV');

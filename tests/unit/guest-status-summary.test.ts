@@ -65,7 +65,14 @@ describe('computeGuestSummary', () => {
 		const { people, invitations } = computeGuestSummary(guests);
 
 		expect(invitations).toBe(6);
-		expect(people).toEqual({ assigned: 16, confirmed: 3, declined: 2, unused: 2, noAnswer: 9 });
+		expect(people).toEqual({
+			assigned: 16,
+			confirmed: 3,
+			confirmedChildren: 0,
+			declined: 2,
+			unused: 2,
+			noAnswer: 9,
+		});
 		expect(people.confirmed + people.declined + people.unused + people.noAnswer).toBe(
 			people.assigned,
 		);
@@ -84,6 +91,36 @@ describe('computeGuestSummary', () => {
 		expect(awaitingAnswer).toEqual({ invitations: 2, passes: 7 });
 	});
 
+	it('counts children among the confirmed people only', () => {
+		const { people } = computeGuestSummary([
+			makeGuest({
+				guestId: 'family',
+				attendanceStatus: 'confirmed',
+				maxAllowedAttendees: 3,
+				maxAllowedChildren: 1,
+				attendeeCount: 3,
+				childrenCount: 1,
+			}),
+			makeGuest({
+				guestId: 'over-reported',
+				attendanceStatus: 'confirmed',
+				maxAllowedAttendees: 1,
+				attendeeCount: 1,
+				childrenCount: 4,
+			}),
+			makeGuest({
+				guestId: 'pending',
+				deliveryStatus: 'shared',
+				maxAllowedAttendees: 4,
+				maxAllowedChildren: 2,
+				childrenCount: 2,
+			}),
+		]);
+
+		expect(people.confirmed).toBe(4);
+		expect(people.confirmedChildren).toBe(2);
+	});
+
 	it('clamps over-reported attendees and counts pass-less invitations separately', () => {
 		const summary = computeGuestSummary([
 			makeGuest({ attendanceStatus: 'confirmed', maxAllowedAttendees: 2, attendeeCount: 5 }),
@@ -93,6 +130,7 @@ describe('computeGuestSummary', () => {
 		expect(summary.people).toEqual({
 			assigned: 2,
 			confirmed: 2,
+			confirmedChildren: 0,
 			declined: 0,
 			unused: 0,
 			noAnswer: 0,

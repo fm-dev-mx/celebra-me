@@ -36,7 +36,6 @@
         "pnpm exec prettier",
         "node scripts/board/tablero-core.mjs"
     ],
-    "ask": ["gh pr merge", "gh * pr merge*"],
     "deny": [
         "git push --force",
         "git push --force-with-lease",
@@ -61,6 +60,8 @@
         "git push *--mirror*",
         "git push *+*",
         "git push *main*",
+        "gh pr merge",
+        "gh * pr merge*",
         "supabase db reset",
         "supabase db push",
         "supabase migration up",

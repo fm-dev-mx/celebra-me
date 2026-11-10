@@ -234,11 +234,23 @@ jobs:
                   CLOUDFLARE_ACCESS_CLIENT_SECRET: ${{ secrets.CLOUDFLARE_ACCESS_CLIENT_SECRET }}
                   PLAYWRIGHT_HOST_LOGIN: ${{ secrets.PLAYWRIGHT_HOST_LOGIN }}
                   PLAYWRIGHT_HOST_PASSWORD: ${{ secrets.PLAYWRIGHT_HOST_PASSWORD }}
+                  # Optional and not a secret: the login alias of that same Preview account.
+                  PLAYWRIGHT_HOST_LOGIN_ALIAS: ${{ vars.PLAYWRIGHT_HOST_LOGIN_ALIAS }}
                   PLAYWRIGHT_PREVIEW_INVITATION_ID: ${{ secrets.PLAYWRIGHT_PREVIEW_INVITATION_ID }}
                   PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING: 'false'
                   PLAYWRIGHT_ALLOW_PREVIEW_PUBLICATION: 'false'
                   PLAYWRIGHT_PREVIEW_DEBUG_ARTIFACTS: 'false'
               run: |
+                  # Without the alias the suite still runs, but alias login is not exercised:
+                  # say so on the run instead of letting a skipped test pass unnoticed.
+                  if [ -z "$PLAYWRIGHT_HOST_LOGIN_ALIAS" ]; then
+                      echo "::warning title=Alias login not checked::Repository variable PLAYWRIGHT_HOST_LOGIN_ALIAS is not set, so the Preview check skips login by alias. See 'Data prerequisites' in docs/core/release-process.md."
+                      {
+                          echo "### Alias login not checked"
+                          echo
+                          echo "Set the repository variable PLAYWRIGHT_HOST_LOGIN_ALIAS to the login alias of the Preview account to enable it."
+                      } >> "$GITHUB_STEP_SUMMARY"
+                  fi
                   # The Preview account secrets are optional: without them the check is skipped
                   # and the run summary says so, instead of failing the deploy.
                   if [ -z "$PLAYWRIGHT_HOST_LOGIN" ] || [ -z "$PLAYWRIGHT_HOST_PASSWORD" ] || [ -z "$PLAYWRIGHT_PREVIEW_INVITATION_ID" ]; then

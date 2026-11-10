@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { basename } from 'node:path';
+import { DATA_PREREQUISITES_PATH, requireDataPrerequisites } from './data-prerequisites.ts';
 import { assessExactEvidence } from './operational-evidence.ts';
 
 export const STATIC_CAPABILITY_CHECK = 'Application / static';
@@ -433,11 +434,35 @@ export function parseReleaseChecksArgs(argv: readonly string[]): {
 	return { sha, candidate };
 }
 
+/**
+ * Reads the data prerequisite manifest as committed at the exact release SHA, never from the
+ * working tree: the operator's checkout may be ahead of or behind the commit being released.
+ * Returns null when the commit has no manifest or GitHub cannot serve it; the gate refuses both.
+ */
+export function loadDataPrerequisiteManifest(
+	sha: string,
+	run: GhRunner = defaultGhRunner,
+): string | null {
+	if (!/^[a-f0-9]{40}$/.test(sha))
+		throw new RemoteEvidenceError('invalid', 'An exact release SHA is required.');
+	let response: unknown;
+	try {
+		response = createGitHubClient(run).api(`contents/${DATA_PREREQUISITES_PATH}?ref=${sha}`);
+	} catch {
+		return null;
+	}
+	const file = response as { type?: unknown; encoding?: unknown; content?: unknown } | null;
+	if (file?.type !== 'file' || file.encoding !== 'base64' || typeof file.content !== 'string')
+		return null;
+	return Buffer.from(file.content, 'base64').toString('utf8');
+}
+
 function main(): void {
 	const { sha, candidate } = parseReleaseChecksArgs(process.argv.slice(2));
 	if (candidate) requireReleaseCandidate(readReleaseCandidateGeometry(sha, candidate));
 	const checks = loadRemoteChecks(sha);
 	requireReleaseChecks(sha, checks);
+	const dataPrerequisites = requireDataPrerequisites(loadDataPrerequisiteManifest(sha));
 	console.log(
 		JSON.stringify(
 			{
@@ -445,6 +470,10 @@ function main(): void {
 				state: 'CHECKS_PASSED',
 				...(candidate ? { candidate } : {}),
 				checks,
+				dataPrerequisites: dataPrerequisites.map(({ id, environments }) => ({
+					id,
+					production: environments.production,
+				})),
 				note: 'Database compatibility and deployment authorization remain required.',
 			},
 			null,

@@ -24,6 +24,7 @@ export type ApiErrorCode =
 	| 'upgrade_required'
 	| 'account_access_incomplete'
 	| 'password_change_required'
+	| 'temporary_password_expired'
 	| 'password_update_failed'
 	| 'metadata_update_failed';
 
@@ -57,7 +58,12 @@ export type AuthOperation =
 	| 'create_user_admin'
 	| 'get_user_admin'
 	| 'update_user_admin'
-	| 'update_password';
+	| 'update_password'
+	| 'mfa_list_factors'
+	| 'mfa_unenroll'
+	| 'mfa_enroll'
+	| 'mfa_challenge'
+	| 'mfa_verify';
 
 export class AuthRequestError extends Error {
 	readonly kind: AuthRequestErrorKind;

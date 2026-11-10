@@ -2,7 +2,6 @@ import {
 	createAdminUser,
 	listAdminUsers,
 	changeUserRoleAdmin,
-	deriveTemporaryPasswordForOperation,
 	generateTemporaryPassword,
 	resetUserPasswordAdmin,
 	updateUserLoginAliasAdmin,
@@ -248,22 +247,17 @@ describe('rsvp user admin service', () => {
 		expect(logAdminActionMock).not.toHaveBeenCalled();
 	});
 
-	it('generates short memorable temporary passwords with secure randomness', () => {
-		const pwd1 = generateTemporaryPassword();
-		const pwd2 = generateTemporaryPassword();
-		const pattern = /^[A-Z][a-z]+-\d{4}[!@#$%*]$/;
-		expect(pwd1).toMatch(pattern);
-		expect(pwd2).toMatch(pattern);
-		expect(pwd1).not.toBe(pwd2);
-		expect(pwd1.length).toBeLessThanOrEqual(16);
-		expect(pwd1).not.toMatch(/[áéíóúñü]/i);
-	});
-
-	it('derives the same strong temporary password for the same operation without persistence', () => {
-		const first = deriveTemporaryPasswordForOperation(OPERATION_ID, 'test-secret');
-		const second = deriveTemporaryPasswordForOperation(OPERATION_ID, 'test-secret');
-		expect(first).toBe(second);
-		expect(first).toMatch(/^[A-Z][a-z]+-\d{4}[!@#$%*]$/);
+	it('generates 17-character temporary passwords from a CSPRNG', () => {
+		const pattern = /^[A-HJ-NP-Za-km-z2-9]{5}(-[A-HJ-NP-Za-km-z2-9]{5}){2}$/;
+		const passwords = Array.from({ length: 200 }, () => generateTemporaryPassword());
+		for (const password of passwords) {
+			expect(password).toMatch(pattern);
+			expect(password.length).toBeGreaterThanOrEqual(12);
+			expect(password).toMatch(/[A-Z]/);
+			expect(password).toMatch(/[a-z]/);
+			expect(password).toMatch(/\d/);
+		}
+		expect(new Set(passwords).size).toBe(passwords.length);
 	});
 
 	describe('resetUserPasswordAdmin outcomes', () => {
@@ -372,9 +366,8 @@ describe('rsvp user admin service', () => {
 			});
 			expect(adminResetAuthUserPasswordMock).not.toHaveBeenCalled();
 			expect(result.outcome.status).toBe('replayed');
-			expect(result.credentials?.temporaryPassword).toBe(
-				deriveTemporaryPasswordForOperation(OPERATION_ID, 'test-service-secret'),
-			);
+			// Passwords are random and never stored, so a replay cannot return them again.
+			expect(result.credentials).toBeUndefined();
 		});
 	});
 
@@ -507,6 +500,7 @@ describe('rsvp user admin service', () => {
 
 		expect(findAuthUserByLoginIdentifierMock).toHaveBeenCalledWith({
 			identifier: 'ximena_meza',
+			fresh: true,
 		});
 		expect(createAuthUserByAdminMock).toHaveBeenCalledWith({
 			email: expect.stringMatching(/@clientes\.celebra\.invalid$/),
@@ -537,8 +531,7 @@ describe('rsvp user admin service', () => {
 				id: 'user-host',
 				email: 'abril_michelle_becerra_rea@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
-				user_metadata: { login_alias: 'abril_michelle_becerra_rea' },
-				app_metadata: { role: 'host_client' },
+				app_metadata: { login_alias: 'abril_michelle_becerra_rea', role: 'host_client' },
 			});
 			findAuthUserByLoginIdentifierMock.mockResolvedValue(null);
 			findAuthUserByEmailMock.mockResolvedValue(null);
@@ -578,8 +571,7 @@ describe('rsvp user admin service', () => {
 				id: 'user-host',
 				email: 'abril_becerra@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
-				user_metadata: { login_alias: 'abril_becerra' },
-				app_metadata: { role: 'host_client' },
+				app_metadata: { login_alias: 'abril_becerra', role: 'host_client' },
 			});
 
 			const result = await updateUserLoginAliasAdmin({
@@ -625,8 +617,7 @@ describe('rsvp user admin service', () => {
 				id: 'user-email',
 				email: 'cliente@ejemplo.com',
 				created_at: '2026-04-01T00:00:00.000Z',
-				user_metadata: { login_alias: 'cliente_ejemplo' },
-				app_metadata: { role: 'host_client' },
+				app_metadata: { login_alias: 'cliente_ejemplo', role: 'host_client' },
 			});
 
 			await expect(
@@ -649,8 +640,7 @@ describe('rsvp user admin service', () => {
 				id: 'user-host',
 				email: 'abril_becerra@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
-				user_metadata: { login_alias: 'abril_becerra' },
-				app_metadata: { role: 'host_client' },
+				app_metadata: { login_alias: 'abril_becerra', role: 'host_client' },
 			});
 			findAuthUserByLoginIdentifierMock.mockResolvedValue({
 				id: 'other-user',
@@ -675,8 +665,7 @@ describe('rsvp user admin service', () => {
 				id: 'user-host',
 				email: 'abril_anterior@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
-				user_metadata: { login_alias: 'abril_anterior' },
-				app_metadata: { role: 'host_client' },
+				app_metadata: { login_alias: 'abril_anterior', role: 'host_client' },
 			});
 			findAuthUserByLoginIdentifierMock.mockResolvedValue(null);
 			findAuthUserByEmailMock.mockResolvedValue(null);
@@ -711,8 +700,7 @@ describe('rsvp user admin service', () => {
 				id: 'user-host',
 				email: 'abril_anterior@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
-				user_metadata: { login_alias: 'abril_anterior' },
-				app_metadata: { role: 'host_client' },
+				app_metadata: { login_alias: 'abril_anterior', role: 'host_client' },
 			});
 			findAuthUserByLoginIdentifierMock.mockResolvedValue(null);
 			findAuthUserByEmailMock.mockResolvedValue(null);
@@ -747,11 +735,11 @@ describe('rsvp user admin service', () => {
 				id: 'user-host',
 				email: 'abril_becerra@clientes.celebra.invalid',
 				created_at: '2026-04-01T00:00:00.000Z',
-				user_metadata: {
+				app_metadata: {
+					role: 'host_client',
 					login_alias: 'abril_becerra',
 					login_alias_operation_id: OPERATION_ID,
 				},
-				app_metadata: { role: 'host_client' },
 			});
 			findMutationOperationReceiptMock.mockResolvedValue({
 				operationId: OPERATION_ID,

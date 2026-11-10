@@ -1,0 +1,11 @@
+{
+    "PARA USTED": "Qué hará: corre la operación «{titulo}» en el entorno que cita la tarea.\nUsted: autorizar el comando y el entorno exactos antes de que corra.\nRiesgo: alto; cambia una base de datos, Producción o secretos.",
+    "QUÉ SE BUSCA": "La operación que describe la tarea {id} (T{num}): «{titulo}», en el entorno que la tarea nombra.\nTerminado cuando: la operación corrió solo en ese entorno, hay evidencia de antes y después y existe un plan de rollback.",
+    "ANTES DE EMPEZAR": "Confirme el entorno y el estado previo antes de cambiar nada.\n  tablero claim {id} --agente={agente}",
+    "PASOS": "1. Guarde el estado actual (salida del comando o de la API) como plan de rollback.\n2. Corra solo el comando que esta tarea cita, en el entorno que nombra, y guarde la salida.\n3. Compruebe el estado resultante y guárdelo como evidencia.",
+    "AUTORIZO": "Solo el comando y el entorno que esta tarea cita aquí, citados tal cual por el dueño.",
+    "NO HAGAS": "- No corra nada fuera del comando y del entorno autorizados.\n- No lea archivos de credenciales ni imprima secretos.",
+    "DECISIONES": "- Ninguna todavía: pregunte al inicio en una sola ronda.",
+    "PARE Y PREGUNTE SI": "El entorno no es el que esta tarea autoriza, el estado previo no es el esperado o falta el plan de rollback. Pregunte al dueño y anote la pregunta también con tablero msg {id} --de={agente} --para=dueno --texto=\"<pregunta de una línea>\" --opcion=\"<la recomendada>\" --opcion=\"<otra>\" --detalle=\"<detalle técnico>\".",
+    "AL TERMINAR": "1. Cierre: tablero close {id} --agente={agente} --resumen=\"<comando, entorno, evidencia y rollback>\" --comprobacion=\"<lo que verificó>\" --saltada=ninguna --pendiente=ninguna\n2. Respuesta: qué corrió, en qué entorno, evidencia de antes y después, y cómo se revierte."
+}

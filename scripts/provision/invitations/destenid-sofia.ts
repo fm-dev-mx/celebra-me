@@ -464,7 +464,7 @@ export const destenidInvitation: InvitationDefinition<DestenidAssetKey> = define
 	managedIdentityId: '3389bb9b-c24b-4264-9cd2-fd75327d2d74',
 	managedIdentityProvenance: 'persisted',
 	createdAt: '2026-09-29T00:00:00.000Z',
-	lifecycle: 'in_progress',
+	lifecycle: 'published',
 	deliveryScope: 'content-and-assets',
 	voice: 'usted',
 	eventType: DESTENID_EVENT.eventType,

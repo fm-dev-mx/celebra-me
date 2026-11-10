@@ -23,6 +23,18 @@ describe('release classification', () => {
 			'schema-dependent',
 		);
 	});
+	it('adds the data prerequisite gate when the manifest changes, keeping the category', () => {
+		const gate = 'data prerequisites verified for Production';
+		const withManifest = classify('supabase/data-prerequisites.json', 'docs/guide.md');
+		expect(withManifest.applicableGates).toContain(gate);
+		expect(withManifest.category).toBe(
+			classify('supabase/other.json', 'docs/guide.md').category,
+		);
+		expect(
+			classify('supabase/data-prerequisites.json', 'supabase/migrations/x.sql').category,
+		).toBe('schema-dependent');
+		expect(classify('src/pages/index.astro').applicableGates).not.toContain(gate);
+	});
 	it('detects conservative visual impact without weakening Application Suite', () => {
 		const visual = classify('src/styles/themes/sections/countdown/_magazine-folio.scss');
 		expect(visual.visualImpact).toBe(true);

@@ -1,4 +1,5 @@
 import React from 'react';
+import GuestConfirmedParty from '@/components/dashboard/guests/GuestConfirmedParty';
 import GuestPassesBar from '@/components/dashboard/guests/GuestPassesBar';
 import type {
 	GuestReviewFilterValue,
@@ -75,6 +76,7 @@ const GuestOverviewStrip: React.FC<GuestOverviewStripProps> = ({
 					{people.assigned === 1 ? 'pase confirmado' : 'pases confirmados'}
 					{people.assigned > 0 && ` · ${percent} %`}
 				</span>
+				<GuestConfirmedParty people={people} className="guest-strip__party" />
 			</p>
 			<GuestPassesBar
 				size="small"

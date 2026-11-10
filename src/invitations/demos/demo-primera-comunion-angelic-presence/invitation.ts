@@ -5,18 +5,19 @@ export default defineDemoInvitation({
 	eventType: 'primera-comunion',
 	routeSlug: 'comunion-angelical',
 	showroom: {
-		title: 'Primera comunión estilo Angelical',
-		description: 'Ilustrada, floral y fresca.',
-		styleTags: ['ilustrada', 'floral'],
+		title: 'Comunión Angelical',
+		description:
+			'Perla, oro y salvia: una invitación sacra para el día de la Primera Comunión.',
+		styleTags: ['sacra', 'editorial'],
 		visibility: 'featured',
 		reviewStatus: 'approved',
 		sortOrder: 10,
-		styleName: 'Angelic Presence',
+		styleName: 'Eucharistic Grace',
 		ctaMessage:
-			'Hola, revisé la demo de primera comunión Angelic Presence y quisiera cotizar una invitación basada en este estilo.',
+			'Hola, revisé la demo de primera comunión Eucharistic Grace y quisiera cotizar una invitación basada en este estilo.',
 		thumbnail: {
 			key: 'hero',
-			alt: 'Vista principal de la demo de primera comunión estilo Angelic Presence',
+			alt: 'Vista principal de la demo de primera comunión estilo Eucharistic Grace',
 		},
 	},
 });

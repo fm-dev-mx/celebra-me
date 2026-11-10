@@ -253,7 +253,7 @@ describe('API: /api/auth/login-host', () => {
 			}
 		}
 		expect(signInMock).toHaveBeenCalledTimes(20);
-		expect(checkRateLimitMock).toHaveBeenCalledTimes(20);
+		expect(checkRateLimitMock).toHaveBeenCalledTimes(80);
 		const rateLimitCallsByEntity = new Map(
 			checkRateLimitMock.mock.calls.map(([call]) => [call.entityId, call] as const),
 		);
@@ -334,7 +334,8 @@ describe('API: /api/auth/login-host', () => {
 
 	it('returns exactly 4 rate-limited responses for 12 concurrent attempts by one identity', async () => {
 		let hits = 0;
-		checkRateLimitMock.mockImplementation(async () => {
+		checkRateLimitMock.mockImplementation(async (input: { entityId: string }) => {
+			if (!input.entityId.startsWith('login:')) return true;
 			hits += 1;
 			return hits <= 8;
 		});

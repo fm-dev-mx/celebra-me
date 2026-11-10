@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import GuestConfirmedParty from '@/components/dashboard/guests/GuestConfirmedParty';
 import GuestEngagementFunnel from '@/components/dashboard/guests/GuestEngagementFunnel';
 import GuestPassesBar from '@/components/dashboard/guests/GuestPassesBar';
 import type { DashboardEngagementSummary } from '@/interfaces/dashboard/guest.interface';
@@ -259,6 +260,7 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 							de {passes(people.assigned)}
 							{people.assigned > 0 && ` · ${confirmedPercent} %`}
 						</span>
+						<GuestConfirmedParty people={people} className="guest-overview__party" />
 					</p>
 					<GuestPassesBar
 						total={people.assigned}

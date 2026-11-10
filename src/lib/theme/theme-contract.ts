@@ -61,6 +61,7 @@ export const THEME_PRESET_METADATA = {
 	'storybook-emerald': { portrait: false, eventTypes: ['xv'] },
 	'storybook-blush': { portrait: false, eventTypes: ['xv'] },
 	'sage-champagne': { portrait: false, eventTypes: ['xv'] },
+	'eucharistic-grace': { portrait: true, eventTypes: ['primera-comunion'] },
 } as const satisfies Record<string, ThemePresetMetadata>;
 
 /**

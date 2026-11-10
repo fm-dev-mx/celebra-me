@@ -37,6 +37,35 @@ describe('GuestStatusOverview', () => {
 		).toBeInTheDocument();
 	});
 
+	it('breaks the confirmed people into adults and children when children are coming', () => {
+		const withChildren = computeGuestSummary([
+			makeGuest({
+				attendanceStatus: 'confirmed',
+				maxAllowedAttendees: 3,
+				maxAllowedChildren: 1,
+				attendeeCount: 3,
+				childrenCount: 1,
+			}),
+		]);
+		render(
+			<GuestStatusOverview
+				summary={withChildren}
+				activeFilter="all"
+				onFilterChange={jest.fn()}
+			/>,
+		);
+
+		expect(screen.getByText('2 adultos y 1 niño')).toBeInTheDocument();
+	});
+
+	it('omits the adults and children line when no children are confirmed', () => {
+		render(
+			<GuestStatusOverview summary={summary} activeFilter="all" onFilterChange={jest.fn()} />,
+		);
+
+		expect(screen.queryByText(/adulto|niño/)).not.toBeInTheDocument();
+	});
+
 	it('shows four invitation stages that toggle the list filter', () => {
 		const onFilterChange = jest.fn();
 		const { rerender } = render(

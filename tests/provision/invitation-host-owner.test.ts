@@ -1,12 +1,56 @@
-import { describe, expect, it } from '@jest/globals';
+import { afterEach, describe, expect, it, jest } from '@jest/globals';
+import { runPsql } from '../../scripts/db/db-workflow-lib.ts';
 import {
 	buildInvitationHostEmail,
 	normalizeHostLoginAlias,
 	planInvitationHostOwner,
+	resolveAndEnsureInvitationHostOwner,
 } from '../../scripts/provision/invitation-host-owner.ts';
+
+jest.mock('../../scripts/db/db-workflow-lib.ts', () => ({
+	runPsql: jest.fn(),
+	sqlLiteral: (value: string) => `'${value.replace(/'/g, "''")}'`,
+}));
 
 const owner = '11111111-1111-4111-8111-111111111111';
 const other = '22222222-2222-4222-8222-222222222222';
+
+describe('invitation host owner creation', () => {
+	afterEach(() => {
+		jest.restoreAllMocks();
+	});
+
+	it('stores the normalized login alias with the protected host role', async () => {
+		jest.mocked(runPsql).mockReturnValue({ status: 0, stdout: '', stderr: '' });
+		const fetchMock = jest
+			.spyOn(globalThis, 'fetch')
+			.mockResolvedValue(new Response(JSON.stringify({ id: owner }), { status: 200 }));
+
+		const result = await resolveAndEnsureInvitationHostOwner({
+			slug: 'new-invitation',
+			hostLoginAlias: 'Alba-Quiñónez',
+			targetDbUrl: 'postgresql://unused.example.test/mock',
+			supabaseUrl: 'https://auth.example.test',
+			serviceRoleKey: 'test-service-role',
+			preferredCreateOwnerId: owner,
+			dryRun: false,
+		});
+
+		expect(result.ownerUserId).toBe(owner);
+		expect(fetchMock).toHaveBeenCalledTimes(1);
+		const [url, options] = fetchMock.mock.calls[0];
+		expect(url).toBe('https://auth.example.test/auth/v1/admin/users');
+		expect(options).toMatchObject({ method: 'POST' });
+		const payload = JSON.parse(String(options?.body));
+		expect(payload.app_metadata).toEqual({
+			login_alias: 'alba_quinonez',
+			role: 'host_client',
+			provider: 'email',
+			providers: ['email'],
+		});
+		expect(payload).not.toHaveProperty('user_metadata');
+	});
+});
 
 describe('invitation host owner planning', () => {
 	it('builds a deterministic technical host email from hostLoginAlias', () => {

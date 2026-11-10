@@ -86,40 +86,57 @@ let originalSupabaseUrl: string | undefined;
 let originalSupabaseAnon: string | undefined;
 
 describe('Middleware: Authentication & Authorization', () => {
-	it.each(['/dashboard/invitados', '/dashboard/mfa-setup', '/api/dashboard/guests'])(
-		'expires %s without an idle cookie before calling Auth or the handler',
-		async (path) => {
-			const fixture = createIsolatedContext(path, { 'sb-access-token': 'session-token' });
-			const response = await middleware(
-				fixture.context as unknown as APIContext,
-				fixture.next,
-			);
-			if (!(response instanceof Response))
-				throw new Error('Expected an idle-expiry response');
-			expect(response.status).toBe(path.startsWith('/api/') ? 401 : 302);
-			expect(fixture.next).not.toHaveBeenCalled();
-			expect(mockFetch).not.toHaveBeenCalled();
-			expect(fixture.locals.session).toBeUndefined();
-			expect(fixture.cookies.delete).toHaveBeenCalledWith('sb-access-token', { path: '/' });
-		},
-	);
+	const staleIdleCookies: Array<[string, Record<string, string>]> = [
+		['no idle cookie', {}],
+		['an invalid idle cookie', { 'sb-idle-seen': 'invalid' }],
+		['an idle cookie older than the cutoff', { 'sb-idle-seen': '1' }],
+	];
 
-	it.each(['invalid', '0', String(Math.floor(Date.now() / 1000) - 3601)])(
-		'rejects invalid or expired API idle timestamp %s',
-		async (idle) => {
-			const fixture = createIsolatedContext('/api/dashboard/guests', {
+	it.each(staleIdleCookies)('keeps a host signed in with %s', async (_label, idleCookies) => {
+		mockSupabaseResponse();
+		for (const path of ['/dashboard/invitados', '/api/dashboard/guests']) {
+			const fixture = createIsolatedContext(path, {
 				'sb-access-token': 'session-token',
-				'sb-idle-seen': idle,
+				...idleCookies,
 			});
-			const response = await middleware(
-				fixture.context as unknown as APIContext,
-				fixture.next,
-			);
-			if (!(response instanceof Response))
-				throw new Error('Expected an idle-expiry response');
-			expect(response.status).toBe(401);
-			expect(fixture.next).not.toHaveBeenCalled();
-			expect(mockFetch).not.toHaveBeenCalled();
+			await middleware(fixture.context as unknown as APIContext, fixture.next);
+			expect(fixture.next).toHaveBeenCalled();
+			expect(fixture.redirect).not.toHaveBeenCalled();
+			expect(fixture.locals.session?.role).toBe('host_client');
+			expect(fixture.cookies.delete).not.toHaveBeenCalledWith('sb-access-token', {
+				path: '/',
+			});
+		}
+	});
+
+	it.each(staleIdleCookies)(
+		'ends an idle super admin session with %s but keeps the trusted device',
+		async (_label, idleCookies) => {
+			mockSupabaseResponse({ app_metadata: { role: 'super_admin' } });
+			for (const path of ['/dashboard/admin', '/api/dashboard/guests']) {
+				const fixture = createIsolatedContext(path, {
+					'sb-access-token': 'session-token',
+					'sb-refresh-token': 'refresh-token',
+					'sb-trust-device': 'trusted-device',
+					...idleCookies,
+				});
+				const response = await middleware(
+					fixture.context as unknown as APIContext,
+					fixture.next,
+				);
+				if (!(response instanceof Response))
+					throw new Error('Expected an idle-expiry response');
+				if (path.startsWith('/api/')) {
+					expect(response.status).toBe(401);
+				} else {
+					expect(fixture.redirect).toHaveBeenCalledWith('/login?reason=session_expired');
+				}
+				expect(fixture.next).not.toHaveBeenCalled();
+				expect(fixture.locals.session).toBeUndefined();
+				expect(fixture.values.has('sb-access-token')).toBe(false);
+				expect(fixture.values.has('sb-refresh-token')).toBe(false);
+				expect(fixture.values.get('sb-trust-device')).toBe('trusted-device');
+			}
 		},
 	);
 
@@ -700,7 +717,7 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect(mockRedirect).toHaveBeenCalledWith('/dashboard/mfa-setup');
 	});
 
-	it('sets temporary MFA cookies (300s) on MFA setup route for superadmin', async () => {
+	it('never exposes the session tokens in readable MFA cookies on the MFA setup route', async () => {
 		const context = createContext('/dashboard/mfa-setup');
 		mockCookies.get.mockImplementation((name: string) => {
 			if (name === 'sb-access-token') return { value: 'admin-token' };
@@ -715,22 +732,9 @@ describe('Middleware: Authentication & Authorization', () => {
 
 		await middleware(context as unknown as APIContext, mockNext);
 		expect(mockNext).toHaveBeenCalled();
-		expect(mockCookies.set).toHaveBeenCalledWith(
-			'sb-mfa-session',
-			'admin-token',
-			expect.objectContaining({
-				path: '/dashboard/mfa-setup',
-				maxAge: 300,
-			}),
-		);
-		expect(mockCookies.set).toHaveBeenCalledWith(
-			'sb-mfa-refresh',
-			'refresh-token',
-			expect.objectContaining({
-				path: '/dashboard/mfa-setup',
-				maxAge: 300,
-			}),
-		);
+		const names = mockCookies.set.mock.calls.map((call: unknown[]) => call[0]);
+		expect(names).not.toContain('sb-mfa-session');
+		expect(names).not.toContain('sb-mfa-refresh');
 	});
 
 	it('allows superadmin with TOTP MFA (aal2) to dashboard', async () => {
@@ -840,6 +844,18 @@ describe('Middleware: Authentication & Authorization', () => {
 			);
 
 			expect(mockCookies.set).not.toHaveBeenCalled();
+			expect(mockNext).toHaveBeenCalledTimes(2);
+		});
+
+		it('delegates dedicated /interno requests to the route handler', async () => {
+			await middleware(markerContext('/interno') as unknown as APIContext, mockNext);
+			await middleware(
+				markerContext('/interno?interno=0') as unknown as APIContext,
+				mockNext,
+			);
+
+			expect(mockCookies.set).not.toHaveBeenCalled();
+			expect(mockCookies.delete).not.toHaveBeenCalled();
 			expect(mockNext).toHaveBeenCalledTimes(2);
 		});
 	});
