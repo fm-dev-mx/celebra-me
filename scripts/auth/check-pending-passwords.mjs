@@ -78,6 +78,11 @@ function createAuthAdmin({ url, serviceKey, fetchImpl }) {
 
 /**
  * Computes age in days and expiry status for an account with must_change_password open.
+ *
+ * Age calculation avoids user.updated_at: unrelated user mutations rejuvenate updated_at,
+ * hiding older pending passwords. When temp_password_expires_at is present, the exact issuance
+ * time is computed. Otherwise, if user.created_at is present, it is used as an estimated upper
+ * bound. If neither is available, age is marked as unknown.
  */
 export function evaluateAccountPasswordStatus(user, now = Date.now()) {
 	const appMetadata = user.app_metadata;
@@ -87,28 +92,50 @@ export function evaluateAccountPasswordStatus(user, now = Date.now()) {
 	const expired = isTemporaryPasswordExpired(appMetadata, now);
 
 	let issuedAt = NaN;
+	let ageConfidence = 'unknown';
 	const rawExpires = appMetadata?.[TEMP_PASSWORD_EXPIRES_KEY];
 	if (typeof rawExpires === 'string') {
 		const parsedExpires = Date.parse(rawExpires);
 		if (Number.isFinite(parsedExpires)) {
 			issuedAt = parsedExpires - TEMP_PASSWORD_TTL_MS;
+			ageConfidence = 'exact';
 		}
 	}
 	if (!Number.isFinite(issuedAt)) {
-		const rawDate = user.updated_at || user.created_at;
-		if (typeof rawDate === 'string') {
-			const parsed = Date.parse(rawDate);
-			if (Number.isFinite(parsed)) issuedAt = parsed;
+		// Use created_at as an estimated upper bound when available.
+		// Never fall back to updated_at: unrelated edits rejuvenate the report.
+		const rawCreated = user.created_at;
+		if (typeof rawCreated === 'string') {
+			const parsed = Date.parse(rawCreated);
+			if (Number.isFinite(parsed)) {
+				issuedAt = parsed;
+				ageConfidence = 'estimated';
+			}
 		}
 	}
+
 	if (!Number.isFinite(issuedAt)) {
-		issuedAt = now;
+		return {
+			isPending: true,
+			expired,
+			ageDays: null,
+			ageConfidence: 'unknown',
+			estimated: false,
+			unknown: true,
+		};
 	}
 
 	const ageMs = Math.max(0, now - issuedAt);
 	const ageDays = Math.floor(ageMs / ONE_DAY_MS);
 
-	return { isPending: true, expired, ageDays };
+	return {
+		isPending: true,
+		expired,
+		ageDays,
+		ageConfidence,
+		estimated: ageConfidence === 'estimated',
+		unknown: false,
+	};
 }
 
 /**
@@ -119,15 +146,18 @@ export function summarizePendingPasswords(users, now = Date.now()) {
 	let pendingPasswords = 0;
 	let active = 0;
 	let expired = 0;
-	let oldestDays = 0;
-	let newestDays = 0;
-	let hasPending = false;
+	let estimated = 0;
+	let unknown = 0;
+	let oldestDays = null;
+	let newestDays = null;
+	let hasNumericAge = false;
 
 	const ageDays = {
 		'0-1': 0,
 		'2-7': 0,
 		'8-30': 0,
 		'>30': 0,
+		unknown: 0,
 	};
 
 	for (const user of users) {
@@ -138,10 +168,20 @@ export function summarizePendingPasswords(users, now = Date.now()) {
 		if (status.expired) expired++;
 		else active++;
 
-		if (!hasPending) {
+		if (status.unknown || status.ageDays === null) {
+			unknown++;
+			ageDays.unknown++;
+			continue;
+		}
+
+		if (status.estimated) {
+			estimated++;
+		}
+
+		if (!hasNumericAge) {
 			oldestDays = status.ageDays;
 			newestDays = status.ageDays;
-			hasPending = true;
+			hasNumericAge = true;
 		} else {
 			if (status.ageDays > oldestDays) oldestDays = status.ageDays;
 			if (status.ageDays < newestDays) newestDays = status.ageDays;
@@ -157,9 +197,11 @@ export function summarizePendingPasswords(users, now = Date.now()) {
 		pendingPasswords,
 		active,
 		expired,
+		estimated,
+		unknown,
 		ageDays,
-		oldestDays,
-		newestDays,
+		oldestDays: oldestDays ?? 0,
+		newestDays: newestDays ?? 0,
 	};
 }
 
@@ -223,8 +265,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 			}
 			process.exitCode = 1;
 		} else if (result.pendingPasswords > 0) {
+			const ageDetail =
+				result.unknown === result.pendingPasswords
+					? 'unknown age'
+					: `oldest: ${result.oldestDays}d${result.estimated > 0 ? ', estimated' : ''}`;
 			console.warn(
-				`Advisory: ${result.pendingPasswords} account(s) have must_change_password open (oldest: ${result.oldestDays}d). ` +
+				`Advisory: ${result.pendingPasswords} account(s) have must_change_password open (${ageDetail}). ` +
 					'Review age before release.',
 			);
 		}

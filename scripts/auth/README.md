@@ -74,11 +74,14 @@ Example output:
   "pendingPasswords": 2,
   "active": 1,
   "expired": 1,
+  "estimated": 0,
+  "unknown": 0,
   "ageDays": {
     "0-1": 1,
     "2-7": 0,
     "8-30": 0,
-    ">30": 1
+    ">30": 1,
+    "unknown": 0
   },
   "oldestDays": 35,
   "newestDays": 0,
@@ -92,9 +95,13 @@ Example output:
 - `pendingPasswords`: accounts with `must_change_password: true`.
 - `active`: accounts whose temporary password has not expired.
 - `expired`: accounts whose temporary password has passed its 24h window.
+- `estimated`: accounts lacking `temp_password_expires_at` whose age was estimated from
+  `created_at`.
+- `unknown`: accounts lacking both `temp_password_expires_at` and `created_at` (`updated_at` is
+  never used to prevent unrelated updates from rejuvenating age).
 - `ageDays`: distribution of pending changes grouped by age (0-1 days, 2-7 days, 8-30 days, >30
-  days).
-- `oldestDays` / `newestDays`: age range in days across open changes.
+  days, unknown).
+- `oldestDays` / `newestDays`: age range in days across open changes with known/estimated age.
 - `ok`: true if directory returned accounts in advisory mode; requires 0 pending in strict mode.
 - `clean`: true only when `pendingPasswords === 0` and `accounts > 0`.
 

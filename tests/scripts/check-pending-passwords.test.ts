@@ -58,6 +58,9 @@ describe('evaluateAccountPasswordStatus', () => {
 			isPending: true,
 			expired: false,
 			ageDays: 0,
+			ageConfidence: 'exact',
+			estimated: false,
+			unknown: false,
 		});
 	});
 
@@ -75,30 +78,43 @@ describe('evaluateAccountPasswordStatus', () => {
 			isPending: true,
 			expired: true,
 			ageDays: 6,
+			ageConfidence: 'exact',
+			estimated: false,
+			unknown: false,
 		});
 	});
 
-	it('falls back to updated_at and created_at when temp_password_expires_at is absent', () => {
-		const userUpdated = {
+	it('estimates age from created_at and ignores updated_at to prevent rejuvenating reports', () => {
+		// Legacy account created 45 days ago, but updated 2 hours ago by an unrelated action
+		const userEstimated = {
 			id: 'u5',
-			updated_at: new Date(NOW - 15 * ONE_DAY_MS).toISOString(),
-			app_metadata: { must_change_password: true },
-		};
-		expect(evaluateUser(userUpdated, NOW)).toEqual({
-			isPending: true,
-			expired: false,
-			ageDays: 15,
-		});
-
-		const userCreated = {
-			id: 'u6',
 			created_at: new Date(NOW - 45 * ONE_DAY_MS).toISOString(),
+			updated_at: new Date(NOW - 2 * 60 * 60 * 1000).toISOString(),
 			app_metadata: { must_change_password: true },
 		};
-		expect(evaluateUser(userCreated, NOW)).toEqual({
+		expect(evaluateUser(userEstimated, NOW)).toEqual({
 			isPending: true,
 			expired: false,
 			ageDays: 45,
+			ageConfidence: 'estimated',
+			estimated: true,
+			unknown: false,
+		});
+	});
+
+	it('distinguishes unknown age when expiry and created_at are absent, even if updated_at is present', () => {
+		const userUpdatedOnly = {
+			id: 'u6',
+			updated_at: new Date(NOW - 15 * ONE_DAY_MS).toISOString(),
+			app_metadata: { must_change_password: true },
+		};
+		expect(evaluateUser(userUpdatedOnly, NOW)).toEqual({
+			isPending: true,
+			expired: false,
+			ageDays: null,
+			ageConfidence: 'unknown',
+			estimated: false,
+			unknown: true,
 		});
 	});
 });
@@ -132,24 +148,34 @@ describe('summarizePendingPasswords', () => {
 					temp_password_expires_at: new Date(NOW - 19 * ONE_DAY_MS).toISOString(),
 				},
 			},
-			// Legacy pending change without expiry, created 40 days ago (>30d)
+			// Legacy pending change without expiry, created 40 days ago (>30d, estimated)
 			{
 				id: 'u5',
 				created_at: new Date(NOW - 40 * ONE_DAY_MS).toISOString(),
+				updated_at: new Date(NOW - 1 * ONE_DAY_MS).toISOString(), // Unrelated change does not rejuvenate
+				app_metadata: { must_change_password: true },
+			},
+			// Legacy pending change with unknown age (no created_at, no expiry)
+			{
+				id: 'u6',
+				updated_at: new Date(NOW - 5 * ONE_DAY_MS).toISOString(), // updated_at ignored
 				app_metadata: { must_change_password: true },
 			},
 		];
 
 		const summary = summarizeUsers(users, NOW);
 		expect(summary).toEqual({
-			pendingPasswords: 4,
-			active: 2, // u2 and u5 (unexpired)
+			pendingPasswords: 5,
+			active: 3, // u2, u5, and u6 (unexpired)
 			expired: 2, // u3 and u4
+			estimated: 1, // u5
+			unknown: 1, // u6
 			ageDays: {
 				'0-1': 1,
 				'2-7': 1,
 				'8-30': 1,
 				'>30': 1,
+				unknown: 1,
 			},
 			oldestDays: 40,
 			newestDays: 0,
