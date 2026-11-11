@@ -137,7 +137,7 @@ const content: CanonicalEventContentInput = {
 				type: 'reception',
 				venueEvent: 'Recepción',
 				venueName: 'Salón Las Barricas',
-				address: 'Cto. Juan Pablo Segundo 2455, Col. La Hacienda, Puebla, Pue.',
+				address: 'Cto. Juan Pablo II 2455, Col. La Hacienda, Puebla, Pue.',
 				city: 'Puebla',
 				date: '2027-01-09',
 				time: '19:30',
