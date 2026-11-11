@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-10T07:00:50.186Z",
+    "generatedAt": "2026-11-11T01:08:56.522Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,15 +12,15 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-        "cssSha256": "9164c4fb458e9f8acad04fecc247b96e9dbad2d099dae3a905fb932d8826016a",
+        "cssSha256": "0a9dc6acb8f6961e5750e14feb32e9c9720f0137381a796cd8eec1b8a461135c",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 194,
-    "matrixHash": "7c14412dac41bc50864da9ddd2012cf80a064b1429862037f20bbc7377719a8d",
+    "totalCaptures": 196,
+    "matrixHash": "0b1f480be44212be293c9319b48ccee0aaf6931e2d80e9ae96c0dff7bbab706e",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2390,6 +2390,30 @@
         },
         {
             "kind": "invitation",
+            "slug": "valeria-hernandez",
+            "eventType": "xv",
+            "preset": "storybook-blush",
+            "viewport": "mobile",
+            "file": "pages/invitation-xv-valeria-hernandez-mobile.png",
+            "sha256": "4142bfecc9ce21e80602dcc75b5e3e6f0079d7d74e90a8a6fbbc54fc0c0d5bb7",
+            "contentHash": "f51e2a59db4a1960d50192b60a9288517932f04f7e3a3e70ccffafe5298c35e8",
+            "assetHash": "2ac2e3a33de7d1617a906ddbb3a8fa21d6e7237c21f80932e31cd97a29fb8df4",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "valeria-hernandez",
+            "eventType": "xv",
+            "preset": "storybook-blush",
+            "viewport": "desktop",
+            "file": "pages/invitation-xv-valeria-hernandez-desktop.png",
+            "sha256": "b3fc763c1887e8a5904e6ac2824e274f6e8a53a0256fc096e06096c552bc3411",
+            "contentHash": "f51e2a59db4a1960d50192b60a9288517932f04f7e3a3e70ccffafe5298c35e8",
+            "assetHash": "2ac2e3a33de7d1617a906ddbb3a8fa21d6e7237c21f80932e31cd97a29fb8df4",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
             "slug": "yireh-ana",
             "eventType": "xv",
             "preset": "storybook-lilac",
@@ -2629,9 +2653,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "fa73595f31c777425fd29fcd267f25bba03a5c05",
+    "referenceSha": "424ca74b16ae16e06c916618511a1e636b2e789c",
     "variantManifest": {
-        "generatedAt": "2026-11-10T07:00:50.186Z",
+        "generatedAt": "2026-11-11T01:08:56.522Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2644,7 +2668,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "9164c4fb458e9f8acad04fecc247b96e9dbad2d099dae3a905fb932d8826016a",
+            "cssSha256": "0a9dc6acb8f6961e5750e14feb32e9c9720f0137381a796cd8eec1b8a461135c",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4589,10 +4613,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "fa73595f31c777425fd29fcd267f25bba03a5c05"
+        "referenceSha": "424ca74b16ae16e06c916618511a1e636b2e789c"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-10T07:00:50.198Z",
+        "generatedAt": "2026-11-11T01:08:56.527Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4605,16 +4629,16 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "9164c4fb458e9f8acad04fecc247b96e9dbad2d099dae3a905fb932d8826016a",
+            "cssSha256": "0a9dc6acb8f6961e5750e14feb32e9c9720f0137381a796cd8eec1b8a461135c",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 56,
-        "matrixHash": "bdf345d81099c9e4ee8285727d2b04773b5ddc4b5d7b2a5e109fa9927b56d2f8",
-        "cases": 28,
+        "totalCaptures": 58,
+        "matrixHash": "397d4cd507c91c82adf0478d9c60a81cbbed0cd8a3f188f785d1d1f67804410b",
+        "cases": 29,
         "captures": [
             {
                 "kind": "invitation",
@@ -5050,6 +5074,30 @@
             },
             {
                 "kind": "invitation",
+                "slug": "valeria-hernandez",
+                "eventType": "xv",
+                "preset": "storybook-blush",
+                "viewport": "mobile",
+                "file": "pages/invitation-xv-valeria-hernandez-mobile.png",
+                "sha256": "4142bfecc9ce21e80602dcc75b5e3e6f0079d7d74e90a8a6fbbc54fc0c0d5bb7",
+                "contentHash": "f51e2a59db4a1960d50192b60a9288517932f04f7e3a3e70ccffafe5298c35e8",
+                "assetHash": "2ac2e3a33de7d1617a906ddbb3a8fa21d6e7237c21f80932e31cd97a29fb8df4",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "valeria-hernandez",
+                "eventType": "xv",
+                "preset": "storybook-blush",
+                "viewport": "desktop",
+                "file": "pages/invitation-xv-valeria-hernandez-desktop.png",
+                "sha256": "b3fc763c1887e8a5904e6ac2824e274f6e8a53a0256fc096e06096c552bc3411",
+                "contentHash": "f51e2a59db4a1960d50192b60a9288517932f04f7e3a3e70ccffafe5298c35e8",
+                "assetHash": "2ac2e3a33de7d1617a906ddbb3a8fa21d6e7237c21f80932e31cd97a29fb8df4",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
                 "slug": "yireh-ana",
                 "eventType": "xv",
                 "preset": "storybook-lilac",
@@ -5289,9 +5337,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "fa73595f31c777425fd29fcd267f25bba03a5c05"
+        "referenceSha": "424ca74b16ae16e06c916618511a1e636b2e789c"
     },
-    "candidateManifestSha256": "cb8a1ae54fd84df75906c4ed24f4b795f6567305e8ce43eb1064e4a8f6bd7383",
-    "acceptedFromCommit": "fa73595f31c777425fd29fcd267f25bba03a5c05",
-    "acceptedAt": "2026-11-10T07:02:54.870Z"
+    "candidateManifestSha256": "6b0780f3944a925a8b60c3ff03b0701cc85fb09e953aea15350ec7a51c9e03a4",
+    "acceptedFromCommit": "424ca74b16ae16e06c916618511a1e636b2e789c",
+    "acceptedAt": "2026-11-11T02:24:10.233Z"
 }
