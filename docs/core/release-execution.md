@@ -24,6 +24,10 @@ implementing these skills is never a live-release invocation.
   `prod:apply` enforces this for invitation content and owner patches before any backup, prompt or
   write: it refuses unless the `build.commitSha` reported by `/api/health` on the Production alias
   equals or contains the commit it publishes from.
+- **Owner-only.** Running `deploy-production.yml`, activating the Production Worker version and
+  `prod:apply --apply` are the owner's steps, in that order. Agents prepare the release and hand the
+  owner the exact commands with their verification and rollback; they never run them. Read-only
+  inspection (`ops:release-status`, dry runs with zero mutations) is fine.
 - `Post-deploy Smoke` validates the correlated deployment, SHA, approved host and critical HTTP
   behavior. The scheduled/manual `Production Image Audit` separately reports published-media drift
   and never determines deployment health.

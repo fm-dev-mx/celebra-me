@@ -243,8 +243,8 @@ const content: CanonicalEventContentInput = {
 		// Pass and confirmation read as one printed reply card; seats are fixed per guest.
 		variant: 'reply-card',
 		title: '¿Me acompaña?',
-		// Replies close two weeks before the event; the canonical RSVP block has no deadline field.
-		subcopy: 'Le agradeceré confirmar antes del viernes 4 de diciembre.',
+		// Owner-set: replies close on Friday 20 November; the canonical RSVP block has no deadline field.
+		subcopy: 'Le agradeceré confirmar antes del viernes 20 de noviembre.',
 		lockedMessage:
 			'Cada pase de esta noche lleva un nombre. Abra el enlace que le envié para ver el suyo.',
 		guestCap: 2,
@@ -309,7 +309,7 @@ const content: CanonicalEventContentInput = {
 			invitation:
 				'Hola, {{invitado}}: el 18 de diciembre celebro mis quince y quiero verle ahí. En este enlace está su pase y puede confirmar:\n\n{{enlace}}',
 			reminder:
-				'Hola, {{invitado}}: {{hora_evento}} Ya casi es 18 de diciembre.\n\nSi aún no confirma, tiene hasta el viernes 4 de diciembre:\n{{enlace}}',
+				'Hola, {{invitado}}: {{hora_evento}} Ya casi es 18 de diciembre.\n\nSi aún no confirma, tiene hasta el viernes 20 de noviembre:\n{{enlace}}',
 		},
 	},
 };

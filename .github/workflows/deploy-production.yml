@@ -91,6 +91,14 @@ jobs:
                       fi
                   fi
 
+            # Read-only: lists the account directory and prints totals. Fails while an account has its
+            # alias only in user_metadata (legacyOnly), a duplicate alias exists, or the target is empty.
+            - name: Check login alias prerequisite
+              env:
+                  SUPABASE_URL: https://${{ env.PRODUCTION_SUPABASE_REF }}.supabase.co
+                  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PRODUCTION_SUPABASE_SERVICE_ROLE_KEY }}
+              run: pnpm auth:check-login-alias
+
             - name: Publish pending smoke status
               run: |
                   gh api "repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
