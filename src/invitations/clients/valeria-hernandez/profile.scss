@@ -1,0 +1,54 @@
+@use './composition';
+
+// Valeria: the storybook-blush preset recolored as a cherry disco night. The day grounds turn to a
+// pale cherry paper and a cherry mist, the ink turns to deep wine, the accents to cherry red, and
+// the night bands (countdown and closing) to a deep wine sky. Silver stays as the sequin accent of
+// the dress code. Tokens only; the disco motifs live in the composition and layout stays with the
+// variants.
+
+.event--valeria-hernandez.theme-preset--storybook-blush {
+	// Day grounds: pale cherry paper and cherry mist.
+	--color-blush-paper: rgb(250 238 238);
+	--color-blush-paper-rgb: 250 238 238;
+	--color-rose-mist: rgb(246 224 226);
+	--color-rose-mist-rgb: 246 224 226;
+	--color-rose-veil: rgb(238 198 204);
+	--color-rose-veil-rgb: 238 198 204;
+
+	// Accents: cherry red over a deeper cherry.
+	--color-rose-glow: rgb(226 84 104);
+	--color-rose-glow-rgb: 226 84 104;
+	--color-rose-deep: rgb(184 22 48);
+	--color-rose-deep-rgb: 184 22 48;
+
+	// Ink: deep wine, with a softer wine for secondary lines.
+	--color-plum-ink: rgb(72 14 28);
+	--color-plum-ink-rgb: 72 14 28;
+	--color-plum-ink-soft: rgb(112 52 64);
+	--color-plum-ink-soft-rgb: 112 52 64;
+
+	// The night: a wine sky from dusk to midnight, with a pale cherry for its text.
+	--color-rose-dusk: rgb(152 30 52);
+	--color-rose-dusk-rgb: 152 30 52;
+	--color-rose-night: rgb(96 14 34);
+	--color-rose-night-rgb: 96 14 34;
+	--color-rose-midnight: rgb(58 8 20);
+	--color-rose-midnight-rgb: 58 8 20;
+	--color-night-blush: rgb(248 208 214);
+	--color-night-blush-rgb: 248 208 214;
+
+	// Flat grounds: the paper carries no grain, so the disco motifs stay the only texture.
+	--storybook-paper: var(--color-blush-paper);
+	--storybook-paper-mist: var(--color-rose-mist);
+	--invitation-paper: var(--color-blush-paper);
+
+	// The «Continúe» labels read at full ink on the cherry paper.
+	--section-nav-label-opacity: 100%;
+
+	// The reply steps are marked in cherry red with a soft cherry light instead of the amber lantern.
+	[data-rsvp-flow='steps'] {
+		--rsvp-steps-track: rgb(var(--color-plum-ink-rgb) / 14%);
+		--rsvp-steps-lantern: var(--color-rose-glow);
+		--rsvp-steps-glow: rgb(var(--color-rose-glow-rgb) / 35%);
+	}
+}
