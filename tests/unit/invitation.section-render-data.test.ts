@@ -561,6 +561,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		expect(labelFor('andrea')).toBe(false);
 		expect(labelFor('destenid-sofia')).toBe(false);
 		expect(labelFor('naomi-huerta')).toBe(false);
+		expect(labelFor('valeria-hernandez')).toBe(false);
 		expect(labelFor('a-new-client')).toBe(true);
 	});
 

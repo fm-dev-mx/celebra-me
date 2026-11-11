@@ -42,6 +42,7 @@ const LEGACY_PASS_TEXT_SLUGS: ReadonlySet<string> = new Set([
 	...LEGACY_RSVP_DEFAULT_SLUGS,
 	'destenid-sofia',
 	'naomi-huerta',
+	'valeria-hernandez',
 	'yireh-ana',
 ]);
 
