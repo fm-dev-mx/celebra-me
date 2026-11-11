@@ -89,8 +89,10 @@ SQL, scripts or edge functions; not traced here).
   - **Table.column:** `invitation_assets.provider_metadata`
   - **Reader (file):** `src/lib/intake/repositories/asset.repository.ts`,
     `src/lib/intake/services/asset-delivery.ts`
-  - **Assumed shape:** Default `{}`; Cloudinary provider fields. Select columns found, field use not
-    traced.
+  - **Assumed shape:** Default `{}`; no JSON fields read by these files. The current providers are
+    Supabase and R2: the repository selects separate `provider`, `bucket`, `storage_path` and
+    `secure_url` columns, not `provider_metadata`. Delivery requires R2 `secure_url`; Supabase uses
+    `secure_url` or builds a public URL from bucket and path. Other readers remain untraced.
   - **Risk:** Med
   - **Confidence:** partial
 - **#:** 11
@@ -157,11 +159,23 @@ SQL, scripts or edge functions; not traced here).
   - **Risk:** Med
   - **Confidence:** partial
 - **#:** S3
-  - **Store and bucket:** R2 invitation media
-  - **Reader (file):** `src/lib/intake/services/r2-invitation-media.ts`
-  - **Assumed shape:** Not traced (only listed by search).
-  - **Risk:** Med
-  - **Confidence:** no trace
+  - **Store and bucket:** R2 invitation media: Preview `celebra-me-invitation-media-staging`
+    (`https://media-staging.celebra-me.com`), Production `celebra-me-invitation-media`
+    (`https://media.celebra-me.com`). Each environment has its own `INVITATION_MEDIA` binding.
+  - **Reader (file):** `src/lib/intake/services/r2-invitation-media.ts`,
+    `src/lib/invitation/hero-image-preload.ts`, `src/lib/intake/services/asset-delivery.ts`; widths
+    defined in `src/lib/images/responsive-variants.ts`
+  - **Assumed shape:** Original keys are
+    `invitations/<eventType>/<slug>/<asset-key>-<sha256>.<ext>`, with a 64-character lowercase hex
+    digest. Supported extensions are `webp`, `jpg`, `png`, `mp3` and `m4a`. Image derivatives share
+    the original's key stem and digest: `.w<width>.webp` for widths 480, 800, 1280 and 1920, and
+    `.og.jpg` for a 1200x630 social card. Both buckets enable `responsiveVariants`, so eligible
+    original image URLs advertise every width in `srcset`; the hero preload consumes the same
+    variants without checking existence. R2 delivery requires `secure_url`, and URL construction
+    alone proves neither the original nor its derivatives exist. Missing objects break published
+    images, hero preloads or social cards; S1's Supabase-only check cannot detect them.
+  - **Risk:** High
+  - **Confidence:** traced (key builders, delivery and hero preload; no bucket contents inspected)
 
 ## Proposal: what enters the manifest
 
@@ -170,12 +184,18 @@ Each accepted item becomes its own task (per the owner decision of 2026-11-09), 
 
 1. **S1** `invitation-assets` objects exist for every live asset row. Highest user-visible damage;
    check is a join of `invitation_assets` against `storage.objects` (totals only).
-2. **#1 and #2** content objects: every published and draft `content` has the paths the code reads
+2. **S3** referenced R2 originals exist in the target environment's invitation-media bucket, along
+   with every advertised width variant and referenced social card. Propose a separate read-only
+   check that derives keys from live R2 asset rows and published content references, validates
+   bucket/origin and digest-key consistency, and checks object existence (totals only). A
+   `storage.objects` join cannot cover R2. Owner approval and a separate implementation task remain
+   pending; this inventory adds no check and does not accept missing R2 media as a risk.
+3. **#1 and #2** content objects: every published and draft `content` has the paths the code reads
    (`hero.date`, `eventTiming`, `rsvp`). Extends the existing `20260812` prerequisite instead of
    duplicating it.
-3. **#4** `tracking_events.event_properties.lead_code` present where the quote reminder expects it.
-4. **#3** `invitation_data_requests.answers` is an object on every row.
-5. **S2** every `event_memory_items` object key matches the key contract.
+4. **#4** `tracking_events.event_properties.lead_code` present where the quote reminder expects it.
+5. **#3** `invitation_data_requests.answers` is an object on every row.
+6. **S2** every `event_memory_items` object key matches the key contract.
 
 Suggested not to declare: #5 (fails closed), #7, #8, #9, #11 to #13 (defaults and defensive
 readers), #14 and #15 (no `src/` assumption), #16 (legacy). #6 and #10 need a tracing pass before
