@@ -1,17 +1,30 @@
 @use '../../../global/a11y' as a11y;
 
 .theme-preset--enchanted-rose .rsvp-section:has(.rsvp) {
+	// The form sits on a short velvet band: no full-screen height, room above for the ramp and a
+	// shorter foot before the thank-you blend.
+	--rsvp-section-min-height: auto;
+	--rsvp-shell-padding-block: clamp(8.5rem, 18vw, 10rem) clamp(4rem, 9vw, 5.5rem);
+
 	position: relative;
 	isolation: isolate;
 	overflow: hidden;
+
+	// The pass above is clear, so the RSVP rises out of the same ivory floor: the paper deepens
+	// through a rose dusk into the velvet over the top padding instead of starting on a cut.
 	background:
 		linear-gradient(
 			180deg,
-			rgb(var(--color-warm-ivory-rgb) / 12%) 0%,
-			transparent 11%,
-			transparent 87%,
-			rgb(var(--color-midnight-navy-rgb) / 48%) 100%
+			var(--color-surface-secondary) 0,
+			color-mix(in srgb, var(--color-surface-secondary) 80%, rgb(var(--color-blush-pink-rgb)))
+				1.5rem,
+			color-mix(in srgb, rgb(var(--color-blush-pink-rgb)) 45%, var(--color-deep-rose-red))
+				3.5rem,
+			rgb(var(--color-deep-rose-red-rgb) / 55%) 5.5rem,
+			rgb(var(--color-deep-rose-red-rgb) / 18%) 7.5rem,
+			transparent 9.5rem
 		),
+		linear-gradient(180deg, transparent 87%, rgb(var(--color-midnight-navy-rgb) / 48%) 100%),
 		radial-gradient(
 			ellipse at 50% 0%,
 			rgb(var(--color-candle-gold-rgb) / 24%) 0%,
@@ -25,37 +38,23 @@
 		),
 		var(--enchanted-section-dark-bg, var(--rose-velvet-wash));
 
-	&::before,
+	// The section shell nests a second one; only the outer one paints the velvet.
+	.rsvp-section {
+		--rsvp-shell-padding-block: 0;
+
+		background: none;
+
+		&::after {
+			content: none;
+		}
+	}
+
 	&::after {
 		content: '';
 		position: absolute;
-		pointer-events: none;
-		z-index: -1;
-	}
-
-	&::before {
-		inset: clamp(3.5rem, 8vw, 5rem) max(1rem, calc((100vw - 880px) / 2)) auto;
-		block-size: min(54svh, 34rem);
-		border: 1px solid rgb(var(--color-antique-gold-rgb) / 16%);
-		border-block-end: 0;
-		border-radius: 999px 999px 0 0;
-		background:
-			linear-gradient(
-				90deg,
-				transparent 0%,
-				rgb(var(--color-candle-gold-rgb) / 6%) 50%,
-				transparent 100%
-			),
-			radial-gradient(
-				ellipse at 50% 18%,
-				rgb(var(--color-warm-ivory-rgb) / 6%) 0%,
-				transparent 58%
-			);
-		opacity: 50%;
-	}
-
-	&::after {
 		inset: auto 0 0;
+		z-index: -1;
+		pointer-events: none;
 		block-size: 35%;
 		background:
 			linear-gradient(180deg, transparent 0%, rgb(var(--color-rose-shadow-rgb) / 35%) 100%),
@@ -65,18 +64,6 @@
 }
 
 .theme-preset--enchanted-rose .rsvp {
-	--rsvp-er-frame-bg:
-		linear-gradient(155deg, rgb(var(--color-midnight-navy-rgb) / 96%) 0%, transparent 38%),
-		radial-gradient(
-			circle at 50% 0%,
-			rgb(var(--color-candle-gold-rgb) / 17%) 0%,
-			transparent 42%
-		),
-		linear-gradient(
-			180deg,
-			rgb(var(--color-velvet-burgundy-rgb) / 96%) 0%,
-			rgb(var(--color-rose-shadow-rgb) / 98%) 100%
-		);
 	--rsvp-er-panel-bg:
 		linear-gradient(
 			145deg,
@@ -85,9 +72,6 @@
 			rgb(var(--color-candle-gold-rgb) / 13%) 100%
 		),
 		var(--color-warm-ivory);
-	--rsvp-er-frame-border: rgb(var(--color-antique-gold-rgb) / 48%);
-	--rsvp-er-inner-border: rgb(var(--color-candle-gold-rgb) / 26%);
-	--rsvp-er-candle-glow: rgb(var(--color-candle-gold-rgb) / 22%);
 	--rsvp-er-focus-ring: rgb(var(--color-candle-gold-rgb) / 38%);
 	--rsvp-label-color: rgb(var(--color-walnut-brown-rgb) / 78%);
 	--rsvp-label-letter-spacing: 0.15em;
@@ -131,56 +115,12 @@
 	--rsvp-error-bg: rgb(var(--color-deep-rose-red-rgb) / 9%);
 	--rsvp-error-border: rgb(var(--color-deep-rose-red-rgb) / 22%);
 
-	background: var(--rsvp-er-frame-bg);
-	border: 1px solid var(--rsvp-er-frame-border);
-	border-radius: var(--rsvp-radius-card);
-	box-shadow:
-		0 38px 90px rgb(var(--color-rose-shadow-rgb) / 48%),
-		0 0 0 1px rgb(var(--color-warm-ivory-rgb) / 10%),
-		inset 0 0 0 1px var(--rsvp-er-inner-border),
-		inset 0 0 56px rgb(var(--color-candle-gold-rgb) / 8%);
+	// One card on the velvet: the frame around the form is gone, so the header reads straight on
+	// the section and the ivory panel is the only surface.
+	background: none;
+	border: 0;
+	box-shadow: none;
 	color: var(--color-warm-ivory);
-	overflow: hidden;
-
-	&::before,
-	&::after {
-		content: '';
-		position: absolute;
-		pointer-events: none;
-		z-index: 0;
-	}
-
-	&::before {
-		inset: 0.65rem;
-		border: 1px solid rgb(var(--color-antique-gold-rgb) / 28%);
-		border-radius: 10px;
-		background:
-			linear-gradient(
-				90deg,
-				rgb(var(--color-antique-gold-rgb) / 18%),
-				transparent 12% 88%,
-				rgb(var(--color-antique-gold-rgb) / 18%)
-			),
-			linear-gradient(
-				180deg,
-				rgb(var(--color-antique-gold-rgb) / 18%),
-				transparent 16% 84%,
-				rgb(var(--color-antique-gold-rgb) / 18%)
-			);
-	}
-
-	&::after {
-		inset: 0;
-		background:
-			radial-gradient(circle at 14% 16%, var(--rsvp-er-candle-glow) 0%, transparent 22%),
-			radial-gradient(
-				circle at 88% 18%,
-				rgb(var(--color-blush-pink-rgb) / 12%) 0%,
-				transparent 24%
-			),
-			var(--rose-satin-sheen);
-		opacity: 72%;
-	}
 
 	.rsvp__header,
 	.rsvp__form,
@@ -191,7 +131,10 @@
 		z-index: 1;
 	}
 
+	// A functional section reads from the leading edge (invitation-rhythm): eyebrow, hairline,
+	// title and subcopy start on the form's edge.
 	.rsvp__header {
+		text-align: start;
 		color: var(--color-warm-ivory);
 		text-shadow: 0 8px 24px rgb(var(--color-rose-shadow-rgb) / 44%);
 	}
@@ -207,7 +150,7 @@
 	.rsvp__separator {
 		inline-size: min(13rem, 58%);
 		block-size: 1px;
-		margin: 0.75rem auto 1.1rem;
+		margin: 0.75rem 0 1.1rem;
 		background: var(--rose-gold-divider);
 		color: transparent;
 		opacity: 90%;
@@ -218,7 +161,7 @@
 		content: '';
 		position: absolute;
 		top: 50%;
-		left: calc(50% - 0.21rem);
+		left: 0;
 		inline-size: 0.42rem;
 		block-size: 0.42rem;
 		border: 1px solid rgb(var(--color-candle-gold-rgb) / 72%);
@@ -233,7 +176,7 @@
 		line-height: 0.96;
 		letter-spacing: 0;
 		color: rgb(var(--color-warm-ivory-rgb) / 96%);
-		text-align: center;
+		text-align: start;
 		text-shadow:
 			0 2px 0 rgb(var(--color-antique-gold-rgb) / 18%),
 			0 18px 42px rgb(var(--color-rose-shadow-rgb) / 58%);
@@ -244,6 +187,7 @@
 	}
 
 	.rsvp__subcopy {
+		margin-inline: 0;
 		color: rgb(var(--color-warm-ivory-rgb) / 76%);
 		font-size: 0.92rem;
 		line-height: 1.65;
@@ -456,13 +400,6 @@
 	}
 
 	@media (width <= 420px) {
-		border-radius: 10px;
-
-		&::before {
-			inset: 0.45rem;
-			border-radius: 8px;
-		}
-
 		.rsvp__eyebrow {
 			letter-spacing: 0.24em;
 		}

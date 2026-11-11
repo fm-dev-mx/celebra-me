@@ -42,8 +42,8 @@ audit tooling (`pnpm invitation:published-audit`).
 ## Canonical inventory
 
 - **Hero:** `standard`, `editorial-cover`, `split-cover`, `framed-portrait`, `bleed-portrait`,
-  `ceremonial-portrait`, `night-arch` (the photograph inside an arched window on a night sky, names
-  below; wide screens put the arch on the right).
+  `cased-portrait`, `ceremonial-portrait`, `night-arch` (the photograph inside an arched window on a
+  night sky, names below; wide screens put the arch on the right).
 - **Family:** `standard`, `split-groups`, `asymmetric-groups`, `ceremonial-family`; both group
   layouts require at least two explicit `groups`.
 - **Location:** `standard`, `split-map`, `stacked-venue-plates`, `night-route` (the venue plates as
@@ -245,6 +245,10 @@ invitation profiles.
 - hero.bleed-portrait: framed-portrait markup with the photograph to the edges (full width at its
   own proportion on phones, full-height left half on wide screens), written when/where facts and a
   silver scroll line. `--hero-bleed-*`.
+- hero.cased-portrait: framed-portrait markup presented as a jewelry case (lined tray, gold rim,
+  paper card). Geometry lives in `hero/_cased-portrait.scss`; a preset supplies only materials
+  through `--case-*` tokens (lining, pool, gold, glow, sheen, ink, card background and mask), and
+  every token has a neutral fallback so any preset renders it.
 - countdown.written-days: one composed fact — small-caps lead, a light display day count with an
   italic "días", and the date in lowercase with old-style numerals; no tiles, the timer updates once
   a minute. `--countdown-written-*`.

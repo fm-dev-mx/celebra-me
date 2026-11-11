@@ -353,6 +353,7 @@ export function buildIncompatiblePrerequisiteEvent(
 					'night-arch',
 					'framed-portrait',
 					'bleed-portrait',
+					'cased-portrait',
 					'ceremonial-portrait',
 				].includes(entry.variant)
 			) {

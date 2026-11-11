@@ -17,6 +17,7 @@
         "test": "jest",
         "auth:migrate-login-alias": "node scripts/auth/migrate-login-alias.mjs",
         "auth:check-login-alias": "node scripts/auth/migrate-login-alias.mjs --check",
+        "auth:check-pending-passwords": "node scripts/auth/check-pending-passwords.mjs",
         "auth:check-role-app-metadata": "node scripts/auth/check-role-app-metadata.mjs",
         "test:changed": "node scripts/run-related-tests.mjs",
         "test:e2e": "playwright test",
