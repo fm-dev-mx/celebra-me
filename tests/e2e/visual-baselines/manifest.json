@@ -19,8 +19,8 @@
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 196,
-    "matrixHash": "fcbe9e26d2d70452d1dac03e91934e6f033674255929ed92d9107144002303ad",
+    "totalCaptures": 198,
+    "matrixHash": "fd7585fc571099e8bcda7e3e58667348894bef52ca72a842143799abfa56c7b6",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2418,6 +2418,30 @@
         },
         {
             "kind": "invitation",
+            "slug": "valeria-hernandez",
+            "eventType": "xv",
+            "preset": "storybook-blush",
+            "viewport": "mobile",
+            "file": "pages/invitation-xv-valeria-hernandez-mobile.png",
+            "sha256": "4142bfecc9ce21e80602dcc75b5e3e6f0079d7d74e90a8a6fbbc54fc0c0d5bb7",
+            "contentHash": "f51e2a59db4a1960d50192b60a9288517932f04f7e3a3e70ccffafe5298c35e8",
+            "assetHash": "2ac2e3a33de7d1617a906ddbb3a8fa21d6e7237c21f80932e31cd97a29fb8df4",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "valeria-hernandez",
+            "eventType": "xv",
+            "preset": "storybook-blush",
+            "viewport": "desktop",
+            "file": "pages/invitation-xv-valeria-hernandez-desktop.png",
+            "sha256": "b3fc763c1887e8a5904e6ac2824e274f6e8a53a0256fc096e06096c552bc3411",
+            "contentHash": "f51e2a59db4a1960d50192b60a9288517932f04f7e3a3e70ccffafe5298c35e8",
+            "assetHash": "2ac2e3a33de7d1617a906ddbb3a8fa21d6e7237c21f80932e31cd97a29fb8df4",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
             "slug": "yireh-ana",
             "eventType": "xv",
             "preset": "storybook-lilac",
@@ -4668,9 +4692,9 @@
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 56,
-        "matrixHash": "bdf345d81099c9e4ee8285727d2b04773b5ddc4b5d7b2a5e109fa9927b56d2f8",
-        "cases": 28,
+        "totalCaptures": 58,
+        "matrixHash": "397d4cd507c91c82adf0478d9c60a81cbbed0cd8a3f188f785d1d1f67804410b",
+        "cases": 29,
         "captures": [
             {
                 "kind": "invitation",
@@ -5102,6 +5126,30 @@
                 "sha256": "be806f1cae907aede758321e5a02bcc69ba8032c34ad2623ca3d54baaedd12ac",
                 "contentHash": "9aed6dcb324513228805d9fb291d6ca3c240c39619391d782b77a4485649365f",
                 "assetHash": "397cb4df3a7cc282903e826a44059f4b8fe66b6192baa5ab591f9b3b6b24629f",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "valeria-hernandez",
+                "eventType": "xv",
+                "preset": "storybook-blush",
+                "viewport": "mobile",
+                "file": "pages/invitation-xv-valeria-hernandez-mobile.png",
+                "sha256": "4142bfecc9ce21e80602dcc75b5e3e6f0079d7d74e90a8a6fbbc54fc0c0d5bb7",
+                "contentHash": "f51e2a59db4a1960d50192b60a9288517932f04f7e3a3e70ccffafe5298c35e8",
+                "assetHash": "2ac2e3a33de7d1617a906ddbb3a8fa21d6e7237c21f80932e31cd97a29fb8df4",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "valeria-hernandez",
+                "eventType": "xv",
+                "preset": "storybook-blush",
+                "viewport": "desktop",
+                "file": "pages/invitation-xv-valeria-hernandez-desktop.png",
+                "sha256": "b3fc763c1887e8a5904e6ac2824e274f6e8a53a0256fc096e06096c552bc3411",
+                "contentHash": "f51e2a59db4a1960d50192b60a9288517932f04f7e3a3e70ccffafe5298c35e8",
+                "assetHash": "2ac2e3a33de7d1617a906ddbb3a8fa21d6e7237c21f80932e31cd97a29fb8df4",
                 "comparisonResult": "CANDIDATE"
             },
             {
