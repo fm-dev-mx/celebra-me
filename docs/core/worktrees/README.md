@@ -9,28 +9,29 @@ Adding or retiring a lane is one pull request that edits that file. External pat
 
 | Key | Lane                          | Use          | Runtime | Port |
 | --- | ----------------------------- | ------------ | ------- | ---- |
+| F3  | `f05-plataforma`              | Generic      | Local   | 4325 |
 | F5  | Integration (repository root) | Coordination | Local   | 4321 |
 | F6  | `f06-landing`                 | Generic      | Local   | 4326 |
 | F7  | `f07-invitaciones`            | Generic      | Local   | 4327 |
 | F8  | `f08-demos`                   | Generic      | Local   | 4328 |
 | F9  | `f09-docs`                    | Generic      | Local   | 4329 |
+| F10 | `f10-libre`                   | Generic      | Local   | 4330 |
 | F11 | `f11-preview`                 | Preview      | Preview | 4331 |
 | F12 | `f12-release`                 | Release      | Preview | 4332 |
 | —   | `agente-claude`               | Agent        | Local   | 4333 |
 | —   | `agente-codex`                | Agent        | Local   | 4334 |
 | —   | `agente-gemini`               | Agent        | Local   | 4335 |
 
-The board assigns tasks only to these lanes: four generic lanes for a WIP of three, plus Preview and
-release. A task's category never binds a generic lane.
+The board assigns tasks only to these lanes: six generic lanes, plus Preview and release. A task's
+category never binds a generic lane.
 
 Agent lanes (`agente-<name>`) belong to one agent each. The board's bridges open them, so they take
 no key (`tecla`); the guards treat them like any other lane: task branches commit there, `develop`
 never does.
 
 Win + F4 opens the separate board project (`tablero`), not a lane. `f05-plataforma` and `f10-libre`
-are retired (`carrilesRetirados`, owner 2026-10-31): their folders stay, the guards treat them as
-unknown and refuse sessions there, and the worktree sweep (`pnpm ops:status`) does not flag them for
-removal.
+came back as generic lanes (owner 2026-11-11); `carrilesRetirados` lists folders that stay without
+taking tasks, and is empty today.
 
 ## Naming: branches, lanes and sessions
 

@@ -27,10 +27,12 @@ import {
 
 describe('worktree lane detection', () => {
 	const laneSegments = [
+		'f05-plataforma',
 		'f06-landing',
 		'f07-invitaciones',
 		'f08-demos',
 		'f09-docs',
+		'f10-libre',
 		'f11-preview',
 		'f12-release',
 		'agente-claude',
@@ -61,9 +63,8 @@ describe('worktree lane detection', () => {
 			'unknown',
 		);
 		expect(detectWorktreeLane('/mock/celebra-me-worktrees/f06-landing2').id).toBe('unknown');
-		// Retired lane folders are no longer lanes.
-		expect(detectWorktreeLane('/mock/celebra-me-worktrees/f05-plataforma').id).toBe('unknown');
-		expect(detectWorktreeLane('/mock/celebra-me-worktrees/f10-libre').id).toBe('unknown');
+		// Folders the board config does not list are not lanes.
+		expect(detectWorktreeLane('/mock/celebra-me-worktrees/f13-suelto').id).toBe('unknown');
 		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-local').id).toBe('unknown');
 	});
 
@@ -87,7 +88,20 @@ describe('worktree lane detection', () => {
 	it('lists expected lane paths, keys and runtimes under the repository root', () => {
 		const lanes = listExpectedLanePaths('/mock/celebra-me');
 		expect(lanes.map((lane) => lane.id)).toEqual(['integration', ...laneSegments]);
-		expect(lanes.map((lane) => lane.key)).toEqual([5, 6, 7, 8, 9, 11, 12, null, null, null]);
+		expect(lanes.map((lane) => lane.key)).toEqual([
+			5,
+			3,
+			6,
+			7,
+			8,
+			9,
+			10,
+			11,
+			12,
+			null,
+			null,
+			null,
+		]);
 		expect(
 			lanes.filter((lane) => lane.runtimeDefault === 'preview').map((lane) => lane.id),
 		).toEqual(['f11-preview', 'f12-release']);
@@ -108,7 +122,7 @@ describe('worktree lane detection', () => {
 		const localPorts = listExpectedLanePaths('/mock/celebra-me')
 			.filter((lane) => lane.runtimeDefault === 'local')
 			.map((lane) => WORKTREE_DEV_SERVER_PORTS[lane.id]);
-		expect(localPorts).toHaveLength(8);
+		expect(localPorts).toHaveLength(10);
 		expect(new Set(localPorts).size).toBe(localPorts.length);
 		expect(localPorts).not.toContain(WORKTREE_DEV_SERVER_PORTS.unknown);
 	});
