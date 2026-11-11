@@ -1,0 +1,236 @@
+// Enchanted Rose demo — jewelry-box garden: the cover portrait rests in a velvet case clasped by
+// gold corner brackets, and the keepsake sits in a window with concave (cut-in) corners, the
+// die-cut shape of a printed XV card; quiet, widely tracked caps carry the small type. No arches.
+
+.event--demo-xv-enchanted-rose.theme-preset--enchanted-rose {
+	// Velvet and gold for the quiet equalizer control.
+	--music-player-button-bg: rgb(var(--color-velvet-burgundy-rgb) / 94%);
+	--music-player-button-color: rgb(var(--color-candle-gold-rgb));
+	--music-player-button-border: 1px solid rgb(var(--color-action-accent-rgb) / 55%);
+	--music-player-ring-color: rgb(var(--color-candle-gold-rgb) / 40%);
+	--music-player-prompt-accent: rgb(var(--color-candle-gold-rgb));
+
+	.invitation-hero.framed-portrait-hero {
+		// The arched frame gives way to a square velvet case (structure in the preset hero), and
+		// the name sets in two lines.
+		--hero-portrait-radius: 0;
+		--hero-portrait-outline: none;
+		--hero-portrait-height-desktop: min(68svh, 40rem);
+		--hero-name-font-weight: 400;
+		--hero-name-letter-spacing: -0.02em;
+		--hero-details-font: 500 0.8125rem / 1.6 var(--font-body);
+		--hero-details-letter-spacing: 0.22em;
+		--hero-details-text-transform: uppercase;
+		--hero-scroll-font: 600 0.6875rem / 1.5 var(--font-body);
+		--hero-scroll-color: var(--color-velvet-burgundy);
+		--hero-scroll-letter-spacing: 0.24em;
+		--hero-scroll-text-transform: uppercase;
+
+		// Jewelry-box calligraphy: the occasion signs in deep rose script above the name, so the
+		// gold stays on the case (the name's weights live in the preset hero).
+		--hero-occasion-font: 400 clamp(2.875rem, 5vw, 4rem) / 1 var(--font-calligraphy);
+		--hero-occasion-color: var(--color-deep-rose-red);
+		--hero-occasion-letter-spacing: 0;
+		--hero-occasion-text-transform: none;
+	}
+
+	// The photo after the family rises out of the family's paper and dissolves into the location's
+	// ivory, so the page runs from paper to picture to paper without a dark band at either edge.
+	.invitation-interlude[data-interlude-index='1'] {
+		--interlude-bg: var(--color-surface-secondary);
+		--interlude-overlay:
+			linear-gradient(
+				180deg,
+				var(--color-surface-secondary) 0%,
+				rgb(var(--color-warm-ivory-rgb) / 0%) 16%,
+				transparent 46%,
+				rgb(var(--color-warm-ivory-rgb) / 70%) 86%,
+				var(--color-warm-ivory) 100%
+			),
+			radial-gradient(
+				circle at var(--interlude-light-x, 50%) var(--interlude-light-y, 34%),
+				rgb(var(--color-candle-gold-rgb) / 18%) 0%,
+				transparent 42%
+			);
+	}
+
+	// Where the paper turns to velvet (itinerary into the gallery) or back (RSVP into the thanks),
+	// the incoming edge ramps through a blush dusk lit off-centre instead of cutting. The ramp sits
+	// over the incoming section's top padding.
+	.invitation-section-wrapper[data-intersection='atmospheric-blend'] {
+		&[data-intersection-source='itinerary'],
+		&[data-intersection-source='rsvp'] {
+			--intersection-depth: clamp(3.5rem, 9vw, 5.5rem);
+			--intersection-blend-layer: 2;
+		}
+
+		// Into the gallery the paper darkens through walnut into the gallery's own dark brown over a
+		// longer ramp, so it no longer ends on a pink band.
+		&[data-intersection-source='itinerary'] {
+			--intersection-depth: clamp(7rem, 16vw, 9rem);
+			--intersection-blend:
+				radial-gradient(
+					ellipse 120% 100% at 28% 0%,
+					rgb(var(--color-blush-pink-rgb) / 12%) 0%,
+					transparent 70%
+				),
+				linear-gradient(
+					180deg,
+					var(--color-surface-secondary) 0%,
+					color-mix(
+							in srgb,
+							var(--color-surface-secondary) 78%,
+							var(--color-walnut-brown)
+						)
+						16%,
+					color-mix(
+							in srgb,
+							var(--color-walnut-brown) 62%,
+							var(--color-surface-secondary)
+						)
+						34%,
+					color-mix(in srgb, var(--color-walnut-brown) 55%, black) 58%,
+					rgb(var(--color-walnut-brown-rgb) / 20%) 82%,
+					transparent 100%
+				);
+		}
+
+		&[data-intersection-source='rsvp'] {
+			--intersection-blend:
+				radial-gradient(
+					ellipse 120% 100% at 72% 0%,
+					rgb(var(--color-candle-gold-rgb) / 14%) 0%,
+					transparent 70%
+				),
+				linear-gradient(
+					180deg,
+					var(--color-rose-shadow) 0%,
+					rgb(var(--color-deep-rose-red-rgb) / 42%) 34%,
+					rgb(var(--color-blush-pink-rgb) / 34%) 66%,
+					transparent 100%
+				);
+		}
+	}
+
+	// Dress code and RSVP deadline on the light indications card: the shared ivory emphasis was
+	// written for a dark ground, so it fell to 1.04:1 here; burgundy reads at about 12:1.
+	.event-location {
+		--location-indication-strong-color: var(--color-velvet-burgundy);
+	}
+
+	// Phones: a smaller quote pill (its position lives in the preset shell).
+	@media (width <= 600px) {
+		.demo-floating-quote {
+			--demo-floating-quote-size: 0.75rem;
+		}
+	}
+
+	// The envelope is velvet night under candlelight: burgundy paper with a candle-gold hairline,
+	// rose wax with a gold monogram, distant lights and butterflies rising as it opens. The card
+	// inside stays warm ivory with velvet inks.
+	.envelope-wrapper[data-variant='storybook-butterflies'] {
+		--storybook-sky-display: block;
+		--storybook-send-off: butterflies;
+		--storybook-sky-light: var(--color-warm-ivory);
+		--storybook-sky-glow: var(--color-candle-gold);
+		--storybook-sky-lantern: var(--color-candle-gold);
+		--storybook-field: radial-gradient(
+			ellipse 120% 70% at 50% 100%,
+			var(--color-deep-rose-red) 0%,
+			var(--color-velvet-burgundy) 52%,
+			var(--color-rose-shadow) 100%
+		);
+		--storybook-envelope-paper: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--color-deep-rose-red) 38%, var(--color-velvet-burgundy)),
+			var(--color-velvet-burgundy)
+		);
+		--storybook-ink: var(--color-candle-gold);
+		--storybook-liner-paper: radial-gradient(
+			ellipse 90% 80% at 50% 0%,
+			var(--color-warm-ivory) 0%,
+			rgb(var(--color-blush-pink-rgb)) 40%,
+			var(--color-deep-rose-red) 100%
+		);
+		--storybook-instruction-ink: var(--color-candle-gold);
+		--storybook-wax-light: color-mix(
+			in srgb,
+			var(--color-deep-rose-red) 55%,
+			rgb(var(--color-blush-pink-rgb))
+		);
+		--storybook-wax: color-mix(
+			in srgb,
+			var(--color-deep-rose-red) 82%,
+			var(--color-velvet-burgundy)
+		);
+		--storybook-wax-deep: color-mix(in srgb, var(--color-velvet-burgundy) 70%, black);
+		--storybook-card-bg: var(--color-warm-ivory);
+		--storybook-card-ornament-display: none;
+		--wax-seal-letter: var(--color-candle-gold);
+		--color-text-primary: var(--color-warm-ivory);
+		--color-text-primary-rgb: var(--color-warm-ivory-rgb);
+		--color-text-secondary: var(--color-candle-gold);
+		--color-text-secondary-rgb: var(--color-candle-gold-rgb);
+		--env-shadow-container:
+			0 0 0 1px rgb(var(--color-candle-gold-rgb) / 28%),
+			0 34px 64px -26px rgb(var(--color-rose-shadow-rgb) / 90%);
+		--reveal-card-text-primary: var(--color-velvet-burgundy);
+		--reveal-card-text-secondary: var(--color-walnut-brown);
+	}
+
+	.envelope-wrapper[data-variant='storybook-butterflies'] .invitation-reveal-card {
+		--color-text-primary: var(--color-velvet-burgundy);
+		--color-text-primary-rgb: var(--color-velvet-burgundy-rgb);
+		--color-text-secondary: var(--color-walnut-brown);
+		--color-text-secondary-rgb: var(--color-walnut-brown-rgb);
+	}
+
+	// The gifts folio stays pinned while the access pass rises over it; the sections after the pass
+	// (RSVP and the clear thank-you blend) would show it again, so it fades out as it is covered.
+	// The pass brings no ground of its own: only its paper card slides over the folio, and the
+	// folio fades onto a floor of the same ivory, so nothing behind the card ever cuts.
+	.invitation-section-wrapper[data-intersection-anchor='stack'] {
+		--intersection-stack-recede-fade: 0%;
+		--intersection-stack-floor: var(--color-surface-secondary);
+	}
+
+	.invitation-section-wrapper[data-intersection='stack'] {
+		--intersection-stack-surface: transparent;
+		--intersection-stack-shadow: none;
+	}
+
+	// The keepsake sits in a cut-corner window, and one soft gold hairline frames the closing like
+	// the lid of a jewelry box; the frame is painted on the ambient layer, so it never touches the
+	// copy.
+	.thank-you-section {
+		// Dusty-rose glow behind the keepsake portrait; stays decorative, under 25% alpha.
+		--rose-keepsake-glow-rgb: 214 160 150;
+
+		$gold: rgb(var(--color-action-accent-rgb) / 42%);
+		$cut:
+			transparent 1.75rem,
+			black calc(1.75rem + 0.5px);
+		$glow: radial-gradient(
+			ellipse 60% 55% at 30% 50%,
+			rgb(var(--rose-keepsake-glow-rgb) / 24%),
+			transparent 70%
+		);
+
+		--thank-you-keepsake-image-radius: 0;
+		--rose-closing-name-size: clamp(2rem, 7.5vw, 3.25rem);
+
+		// Concave corner cut, as on the hero window.
+		--thank-you-keepsake-image-mask:
+			radial-gradient(circle at 0 0, #{$cut}) top left / 51% 51% no-repeat,
+			radial-gradient(circle at 100% 0, #{$cut}) top right / 51% 51% no-repeat,
+			radial-gradient(circle at 0 100%, #{$cut}) bottom left / 51% 51% no-repeat,
+			radial-gradient(circle at 100% 100%, #{$cut}) bottom right / 51% 51% no-repeat;
+		--thank-you-keepsake-ambient:
+			linear-gradient(#{$gold}, #{$gold}) top / 100% 1px no-repeat,
+			linear-gradient(#{$gold}, #{$gold}) bottom / 100% 1px no-repeat,
+			linear-gradient(#{$gold}, #{$gold}) left / 1px 100% no-repeat,
+			linear-gradient(#{$gold}, #{$gold}) right / 1px 100% no-repeat, #{$glow};
+		--thank-you-keepsake-ambient-inset: clamp(-3.5rem, -4vw, -2rem);
+		--thank-you-keepsake-ambient-inset-stacked: -1.75rem -0.25rem;
+	}
+}

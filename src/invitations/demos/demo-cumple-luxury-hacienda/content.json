@@ -281,6 +281,7 @@
     },
     "envelope": {
         "disabled": false,
+        "revealVariant": "night-envelope",
         "sealStyle": "monogram",
         "sealIcon": "monogram",
         "sealInitials": "A·V",

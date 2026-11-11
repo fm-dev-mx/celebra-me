@@ -119,19 +119,6 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--quote-content-size: clamp(1.4rem, 3.6vw, 1.85rem);
 	--quote-content-line-height: 1.45;
 
-	// Interludes: the framed bouquet settles flat, the envelope unfolds.
-	--interlude-framed-settle: invitation-settle-3d;
-
-	[data-interlude-index='2'] {
-		--interlude-framed-settle: scroll-accent-unfold;
-		--scroll-accent-turn: 4deg;
-	}
-
-	.interlude-section--framed {
-		--interlude-framed-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 35%);
-		--interlude-framed-shadow: 0 12px 32px -8px rgb(var(--color-violet-night-rgb) / 12%);
-	}
-
 	// Location
 	--location-program-label-color: var(--color-violet-ink);
 	--location-program-time-color: var(--color-leaf-gold);
@@ -290,22 +277,6 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--header-nav-cta-border: var(--color-leaf-gold);
 	}
 
-	// The bouquet rests on the story paper as a matted print, a pause between the program and
-	// the practical pages.
-	.invitation-interlude[data-presentation='framed'][data-interlude-index='1'] {
-		--section-band-paper: var(--color-lilac-paper);
-		--interlude-framed-bg: var(--color-lilac-paper);
-		--interlude-framed-padding: clamp(1rem, 4vw, 2rem) var(--yireh-gutter)
-			clamp(3.5rem, 9vw, 6rem);
-		--interlude-framed-max-width: 22.5rem;
-		--interlude-framed-mat: 0.875rem 0.875rem 2.75rem;
-		--interlude-framed-mat-bg: var(--color-story-cream);
-		--interlude-framed-border: 0;
-		--interlude-framed-outline: 0;
-		--interlude-framed-shadow:
-			0 1px 0 var(--yireh-rule), 0 18px 40px -24px rgb(var(--color-violet-ink-rgb) / 45%);
-	}
-
 	.invitation-section-wrapper[data-section-kind='countdown'] {
 		--intersection-depth: var(--yireh-cut);
 		--section-band-paper:
@@ -352,23 +323,6 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 
 	.invitation-section-wrapper[data-intersection='overlap'][data-intersection-source='countdown'] {
 		--intersection-depth: var(--yireh-print-overlap);
-	}
-
-	// The envelope hangs from the night of the count onto the mist of the pass.
-	.invitation-interlude[data-presentation='framed'][data-interlude-index='2'] {
-		--section-band-paper: none;
-		--interlude-framed-bg: linear-gradient(
-			transparent 0 var(--yireh-print-overlap),
-			var(--color-lilac-mist) var(--yireh-print-overlap)
-		);
-		--interlude-framed-padding: 0 var(--yireh-gutter) clamp(3.5rem, 9vw, 6rem);
-		--interlude-framed-max-width: 22.5rem;
-		--interlude-framed-mat: 0.875rem 0.875rem 2.75rem;
-		--interlude-framed-mat-bg: var(--color-story-cream);
-		--interlude-framed-border: 0;
-		--interlude-framed-outline: 0;
-		--interlude-framed-shadow:
-			0 1px 0 var(--yireh-rule), 0 18px 40px -24px rgb(var(--color-violet-ink-rgb) / 45%);
 	}
 
 	.invitation-section-wrapper:is(
@@ -424,40 +378,21 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--location-enclosure-muted: var(--color-violet-ink-soft);
 	--location-enclosure-rule: rgb(var(--color-leaf-gold-rgb) / 45%);
 	--location-enclosure-shadow: none;
-	--location-enclosure-shape: polygon(
-		1.25rem 0,
-		calc(100% - 1.25rem) 0,
-		100% 1.25rem,
-		100% calc(100% - 1.25rem),
-		calc(100% - 1.25rem) 100%,
-		1.25rem 100%,
-		0 calc(100% - 1.25rem),
-		0 1.25rem
-	);
+
+	// Round 2: a plain card with one inner gold hairline, like the envelope letter: no clipped
+	// corners and no hanger.
+	--location-enclosure-shape: none;
 	--location-enclosure-outline: 0 solid transparent;
 	--location-enclosure-frame-display: block;
 	--location-enclosure-frame-inset: 0.55rem;
 	--location-enclosure-frame: rgb(var(--color-leaf-gold-rgb) / 70%);
-	--location-enclosure-frame-shape: polygon(
-		0.85rem 0,
-		calc(100% - 0.85rem) 0,
-		100% 0.85rem,
-		100% calc(100% - 0.85rem),
-		calc(100% - 0.85rem) 100%,
-		0.85rem 100%,
-		0 calc(100% - 0.85rem),
-		0 0.85rem
-	);
+	--location-enclosure-frame-shape: none;
 	--location-enclosure-padding: 2.5rem 1.75rem;
 	--location-enclosure-max-width: 22rem;
-	--location-enclosure-hanger-display: block;
-	--location-enclosure-hanger: linear-gradient(var(--color-leaf-gold), var(--color-leaf-gold))
-		center / 1px 100% no-repeat;
-	--location-enclosure-hanger-width: 8px;
-	--location-enclosure-hanger-height: 3rem;
-	--location-enclosure-hanger-to: 0.55rem;
-	--location-enclosure-swing: location-enclosure-swing;
-	--location-enclosure-swing-origin: 50% -3rem;
+	--location-enclosure-hanger-display: none;
+	// stylelint-disable-next-line length-zero-no-unit -- read inside calc() sums, so it needs a unit
+	--location-enclosure-hanger-height: 0px;
+	--location-enclosure-swing: none;
 	--location-enclosure-edge-shadow: drop-shadow(
 		0 14px 22px rgb(var(--color-violet-ink-rgb) / 14%)
 	);

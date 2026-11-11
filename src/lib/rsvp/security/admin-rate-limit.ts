@@ -68,6 +68,8 @@ const RATE_LIMITS = {
 	'commercial:reconciliation:search': { maxHits: 60, windowSec: 60 }, // 60 req/min
 	'commercial:orders:create': { maxHits: 20, windowSec: 60 }, // 20 req/min
 	'commercial:orders:deposit-paid': { maxHits: 30, windowSec: 60 }, // 30 req/min
+	'commercial:orders:payments': { maxHits: 30, windowSec: 60 }, // 30 req/min
+	'commercial:orders:event-date': { maxHits: 30, windowSec: 60 }, // 30 req/min
 	'commercial:meta-conversions:process': { maxHits: 20, windowSec: 60 }, // 20 req/min
 	'commercial:meta-conversions:requeue': { maxHits: 10, windowSec: 60 }, // 10 req/min
 	'commercial:classifications:write': { maxHits: 20, windowSec: 60 }, // 20 req/min

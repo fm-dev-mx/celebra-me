@@ -48,12 +48,50 @@
 	--mobile-close-button-color: var(--color-warm-ivory);
 	--hamburger-color-fallback: var(--color-candle-gold);
 
+	// The menu control is a small jewelry-case latch: no fill, a gold hairline square clasped by
+	// the hero portrait's corner brackets, and two unequal lines (the lower one shorter).
+	--hamburger-width: 22px;
+	--hamburger-height: 9px;
+	--hamburger-line-height: 1.5px;
+	--hamburger-line-radius: 0;
+	--hamburger-color: var(--color-candle-gold);
+	--hamburger-color-menu-open: var(--color-candle-gold);
+
+	// The monogram signs in the hero's calligraphy, larger, with no caps tracking.
+	.event-header__title {
+		font-family: var(--font-calligraphy);
+		font-size: clamp(1.5rem, 4.2vw, 1.875rem);
+		font-weight: 400;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+
 	.header-base__mobile-toggle {
-		background: rgb(var(--color-midnight-navy-rgb) / 28%);
-		border: 1px solid rgb(var(--color-antique-gold-rgb) / 24%);
-		border-radius: 50%;
+		$gold: rgb(var(--color-candle-gold-rgb));
+		$bracket: linear-gradient(#{$gold}, #{$gold});
+		$arm: 0.625rem;
+		$bar: 2px;
+
 		width: 2.75rem;
 		height: 2.75rem;
+		padding: 0;
+		border: 1px solid rgb(var(--color-antique-gold-rgb) / 34%);
+		border-radius: 0;
+		background:
+			#{$bracket} top left / #{$arm} #{$bar} no-repeat,
+			#{$bracket} top left / #{$bar} #{$arm} no-repeat,
+			#{$bracket} top right / #{$arm} #{$bar} no-repeat,
+			#{$bracket} top right / #{$bar} #{$arm} no-repeat,
+			#{$bracket} bottom left / #{$arm} #{$bar} no-repeat,
+			#{$bracket} bottom left / #{$bar} #{$arm} no-repeat,
+			#{$bracket} bottom right / #{$arm} #{$bar} no-repeat,
+			#{$bracket} bottom right / #{$bar} #{$arm} no-repeat,
+			transparent;
+		background-origin: border-box;
+		box-shadow: none;
+		transition:
+			border-color 0.3s ease,
+			background-color 0.3s ease;
 
 		@include mixins.respond-below(lg) {
 			display: flex;
@@ -61,32 +99,67 @@
 			justify-content: center;
 		}
 
-		padding: 0;
-		box-shadow:
-			inset 0 0 8px rgb(var(--color-candle-gold-rgb) / 6%),
-			0 2px 8px rgb(var(--color-rose-shadow-rgb) / 20%);
-		transition:
-			border-color 0.3s ease,
-			background 0.3s ease,
-			box-shadow 0.3s ease;
-
 		&:hover {
-			border-color: rgb(var(--color-antique-gold-rgb) / 56%);
-			background: rgb(var(--color-midnight-navy-rgb) / 44%);
-			box-shadow:
-				inset 0 0 10px rgb(var(--color-candle-gold-rgb) / 10%),
-				0 4px 14px rgb(var(--color-rose-shadow-rgb) / 28%);
+			border-color: rgb(var(--color-antique-gold-rgb) / 64%);
+			background-color: rgb(var(--color-candle-gold-rgb) / 8%);
 		}
-	}
 
-	.hamburger__line {
-		height: 1.5px;
-		border-radius: 4px;
-		background: var(--color-candle-gold);
+		.hamburger {
+			align-items: flex-end;
+		}
+
+		.hamburger__line:nth-child(2) {
+			display: none;
+		}
+
+		.hamburger__line:nth-child(3) {
+			width: 62%;
+		}
+
+		&[aria-expanded='true'] .hamburger__line:nth-child(3) {
+			width: 100%;
+		}
 	}
 
 	&.header-base--scrolled {
 		border-bottom: var(--header-border-scrolled);
 		backdrop-filter: blur(12px) saturate(120%);
+	}
+
+	// The resting header drops the scrim: the whole hero is the velvet bed, so its links read in
+	// warm ivory and the initials and the phone latch keep the candle gold. The scrolled bar keeps
+	// its ivory on midnight.
+	&.header-base--transparent {
+		--nav-transparent-scrim: none;
+		--header-nav-color-transparent: rgb(var(--color-warm-ivory-rgb) / 86%);
+		--header-nav-shadow-transparent: none;
+		--header-nav-filter-transparent: none;
+		--header-nav-cta-bg: transparent;
+		--header-nav-cta-color: var(--color-candle-gold);
+
+		.event-header__title {
+			color: var(--color-candle-gold);
+		}
+	}
+}
+
+// The drawer's "CELEBRA-ME © 2026" signature fell just below the fold of a 844px phone behind the
+// return button; tighter spacing keeps it on the first screen of the menu.
+.theme-preset--enchanted-rose {
+	.mobile-nav-links {
+		margin-block: 2.5rem;
+	}
+
+	.mobile-nav-return {
+		margin-bottom: 0.5rem;
+	}
+
+	.mobile-nav-signature {
+		gap: 0.5rem;
+		margin-top: 1rem;
+	}
+
+	.mobile-nav-actions__cta {
+		font-family: var(--font-label);
 	}
 }

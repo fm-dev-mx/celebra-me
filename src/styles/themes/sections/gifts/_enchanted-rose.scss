@@ -3,15 +3,12 @@
 .theme-preset--enchanted-rose .gifts-section {
 	--gifts-padding-block-fallback: clamp(4.4rem, 8vw, 6.6rem);
 	--gifts-padding-inline-fallback: clamp(1rem, 4vw, 2rem);
+
+	// The folio page over the photo cuts in plain ivory, so the top carries no shadow band; only
+	// the foot keeps a faint shade.
 	--gifts-bg-fallback:
-		linear-gradient(
-			180deg,
-			rgb(var(--color-rose-shadow-rgb) / 24%) 0%,
-			transparent 10%,
-			transparent 88%,
-			rgb(var(--color-rose-shadow-rgb) / 8%) 100%
-		),
-		linear-gradient(180deg, rgb(var(--color-rose-shadow-rgb) / 7%) 0%, transparent 12%),
+		linear-gradient(180deg, var(--color-warm-ivory) 0%, transparent 6rem),
+		linear-gradient(180deg, transparent 88%, rgb(var(--color-rose-shadow-rgb) / 8%) 100%),
 		var(--enchanted-section-ivory-bg, var(--color-warm-ivory));
 	--gifts-text-color: var(--color-velvet-burgundy);
 	--gifts-title-color-fallback: var(--color-velvet-burgundy);
@@ -85,8 +82,11 @@
 		max-width: 940px;
 	}
 
+	// A functional section reads from the leading edge (invitation-rhythm): header, flourish,
+	// separator and card copy start on the same edge.
 	.gifts-section__header {
 		margin-bottom: clamp(1.6rem, 3.5vw, 2.4rem);
+		text-align: start;
 	}
 
 	.gifts-section__eyebrow {
@@ -112,9 +112,9 @@
 	.gifts-section__flourish {
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-start;
 		gap: 0.8rem;
-		margin: clamp(1rem, 2.4vw, 1.6rem) auto clamp(1.2rem, 2.8vw, 1.8rem);
+		margin: clamp(1rem, 2.4vw, 1.6rem) 0 clamp(1.2rem, 2.8vw, 1.8rem);
 
 		.flourish-line {
 			width: clamp(1.8rem, 5vw, 2.8rem);
@@ -143,6 +143,7 @@
 
 	.gifts-section__subtitle {
 		max-width: 35rem;
+		margin-inline: 0;
 		font-size: clamp(0.92rem, 1.6vw, 1.04rem);
 		line-height: 1.7;
 		color: var(--gifts-subtitle-color, var(--gifts-subtitle-color-fallback));
@@ -152,7 +153,7 @@
 		position: relative;
 		inline-size: min(13rem, 58%);
 		block-size: 1px;
-		margin: 0 auto clamp(2rem, 4vw, 2.8rem);
+		margin: 0 0 clamp(2rem, 4vw, 2.8rem);
 		background: var(--rose-gold-divider);
 		opacity: 90%;
 
@@ -160,7 +161,7 @@
 			content: '';
 			position: absolute;
 			top: 50%;
-			left: calc(50% - 0.21rem);
+			left: 0;
 			inline-size: 0.42rem;
 			block-size: 0.42rem;
 			border: 1px solid rgb(var(--color-candle-gold-rgb) / 72%);
@@ -282,14 +283,21 @@
 	.gift-card__inner {
 		position: relative;
 		z-index: 1;
+		align-items: flex-start;
+		text-align: start;
 		gap: clamp(1rem, 2.5vw, 1.35rem);
 		min-height: 100%;
+	}
+
+	.gift-card__content-head {
+		align-items: flex-start;
+		text-align: start;
 	}
 
 	.gift-card__icon-medallion {
 		width: 52px;
 		height: 52px;
-		margin: 0 auto 0.6rem;
+		margin: 0 0 0.6rem;
 		background:
 			linear-gradient(
 				180deg,
@@ -343,7 +351,7 @@
 
 	.gift-card__description {
 		max-width: 20rem;
-		margin: 0 auto;
+		margin: 0;
 		font-size: clamp(0.95rem, 1.5vw, 1.02rem);
 		line-height: 1.65;
 		color: var(--gifts-subtitle-color, var(--gifts-subtitle-color-fallback));
