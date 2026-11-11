@@ -32,6 +32,7 @@ const CreateCommercialOrderSchema = z.object({
 	referralCode: z.string().trim().max(32).optional(),
 	applyReferralDiscount: z.boolean().optional(),
 	applyReferrerCredit: z.boolean().optional(),
+	eventDate: z.iso.date().optional(),
 });
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
@@ -65,6 +66,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 				referralCodeUsed: parsed.referralCode || undefined,
 				applyReferralDiscount: parsed.applyReferralDiscount,
 				applyReferrerCredit: parsed.applyReferrerCredit,
+				eventDate: parsed.eventDate,
 			},
 			{ after: resolveAfterResponseContext(locals) },
 		);

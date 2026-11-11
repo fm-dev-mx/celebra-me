@@ -3,6 +3,7 @@ import { dashboardApi } from '@/lib/dashboard/api-client';
 import type { SalesOrder } from '@/lib/commercial/orders.repository';
 import type { Customer, LeadCandidate } from '@/components/dashboard/commercial/LeadCandidatesList';
 import InvitationDataPanel from '@/components/dashboard/commercial/InvitationDataPanel';
+import OrderDetailPanel from '@/components/dashboard/orders/OrderDetailPanel';
 import { normalizeCommercialPhone } from '@/lib/commercial/phone';
 import {
 	PACKAGE_CATALOG,
@@ -75,6 +76,7 @@ export default function OrdersWorkspace() {
 	);
 	const [amount, setAmount] = useState('');
 	const [date, setDate] = useState(today);
+	const [eventDate, setEventDate] = useState('');
 	const [order, setOrder] = useState<SalesOrder | null>(null);
 	const [paidOrder, setPaidOrder] = useState<SalesOrder | null>(null);
 	const [busy, setBusy] = useState(false);
@@ -227,6 +229,7 @@ export default function OrdersWorkspace() {
 			packageName: PACKAGE_CATALOG.find((pkg) => pkg.id === packageId)?.name,
 			totalAmount: Number(total),
 			status: 'quoted',
+			eventDate: eventDate || undefined,
 			idempotencyKey: keys.current.order,
 		};
 		const created = await postData<SalesOrder>(`${API}/orders`, orderAttempt.current);
@@ -255,6 +258,7 @@ export default function OrdersWorkspace() {
 	function startNew() {
 		setTotal(String(getPackagePrice(packageId, getActiveCampaign())));
 		setDate(today());
+		setEventDate('');
 		setCustomer(null);
 		setLead(null);
 		setOrder(null);
@@ -439,6 +443,16 @@ export default function OrdersWorkspace() {
 										</option>
 									))}
 								</select>
+								<label htmlFor="order-event-date">
+									Fecha del evento (opcional)
+								</label>
+								<input
+									disabled={orderLocked}
+									id="order-event-date"
+									type="date"
+									value={eventDate}
+									onChange={(event) => setEventDate(event.target.value)}
+								/>
 								<label htmlFor="order-package">Paquete</label>
 								<select
 									disabled={orderLocked}
@@ -542,6 +556,7 @@ export default function OrdersWorkspace() {
 				onRetry={() => setRefresh((value) => value + 1)}
 				onMore={() => void loadMore()}
 				onPayment={(item) => void run(() => resumePayment(item))}
+				onChanged={() => setRefresh((value) => value + 1)}
 			/>
 		</fieldset>
 	);
@@ -558,6 +573,7 @@ function OrdersList({
 	onRetry,
 	onMore,
 	onPayment,
+	onChanged,
 }: {
 	orders: SalesOrder[];
 	filter: string;
@@ -569,8 +585,10 @@ function OrdersList({
 	onRetry: () => void;
 	onMore: () => void;
 	onPayment: (order: SalesOrder) => void;
+	onChanged: () => void;
 }) {
 	const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+	const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
 	return (
 		<section className="orders-workspace__list" aria-labelledby="orders-list-title">
 			<h2 id="orders-list-title">Lista de pedidos</h2>
@@ -617,6 +635,19 @@ function OrdersList({
 					</strong>
 					{item.totalAmount < item.amountPaid && (
 						<p role="alert">Montos por conciliar.</p>
+					)}
+					<button
+						className="btn-secondary"
+						type="button"
+						aria-expanded={detailOrderId === item.id}
+						onClick={() =>
+							setDetailOrderId((current) => (current === item.id ? null : item.id))
+						}
+					>
+						{detailOrderId === item.id ? 'Ocultar detalle' : 'Ver detalle y pagos'}
+					</button>
+					{detailOrderId === item.id && (
+						<OrderDetailPanel orderId={item.id} onChanged={onChanged} />
 					)}
 					{['deposit_paid', 'paid'].includes(item.status) && (
 						<>
