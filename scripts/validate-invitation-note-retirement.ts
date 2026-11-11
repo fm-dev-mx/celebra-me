@@ -49,8 +49,9 @@ function main(): void {
 		'diff',
 		'--name-only',
 		'--diff-filter=D',
-		baseSha,
-		headSha,
+		// Three dots: only deletions the head made since the merge base. A back-merge of main into
+		// develop would otherwise report every note develop added after the release as deleted.
+		`${baseSha}...${headSha}`,
 		'--',
 		INVITATION_NOTES_DIR,
 	])
