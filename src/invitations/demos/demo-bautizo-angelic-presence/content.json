@@ -242,6 +242,7 @@
     ],
     "envelope": {
         "disabled": false,
+        "revealVariant": "celestial-letter",
         "sealStyle": "wax",
         "sealInitials": "M·S",
         "microcopy": "Bautismo de María"

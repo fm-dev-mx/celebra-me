@@ -305,6 +305,7 @@
     ],
     "envelope": {
         "disabled": false,
+        "revealVariant": "storybook-butterflies",
         "sealStyle": "wax",
         "sealIcon": "wax-organic",
         "sealInitials": "I·R",
