@@ -3,7 +3,7 @@
  *
  * Meta Pixel is never loaded before marketing consent is granted.
  * The fbevents.js script is injected dynamically only after:
- *   1. production environment
+ *   1. production environment (server-declared `data-meta-deploy="production"`; fail-closed)
  *   2. route policy allows Meta
  *   3. PUBLIC_META_PIXEL_ID is set and PUBLIC_META_PIXEL_ENABLED=true
  *   4. marketing consent === true
@@ -100,8 +100,14 @@ function routeAllowsMeta(): boolean {
 	return classifyTrackingRoute(window.location.pathname).metaAllowed;
 }
 
+/**
+ * Fail-closed environment lock, independent of PUBLIC_META_PIXEL_ENABLED: the Pixel only works
+ * when the server declared a Production deployment (`data-meta-deploy`). Preview, local or an
+ * undeclared environment never reach the real Pixel, even with the flag set to true.
+ */
 function environmentAllowsMeta(): boolean {
-	return document.body.dataset.metaDeliveryBlocked !== 'true';
+	const { metaDeliveryBlocked, metaDeploy } = document.body.dataset;
+	return metaDeliveryBlocked !== 'true' && metaDeploy === 'production';
 }
 
 /** Owner devices carry the internal-traffic cookie (super_admin sign-in or the /interno link). */
@@ -483,6 +489,7 @@ const SAFE_META_KEYS = new Set([
 	'currency',
 ]);
 
+/** Same default as DEFAULT_FALLBACK_ESTIMATED_LEAD_VALUE_MXN in the server estimate. */
 const FALLBACK_ESTIMATED_LEAD_VALUE_MXN = 150;
 
 function resolveClientEstimatedLeadValue(explicitValue?: unknown): number {

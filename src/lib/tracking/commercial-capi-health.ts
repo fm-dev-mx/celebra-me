@@ -55,6 +55,12 @@ export function buildCapiHealthChecks(
 			helper: 'Diagnóstico técnico para revisión del propietario; no repara ni reenvía eventos.',
 		},
 		{
+			label: 'Liquidaciones sin evento',
+			status: (summary.settledOrdersWithoutEvent?.length ?? 0) > 0 ? 'attention' : 'correct',
+			value: count(summary.settledOrdersWithoutEvent?.length ?? 0),
+			helper: 'Pedidos liquidados sin evento de liquidación en la cola; no reenvía eventos.',
+		},
+		{
 			label: 'Reclamos vencidos',
 			status: summary.staleSendingEvents > 0 ? 'error' : 'correct',
 			value: count(summary.staleSendingEvents),

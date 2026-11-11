@@ -77,7 +77,7 @@ const {
 
 const deployEnvironment = readHostedDeployEnvironment();
 const isProductionRuntime = deployEnvironment === 'production';
-const isMetaDeliveryBlocked = deployEnvironment === 'preview';
+const isMetaDeliveryBlocked = !isProductionRuntime;
 
 const resolvedImageSrc = typeof image === 'string' ? image : image.src;
 
@@ -106,7 +106,12 @@ const showLeadCapture = routePolicy.routeClass === 'commercial' || routePolicy.r
 
 // Cookieless Cloudflare Web Analytics: no consent gate; off when the site token is blank.
 const webAnalyticsBeacon = resolveWebAnalyticsBeacon(getWebAnalyticsToken());
-const estimatedLeadValue = loadCommercialTracking ? await getEstimatedLeadValue() : undefined;
+// The browser Lead/Contact carries the same value the server outbox row stores for that event, so
+// it is rendered wherever the Pixel can run, not only where first-party tracking loads.
+const estimatedLeadValue =
+	isProductionRuntime && (routePolicy.internalAllowed || routePolicy.metaAllowed)
+		? await getEstimatedLeadValue()
+		: undefined;
 ---
 <!doctype html>
 <html lang="es">
@@ -180,7 +185,8 @@ const estimatedLeadValue = loadCommercialTracking ? await getEstimatedLeadValue(
 		data-theme-mode={themeMode}
 		data-tracking-route-class={loadCommercialTracking ? routePolicy.routeClass : undefined}
 		data-meta-delivery-blocked={isMetaDeliveryBlocked ? 'true' : undefined}
-		data-meta-estimated-lead-value={loadCommercialTracking && estimatedLeadValue ? String(estimatedLeadValue) : undefined}
+		data-meta-deploy={deployEnvironment ?? undefined}
+		data-meta-estimated-lead-value={estimatedLeadValue ? String(estimatedLeadValue) : undefined}
 	>
 		{!hideHeader && <Header transparentOnHero={transparentHeader} />}
 

@@ -21,6 +21,7 @@ import {
 	processPendingMetaConversionEvents,
 	sanitizeProviderError,
 } from '@/lib/commercial/meta-capi/service';
+import { enqueueOrderSettledEvent } from '@/lib/commercial/meta-capi/order-settled';
 
 const mockRestRequest = supabaseRestRequest as jest.MockedFunction<typeof supabaseRestRequest>;
 
@@ -1138,6 +1139,7 @@ describe('Meta CAPI browser events', () => {
 			.mockResolvedValueOnce([salesStageRow()])
 			// The lead card is not a browser hit, so a session without user agent still delivers.
 			.mockResolvedValueOnce([sessionRow(true, null)])
+			.mockResolvedValueOnce([])
 			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
 		mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ events_received: 1 }) });
 
@@ -1156,6 +1158,113 @@ describe('Meta CAPI browser events', () => {
 		});
 		expect(event.custom_data).not.toHaveProperty('value');
 		expect(event.event_source_url).toBeUndefined();
+	});
+
+	it('skips the qualified-lead Lead when the form Lead already reached Meta', async () => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([salesStageRow()])
+			.mockResolvedValueOnce([sessionRow(true, null)])
+			.mockResolvedValueOnce([{ id: 'form-lead-outbox-id' }])
+			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+
+		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('skipped');
+		expect(mockFetch).not.toHaveBeenCalled();
+		const duplicateQuery = pathOfCall(3);
+		expect(duplicateQuery).toContain('lead_id=eq.lead-id');
+		expect(duplicateQuery).toContain('event_name=eq.Lead');
+		expect(duplicateQuery).toContain('trigger_status=eq.form_submitted');
+		expect(duplicateQuery).toContain('id=neq.outbox-id');
+		expect(mockRestRequest).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				body: expect.objectContaining({ p_error_code: 'LEAD_ALREADY_SENT' }),
+			}),
+		);
+	});
+
+	it('skips a form Lead when the qualified-lead Lead already reached Meta', async () => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([
+				salesStageRow({
+					event_id: 'form-event-id',
+					trigger_status: 'form_submitted',
+					session_id: 'session-id',
+					event_source_path: '/',
+				}),
+			])
+			.mockResolvedValueOnce([sessionRow(true)])
+			.mockResolvedValueOnce([{ id: 'crm-lead-outbox-id' }])
+			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+
+		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('skipped');
+		expect(mockFetch).not.toHaveBeenCalled();
+		expect(pathOfCall(3)).toContain('trigger_status=eq.crm_lead_qualified');
+	});
+
+	it('sends OrderSettled as a custom order event without a value', async () => {
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([
+				{
+					id: 'outbox-id',
+					event_name: 'OrderSettled',
+					event_id: 'order-settled:order-id',
+					trigger_status: 'order_settled',
+					customer_id: 'customer-id',
+					created_at: '2026-11-10T18:00:00.000Z',
+					value: null,
+					currency: 'MXN',
+					customers: { email: null, phone_e164: '+526681112233' },
+					sales_orders: {
+						session_id: 'session-id',
+						deposit_paid_at: '2026-11-01T12:00:00.000Z',
+					},
+					leads: { consent_marketing: true },
+				},
+			])
+			.mockResolvedValueOnce([sessionRow(true)])
+			.mockResolvedValueOnce([{ id: 'outbox-id' }]);
+		mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ events_received: 1 }) });
+
+		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('sent');
+
+		const event = JSON.parse(mockFetch.mock.calls[0][1].body).data[0];
+		expect(event.event_name).toBe('OrderSettled');
+		expect(event.event_id).toBe('order-settled:order-id');
+		expect(event.event_time).toBe(Math.floor(Date.parse('2026-11-10T18:00:00.000Z') / 1000));
+		expect(event.custom_data?.value).toBeUndefined();
+	});
+
+	it('queues OrderSettled once per order by its deterministic event ID', async () => {
+		mockRestRequest.mockResolvedValueOnce([{ id: 'settled-outbox-id' }]);
+		await expect(
+			enqueueOrderSettledEvent({
+				orderId: 'order-id',
+				customerId: 'customer-id',
+				leadId: null,
+			}),
+		).resolves.toBe('settled-outbox-id');
+		expect(mockRestRequest).toHaveBeenCalledWith(
+			expect.objectContaining({
+				pathWithQuery: 'meta_conversion_events?on_conflict=event_id&select=id',
+				prefer: 'resolution=ignore-duplicates,return=representation',
+				body: expect.objectContaining({
+					event_name: 'OrderSettled',
+					event_id: 'order-settled:order-id',
+					trigger_status: 'order_settled',
+					value: null,
+				}),
+			}),
+		);
+		mockRestRequest.mockResolvedValueOnce([]);
+		await expect(
+			enqueueOrderSettledEvent({
+				orderId: 'order-id',
+				customerId: 'customer-id',
+				leadId: null,
+			}),
+		).resolves.toBeNull();
 	});
 
 	it('sends a confirmed order as a chat Purchase valued at the package in MXN', async () => {

@@ -10,6 +10,7 @@ import {
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { randomUUID } from 'node:crypto';
 import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
+import { enqueueOrderSettledEvent } from '@/lib/commercial/meta-capi/order-settled';
 import { emitCommercialTrackingEvent } from '@/lib/commercial/commercial-tracking';
 import { runAfterResponse, type AfterResponseContext } from '@/lib/server/platform-request';
 import { safeErr } from '@/lib/server/safe-error';
@@ -383,6 +384,22 @@ export async function markCommercialOrderDepositPaid(
 					amountPaid: input.amountPaid,
 				}),
 			{ label: 'orders-service:deposit_paid' },
+		);
+	}
+	// A deposit that covers the total settles the order: queue its own event (no value, the
+	// Purchase already carried the total). Idempotent by order, so a re-run never sends it twice.
+	if (order.amountPaid >= order.totalAmount && !order.isPastSale) {
+		runAfterResponse(
+			options.after,
+			async () => {
+				const settledId = await enqueueOrderSettledEvent({
+					orderId: order.id,
+					customerId: order.customerId,
+					leadId: order.leadId ?? null,
+				});
+				if (settledId) await deliverMetaConversionEvent(settledId);
+			},
+			{ label: `orders-service:order-settled:${order.id}` },
 		);
 	}
 	const leadId = order.leadId;
