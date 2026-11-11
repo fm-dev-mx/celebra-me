@@ -175,7 +175,13 @@ export async function prepareCompletePage(
 			document.body.style.overflowY = 'visible';
 			document.documentElement.style.overflowY = 'visible';
 		}
-		for (const image of document.images) image.loading = 'eager';
+		for (const image of document.images) {
+			image.loading = 'eager';
+			// A tall complete-page raster can evict decoded images, and Chromium then paints
+			// an async-decoding image as an empty box until its re-decode lands, so one PNG
+			// shows the photo and the next a blank card. Sync decoding makes raster wait for it.
+			image.decoding = 'sync';
+		}
 	});
 	const sections = page.locator(
 		'[data-section-id], .invitation-section-wrapper[data-section-kind], astro-island, img, footer, .gift-card',
