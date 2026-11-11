@@ -58,6 +58,8 @@ const content: CanonicalEventContentInput = {
 	envelope: {
 		disabled: false,
 		variant: 'storybook-blush',
+		// The night envelope opens the cherry disco night; the profile recolors it to wine and silver.
+		revealVariant: 'night-envelope',
 		sealStyle: 'wax',
 		sealIcon: 'wax-monogram',
 		sealInitials: 'V',
@@ -137,7 +139,7 @@ const content: CanonicalEventContentInput = {
 				type: 'reception',
 				venueEvent: 'Recepción',
 				venueName: 'Salón Las Barricas',
-				address: 'Cto. Juan Pablo Segundo 2455, Col. La Hacienda, Puebla, Pue.',
+				address: 'Cto. Juan Pablo II 2455, Col. La Hacienda, Puebla, Pue.',
 				city: 'Puebla',
 				date: '2027-01-09',
 				time: '19:30',
