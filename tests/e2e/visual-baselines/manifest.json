@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-11T03:08:57.759Z",
+    "generatedAt": "2026-11-11T05:27:04.600Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -2447,9 +2447,9 @@
             "preset": "storybook-lilac",
             "viewport": "mobile",
             "file": "pages/invitation-xv-yireh-ana-mobile.png",
-            "sha256": "a9f36c06e480bb946c991eb87eb6ab0fb24eefcb07edeac4081d50a082abbe9c",
-            "contentHash": "75ecbe5d2dae1b1e4782b18efd0bd08f6014d313168958b8134a8d93b5b262eb",
-            "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
+            "sha256": "c66af351dddff86eb38aed2c9a84a222b18cf62c154da956c2a937b33d614de0",
+            "contentHash": "2cb76b1eaf0761605da62fcbb20e194144ea06f6a952c36523eed76617f3c692",
+            "assetHash": "e8ad16d04ab5ecbcd79751fbf09a68d833a34fe974c210d9716bfa2d5be16ad5",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2459,9 +2459,9 @@
             "preset": "storybook-lilac",
             "viewport": "desktop",
             "file": "pages/invitation-xv-yireh-ana-desktop.png",
-            "sha256": "70339c1693e8b096e4910ce372b32851f1bed5df1827e7d8c54a56b30dd12f80",
-            "contentHash": "75ecbe5d2dae1b1e4782b18efd0bd08f6014d313168958b8134a8d93b5b262eb",
-            "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
+            "sha256": "2e7d376b301da926ad1b5f528f86ce74d6d676e8294cec17d6362a514cbf5f88",
+            "contentHash": "2cb76b1eaf0761605da62fcbb20e194144ea06f6a952c36523eed76617f3c692",
+            "assetHash": "e8ad16d04ab5ecbcd79751fbf09a68d833a34fe974c210d9716bfa2d5be16ad5",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2681,9 +2681,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "4ec2e73a4d46c7924d67c4469af0216709c98e86",
+    "referenceSha": "91714305d6d4a8ff1e8e630140f501a8eb6efec5",
     "variantManifest": {
-        "generatedAt": "2026-11-11T03:08:57.759Z",
+        "generatedAt": "2026-11-11T05:27:04.600Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4669,10 +4669,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "4ec2e73a4d46c7924d67c4469af0216709c98e86"
+        "referenceSha": "91714305d6d4a8ff1e8e630140f501a8eb6efec5"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-11T03:08:57.764Z",
+        "generatedAt": "2026-11-11T05:27:04.605Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -5159,9 +5159,9 @@
                 "preset": "storybook-lilac",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-yireh-ana-mobile.png",
-                "sha256": "a9f36c06e480bb946c991eb87eb6ab0fb24eefcb07edeac4081d50a082abbe9c",
-                "contentHash": "75ecbe5d2dae1b1e4782b18efd0bd08f6014d313168958b8134a8d93b5b262eb",
-                "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
+                "sha256": "c66af351dddff86eb38aed2c9a84a222b18cf62c154da956c2a937b33d614de0",
+                "contentHash": "2cb76b1eaf0761605da62fcbb20e194144ea06f6a952c36523eed76617f3c692",
+                "assetHash": "e8ad16d04ab5ecbcd79751fbf09a68d833a34fe974c210d9716bfa2d5be16ad5",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -5171,9 +5171,9 @@
                 "preset": "storybook-lilac",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-yireh-ana-desktop.png",
-                "sha256": "70339c1693e8b096e4910ce372b32851f1bed5df1827e7d8c54a56b30dd12f80",
-                "contentHash": "75ecbe5d2dae1b1e4782b18efd0bd08f6014d313168958b8134a8d93b5b262eb",
-                "assetHash": "9c7ab6d1ce9a0ce95bdfd6f3b5ea6810b96b7cbe6888c624f45faa63a91c4936",
+                "sha256": "2e7d376b301da926ad1b5f528f86ce74d6d676e8294cec17d6362a514cbf5f88",
+                "contentHash": "2cb76b1eaf0761605da62fcbb20e194144ea06f6a952c36523eed76617f3c692",
+                "assetHash": "e8ad16d04ab5ecbcd79751fbf09a68d833a34fe974c210d9716bfa2d5be16ad5",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -5393,9 +5393,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "4ec2e73a4d46c7924d67c4469af0216709c98e86"
+        "referenceSha": "91714305d6d4a8ff1e8e630140f501a8eb6efec5"
     },
-    "candidateManifestSha256": "3a62f59d9ec16bf5275448685a2f61fab46e0458d580b11a0093ea52b0c9723f",
-    "acceptedFromCommit": "4ec2e73a4d46c7924d67c4469af0216709c98e86",
-    "acceptedAt": "2026-11-11T03:09:38.006Z"
+    "candidateManifestSha256": "6ad030357aa9b8e96b4271f8dabec77bc8bf581dcb6fd8b2ecbbdd1b6d6b9b1f",
+    "acceptedFromCommit": "91714305d6d4a8ff1e8e630140f501a8eb6efec5",
+    "acceptedAt": "2026-11-11T06:02:07.619Z"
 }
