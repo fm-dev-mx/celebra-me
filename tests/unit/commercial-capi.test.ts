@@ -1174,7 +1174,29 @@ describe('Meta CAPI browser events', () => {
 		expect(duplicateQuery).toContain('lead_id=eq.lead-id');
 		expect(duplicateQuery).toContain('event_name=eq.Lead');
 		expect(duplicateQuery).toContain('trigger_status=eq.form_submitted');
+		expect(duplicateQuery).toContain('status=in.(pending,sending,failed,sent,ambiguous)');
 		expect(duplicateQuery).toContain('id=neq.outbox-id');
+		expect(mockRestRequest).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				body: expect.objectContaining({ p_error_code: 'LEAD_ALREADY_SENT' }),
+			}),
+		);
+	});
+
+	it('skips the qualified-lead Lead when the form Lead CAPI row is pending or failed (Pixel already sent)', async () => {
+		// When the form Lead was submitted, the browser Pixel already sent the Lead to Meta.
+		// Even if the CAPI outbox row is pending or failed, the CRM Lead must be skipped to avoid
+		// sending a duplicate Lead with a different event_id.
+		mockRestRequest
+			.mockResolvedValueOnce([{ id: 'crm-outbox-id', attempt_count: 1 }])
+			.mockResolvedValueOnce([salesStageRow({ id: 'crm-outbox-id' })])
+			.mockResolvedValueOnce([sessionRow(true, null)])
+			// Duplicate query finds the form_submitted row in pending/failed status:
+			.mockResolvedValueOnce([{ id: 'form-lead-pending-id' }])
+			.mockResolvedValueOnce([{ id: 'crm-outbox-id' }]);
+
+		await expect(deliverMetaConversionEvent('crm-outbox-id')).resolves.toBe('skipped');
+		expect(mockFetch).not.toHaveBeenCalled();
 		expect(mockRestRequest).toHaveBeenLastCalledWith(
 			expect.objectContaining({
 				body: expect.objectContaining({ p_error_code: 'LEAD_ALREADY_SENT' }),
@@ -1200,6 +1222,68 @@ describe('Meta CAPI browser events', () => {
 		await expect(deliverMetaConversionEvent('outbox-id')).resolves.toBe('skipped');
 		expect(mockFetch).not.toHaveBeenCalled();
 		expect(pathOfCall(3)).toContain('trigger_status=eq.crm_lead_qualified');
+		expect(pathOfCall(3)).toContain('status=in.(sent,ambiguous)');
+	});
+
+	it('resolves concurrent form Lead and CRM Lead deterministically with form Lead winning', async () => {
+		// Both workers have claimed their rows (status: sending).
+		// Form Lead query for CRM Lead checks sent/ambiguous -> returns empty (CRM is only sending).
+		// CRM Lead query for Form Lead checks pending/sending/failed/sent/ambiguous -> finds Form Lead (sending).
+		// Form Lead delivers to Meta (sent), CRM Lead skips (skipped). Zero dropped leads.
+		const formRow = salesStageRow({
+			id: 'form-outbox-id',
+			event_id: 'form-event-id',
+			trigger_status: 'form_submitted',
+			session_id: 'session-id',
+			event_source_path: '/',
+		});
+		const crmRow = salesStageRow({
+			id: 'crm-outbox-id',
+			event_id: 'crm-lead-stage:lead-id:qualified',
+			trigger_status: 'crm_lead_qualified',
+			session_id: null,
+			event_source_path: null,
+		});
+
+		mockRestRequest.mockImplementation(async (options: any) => {
+			const path = options?.pathWithQuery ?? '';
+			// Claim RPC
+			if (path.includes('rpc/claim_meta_conversion_event')) {
+				const id = options.body?.p_event_id;
+				return [{ id, attempt_count: 1 }];
+			}
+			// Fetch details
+			if (path.includes('meta_conversion_events?id=eq.form-outbox-id')) return [formRow];
+			if (path.includes('meta_conversion_events?id=eq.crm-outbox-id')) return [crmRow];
+			// Session details
+			if (path.includes('visitor_sessions')) return [sessionRow(true)];
+			// Duplicate queries
+			if (path.includes('trigger_status=eq.crm_lead_qualified')) {
+				// Form worker checking if CRM Lead is sent/ambiguous: CRM is only sending, so 0 rows
+				return [];
+			}
+			if (path.includes('trigger_status=eq.form_submitted')) {
+				// CRM worker checking if Form Lead is pending/sending/failed/sent/ambiguous: Form is sending, so 1 row
+				return [{ id: 'form-outbox-id' }];
+			}
+			// Finalize claim
+			if (path.includes('rpc/finalize_meta_conversion_event')) {
+				return [{ id: options.body?.p_event_id }];
+			}
+			return [];
+		});
+		mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ events_received: 1 }) });
+
+		const [formResult, crmResult] = await Promise.all([
+			deliverMetaConversionEvent('form-outbox-id'),
+			deliverMetaConversionEvent('crm-outbox-id'),
+		]);
+
+		expect(formResult).toBe('sent');
+		expect(crmResult).toBe('skipped');
+		expect(mockFetch).toHaveBeenCalledTimes(1);
+		const sentEvent = JSON.parse(mockFetch.mock.calls[0][1].body).data[0];
+		expect(sentEvent.event_id).toBe('form-event-id');
 	});
 
 	it('sends OrderSettled as a custom order event without a value', async () => {
