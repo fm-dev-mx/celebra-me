@@ -58,7 +58,7 @@ describe('lane guard', () => {
 		expect(result.stderr).toContain('lane: unknown');
 	});
 
-	it.each(['f05-plataforma', 'f10-libre'])('refuses the retired %s checkout', (segment) => {
+	it.each(['f13-suelto'])('refuses the unlisted %s checkout', (segment) => {
 		const result = runGuard(createCheckout(segment));
 		expect(result.status).toBe(1);
 		expect(result.stderr).toContain('lane: unknown');
