@@ -3,7 +3,12 @@ import type { SalesOrder } from '@/lib/commercial/orders.repository';
 import type { Customer } from '@/components/dashboard/commercial/LeadCandidatesList';
 import CustomerOrdersBox from '@/components/dashboard/commercial/CustomerOrdersBox';
 import { CustomerReferralPanel } from '@/components/dashboard/commercial/ReferralFields';
-import { API, getData, postData } from '@/components/dashboard/orders/orders-api';
+import {
+	API,
+	OrdersMutationError,
+	getData,
+	postData,
+} from '@/components/dashboard/orders/orders-api';
 
 export const eventDateLabel = (value: string) =>
 	new Date(`${value}T12:00:00`).toLocaleDateString('es-MX', { dateStyle: 'long' });
@@ -46,6 +51,13 @@ export default function OrderCustomerDetail({
 			setMessage('Anticipo registrado.');
 			onChanged();
 		} catch (failure) {
+			// A rejected request (4xx) never ran: the retry gets a fresh key, not an idempotency conflict.
+			if (
+				failure instanceof OrdersMutationError &&
+				failure.status >= 400 &&
+				failure.status < 500
+			)
+				depositKey.current = '';
 			setError(failure instanceof Error ? failure.message : 'No se pudo guardar.');
 		} finally {
 			setMarking(false);

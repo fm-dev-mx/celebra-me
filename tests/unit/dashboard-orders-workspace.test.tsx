@@ -172,6 +172,27 @@ test('preselects the customer from the Comercial link', async () => {
 	window.history.pushState({}, '', '/');
 });
 
+test('keeps the link lead for its own customer and drops it for another', async () => {
+	window.history.pushState({}, '', '/dashboard/pedidos?cliente=customer-1&lead=lead-9');
+	get.mockImplementation(async (path) =>
+		ok(path.includes('/customers?') ? customer : { items: [], nextOffset: null }),
+	);
+	const other = { ...customer, id: 'customer-2', displayName: 'Otro cliente' };
+	post.mockImplementation(async (path) =>
+		ok(path.endsWith('/customers') ? { outcome: 'created', customer: other } : order),
+	);
+	render(<OrdersWorkspace />);
+	await screen.findByText('Paso 2: Pedido');
+	fireEvent.click(screen.getByText('Volver'));
+	await reachOrder();
+	fireEvent.click(screen.getByText('Crear pedido y continuar'));
+	await screen.findByText('Paso 3: Pago por transferencia');
+	const sent = post.mock.calls.find(([path]) => path.endsWith('/orders'))?.[1];
+	expect(sent).toEqual(expect.objectContaining({ customerId: 'customer-2' }));
+	expect(sent).not.toHaveProperty('leadId', 'lead-9');
+	window.history.pushState({}, '', '/');
+});
+
 test('loads the authoritative customer for a CM code and preserves lead attribution', async () => {
 	get.mockImplementation(async (path) =>
 		ok(

@@ -168,6 +168,8 @@ export default function OrdersWorkspace() {
 		}
 	}
 	function chooseCustomer(value: Customer) {
+		// A customer picked by hand drops the lead preset from the ?lead= link.
+		if (value.id !== customer?.id) presetLeadId.current = undefined;
 		setCustomer(value);
 		setStep(2);
 	}
@@ -273,6 +275,7 @@ export default function OrdersWorkspace() {
 		setRefresh((value) => value + 1);
 	}
 	function startNew() {
+		presetLeadId.current = undefined;
 		setTotal(String(getPackagePrice(packageId, getActiveCampaign())));
 		setDate(today());
 		setEventDate('');
