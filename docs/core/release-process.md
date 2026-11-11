@@ -280,13 +280,13 @@ are declared and where the evidence that each environment satisfies them is reco
 
 These checks read the manifest or produce its evidence:
 
-| Check                                   | When it runs                                          | What it refuses                                                                                          |
-| --------------------------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `tests/unit/data-prerequisites.test.ts` | Every CI run                                          | Undeclared `app_metadata` key reads in `src/`, `scripts/` or `supabase/functions/`; an invalid manifest. |
-| `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA   | A release whose manifest has a prerequisite without evidence for Production.                             |
-| `pnpm auth:check-login-alias`           | By hand, against one environment, to produce evidence | Nothing by itself: it reports whether the alias prerequisite holds (exit code 0) or not (exit code 1).   |
-| `pnpm auth:check-pending-passwords`     | By hand, against one environment, to produce evidence | Nothing by default: reports open password changes and age in days; fails with `--strict` when pending.   |
-| `pnpm auth:check-role-app-metadata`     | By hand, against one environment, to produce evidence | Reports whether Auth metadata matches application roles (exit code 0) or not (exit code 1).              |
+| Check                                   | When it runs                                             | What it refuses                                                                                          |
+| --------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `tests/unit/data-prerequisites.test.ts` | Every CI run                                             | Undeclared `app_metadata` key reads in `src/`, `scripts/` or `supabase/functions/`; an invalid manifest. |
+| `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA      | A release whose manifest has a prerequisite without evidence for Production.                             |
+| `pnpm auth:check-login-alias`           | Every Preview and Production release upload, and by hand | A release while `legacyOnly` or `duplicates` is not 0, or the directory is empty (exit code 1).          |
+| `pnpm auth:check-pending-passwords`     | By hand, against one environment, to produce evidence    | Nothing by default: reports open password changes and age in days; fails with `--strict` when pending.   |
+| `pnpm auth:check-role-app-metadata`     | By hand, against one environment, to produce evidence    | Reports whether Auth metadata matches application roles (exit code 0) or not (exit code 1).              |
 
 The `auth-role-app-metadata` prerequisite compares every Auth account's `app_metadata.role` with
 `public.app_user_roles.role`, joined by `user_id`. The table is authoritative; its insert/update
@@ -496,6 +496,16 @@ critical backup stores the previous `auth.users` metadata. After apply the plan 
 target rows and `pnpm auth:check-login-alias` must exit with code 0 and report `legacyOnly: 0`;
 alias login returns within 30 seconds, once each Worker instance reloads its alias directory. Keep
 administrative alias changes paused between plan and apply.
+
+The check also runs on every release, so an account created later with its alias only in
+`user_metadata` is caught: `.github/workflows/deploy.yml` (Preview) and
+`.github/workflows/deploy-production.yml` (Production upload) run `pnpm auth:check-login-alias`
+before publishing the Worker version and fail while `legacyOnly` or `duplicates` is not 0. The step
+is read-only and prints totals only. Preview reads `vars.PUBLIC_SUPABASE_URL` with the
+`PREVIEW_SUPABASE_SERVICE_ROLE_KEY` secret; Production derives its URL from
+`PRODUCTION_SUPABASE_REF` and uses the `PRODUCTION_SUPABASE_SERVICE_ROLE_KEY` secret. Both secrets
+must exist before the workflow runs. Account creation (`createAdminUser`) already writes
+`app_metadata.login_alias`.
 
 If the backfill evidence is unavailable, keep activation blocked. Record the target, successful
 migration verification and ordering in both the application PR and release handoff. There is no
