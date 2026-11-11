@@ -105,7 +105,9 @@
 		content: '';
 		position: absolute;
 		inset: 0 0 auto;
-		z-index: 0;
+
+		// A preset may lift the ramp over an opaque incoming section's top padding.
+		z-index: var(--intersection-blend-layer, 0);
 		height: var(--intersection-depth, var(--intersection-depth-fallback));
 		background: var(--intersection-blend, var(--intersection-blend-fallback));
 		pointer-events: none;

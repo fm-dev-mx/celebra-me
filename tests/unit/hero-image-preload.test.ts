@@ -6,7 +6,7 @@ const hosted = `https://media.celebra-me.com/invitations/xv/america/hero-${sha}.
 
 describe('hero image preload', () => {
 	it('preloads a hosted portrait with the srcset and sizes of its <img>', () => {
-		for (const variant of ['framed-portrait', 'bleed-portrait']) {
+		for (const variant of ['framed-portrait', 'bleed-portrait', 'cased-portrait']) {
 			expect(
 				buildHeroImagePreloads({
 					variant,

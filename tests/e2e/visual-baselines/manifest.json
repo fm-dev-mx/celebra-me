@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-11T01:08:56.522Z",
+    "generatedAt": "2026-11-11T03:08:57.759Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,15 +12,15 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-        "cssSha256": "0a9dc6acb8f6961e5750e14feb32e9c9720f0137381a796cd8eec1b8a461135c",
+        "cssSha256": "2c6a38a2a43a726fba0a3c21486c64452aca4e3ae84d5dfaacc93138b15e9f67",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 196,
-    "matrixHash": "0b1f480be44212be293c9319b48ccee0aaf6931e2d80e9ae96c0dff7bbab706e",
+    "totalCaptures": 198,
+    "matrixHash": "fd7585fc571099e8bcda7e3e58667348894bef52ca72a842143799abfa56c7b6",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -77,6 +77,34 @@
             "file": "jewelry-box-desktop-hero-framed-portrait.png",
             "sha256": "b29e0e0c042f6897e75b7be7f91dc59f9d231bd3dbb5baf15d6b23db93432d6b",
             "contentHash": "bd4bebeb14fba42475ea9035b6a420489853455ae0e0c6ab43b8d54e4c5de7fa",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "hero",
+            "variant": "cased-portrait",
+            "preset": "jewelry-box",
+            "viewport": "mobile",
+            "cssOwner": "src/styles/themes/sections/hero/_cased-portrait.scss",
+            "fixtureIdentity": "synthetic:hero.cased-portrait",
+            "file": "jewelry-box-mobile-hero-cased-portrait.png",
+            "sha256": "9039c84815f9a6568fcb3a62f9781a2d2f90cfacca82cc5dc4e3381fb397ab4c",
+            "contentHash": "39abc8eea3ebfd443aa0018d6e0590abbcbfc77a28397d52acbef37ef21174cb",
+            "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "variant",
+            "section": "hero",
+            "variant": "cased-portrait",
+            "preset": "jewelry-box",
+            "viewport": "desktop",
+            "cssOwner": "src/styles/themes/sections/hero/_cased-portrait.scss",
+            "fixtureIdentity": "synthetic:hero.cased-portrait",
+            "file": "jewelry-box-desktop-hero-cased-portrait.png",
+            "sha256": "d761e8f5234b5908e22ae95a0c8967c95ea669ec9b2bd6954409d0db38349aff",
+            "contentHash": "39abc8eea3ebfd443aa0018d6e0590abbcbfc77a28397d52acbef37ef21174cb",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
         },
@@ -2587,9 +2615,9 @@
             "preset": "enchanted-rose",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-enchanted-rose-mobile.png",
-            "sha256": "08492a877ee87582299bcd5595b847e9257117caf567171f8ac5488961382ee2",
-            "contentHash": "389b0688a593c2ebb2ecaa388975cd5543278082dd5d92afeb296525b7887fb1",
-            "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
+            "sha256": "88c3649e0d28b20a662fbd842756ab5e9041172e98cadaeabd1dd50e5b158a97",
+            "contentHash": "3eab93e5168dcb192cae9ba9dfaa463b4d0f7904ccae0c63e66b887c26a74349",
+            "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2599,9 +2627,9 @@
             "preset": "enchanted-rose",
             "viewport": "desktop",
             "file": "pages/demo-xv-demo-xv-enchanted-rose-desktop.png",
-            "sha256": "13b259cb86af17863569708bc3c19862b44d8f115525006778c1a31179bdb2e3",
-            "contentHash": "389b0688a593c2ebb2ecaa388975cd5543278082dd5d92afeb296525b7887fb1",
-            "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
+            "sha256": "f896b8d4af8554f0c67873b58aad2e9ebcf24bbecf624d27965dcd021ce75eb5",
+            "contentHash": "3eab93e5168dcb192cae9ba9dfaa463b4d0f7904ccae0c63e66b887c26a74349",
+            "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2653,9 +2681,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "424ca74b16ae16e06c916618511a1e636b2e789c",
+    "referenceSha": "4ec2e73a4d46c7924d67c4469af0216709c98e86",
     "variantManifest": {
-        "generatedAt": "2026-11-11T01:08:56.522Z",
+        "generatedAt": "2026-11-11T03:08:57.759Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2668,15 +2696,15 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "0a9dc6acb8f6961e5750e14feb32e9c9720f0137381a796cd8eec1b8a461135c",
+            "cssSha256": "2c6a38a2a43a726fba0a3c21486c64452aca4e3ae84d5dfaacc93138b15e9f67",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 138,
-        "matrixHash": "34c29cd47d57b457991436f3799e758416eb1ba261eb37f7c3f7ea4ceb9bdb6e",
+        "totalCaptures": 140,
+        "matrixHash": "cf8808f6b3067f248498d2c4fc4fcf15cb1ec38401562ef944eaf64959fc5253",
         "baselinePreset": "jewelry-box",
         "crossPreset": "celestial-blue",
         "captures": [
@@ -2733,6 +2761,34 @@
                 "file": "jewelry-box-desktop-hero-framed-portrait.png",
                 "sha256": "b29e0e0c042f6897e75b7be7f91dc59f9d231bd3dbb5baf15d6b23db93432d6b",
                 "contentHash": "bd4bebeb14fba42475ea9035b6a420489853455ae0e0c6ab43b8d54e4c5de7fa",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "hero",
+                "variant": "cased-portrait",
+                "preset": "jewelry-box",
+                "viewport": "mobile",
+                "cssOwner": "src/styles/themes/sections/hero/_cased-portrait.scss",
+                "fixtureIdentity": "synthetic:hero.cased-portrait",
+                "file": "jewelry-box-mobile-hero-cased-portrait.png",
+                "sha256": "9039c84815f9a6568fcb3a62f9781a2d2f90cfacca82cc5dc4e3381fb397ab4c",
+                "contentHash": "39abc8eea3ebfd443aa0018d6e0590abbcbfc77a28397d52acbef37ef21174cb",
+                "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "variant",
+                "section": "hero",
+                "variant": "cased-portrait",
+                "preset": "jewelry-box",
+                "viewport": "desktop",
+                "cssOwner": "src/styles/themes/sections/hero/_cased-portrait.scss",
+                "fixtureIdentity": "synthetic:hero.cased-portrait",
+                "file": "jewelry-box-desktop-hero-cased-portrait.png",
+                "sha256": "d761e8f5234b5908e22ae95a0c8967c95ea669ec9b2bd6954409d0db38349aff",
+                "contentHash": "39abc8eea3ebfd443aa0018d6e0590abbcbfc77a28397d52acbef37ef21174cb",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
             },
@@ -4613,10 +4669,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "424ca74b16ae16e06c916618511a1e636b2e789c"
+        "referenceSha": "4ec2e73a4d46c7924d67c4469af0216709c98e86"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-11T01:08:56.527Z",
+        "generatedAt": "2026-11-11T03:08:57.764Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4629,7 +4685,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "0a9dc6acb8f6961e5750e14feb32e9c9720f0137381a796cd8eec1b8a461135c",
+            "cssSha256": "2c6a38a2a43a726fba0a3c21486c64452aca4e3ae84d5dfaacc93138b15e9f67",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -5271,9 +5327,9 @@
                 "preset": "enchanted-rose",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-enchanted-rose-mobile.png",
-                "sha256": "08492a877ee87582299bcd5595b847e9257117caf567171f8ac5488961382ee2",
-                "contentHash": "389b0688a593c2ebb2ecaa388975cd5543278082dd5d92afeb296525b7887fb1",
-                "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
+                "sha256": "88c3649e0d28b20a662fbd842756ab5e9041172e98cadaeabd1dd50e5b158a97",
+                "contentHash": "3eab93e5168dcb192cae9ba9dfaa463b4d0f7904ccae0c63e66b887c26a74349",
+                "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -5283,9 +5339,9 @@
                 "preset": "enchanted-rose",
                 "viewport": "desktop",
                 "file": "pages/demo-xv-demo-xv-enchanted-rose-desktop.png",
-                "sha256": "13b259cb86af17863569708bc3c19862b44d8f115525006778c1a31179bdb2e3",
-                "contentHash": "389b0688a593c2ebb2ecaa388975cd5543278082dd5d92afeb296525b7887fb1",
-                "assetHash": "e2d11bbd599580514dadb9ca30543dd3c651b456641bbd8f592e6e2a2b73e3e5",
+                "sha256": "f896b8d4af8554f0c67873b58aad2e9ebcf24bbecf624d27965dcd021ce75eb5",
+                "contentHash": "3eab93e5168dcb192cae9ba9dfaa463b4d0f7904ccae0c63e66b887c26a74349",
+                "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -5337,9 +5393,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "424ca74b16ae16e06c916618511a1e636b2e789c"
+        "referenceSha": "4ec2e73a4d46c7924d67c4469af0216709c98e86"
     },
-    "candidateManifestSha256": "6b0780f3944a925a8b60c3ff03b0701cc85fb09e953aea15350ec7a51c9e03a4",
-    "acceptedFromCommit": "424ca74b16ae16e06c916618511a1e636b2e789c",
-    "acceptedAt": "2026-11-11T02:24:10.233Z"
+    "candidateManifestSha256": "3a62f59d9ec16bf5275448685a2f61fab46e0458d580b11a0093ea52b0c9723f",
+    "acceptedFromCommit": "4ec2e73a4d46c7924d67c4469af0216709c98e86",
+    "acceptedAt": "2026-11-11T03:09:38.006Z"
 }
