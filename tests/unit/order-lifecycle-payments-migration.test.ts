@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { evaluateMigrationSqlRisk } from '../../scripts/db/migration-sql-risk.ts';
 
 const migration = readFileSync(
 	resolve('supabase/migrations/20261110130000_order_lifecycle_payments.sql'),
@@ -90,10 +91,16 @@ describe('order lifecycle payments migration (SQL contract, without database exe
 		);
 	});
 
-	it('is registered as an expand migration in the rollout registry', () => {
+	it('is registered as a contract migration because it revokes on the objects it creates', () => {
 		const registry = JSON.parse(
 			readFileSync(resolve('supabase/migration-rollout-registry.json'), 'utf8'),
 		);
-		expect(registry.migrations['20261110130000'].phase).toBe('expand');
+		const entry = registry.migrations['20261110130000'];
+		expect(entry.phase).toBe('contract');
+		expect(entry.revokes.length).toBeGreaterThan(0);
+		expect(entry.requiresDeployedAppCapabilities).toBeUndefined();
+		expect(evaluateMigrationSqlRisk({ version: '20261110130000', registry }).blocked).toBe(
+			false,
+		);
 	});
 });
