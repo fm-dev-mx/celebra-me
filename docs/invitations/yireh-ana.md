@@ -68,7 +68,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | rsvpConfirmationMode | api                                                                                        | verified       | owner-session | Digital confirmation flow with personalized passes            |
 | rsvpGuestCap         | 1                                                                                          | inferred       | owner-session | Documented default pass cap                                   |
 | quote                | «Dando gracias a Dios por estos quince años, le invito a celebrar conmigo esta bendición.» | verified       | wa-export     | Round 1 quote, no closing line                                |
-| rsvpDeadline         | 2027-10-02                                                                                 | inferred       | owner-session | Proposal (3 weeks before); pending client approval            |
+| rsvpDeadline         | 2027-10-01                                                                                 | verified       | client        | Client request, round 2 (2026-11-10)                          |
 | gifts                | Legend only                                                                                | verified       | wa-export     | «Lo que disponga su corazón será bien recibido»               |
 
 ---
@@ -89,7 +89,6 @@ and one oak with a yellow ribbon on the cover) serve as production-authoritative
 - Father and godparents (not provided; the client asked for no godparents in round 1).
 - Virtues text: pending from the client. It goes in the family `sectionMessage` slot
   (`invitation.ts`, family block), replacing the current message; do not invent it.
-- RSVP deadline «2 de octubre de 2027» is a proposal awaiting client approval.
 - Program hours are client estimates (19:00 Recepción, 19:30 Acción de gracias, 21:00 Vals and
   toast, 21:30 Bocadillos y aguas frescas and dance, 24:00 Cierre); the copy says so. No alcohol.
 - Final art: the owner kept the v3 cover and the flower wax seal without initials (2026-10-30); the
@@ -173,7 +172,6 @@ None. Cover v4 and the oak seal were dropped by the owner on 2026-10-30.
 ```text
 // Cadence map — non-neutral boundaries only (3 joins, Bridge/Bridge/Climax)
 countdown: overlap from gifts (Bridge)
-interlude-after-countdown: overlap from countdown (Bridge)
 thankYou: arch from rsvp (Climax)
 ```
 
@@ -182,24 +180,23 @@ surface appears only for contrast, on the countdown and the closing.
 
 ### Scene plan (D9–D11)
 
-| section     | movement with scroll                                                       |
-| ----------- | -------------------------------------------------------------------------- |
-| hero        | **Pinned scene:** the cover closes in on the oak's ribbon; the text leaves |
-| quote       | The words appear one by one on clean paper                                 |
-| family      | The divider draws from the centre                                          |
-| itinerary   | **Pinned scene:** a yellow ribbon draws past each moment and ends in a bow |
-| gifts       | The gift line rises                                                        |
-| countdown   | The count unfolds into place                                               |
-| interlude 1 | Framed bouquet settles flat (after countdown)                              |
-| location    | The dress-code tag swings on its cord                                      |
-| interlude 2 | Envelope unfolds (after location)                                          |
-| pass / rsvp | The pass settles flat; the reply card rises                                |
-| thankYou    | The wreath unfolds into the night                                          |
+| section     | movement with scroll                                                                                 |
+| ----------- | ---------------------------------------------------------------------------------------------------- |
+| hero        | **Pinned scene:** the cover closes in on the oak's ribbon; the text leaves                           |
+| quote       | The words appear one by one on clean paper                                                           |
+| family      | The divider draws from the centre                                                                    |
+| itinerary   | **Pinned scene:** a ribbon draws past each moment, a small bow alights on each, and it ends in a bow |
+| gifts       | The gift line rises                                                                                  |
+| countdown   | The count unfolds into place                                                                         |
+| location    | The dress code sits in a plain framed card, like the cover's frame                                   |
+| pass / rsvp | The pass settles flat; the reply card rises                                                          |
+| thankYou    | The wreath unfolds into the night                                                                    |
 
 Two pinned scenes, never adjacent, about 28 % of the page height at 390×844 and 26 % at 1440×900.
 Reduced motion and browsers without scroll timelines show the resting layout. Motif roles: the bow
-ends the ribbon and crowns the reply card; flowers appear only on the cover, the bouquet and
-envelope stills and the closing wreath.
+ends the ribbon and crowns the reply card; small bows alight on each moment and fly with the
+send-off when the envelope opens; flowers appear only on the cover and the closing wreath. Round 2
+(2026-11-10) removed both interludes.
 
 ---
 
@@ -208,7 +205,7 @@ envelope stills and the closing wreath.
 | bucket                 | section keys                                                                            |
 | ---------------------- | --------------------------------------------------------------------------------------- |
 | requested              | location, itinerary (estimated hours), family (mother, brother), gifts line, dress code |
-| inferred / recommended | envelope, hero, quote, interludes (2), countdown, personalizedAccess, rsvp, thankYou    |
+| inferred / recommended | envelope, hero, quote, countdown, personalizedAccess, rsvp, thankYou                    |
 | client-provided        | music track: «Tie a Yellow Ribbon Round the Ole Oak Tree — Tony Orlando & Dawn»         |
 | omitted                | gallery (celebrant refusal of photos), father, godparents (client request), gown color  |
 | unresolved             | none                                                                                    |
@@ -239,7 +236,7 @@ Guest-facing copy: Voice in first person, «usted» register, formal and emotive
   - **status:** accepted
 - **concern:** Photographic treatment & art
   - **decision / evidence:** Hand-painted botanical watercolor; no human figures; oak tree with
-    ribbon on the cover; 3 illustrated interludes
+    ribbon on the cover; no interludes (removed in round 2)
   - **status:** accepted
 - **concern:** Section cadence and surface hierarchy
   - **decision / evidence:** Pale lilac watercolor paper throughout, gold divider rules, keepsake
@@ -268,27 +265,23 @@ Source label: `source:watercolor-session` (opaque). Custom high-resolution botan
 artwork created specifically for this invitation, honoring the client's explicit request for no
 photographs.
 
-| source filename       | dims        | format | orientation | weight  | quality          | role         | duplicate   | processing                                      | derivative              |
-| --------------------- | ----------- | ------ | ----------- | ------- | ---------------- | ------------ | ----------- | ----------------------------------------------- | ----------------------- |
-| v3/hero-v3.webp       | 1080 x 1920 | WebP   | portrait    | 214 KiB | production-ready | hero         | no          | WebP, quality 82                                | hero-cover.webp         |
-| v3/hero-v3.webp       | 1920 x 1080 | WebP   | landscape   | 193 KiB | production-ready | hero desktop | intentional | Plate composed on wide paper                    | hero-cover-wide.webp    |
-| og/oak-ribbon         | 1200 x 630  | WebP   | landscape   | 77 KiB  | production-ready | og-share     | no          | Native 1.91:1 card; oak + ribbon in centre 630² | og-share.webp           |
-| v3/interlude-bouquet  | 1536 x 1024 | WebP   | landscape   | 124 KiB | production-ready | interlude 1  | no          | WebP                                            | interlude-bouquet.webp  |
-| v3/interlude-envelope | 1536 x 1024 | WebP   | landscape   | 44 KiB  | production-ready | interlude 2  | no          | Edges feathered into paper                      | interlude-envelope.webp |
-| v3/closing-wreath     | 1254 x 1254 | WebP   | square      | 156 KiB | production-ready | thank-you    | no          | Round medallion                                 | closing-wreath.webp     |
-| v3/bow                | 360 x 308   | WebP   | landscape   | 27 KiB  | production-ready | bow          | intentional | Trimmed alpha WebP; ribbon end and crest        | bow.webp                |
+| source filename   | dims        | format | orientation | weight  | quality          | role         | duplicate   | processing                                      | derivative           |
+| ----------------- | ----------- | ------ | ----------- | ------- | ---------------- | ------------ | ----------- | ----------------------------------------------- | -------------------- |
+| v3/hero-v3.webp   | 1080 x 1920 | WebP   | portrait    | 214 KiB | production-ready | hero         | no          | WebP, quality 82                                | hero-cover.webp      |
+| v3/hero-v3.webp   | 1920 x 1080 | WebP   | landscape   | 193 KiB | production-ready | hero desktop | intentional | Plate composed on wide paper                    | hero-cover-wide.webp |
+| og/oak-ribbon     | 1200 x 630  | WebP   | landscape   | 77 KiB  | production-ready | og-share     | no          | Native 1.91:1 card; oak + ribbon in centre 630² | og-share.webp        |
+| v3/closing-wreath | 1254 x 1254 | WebP   | square      | 156 KiB | production-ready | thank-you    | no          | Round medallion                                 | closing-wreath.webp  |
+| v3/bow            | 360 x 308   | WebP   | landscape   | 27 KiB  | production-ready | bow          | intentional | Trimmed alpha WebP; ribbon end and crest        | bow.webp             |
 
 ### Uniqueness table (required before READY_*)
 
-| role         | source                | derivative              | intentional multi-role?               |
-| ------------ | --------------------- | ----------------------- | ------------------------------------- |
-| hero         | v3/hero-v3.webp       | hero-cover.webp         | no                                    |
-| hero desktop | v3/hero-v3.webp       | hero-cover-wide.webp    | yes - wide composition of the cover   |
-| og-share     | og/oak-ribbon         | og-share.webp           | no - own painted card (square-safe)   |
-| interlude 1  | v3/interlude-bouquet  | interlude-bouquet.webp  | no                                    |
-| interlude 2  | v3/interlude-envelope | interlude-envelope.webp | no                                    |
-| thank-you    | v3/closing-wreath     | closing-wreath.webp     | no                                    |
-| bow          | v3/bow                | bow.webp                | yes - ribbon end and reply-card crest |
+| role         | source            | derivative           | intentional multi-role?               |
+| ------------ | ----------------- | -------------------- | ------------------------------------- |
+| hero         | v3/hero-v3.webp   | hero-cover.webp      | no                                    |
+| hero desktop | v3/hero-v3.webp   | hero-cover-wide.webp | yes - wide composition of the cover   |
+| og-share     | og/oak-ribbon     | og-share.webp        | no - own painted card (square-safe)   |
+| thank-you    | v3/closing-wreath | closing-wreath.webp  | no                                    |
+| bow          | v3/bow            | bow.webp             | yes - ribbon end and reply-card crest |
 
 Source label: source:editorial-watercolor-session. Generated botanical watercolor plates share one
 translucent pigment treatment. No client photos or human figures are included. Dimensions, formats
@@ -309,9 +302,10 @@ and weights above describe the delivered derivatives; source filenames are logic
 
 ## Preparation Readiness History
 
-| date       | readiness                  | helper basis                   | notes                                                           |
-| ---------- | -------------------------- | ------------------------------ | --------------------------------------------------------------- |
-| 2026-10-27 | `READY_WITH_PLACEHOLDERS`  | `evaluatePreparationReadiness` | Full intake and production watercolor assets ready (T417)       |
-| 2026-10-28 | `READY_WITH_PLACEHOLDERS`  | `evaluatePreparationReadiness` | v2 Level-América craft, synthetic data removed (T423)           |
-| 2026-10-29 | `READY_WITH_PLACEHOLDERS`  | `evaluatePreparationReadiness` | v3 stationery, client program, two scenes (T455)                |
-| 2026-10-30 | `READY_FOR_IMPLEMENTATION` | `evaluatePreparationReadiness` | Owner accepted v3 cover and flower seal; no placeholders remain |
+| date       | readiness                  | helper basis                   | notes                                                                      |
+| ---------- | -------------------------- | ------------------------------ | -------------------------------------------------------------------------- |
+| 2026-10-27 | `READY_WITH_PLACEHOLDERS`  | `evaluatePreparationReadiness` | Full intake and production watercolor assets ready (T417)                  |
+| 2026-10-28 | `READY_WITH_PLACEHOLDERS`  | `evaluatePreparationReadiness` | v2 Level-América craft, synthetic data removed (T423)                      |
+| 2026-10-29 | `READY_WITH_PLACEHOLDERS`  | `evaluatePreparationReadiness` | v3 stationery, client program, two scenes (T455)                           |
+| 2026-10-30 | `READY_FOR_IMPLEMENTATION` | `evaluatePreparationReadiness` | Owner accepted v3 cover and flower seal; no placeholders remain            |
+| 2026-11-10 | `READY_FOR_IMPLEMENTATION` | `evaluatePreparationReadiness` | Round 2: framed dress code, itinerary bows, no interludes, RSVP 1 Oct 2027 |
