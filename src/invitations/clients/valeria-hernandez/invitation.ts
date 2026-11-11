@@ -58,6 +58,8 @@ const content: CanonicalEventContentInput = {
 	envelope: {
 		disabled: false,
 		variant: 'storybook-blush',
+		// The night envelope opens the cherry disco night; the profile recolors it to wine and silver.
+		revealVariant: 'night-envelope',
 		sealStyle: 'wax',
 		sealIcon: 'wax-monogram',
 		sealInitials: 'V',

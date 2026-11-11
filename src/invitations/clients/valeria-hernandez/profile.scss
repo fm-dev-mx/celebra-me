@@ -79,6 +79,25 @@
 		--header-nav-cta-shadow: none;
 	}
 
+	// The night envelope turns into the cherry disco night: a deep wine field and paper, a silver
+	// mirror-ball seal, cherry sparks, and a cherry-paper letter.
+	.envelope-wrapper[data-variant='night-envelope'] {
+		--night-envelope-field: var(--color-rose-midnight);
+		--night-envelope-field-deep: rgb(32 4 12);
+		--night-envelope-ink: var(--color-leaf-silver);
+		--night-envelope-star: var(--color-night-blush);
+		--night-envelope-spark: rgb(var(--color-rose-glow-rgb) / 85%);
+		--night-envelope-paper: var(--color-rose-night);
+		--night-envelope-liner: var(--color-rose-midnight);
+		--night-envelope-wax-light: rgb(244 244 248);
+		--night-envelope-wax: rgb(196 198 206);
+		--night-envelope-wax-deep: rgb(118 120 132);
+		--night-envelope-wax-press: rgb(72 74 86);
+		--night-envelope-card-bg: var(--color-blush-paper);
+		--night-envelope-card-ink: var(--color-plum-ink);
+		--night-envelope-card-label-ink: var(--color-rose-deep);
+	}
+
 	// The reply steps are marked in cherry red with a soft cherry light instead of the amber lantern.
 	[data-rsvp-flow='steps'] {
 		--rsvp-steps-track: rgb(var(--color-plum-ink-rgb) / 14%);
