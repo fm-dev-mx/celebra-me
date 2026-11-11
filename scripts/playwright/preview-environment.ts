@@ -234,6 +234,16 @@ function validateReadOnlyPreviewTarget(env: NodeJS.ProcessEnv): PlaywrightRuntim
 	return { ...runtime, previewSupabaseProjectRef: validatePreviewSupabaseUrl(env) };
 }
 
+/**
+ * Approved Preview host, Preview Supabase project and Access service token, without the
+ * E2E execution guards. For tools that only sign in, such as `preview:admin:session`.
+ */
+export function validatePreviewTargetEnvironment(
+	env: NodeJS.ProcessEnv = process.env,
+): PlaywrightRuntimeEnvironment {
+	return validateReadOnlyPreviewTarget(env);
+}
+
 export function validateReadOnlyPreviewEnvironment(
 	env: NodeJS.ProcessEnv = process.env,
 ): PlaywrightRuntimeEnvironment {
