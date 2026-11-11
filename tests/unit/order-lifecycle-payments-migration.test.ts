@@ -20,7 +20,9 @@ describe('order lifecycle payments migration (SQL contract, without database exe
 		expect(migration).toMatch(
 			/alter table public\.sales_orders\s+add column if not exists event_date date/,
 		);
-		expect(migration).toContain('create table if not exists public.sales_order_payments');
+		// No if not exists: the initial revoke must never strip grants from a pre-existing table.
+		expect(migration).toContain('create table public.sales_order_payments (');
+		expect(migration).not.toContain('create table if not exists public.sales_order_payments');
 		expect(migration).toContain("check (kind in ('deposit', 'installment', 'settlement'))");
 		expect(migration).toMatch(/amount\s+numeric\(12, 2\) not null check \(amount > 0\)/);
 		expect(migration).toMatch(/idempotency_key\s+text not null unique/);
