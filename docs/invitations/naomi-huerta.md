@@ -63,7 +63,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | rsvpConfirmationMode  | api                                                                                          | verified       | wa-export     | Personal, non-transferable pass per guest; host panel                 |
 | rsvpGuestCap          | 2                                                                                            | inferred       | owner-session | Fallback only; per-guest passes govern seats                          |
 | rsvpWhatsappPhone     | —                                                                                            | not_applicable | owner-session | No WhatsApp confirmation flow                                         |
-| rsvpDeadline          | 2026-12-04 (viernes 4 de diciembre)                                                          | inferred       | owner-session | 14 days before (D4)                                                   |
+| rsvpDeadline          | 2026-11-20 (viernes 20 de noviembre)                                                         | confirmed      | owner         | Owner change on 2026-11-11 (T1208); was 4 Dec, 14 days before (D4)    |
 | gifts                 | Liverpool registry, event 60070167; cash box                                                 | verified       | wa-export     | Client-supplied 03-11 and 04-11; gift stays optional                  |
 | itinerary             | Misa 18:30, Recepción 20:15, Vals 21:00, Cena 22:00, Baile 23:00, Cierre 02:00               | verified       | wa-export     | Confirmed by the client 04-11                                         |
 | musicUrl              | Client song (YouTube reference)                                                              | verified       | wa-export     | Hosted at 64 kbps on the media domain (So This Is Love)               |
@@ -158,7 +158,7 @@ Guest-facing copy (agent draft, D4; pending client approval). Voice: Naomi in th
   request, 04-11).
 - Pass: «Pase personal e intransferible» · «Su lugar ya está apartado.» · «Confírmeme su llegada
   aquí abajo.»
-- RSVP: «¿Me acompaña?» · «Le agradeceré confirmar antes del viernes 4 de diciembre.» · Steps
+- RSVP: «¿Me acompaña?» · «Le agradeceré confirmar antes del viernes 20 de noviembre.» · Steps
   «¿Contamos con usted?» · «¿Cuántos llegan, contándose usted?» (the count is the party total).
   Notes step «Nombres de quienes asistirán» · «Escriba el nombre de cada persona que llegará» (the
   client asked for every attendee's name; saved as the guest comment).
