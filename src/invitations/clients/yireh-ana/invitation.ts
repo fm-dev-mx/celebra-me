@@ -7,7 +7,7 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
  * flowers, and a small yellow bow kept to the oak and the end of the program ribbon.
  * The cover follows the client's reference 40 without the books: floral corners above, the name
  * on clean paper and the single oak with one yellow ribbon below. The oak appears only there;
- * the interludes are bespoke stills (lilac branch, bouquet, sealed envelope) without people.
+ * since round 2 the page carries no interludes.
  *
  * The celebrant asked for no personal photos or silhouettes, so the gallery is exempt. The copy
  * speaks of the ties that bind and never of waiting or returning, so it reads well for every
@@ -53,29 +53,12 @@ const content: CanonicalEventContentInput = {
 			// Three intentional joins across the whole narrative arc (Bridge, Bridge, Climax),
 			// preserving clean neutral paper-mist cuts everywhere else.
 			countdown: { family: 'overlap', source: 'location' },
-			'interlude-after-countdown': { family: 'overlap', source: 'countdown' },
 			thankYou: { family: 'arch', source: 'rsvp' },
 		},
 	},
-	interludes: [
-		{
-			// Bespoke still 1: a lilac and purple bouquet with one yellow flower, tied with ribbon.
-			image: 'interludeBouquet',
-			afterSection: 'itinerary',
-			alt: 'Ramo de flores lilas y moradas con una flor amarilla, atado con un listón, en acuarela.',
-			height: 'medium',
-			presentation: 'framed',
-		},
-		{
-			// Bespoke still 2: the invitation itself, a sealed lilac envelope, hung from the night
-			// of the count right before the pass.
-			image: 'interludeEnvelope',
-			afterSection: 'countdown',
-			alt: 'Sobre lila cerrado con un ramito de flores y un moño amarillo, en acuarela.',
-			height: 'medium',
-			presentation: 'framed',
-		},
-	],
+	// Round 2: no interludes; the bouquet after the program and the envelope after the count
+	// left at the client's request.
+	interludes: [],
 	hero: {
 		variant: 'standard',
 		name: CELEBRANT_NAME,
@@ -115,9 +98,8 @@ const content: CanonicalEventContentInput = {
 			showCalendarLinks: true,
 			indicationsLayout: 'enclosure',
 		},
+		// Round 2: the thanksgiving details moved into the program, so the heading stands alone.
 		introHeading: 'Lugar y momento',
-		introLede:
-			'La acción de gracias será a las 7:30 p. m. en el mismo salón, a cargo del Pastor Jesús Manuel Ozaeta Pérez. En ella recibiré diez elementos simbólicos; le agradeceré llegar con tiempo para que esté presente desde el inicio.',
 		indicationsHeading: 'Código de vestimenta',
 		indications: [
 			{
@@ -165,13 +147,15 @@ const content: CanonicalEventContentInput = {
 				time: '19:00',
 				iconName: 'Reception',
 				label: 'Recepción',
-				description: 'Bienvenida en el Salón Casino Imperial.',
+				description:
+					'Bienvenida en el Salón Casino Imperial. Le agradeceré llegar con tiempo para estar presente desde el inicio.',
 			},
 			{
 				time: '19:30',
 				iconName: 'Dove',
 				label: 'Acción de gracias',
-				description: 'A cargo del Pastor Jesús Manuel Ozaeta Pérez.',
+				description:
+					'En el mismo salón, a cargo del Pastor Jesús Manuel Ozaeta Pérez. En ella recibiré diez elementos simbólicos.',
 			},
 			{
 				time: '21:00',
@@ -225,9 +209,9 @@ const content: CanonicalEventContentInput = {
 	rsvp: {
 		variant: 'reply-card',
 		title: '¿Me acompaña?',
-		// Deadline proposed three weeks before the event; pending client approval.
+		// Deadline set by the client in round 2 (2026-11-10).
 		subcopy:
-			'Su respuesta me ayuda a preparar su lugar. Le agradeceré confirmar antes del 2 de octubre de 2027.',
+			'Su respuesta me ayuda a preparar su lugar. Le agradeceré confirmar antes del 1 de octubre de 2027.',
 		lockedMessage:
 			'Esta invitación es personal. Abra el enlace que le envié para ver su pase y confirmar.',
 		guestCap: 1,
@@ -311,8 +295,6 @@ export default defineCanonicalInvitation({
 	assetFiles: {
 		hero: 'hero-cover.webp',
 		heroWide: 'hero-cover-wide.webp',
-		interludeBouquet: 'interlude-bouquet.webp',
-		interludeEnvelope: 'interlude-envelope.webp',
 		wreath: 'closing-wreath.webp',
 		ogShare: 'og-share.webp',
 	},

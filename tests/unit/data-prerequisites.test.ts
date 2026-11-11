@@ -29,9 +29,13 @@ const manifest = (
 
 describe('committed data prerequisite manifest', () => {
 	it('declares every app_metadata key that application code reads', () => {
-		const sourceRoot = resolve(repositoryRoot, 'src');
-		expect(existsSync(sourceRoot)).toBe(true);
-		const reads = scanAppMetadataKeyReads(sourceRoot);
+		const scanRoots = [
+			resolve(repositoryRoot, 'src'),
+			resolve(repositoryRoot, 'scripts'),
+			resolve(repositoryRoot, 'supabase/functions'),
+		].filter((dir) => existsSync(dir));
+		expect(scanRoots.length).toBeGreaterThan(0);
+		const reads = scanAppMetadataKeyReads(scanRoots, repositoryRoot);
 		// A scan that finds nothing means the scanner broke, not that the code stopped reading.
 		expect(reads.length).toBeGreaterThan(0);
 		expect(new Set(reads.map((read) => read.file)).size).toBeGreaterThan(1);
@@ -45,9 +49,95 @@ describe('committed data prerequisite manifest', () => {
 		if (undeclared.length > 0) throw new Error(describeUndeclaredAppMetadataKeys(undeclared));
 	});
 
-	it('allows a Production release', () => {
-		expect(() => requireDataPrerequisites(committedManifest)).not.toThrow();
+	const patchIds = [
+		'20260812-itinerary-gallery-structural-contracts',
+		'20260812-thankyou-editorial-back-cover',
+		'20260812-guest-invitation-phone-objects',
+	];
+
+	it.each(['production', 'preview'])('declares the August patches for %s', (environment) => {
+		const parsed = parseDataPrerequisiteManifest(committedManifest);
+		for (const id of patchIds) {
+			const entry = parsed.prerequisites.find((item) => item.id === id);
+			// Evidence may advance to verified/not-applicable without changing this contract test.
+			expect(entry?.environments[environment]).toBeDefined();
+			expect(entry?.introducedBy).toMatch(/20260812.*\.sql$/u);
+			const query = entry?.verify.match(/--file=(\S+)/u)?.[1];
+			expect(query).toBeDefined();
+			expect(existsSync(resolve(repositoryRoot, query!))).toBe(true);
+		}
 	});
+
+	it.each(patchIds)('blocks on %s even when every other prerequisite is verified', (id) => {
+		const parsed = parseDataPrerequisiteManifest(committedManifest);
+		for (const entry of parsed.prerequisites) {
+			for (const environment of ['production', 'preview']) {
+				entry.environments[environment] = {
+					status: 'verified',
+					verifiedAt: '2026-11-10',
+					evidence: 'Synthetic verification for the release gate test.',
+				};
+			}
+		}
+		const verified = JSON.stringify(parsed);
+		expect(() => requireDataPrerequisites(verified)).not.toThrow();
+		const entry = parsed.prerequisites.find((item) => item.id === id)!;
+		entry.environments.production = { status: 'pending' };
+		expect(() => requireDataPrerequisites(JSON.stringify(parsed))).toThrow(`- ${id}:`);
+		expect(() => requireDataPrerequisites(JSON.stringify(parsed))).toThrow(entry.verify);
+		expect(() => requireDataPrerequisites(JSON.stringify(parsed), 'preview')).not.toThrow();
+	});
+
+	it('preserves the verified login alias prerequisite independently of pending patches', () => {
+		const parsed = parseDataPrerequisiteManifest(committedManifest);
+		parsed.prerequisites = parsed.prerequisites.filter(
+			(entry) => entry.id === 'auth-login-alias-app-metadata',
+		);
+		parsed.authAppMetadataKeys = Object.fromEntries(
+			Object.entries(parsed.authAppMetadataKeys).filter(
+				([, mapping]) =>
+					!('prerequisite' in mapping) ||
+					mapping.prerequisite === 'auth-login-alias-app-metadata',
+			),
+		);
+		expect(parsed.prerequisites).toHaveLength(1);
+		expect(() => requireDataPrerequisites(JSON.stringify(parsed))).not.toThrow();
+		expect(() => requireDataPrerequisites(JSON.stringify(parsed), 'preview')).not.toThrow();
+	});
+
+	it.each(['production', 'preview'])(
+		'blocks %s until role synchronization is verified',
+		(environment) => {
+			const parsed = parseDataPrerequisiteManifest(committedManifest);
+			expect(parsed.authAppMetadataKeys.role).toEqual({
+				prerequisite: 'auth-role-app-metadata',
+			});
+			expect(
+				parsed.prerequisites.find(({ id }) => id === 'auth-role-app-metadata')
+					?.environments[environment].status,
+			).toBe('pending');
+			expect(() => requireDataPrerequisites(committedManifest, environment)).toThrow(
+				/auth-role-app-metadata: .*`pnpm auth:check-role-app-metadata`/,
+			);
+		},
+	);
+
+	it.each(['production', 'preview'])(
+		'blocks %s until pending password audit is verified',
+		(environment) => {
+			const parsed = parseDataPrerequisiteManifest(committedManifest);
+			expect(parsed.authAppMetadataKeys.must_change_password).toEqual({
+				prerequisite: 'auth-must-change-password',
+			});
+			expect(
+				parsed.prerequisites.find(({ id }) => id === 'auth-must-change-password')
+					?.environments[environment].status,
+			).toBe('pending');
+			expect(() => requireDataPrerequisites(committedManifest, environment)).toThrow(
+				/auth-must-change-password: .*`pnpm auth:check-pending-passwords`/,
+			);
+		},
+	);
 });
 
 describe('app_metadata key scanner', () => {
@@ -65,6 +155,223 @@ describe('app_metadata key scanner', () => {
 			{ key: 'must_change_password', file: 'example.ts', line: 3 },
 			{ key: 'temp_flag', file: 'example.ts', line: 4 },
 		]);
+	});
+
+	it('finds keys accessed through constants with their line', () => {
+		const source = [
+			"const ROLE_KEY = 'role';",
+			"const ALIAS_KEY = 'login_alias' as const;",
+			'const a = user.app_metadata[ROLE_KEY];',
+			'const b = user.app_metadata?.[ALIAS_KEY];',
+			'const { [ROLE_KEY]: r } = user.app_metadata;',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'role', file: 'example.ts', line: 3 },
+			{ key: 'login_alias', file: 'example.ts', line: 4 },
+			{ key: 'role', file: 'example.ts', line: 5 },
+		]);
+	});
+
+	it('finds keys extracted through destructuring and nested patterns', () => {
+		const source = [
+			'const { login_alias, role: userRole } = user.app_metadata;',
+			'const { must_change_password } = user.app_metadata ?? {};',
+			'const { app_metadata: { temp_password_expires_at } } = user;',
+			'function authCheck({ app_metadata: { role } }: User) { return role; }',
+			'const { app_metadata: meta } = user;',
+			'const flag = meta.must_change_password;',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'login_alias', file: 'example.ts', line: 1 },
+			{ key: 'role', file: 'example.ts', line: 1 },
+			{ key: 'must_change_password', file: 'example.ts', line: 2 },
+			{ key: 'temp_password_expires_at', file: 'example.ts', line: 3 },
+			{ key: 'role', file: 'example.ts', line: 4 },
+			{ key: 'must_change_password', file: 'example.ts', line: 6 },
+		]);
+	});
+
+	it('finds keys accessed inside helpers receiving or returning app_metadata', () => {
+		const source = [
+			'function isExpired(appMetadata: Record<string, unknown>) {',
+			'    return appMetadata.must_change_password;',
+			'}',
+			'function checkRole(meta: Record<string, unknown>) {',
+			'    return meta.role;',
+			'}',
+			'checkRole(user.app_metadata);',
+			'const getMeta = (u: User) => u.app_metadata;',
+			'const alias = getMeta(user)?.login_alias;',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'must_change_password', file: 'example.ts', line: 2 },
+			{ key: 'role', file: 'example.ts', line: 5 },
+			{ key: 'login_alias', file: 'example.ts', line: 9 },
+		]);
+	});
+
+	it('propagates metadata aliases before analyzing helper calls and resolves call chains', () => {
+		const source = [
+			'function check(meta) {',
+			'    return meta.new_flag;',
+			'}',
+			'const metadata = user.app_metadata;',
+			'check(metadata);',
+			'function inner(val) {',
+			'    return val.temp_flag;',
+			'}',
+			'function outer(m) {',
+			'    return inner(m);',
+			'}',
+			'outer(metadata);',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'new_flag', file: 'example.ts', line: 2 },
+			{ key: 'temp_flag', file: 'example.ts', line: 7 },
+		]);
+	});
+
+	it('resolves constants by symbol and scope, isolating shadowing between functions and top level', () => {
+		const source = [
+			"const KEY = 'new_flag';",
+			'function unrelated() {',
+			"    const KEY = 'role';",
+			'    return user.app_metadata[KEY];',
+			'}',
+			'const a = user.app_metadata[KEY];',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'role', file: 'example.ts', line: 4 },
+			{ key: 'new_flag', file: 'example.ts', line: 6 },
+		]);
+	});
+
+	it('resolves imported constants with renamed aliases and isolates homonymous exports across modules', () => {
+		const source = [
+			"import { REAL_KEY as KEY } from './constants';",
+			"import { KEY as MODULE_A_KEY } from './module-a';",
+			"import { KEY as MODULE_B_KEY } from './module-b';",
+			'const a = user.app_metadata[KEY];',
+			'const b = user.app_metadata[MODULE_A_KEY];',
+			'const c = user.app_metadata[MODULE_B_KEY];',
+		].join('\n');
+		const externalConstants = {
+			'./constants': { REAL_KEY: 'new_flag' },
+			'./module-a': { KEY: 'role' },
+			'./module-b': { KEY: 'must_change_password' },
+		};
+		expect(findAppMetadataKeyReads(source, 'example.ts', externalConstants)).toEqual([
+			{ key: 'new_flag', file: 'example.ts', line: 4 },
+			{ key: 'role', file: 'example.ts', line: 5 },
+			{ key: 'must_change_password', file: 'example.ts', line: 6 },
+		]);
+	});
+
+	it('extracts keys from destructured helper parameters receiving metadata', () => {
+		const source = [
+			'function check({ new_flag }) {',
+			'    return new_flag;',
+			'}',
+			'check(user.app_metadata);',
+			'function checkComplex({ role: userRole, ...rest }) {',
+			'    return rest.temp_flag;',
+			'}',
+			'const meta = user.app_metadata;',
+			'checkComplex(meta);',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'new_flag', file: 'example.ts', line: 1 },
+			{ key: 'role', file: 'example.ts', line: 5 },
+			{ key: 'temp_flag', file: 'example.ts', line: 6 },
+		]);
+	});
+
+	it('treats rest binding elements as remaining metadata aliases, ignoring dotDotDotToken as keys', () => {
+		const source = [
+			'const { role, ...rest } = user.app_metadata;',
+			'const flag = rest.new_flag;',
+			'let remainder;',
+			'({ must_change_password: mcp, ...remainder } = user.app_metadata);',
+			'const alias = remainder.login_alias;',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'role', file: 'example.ts', line: 1 },
+			{ key: 'new_flag', file: 'example.ts', line: 2 },
+			{ key: 'must_change_password', file: 'example.ts', line: 4 },
+			{ key: 'login_alias', file: 'example.ts', line: 5 },
+		]);
+	});
+
+	it('resolves constants imported via tsconfig path alias @/ to src/', () => {
+		const source = [
+			"import { ALIAS_KEY } from '@/lib/keys';",
+			'const a = user.app_metadata[ALIAS_KEY];',
+		].join('\n');
+		const externalConstants = {
+			'src/lib/keys': { ALIAS_KEY: 'login_alias' },
+		};
+		expect(findAppMetadataKeyReads(source, 'src/example.ts', externalConstants)).toEqual([
+			{ key: 'login_alias', file: 'src/example.ts', line: 2 },
+		]);
+
+		const externalConstantsByAlias = {
+			'@/lib/keys': { ALIAS_KEY: 'login_alias' },
+		};
+		expect(findAppMetadataKeyReads(source, 'src/example.ts', externalConstantsByAlias)).toEqual(
+			[{ key: 'login_alias', file: 'src/example.ts', line: 2 }],
+		);
+	});
+
+	it('reports <unknown> for unresolved bracket access or dynamic expressions so the gate fails closed', () => {
+		const source = [
+			'const key = getDynamicKey();',
+			'const a = user.app_metadata[key];',
+			"const b = user.app_metadata['prefix_' + suffix];",
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: '<unknown>', file: 'example.ts', line: 2 },
+			{ key: '<unknown>', file: 'example.ts', line: 3 },
+		]);
+	});
+
+	it('finds keys accessed inside same-file methods receiving or returning app_metadata', () => {
+		const source = [
+			'const helper = {',
+			'    check(meta: Record<string, unknown>) {',
+			'        return meta.role;',
+			'    },',
+			'    getMeta(u: User) {',
+			'        return u.app_metadata;',
+			'    },',
+			'};',
+			'helper.check(user.app_metadata);',
+			'const alias = helper.getMeta(user)?.login_alias;',
+		].join('\n');
+		expect(findAppMetadataKeyReads(source, 'example.ts')).toEqual([
+			{ key: 'role', file: 'example.ts', line: 3 },
+			{ key: 'login_alias', file: 'example.ts', line: 10 },
+		]);
+	});
+
+	it('extracts and scans only frontmatter from .astro files, preserving line numbers', () => {
+		const astroSource = [
+			'---',
+			"import { something } from './something';",
+			'const role = user.app_metadata.role;',
+			'---',
+			'<div class="container">',
+			'    <span>{user.app_metadata.broken_template_should_not_parse}</span>',
+			'    <unclosed-tag invalid syntax >>>',
+			'</div>',
+		].join('\n');
+		expect(findAppMetadataKeyReads(astroSource, 'src/components/Card.astro')).toEqual([
+			{ key: 'role', file: 'src/components/Card.astro', line: 3 },
+		]);
+	});
+
+	it('returns no reads for .astro files without frontmatter', () => {
+		const templateOnly = '<div class="static">Pure HTML without frontmatter</div>';
+		expect(findAppMetadataKeyReads(templateOnly, 'src/components/Static.astro')).toEqual([]);
 	});
 
 	it('reports a read that the manifest does not declare, with the way out', () => {

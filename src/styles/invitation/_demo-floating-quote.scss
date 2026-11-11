@@ -4,6 +4,11 @@
 // music player on the right. Quieter than the panels' primary buttons: dark glass, thin border.
 // On phones the player's "Reproducir música" label reaches the left half, so the pill sits above it.
 
+// A demo may reserve room under its last block (token, default none) so the pill never rests on text.
+#invitation-sections-container {
+	padding-block-end: var(--demo-floating-quote-clearance, 0);
+}
+
 .demo-floating-quote {
 	position: fixed;
 	bottom: calc(1.5rem + env(safe-area-inset-bottom));

@@ -139,4 +139,40 @@ describe('Cloudflare Production upload workflow contract', () => {
 		expect(buildEnv).not.toMatch(/(?:secrets|vars)\.PUBLIC_/u);
 		expect(buildEnv).toContain('CELEBRA_DEPLOY_ENV: production');
 	});
+
+	it('declares checks: read permission for release checks verification', () => {
+		expect(workflow).toMatch(
+			/permissions:\s+checks:\s*read\s+contents:\s*read\s+deployments:\s*write\s+statuses:\s*write/u,
+		);
+	});
+
+	it('requires release checks before creating or uploading the Worker version', () => {
+		const uploadJob = workflow.slice(
+			workflow.indexOf('    production:'),
+			workflow.indexOf('    domain-smoke:'),
+		);
+		const releaseChecks = uploadJob.indexOf('- name: Run release checks');
+		const createWorker = uploadJob.indexOf('- name: Create the Worker on the first run');
+		const upload = uploadJob.indexOf('- name: Upload Worker version');
+		expect(releaseChecks).toBeGreaterThan(0);
+		expect(createWorker).toBeGreaterThan(0);
+		expect(upload).toBeGreaterThan(0);
+		expect(releaseChecks).toBeLessThan(createWorker);
+		expect(createWorker).toBeLessThan(upload);
+		expect(uploadJob).toContain('run: pnpm ops:release-checks "$GITHUB_SHA"');
+	});
+});
+
+describe('Cloudflare platform activation contract', () => {
+	it('requires release checks before activating the Worker version', () => {
+		const docs = readFileSync(resolve('docs/operations/cloudflare-platform.md'), 'utf8');
+		const section8 = docs.slice(
+			docs.indexOf('## 8. Activate an uploaded version (every Production release)'),
+		);
+		const checks = section8.indexOf('pnpm ops:release-checks');
+		const deploy = section8.indexOf('wrangler versions deploy');
+		expect(checks).toBeGreaterThan(0);
+		expect(deploy).toBeGreaterThan(0);
+		expect(checks).toBeLessThan(deploy);
+	});
 });

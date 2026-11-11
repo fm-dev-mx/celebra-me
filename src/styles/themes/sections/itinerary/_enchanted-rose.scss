@@ -36,19 +36,11 @@
 
 	&::before {
 		inset: 0;
-		background:
-			radial-gradient(
-				circle at 50% 8%,
-				rgb(var(--color-candle-gold-rgb) / 16%),
-				transparent 32%
-			),
-			linear-gradient(
-				90deg,
-				rgb(var(--color-rose-shadow-rgb) / 34%) 0%,
-				transparent 28%,
-				transparent 72%,
-				rgb(var(--color-rose-shadow-rgb) / 34%) 100%
-			);
+		background: radial-gradient(
+			circle at 50% 8%,
+			rgb(var(--color-candle-gold-rgb) / 16%),
+			transparent 32%
+		);
 	}
 
 	&::after {
@@ -243,5 +235,32 @@
 			transform: none;
 			transition: none;
 		}
+	}
+}
+
+// The paper programme titles set in upright Cormorant, like the other section titles; the script
+// stays for signatures, and a long title wraps in close lines instead of overlapping its note.
+.theme-preset--enchanted-rose .itinerary[data-variant='timeline-paper'] {
+	--itinerary-paper-title-size: clamp(1.625rem, 3vw, 2rem);
+	--itinerary-paper-title-size-sm: clamp(1.375rem, 6vw, 1.625rem);
+	--itinerary-paper-title-line-height: 1.1;
+	--itinerary-paper-title-line-height-sm: 1.1;
+	--itinerary-paper-title-margin-top: 0.4em;
+
+	// A compact sheet: no watermark monogram, full-strength times and markers, tighter rows.
+	--itinerary-paper-monogram-display: none;
+	--itinerary-paper-padding-block: clamp(3rem, 6vw, 4.5rem);
+	--itinerary-paper-time-size: 0.875rem;
+	--itinerary-paper-time-size-sm: 0.8125rem;
+	--itinerary-paper-time-opacity: 100%;
+	--itinerary-paper-time-opacity-sm: 100%;
+	--itinerary-paper-num-opacity: 90%;
+	--itinerary-paper-num-opacity-sm: 90%;
+	--itinerary-paper-row-padding-sm: 0.9rem;
+
+	.itinerary__program-row-title {
+		font-family: var(--font-display);
+		font-weight: 500;
+		text-wrap: balance;
 	}
 }

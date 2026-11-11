@@ -1,6 +1,19 @@
 {
     "$schemaComment": "Migration / deployment compatibility registry. SSOT for expand|neutral|contract phases. Docs: docs/database-workflow.md",
     "migrations": {
+        "20261110130000": {
+            "phase": "expand",
+            "provides": ["order_lifecycle_payments"],
+            "notes": "Adds sales_orders.event_date, the service-role-only sales_order_payments ledger (deposit, installment, settlement; backfilled with one deposit row per paid order) and register_commercial_order_payment; replaces register_commercial_deposit_purchase keeping signature, privileges and the Purchase total value, additionally writing the deposit ledger row and moving an order whose deposit covers the total to paid. Additive. Must be applied before the app that records installments and settlements is deployed."
+        },
+        "20261110120000": {
+            "phase": "neutral",
+            "notes": "Data only: frees storage_path paths (idx_invitation_assets_storage_path) retained by the archived Preview copy b789dbc3 of daniela-y-martin without deleting evidence or remote storage objects. Idempotent Preview-only update by immutable UUID; Production has different IDs and is completely untouched."
+        },
+        "20261110100000": {
+            "phase": "neutral",
+            "notes": "Data only: frees the slug (invitation_projects_slug_key), managed_identity_id (invitations_managed_identity_id_uidx) and provenance (managed_provenance_managed_identity_id_uidx) retained by the archived Preview copy b789dbc3 of daniela-y-martin without deleting evidence. Idempotent Preview-only update by immutable UUID; Production has different IDs and is completely untouched."
+        },
         "20261105150000": {
             "phase": "expand",
             "provides": ["trusted_devices"],

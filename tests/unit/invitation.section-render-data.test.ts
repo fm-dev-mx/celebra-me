@@ -409,10 +409,10 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		expect(descriptorComponents).toEqual([
 			'quote',
-			'location',
 			'countdown',
 			'family',
 			'interlude',
+			'location',
 			'itinerary',
 			'gallery',
 			'interlude',

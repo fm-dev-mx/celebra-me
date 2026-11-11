@@ -1,5 +1,6 @@
 import { useRef, useState, type ChangeEvent, type DragEvent, type KeyboardEvent } from 'react';
 import { getCsrfToken } from '@/lib/csrf';
+import { goToLoginAfterSessionEnded } from '@/lib/dashboard/session-ended';
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from '@/lib/intake/constants';
 
 type UploadState = 'idle' | 'uploading' | 'success' | 'error';
@@ -73,6 +74,11 @@ export default function AssetUploader({ invitationId, onUploaded }: Props) {
 					headers: csrfToken ? { 'X-CSRF-Token': csrfToken } : undefined,
 				},
 			);
+
+			if (response.status === 401) {
+				goToLoginAfterSessionEnded();
+				return;
+			}
 
 			let result: unknown = null;
 			try {

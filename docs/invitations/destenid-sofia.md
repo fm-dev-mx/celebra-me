@@ -17,10 +17,14 @@
 
 **Preparation Readiness (prepReadiness):** `READY_WITH_PLACEHOLDERS`
 
-Helper outcome: structural decisions are resolved and the client supplied the event program (start
-time 19:00). Bank-transfer data needs a CLABE (see GIFTS-BANK), music is pending, and every
-photograph is WhatsApp-class. Implementation may proceed; Production release stays blocked until the
-pending client data is replaced.
+Preparation remains `READY_WITH_PLACEHOLDERS` because the photographs retain their
+`provisional-whatsapp` classification; owner acceptance does not upgrade their source quality.
+Structural decisions and the event program (start time 19:00) are resolved. The hosted music, BBVA
+card transfer, and photographs as provided are accepted; no client-data blockers remain.
+
+Publication record: release #887, `main` commit `3575354`; the managed definition has lifecycle
+`published`. The owner confirmed delivery on 2026-11-09 (T977); neither a CLABE nor photo originals
+are expected. This records the supplied publication evidence, not a new live environment check.
 
 Technical Local/Preview/Production readiness (**envReadiness**) is **out of scope** for this
 document.
@@ -42,34 +46,34 @@ given names by explicit owner decision (no surname supplied or requested for pub
 
 ## Fact Register
 
-| field                | value                                                                                             | classification | source            | notes                                                                                                  |
-| -------------------- | ------------------------------------------------------------------------------------------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------ |
-| slug                 | destenid-sofia                                                                                    | verified       | owner             | Owner decision; two given names, no eventType prefix                                                   |
-| hostLoginAlias       | destenid_sofia                                                                                    | verified       | owner             | No surname supplied                                                                                    |
-| celebrantName        | Destenid Sofía                                                                                    | verified       | wa-export + owner | Client wrote "Destenid"; account holder name confirms "Destenid Sofía". Accent kept; confirm in review |
-| eventLabel           | XV años de Destenid Sofía                                                                         | verified       | wa-export         |                                                                                                        |
-| eventDate            | 2026-11-13                                                                                        | verified       | wa-export         | Friday 13 November 2026                                                                                |
-| eventTime            | 19:00                                                                                             | verified       | owner (client)    | Client program relayed by the owner: Recepción 7 pm                                                    |
-| itinerary            | 19:00 Recepción; 20:00 Presentación; 20:30 Cena; 22:00 Vals; 02:00 Cierre                         | verified       | owner (client)    | Client wrote "Cierre 2,pm"; read as 2:00 a.m. after the 10 p.m. waltz — confirm in client review       |
-| timeZone             | America/Mexico_City                                                                               | inferred       | geography         | Cuautitlán Izcalli, Estado de México; not client-stated                                                |
-| sourceAssetPath      | source:hr-photos                                                                                  | verified       | owner             | Opaque label only                                                                                      |
-| sectionOrder         | quote, family, countdown, itinerary, location, gallery, gifts, personalizedAccess, rsvp, thankYou | inferred       | owner             | Mirrors the reference invitation; family carries the prayer instead of parents                         |
-| primaryVenueName     | Jardín Quinta Paraíso                                                                             | verified       | wa-export         | Reception only                                                                                         |
-| primaryVenueAddress  | Calle Rosa Violeta 8, C.P. 54765, Cuautitlán Izcalli, Estado de México                            | verified       | wa-export         | Client wrote "54765 calle Rosa Violeta 8"; 54765 read as postal code                                   |
-| distinctVenues       | false                                                                                             | verified       | wa-export         | Client stated there is no Mass                                                                         |
-| ceremonyMapUrl       | —                                                                                                 | not_applicable | wa-export         | No ceremony; reception uses a Maps search URL                                                          |
-| fatherName           | —                                                                                                 | not_applicable | wa-export         | Client explicitly does not want parents' names                                                         |
-| motherName           | —                                                                                                 | not_applicable | wa-export         | Client explicitly does not want parents' names                                                         |
-| godparents           | —                                                                                                 | not_applicable | wa-export         | Client explicitly does not want godparents                                                             |
-| dressCode            | Avoid beige and gold; black reserved for the celebrant and her mother                             | verified       | owner (client)    | Supplied in client review; rendered as a `DressCode` guest indication                                  |
-| gifts                | lluvia de sobres; transferencia                                                                   | verified       | wa-export         | Envelopes published; transfer held until a CLABE is supplied (see GIFTS-BANK)                          |
-| musicUrl             | —                                                                                                 | missing        | wa-export         | RBD track from a YouTube link, starting at 0:39; a direct audio file is required                       |
-| clientColors         | beige, dorado, negro                                                                              | verified       | wa-export         | Dress is beige with gold; celebrant requested black as well                                            |
-| rsvpConfirmationMode | both                                                                                              | inferred       | owner             | Client asked for named passes; mirrors the reference invitation                                        |
-| rsvpGuestCap         | 4                                                                                                 | inferred       | owner             | Per-guest passes are assigned in the dashboard                                                         |
-| rsvpWhatsappPhone    | client WhatsApp (definition only)                                                                 | verified       | wa-export         | Number is recorded in the managed definition, not in this document                                     |
-| specialMessages      | opening phrase, two thank-you phrases, prayer                                                     | verified       | wa-export         | Quote, gallery subtitle, thank-you message, and family (prayer) section                                |
-| instagramHandle      | @desteny_ts                                                                                       | verified       | wa-export         | Handle spelling differs from the given name; kept literal                                              |
+| field                | value                                                                                             | classification | source            | notes                                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------- | -------------- | ----------------- | -------------------------------------------------------------------------------------------------------- |
+| slug                 | destenid-sofia                                                                                    | verified       | owner             | Owner decision; two given names, no eventType prefix                                                     |
+| hostLoginAlias       | destenid_sofia                                                                                    | verified       | owner             | No surname supplied                                                                                      |
+| celebrantName        | Destenid Sofía                                                                                    | verified       | wa-export + owner | Client wrote "Destenid"; account holder name confirms "Destenid Sofía". Accent kept; confirm in review   |
+| eventLabel           | XV años de Destenid Sofía                                                                         | verified       | wa-export         |                                                                                                          |
+| eventDate            | 2026-11-13                                                                                        | verified       | wa-export         | Friday 13 November 2026                                                                                  |
+| eventTime            | 19:00                                                                                             | verified       | owner (client)    | Client program relayed by the owner: Recepción 7 pm                                                      |
+| itinerary            | 19:00 Recepción; 20:00 Presentación; 20:30 Cena; 22:00 Vals; 02:00 Cierre                         | verified       | owner (client)    | Client wrote "Cierre 2,pm"; read as 2:00 a.m. after the 10 p.m. waltz — confirm in client review         |
+| timeZone             | America/Mexico_City                                                                               | inferred       | geography         | Cuautitlán Izcalli, Estado de México; not client-stated                                                  |
+| sourceAssetPath      | source:hr-photos                                                                                  | verified       | owner             | Opaque label only                                                                                        |
+| sectionOrder         | quote, family, countdown, itinerary, location, gallery, gifts, personalizedAccess, rsvp, thankYou | inferred       | owner             | Mirrors the reference invitation; family carries the prayer instead of parents                           |
+| primaryVenueName     | Jardín Quinta Paraíso                                                                             | verified       | wa-export         | Reception only                                                                                           |
+| primaryVenueAddress  | Calle Rosa Violeta 8, C.P. 54765, Cuautitlán Izcalli, Estado de México                            | verified       | wa-export         | Client wrote "54765 calle Rosa Violeta 8"; 54765 read as postal code                                     |
+| distinctVenues       | false                                                                                             | verified       | wa-export         | Client stated there is no Mass                                                                           |
+| ceremonyMapUrl       | —                                                                                                 | not_applicable | wa-export         | No ceremony; reception uses a Maps search URL                                                            |
+| fatherName           | —                                                                                                 | not_applicable | wa-export         | Client explicitly does not want parents' names                                                           |
+| motherName           | —                                                                                                 | not_applicable | wa-export         | Client explicitly does not want parents' names                                                           |
+| godparents           | —                                                                                                 | not_applicable | wa-export         | Client explicitly does not want godparents                                                               |
+| dressCode            | Avoid beige and gold; black reserved for the celebrant and her mother                             | verified       | owner (client)    | Supplied in client review; rendered as a `DressCode` guest indication                                    |
+| gifts                | lluvia de sobres; transferencia                                                                   | verified       | wa-export + owner | BBVA debit card accepted with `accountKind: 'card'`; no CLABE requested (see GIFTS-BANK)                 |
+| musicUrl             | `MUSIC_URL` in `scripts/provision/invitations/destenid-sofia.ts`                                  | verified       | owner             | Hosted "Rebelde · RBD" 76 s loop, starting at 0:39; owner-approved 2026-10-21; no `music.startAt` needed |
+| clientColors         | beige, dorado, negro                                                                              | verified       | wa-export         | Dress is beige with gold; celebrant requested black as well                                              |
+| rsvpConfirmationMode | both                                                                                              | inferred       | owner             | Client asked for named passes; mirrors the reference invitation                                          |
+| rsvpGuestCap         | 4                                                                                                 | inferred       | owner             | Per-guest passes are assigned in the dashboard                                                           |
+| rsvpWhatsappPhone    | client WhatsApp (definition only)                                                                 | verified       | wa-export         | Number is recorded in the managed definition, not in this document                                       |
+| specialMessages      | opening phrase, two thank-you phrases, prayer                                                     | verified       | wa-export         | Quote, gallery subtitle, thank-you message, and family (prayer) section                                  |
+| instagramHandle      | @desteny_ts                                                                                       | verified       | wa-export         | Handle spelling differs from the given name; kept literal                                                |
 
 Rules:
 
@@ -98,16 +102,16 @@ Contract maturity for this event type: `evidence-backed` (`xv`).
   - **status:** not_applicable
 - **requirement:** optional
   - **fields:** musicUrl
-  - **status:** missing (non-blocking)
+  - **status:** resolved (hosted audio)
 
 ### Missing blockers
 
-- None for implementation.
+- None for implementation or Production; the invitation is already published.
 
 ### Non-blocking gaps
 
-- Bank-transfer item needs an 18-digit CLABE; the client sent a debit card number.
-- Music audio file pending.
+- None awaiting client data. WhatsApp-class photo quality is an accepted limitation (see
+  PHOTO-SOURCE).
 
 Deterministic question: **Is the available information sufficient to prepare this invitation?**  
 Answer: `yes` (`evaluateEventCompleteness`).
@@ -116,26 +120,21 @@ Answer: `yes` (`evaluateEventCompleteness`).
 
 ## Placeholders
 
-| token                      | missing datum | blocking | reason                                              | replacement requirement                                  |
-| -------------------------- | ------------- | -------- | --------------------------------------------------- | -------------------------------------------------------- |
-| `[[PENDIENTE:GIFTS_BANK]]` | GIFTS_BANK    | no       | Card number received; the bank item renders a CLABE | Add a `bank` gift item with bank, holder, and CLABE      |
-| `[[PENDIENTE:MUSIC_URL]]`  | MUSIC_URL     | no       | Needs a direct audio file trimmed to start at 0:39  | Host the trimmed audio and add `music` to the definition |
-
-Tokens are not written into the published payload: the bank item and music block are omitted until
-their data exists.
+None remain. The definition includes hosted music and the accepted BBVA card transfer item. The card
+number stays in the managed definition and is intentionally not copied here.
 
 ---
 
 ## Owner Decisions
 
-| id           | category              | issue                                 | evidence                  | options                                  | recommendation                                |
-| ------------ | --------------------- | ------------------------------------- | ------------------------- | ---------------------------------------- | --------------------------------------------- |
-| EVENT-TIME   | missing-client-facts  | Start time not supplied               | Client program via owner  | ask client / keep provisional            | Resolved: 19:00 confirmed with full program   |
-| GIFTS-BANK   | missing-client-facts  | Card number, not CLABE                | BBVA debit card via owner | ask for CLABE / label as card (shared)   | Ask the client for the account CLABE          |
-| PHOTO-SOURCE | photograph-acceptance | Photos are WhatsApp-class (1066×1600) | WeTransfer delivery       | request originals / accept as provided   | Request originals; WeTransfer folder has none |
-| DESKTOP-HERO | client-choice         | Desktop cover hid WA0029              | Client picked WA0029      | WA0029 / WA0034 / full-bleed             | Resolved: WA0029 leads the desktop cover      |
-| PROGRAM      | missing-client-facts  | Single-item program                   | Client program via owner  | drop program / keep / request program    | Resolved: five-item client program            |
-| MUSIC-AUDIO  | missing-client-facts  | Only a YouTube link with a 0:39 start | Client message            | owner trims and hosts audio / omit music | Owner supplies a trimmed, hosted audio file   |
+| id           | category              | issue                                 | evidence                                       | options                                  | recommendation                                                                                |
+| ------------ | --------------------- | ------------------------------------- | ---------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------- |
+| EVENT-TIME   | missing-client-facts  | Start time not supplied               | Client program via owner                       | ask client / keep provisional            | Resolved: 19:00 confirmed with full program                                                   |
+| GIFTS-BANK   | missing-client-facts  | Card number, not CLABE                | Owner delivery confirmation, 2026-11-09 (T977) | ask for CLABE / label as card (shared)   | Resolved: BBVA card accepted; `accountKind: 'card'`; no CLABE expected                        |
+| PHOTO-SOURCE | photograph-acceptance | Photos are WhatsApp-class (1066×1600) | Owner delivery confirmation, 2026-11-09 (T977) | request originals / accept as provided   | Resolved: accepted as provided; no originals expected; quality remains `provisional-whatsapp` |
+| DESKTOP-HERO | client-choice         | Desktop cover hid WA0029              | Client picked WA0029                           | WA0029 / WA0034 / full-bleed             | Resolved: WA0029 leads the desktop cover                                                      |
+| PROGRAM      | missing-client-facts  | Single-item program                   | Client program via owner                       | drop program / keep / request program    | Resolved: five-item client program                                                            |
+| MUSIC-AUDIO  | missing-client-facts  | YouTube request with a 0:39 start     | Owner approval, 2026-10-21                     | owner trims and hosts audio / omit music | Resolved: hosted 76 s loop starts at the requested point                                      |
 
 ---
 
@@ -155,8 +154,8 @@ their data exists.
 | ---------------------- | -------------------------------------------------------------------------- |
 | requested              | quote, family (prayer), gallery, gifts, personalizedAccess, rsvp, thankYou |
 | inferred / recommended | countdown, itinerary, location, one interlude (after family)               |
-| omitted                | parents, godparents, ceremony venue, music (until audio exists), photo QR  |
-| unresolved             | bank CLABE, music                                                          |
+| omitted                | parents, godparents, ceremony venue, photo QR                              |
+| unresolved             | none                                                                       |
 
 ---
 
@@ -180,16 +179,20 @@ local exception to the token-remap-only guidance.
 
 ## Creative Direction & Acceptance
 
-**Human creative outcome:** `PENDING`
+**Human creative outcome:** `ACCEPTED`
 
-| concern                                                  | decision / evidence                                       | status     |
-| -------------------------------------------------------- | --------------------------------------------------------- | ---------- |
-| Typography roles (display, heading, body, metadata)      | Preset editorial-magazine roles retained                  | pending    |
-| Vertical rhythm and density                              | Preset rhythm retained                                    | pending    |
-| Surface hierarchy (open flow vs cards/containers)        | Beige paper surfaces with black quote and RSVP chapters   | pending    |
-| Photographic treatment (role, crop, focal point, filter) | Full color (preset desaturation disabled); unique roles   | pending    |
-| Section-intersection intent and narrative cadence        | Reference dividers ported; one interlude after family     | pending    |
-| Local exceptions to the selected preset                  | Ported reference section overrides (see Design Direction) | documented |
+Acceptance basis: the owner confirmed the invitation delivered on 2026-11-09 (T977), with the BBVA
+card and WhatsApp photographs accepted as provided. The earlier Local v4 captures below are
+historical agent evidence; no new visual inspection was performed for this documentation update.
+
+| concern                                                  | decision / evidence                                       | status                |
+| -------------------------------------------------------- | --------------------------------------------------------- | --------------------- |
+| Typography roles (display, heading, body, metadata)      | Preset editorial-magazine roles retained                  | accepted via delivery |
+| Vertical rhythm and density                              | Preset rhythm retained                                    | accepted via delivery |
+| Surface hierarchy (open flow vs cards/containers)        | Beige paper surfaces with black quote and RSVP chapters   | accepted via delivery |
+| Photographic treatment (role, crop, focal point, filter) | Full color (preset desaturation disabled); unique roles   | accepted as provided  |
+| Section-intersection intent and narrative cadence        | Reference dividers ported; one interlude after family     | accepted via delivery |
+| Local exceptions to the selected preset                  | Ported reference section overrides (see Design Direction) | documented            |
 
 ### Creative acceptance record
 
@@ -197,10 +200,10 @@ local exception to the token-remap-only guidance.
 | ------------------------------------------- | -------------------------------------------- |
 | Mechanical render/capture result            | pass — Local v4 rendered every section       |
 | Whole-invitation responsive inspection      | 390×844 and 1440×900 captured (agent review) |
-| Section boundaries and narrative continuity | pending                                      |
-| Human creative outcome                      | `PENDING`                                    |
-| Reviewer and date                           | —                                            |
-| Blocking reason or owner follow-up          | Bank CLABE, music, photo originals           |
+| Section boundaries and narrative continuity | Accepted via owner delivery confirmation     |
+| Human creative outcome                      | `ACCEPTED`                                   |
+| Reviewer and date                           | Owner, delivery confirmed 2026-11-09 (T977)  |
+| Blocking reason or owner follow-up          | None                                         |
 
 ---
 
@@ -208,7 +211,8 @@ local exception to the token-remap-only guidance.
 
 Source label: `source:hr-photos` (opaque)  
 All 22 received files are WhatsApp-class JPEGs. 15 were selected; 7 near-duplicates were not
-ingested.
+ingested. The owner accepted these photographs as provided (delivery confirmed 2026-11-09, T977);
+their `provisional-whatsapp` quality classification is preserved.
 
 | source filename | dims      | format | orientation | weight | quality              | role             | duplicate     | processing           | derivative             |
 | --------------- | --------- | ------ | ----------- | ------ | -------------------- | ---------------- | ------------- | -------------------- | ---------------------- |
@@ -299,9 +303,9 @@ crops so the full dress is not revealed.
   "lluvia de sobres o transferencia"); the transfer item reads "Transferencia bancaria" and the
   profile renders its data as a subtle simulated card (ink, guilloché, gold chip, generic — no bank
   branding) with a visible "Copiar" pill; labels stay for screen readers. The BBVA card item (holder
-  "Destenid Sofía Magaña Almaraz", `accountKind: 'card'`, shown in groups of four) is added only
-  when the owner fills `GIFT_TRANSFER_CARD` in the definition — the number is not typed by tooling.
-  A CLABE is safer to publish than a card number if the client can supply one.
+  "Destenid Sofía Magaña Almaraz", `accountKind: 'card'`, shown in groups of four) uses the
+  owner-supplied `GIFT_TRANSFER_CARD` in the definition. This accepted transfer method does not
+  await a CLABE; the number is not copied into this document.
 - Hero typography: Bodoni Moda optical-size and true-italic cuts; ivory capitals with a gold italic
   "Sofía" signature; Bodoni italic tagline; the theme's gold gradient glint is disabled.
 - Hero composition: the theme's clipped 3 % "XV" watermark (read as "\ \" because Bodoni's hairlines
@@ -323,9 +327,9 @@ crops so the full dress is not revealed.
   so the visible heading is an icon. Shared fix tracked separately.
 - Structural selections: hero `editorial-cover`; family `standard` without parents or godparents
   (prayer in `labels.sectionMessage`, `prayerPortrait` photo); countdown `magazine-folio`; itinerary
-  `editorial-program` (one reception item); location `standard` with one reception venue; gallery
-  `magazine-spread` with mobile rail; gifts `editorial-catalog` (cash only); RSVP
-  `editorial-press-pass` with personalized access `editorial-pass`; thank-you
+  `editorial-program` (five client-program items); location `standard` with one reception venue;
+  gallery `magazine-spread` with mobile rail; gifts `editorial-catalog` (cash and BBVA card
+  transfer); RSVP `editorial-press-pass` with personalized access `editorial-pass`; thank-you
   `editorial-back-cover`; envelope `editorial-cover`.
 - Closing sections (profile SCSS only): the prayer is a two-column magazine page on desktop (4:5
   plate zoomed on the celebrant, gold offset rule, "— Con fe" caption, gold Bodoni initial); the
@@ -361,13 +365,14 @@ crops so the full dress is not revealed.
   on desktop; music prompt in ink and gold. Face-safety spec now clips each forbidden zone to the
   photograph's visible frame (a scaled photo overflows it).
 - Lane B: none.
-- Music omit / include: omitted until a trimmed, hosted audio file exists.
+- Music omit / include: included via `MUSIC_URL`; the hosted file already contains the approved cut.
 - Other: no photo QR (paid add-on not purchased).
 
 ---
 
 ## Preparation Readiness History
 
-| date       | readiness                 | helper basis                                           | notes                                    |
-| ---------- | ------------------------- | ------------------------------------------------------ | ---------------------------------------- |
-| 2026-09-29 | `READY_WITH_PLACEHOLDERS` | non-blocking placeholders; provisional-whatsapp assets | Local implementation; Production blocked |
+| date       | readiness                 | helper basis                                           | notes                                                          |
+| ---------- | ------------------------- | ------------------------------------------------------ | -------------------------------------------------------------- |
+| 2026-09-29 | `READY_WITH_PLACEHOLDERS` | non-blocking placeholders; provisional-whatsapp assets | Local implementation; Production blocked                       |
+| 2026-11-10 | `READY_WITH_PLACEHOLDERS` | provisional-whatsapp classification retained           | Release #887 published; accepted client data; no open blockers |
