@@ -10,6 +10,39 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.70.0] - 2026-11-11
+
+Adds the order lifecycle to the dashboard, keeps hosts signed in, publishes the Valeria Hernández
+invitation and moves Naomi's RSVP deadline. Includes migration `20261110130000` (order payments and
+stages); the two `20261110100000`/`20261110120000` migrations only release archived Preview data.
+
+### Added
+
+- Dashboard: orders track their full lifecycle with payments and stages (#907).
+- Invitations: Valeria Hernández XV invitation (#910) and the second client round of Yireh Ana
+  (#909).
+- Demos: the Enchanted Rose demo is redesigned with a jewelry-box finish (#906).
+- Release: release checks are required before Worker upload and activation (#893); the data
+  prerequisites gate verifies metadata roles, pending password changes and a wider scanner scope
+  (#896, #898, #899, #911); a guarded Preview admin bootstrap (#917).
+
+### Changed
+
+- Dashboard: commercial reports move off the sales tab and deposit fields are clarified (#901).
+- Docs: owner-only production steps and docs index (#916); Destenid Sofía preparation sheet (#891).
+
+### Fixed
+
+- Invitations: Naomi Huerta's invitation asks guests to confirm before Friday 20 November (#915).
+- Auth: hosts stay signed in and are no longer asked for MFA repeatedly (#903); a 401 from a direct
+  panel fetch redirects to login (#904).
+- Demos: the floating quote keeps its room and uses palette tokens (#885).
+- Release: historical invitation patches require verification (#897); the active package hash
+  baseline is updated (#894); invitation note deletions compare from the merge base (#913).
+- Preview data: the archived wedding slug, identity constraints and asset paths are released (#892,
+  #900); the login alias backfill is marked verified (#895).
+- Visual: capture images decode synchronously so full-page frames match (#918).
+
 ## [0.69.2-beta.1] - 2026-11-05
 
 Sizes the `/xv/andrea` hero arch to the accepted portrait. No migrations.

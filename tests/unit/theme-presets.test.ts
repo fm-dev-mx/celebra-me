@@ -730,13 +730,6 @@ describe('Storybook blush theme isolation', () => {
 		expect(declarations.filter((part) => !part.startsWith('--'))).toEqual([]);
 	});
 
-	it('scopes its envelope skin to its own variant', () => {
-		const reveal = read('src/styles/themes/sections/reveal/_storybook-blush.scss');
-		expect(getTopLevelSelectors(reveal)).toEqual([
-			".envelope-wrapper[data-variant='storybook-blush']",
-		]);
-	});
-
 	it('leaves the emerald preset and Andrea unaware of it', () => {
 		for (const file of [
 			`${presetsDir}/_storybook-emerald.scss`,

@@ -27,4 +27,30 @@
 	.invitation-hero[data-variant='standard'] {
 		--hero-focal-point-default: 50% 30%;
 	}
+
+	// ---- Envelope ----
+	// A letter of grace: a dusk sky where the preset's ink meets a whisper of sage, ink-and-gold
+	// paper with a grace-gold hairline and stars, and the card inside on pearl with grace ink.
+	.envelope-wrapper[data-variant='celestial-letter'] {
+		--celestial-letter-field: color-mix(
+			in srgb,
+			rgb(var(--color-grace-sage-rgb)) 16%,
+			var(--color-grace-ink)
+		);
+		--celestial-letter-paper: color-mix(
+			in srgb,
+			var(--color-grace-ink) 78%,
+			var(--color-grace-gold)
+		);
+		--celestial-letter-liner: color-mix(
+			in srgb,
+			var(--color-grace-ink) 90%,
+			var(--color-grace-gold)
+		);
+		--celestial-letter-ink: var(--color-grace-gold);
+		--celestial-letter-star: var(--color-grace-pearl);
+		--celestial-letter-card: var(--color-grace-pearl);
+		--celestial-letter-card-ink: var(--color-grace-ink);
+		--celestial-letter-card-accent: var(--color-grace-gold-readable);
+	}
 }
