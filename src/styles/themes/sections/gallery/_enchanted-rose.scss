@@ -1,0 +1,17 @@
+@use '../../../global/mixins' as mixins;
+
+// Phones: the opening photo keeps the full width, the detail shots pair up two by two, and a photo
+// left over at the end closes the run at full width, so the album reads short instead of as one
+// long column.
+.theme-preset--enchanted-rose .gallery-section {
+	@include mixins.respond-below(md) {
+		--gallery-grid-columns-mobile: 2;
+		--gallery-grid-column-gap: 0.75rem;
+		--gallery-grid-row-gap: 0.75rem;
+
+		.gallery-grid__item:first-child,
+		.gallery-grid__item:last-child:nth-child(even) {
+			grid-column: 1 / -1;
+		}
+	}
+}

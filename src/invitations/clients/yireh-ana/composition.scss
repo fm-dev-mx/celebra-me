@@ -328,3 +328,152 @@ $yireh-ribbon-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000
 	margin-inline: 0;
 	text-align: start;
 }
+
+// Round 2: every send-off ribbon carries a small bow beside it, so the envelope lets twice as many
+// bows fly. The bloom behind each ribbon becomes the bow; it rises with its ribbon and leaves with it.
+.event--yireh-ana.lantern-send-off .storybook-sky__butterfly::before {
+	content: '';
+	position: absolute;
+	inset: auto;
+	top: -55%;
+	left: 70%;
+	width: 70%;
+	aspect-ratio: 120 / 84;
+	height: auto;
+	background: url('./assets/bow.webp') center / contain no-repeat;
+	border-radius: 0;
+	opacity: 100%;
+	filter: none;
+	rotate: 14deg;
+	animation: yireh-bow-bob 1.3s ease-in-out infinite alternate;
+
+	@include motion.reduced-motion {
+		animation: none;
+	}
+
+	@keyframes yireh-bow-bob {
+		from {
+			translate: 0 0;
+			rotate: 14deg;
+		}
+
+		to {
+			translate: 0.3rem -0.4rem;
+			rotate: -10deg;
+		}
+	}
+}
+
+// Round 2: each moment of the program is tied with a small bow that flies onto the ribbon as the
+// moment comes forward. With reduced motion, or unpinned, the bows simply sit on the ribbon. The
+// scene selectors are spelled out here (the motion flag sits on the scope element itself) because
+// a slug composition may not load the shared scene mixins.
+.event--yireh-ana {
+	$route: ".itinerary[data-itinerary-scene='ribbon-route']";
+	$timeline-scene: ':where(.scroll-scene *)';
+	$scripted-scene: ":where(.scroll-scene[data-scene-engine='script'] *)";
+
+	#{$route} .ribbon-route__knot {
+		top: 0.2em;
+		left: -3.15rem;
+		width: 1.75rem;
+		height: auto;
+		aspect-ratio: 120 / 84;
+		border-radius: 0;
+		background: url('./assets/bow.webp') center / contain no-repeat;
+		box-shadow: none;
+	}
+
+	#{$route} .ribbon-route__bow {
+		margin-top: -0.25rem;
+	}
+
+	// Phones: the program's type steps down so the five moments and the bow fit the stage, with
+	// room to spare on the shortest screens.
+	@media (width < 1024px) and (height <= 900px) {
+		#{$route} {
+			--itinerary-ribbon-label-size: 1.25rem;
+			--itinerary-ribbon-desc-size: 0.85rem;
+			--itinerary-ribbon-time-size: 0.85rem;
+		}
+
+		#{$route} .ribbon-route__description {
+			line-height: 1.25;
+		}
+	}
+
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			&[data-motion='editorial'] #{$route} .ribbon-route__knot#{$timeline-scene} {
+				animation-name: yireh-bow-alight;
+			}
+		}
+
+		#{$route} .ribbon-route__knot#{$scripted-scene} {
+			scale: calc(0.4 + 0.6 * var(--ribbon-lit));
+			opacity: var(--ribbon-lit);
+			translate: calc((1 - var(--ribbon-lit)) * 1.5rem) calc((1 - var(--ribbon-lit)) * -1rem);
+			rotate: calc((1 - var(--ribbon-lit)) * -30deg);
+		}
+
+		// Pinned: the program fits the stage, so the bow after «Cierre» shows whole even on short
+		// phones: tighter rows, and the bow tucked up under the last moment.
+		@supports (animation-timeline: view()) {
+			&[data-motion='editorial'] #{$route} {
+				.ribbon-route__moments#{$timeline-scene} {
+					gap: clamp(0.5rem, 1.6svh, 1.25rem);
+				}
+
+				.ribbon-route__header#{$timeline-scene} {
+					margin-bottom: clamp(0.75rem, 2.5svh, 2rem);
+				}
+
+				.ribbon-route__note#{$timeline-scene} {
+					margin-top: clamp(0.5rem, 1.5svh, 1.5rem);
+				}
+
+				@media (width < 1024px) and (height <= 900px) {
+					.ribbon-route__moments#{$timeline-scene} {
+						gap: 0.4rem;
+					}
+				}
+			}
+		}
+
+		#{$route} {
+			.ribbon-route__moments#{$scripted-scene} {
+				gap: clamp(0.5rem, 1.6svh, 1.25rem);
+			}
+
+			.ribbon-route__header#{$scripted-scene} {
+				margin-bottom: clamp(0.75rem, 2.5svh, 2rem);
+			}
+
+			.ribbon-route__note#{$scripted-scene} {
+				margin-top: clamp(0.5rem, 1.5svh, 1.5rem);
+			}
+
+			@media (width < 1024px) and (height <= 900px) {
+				.ribbon-route__moments#{$scripted-scene} {
+					gap: 0.4rem;
+				}
+			}
+		}
+	}
+
+	@keyframes yireh-bow-alight {
+		from {
+			opacity: 0%;
+			scale: 0.4;
+			translate: 1.5rem -1rem;
+			rotate: -30deg;
+		}
+
+		to {
+			opacity: 100%;
+			scale: 1;
+			translate: 0 0;
+			rotate: 0deg;
+		}
+	}
+}

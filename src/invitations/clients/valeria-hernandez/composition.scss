@@ -1,0 +1,115 @@
+@use '../../../styles/tools/motion';
+
+// Valeria's cherry disco motifs: a silver mirror ball turning behind the countdown, a scatter of
+// four-point stars around it, and a sparkle rule under the closing name. Every motif is a pale
+// silver line drawing so the wine night stays the ground and the photographs stay the lead.
+
+// The mirror ball: a sphere, its meridians and parallels, and the short cord it hangs from.
+$valeria-mirror-ball: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 220' fill='none' stroke='%23E4E6F0' stroke-width='1.2' stroke-linecap='round'%3E%3Cpath d='M100 0v30'/%3E%3Ccircle cx='100' cy='120' r='88'/%3E%3Cellipse cx='100' cy='120' rx='30' ry='88'/%3E%3Cellipse cx='100' cy='120' rx='60' ry='88'/%3E%3Cpath d='M100 32v176'/%3E%3Cellipse cx='100' cy='120' rx='88' ry='22'/%3E%3Cellipse cx='100' cy='120' rx='88' ry='52'/%3E%3Cpath d='M12 120h176'/%3E%3Cpath d='M38 58h124M38 182h124' stroke-opacity='.7'/%3E%3C/svg%3E");
+
+// Four-point stars of three sizes, scattered like light thrown by the ball.
+$valeria-stars: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400' fill='%23E4E6F0'%3E%3Cpath d='M60 40l4 14 14 4-14 4-4 14-4-14-14-4 14-4z'/%3E%3Cpath d='M340 70l3 10 10 3-10 3-3 10-3-10-10-3 10-3z'/%3E%3Cpath d='M320 300l5 17 17 5-17 5-5 17-5-17-17-5 17-5z'/%3E%3Cpath d='M80 320l3 9 9 3-9 3-3 9-3-9-9-3 9-3z'/%3E%3Cpath d='M200 22l2 7 7 2-7 2-2 7-2-7-7-2 7-2z'/%3E%3Cpath d='M30 200l2 6 6 2-6 2-2 6-2-6-6-2 6-2z'/%3E%3Cpath d='M372 200l2 6 6 2-6 2-2 6-2-6-6-2 6-2z'/%3E%3Cpath d='M200 370l2 7 7 2-7 2-2 7-2-7-7-2 7-2z'/%3E%3C/svg%3E");
+
+// A sparkle rule: two hairlines with a four-point star between them.
+$valeria-sparkle-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 16'%3E%3Cpath d='M8 8h36M60 8h36' stroke='%23E4E6F0' stroke-width='1' stroke-linecap='round'/%3E%3Cpath fill='%23E4E6F0' d='M52 1l1.8 5.2L59 8l-5.2 1.8L52 15l-1.8-5.2L45 8l5.2-1.8z'/%3E%3C/svg%3E");
+
+.event--valeria-hernandez.event-theme-wrapper .countdown-section {
+	.countdown-texture {
+		overflow: hidden;
+
+		&::before,
+		&::after {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			content: '';
+			translate: -50% -50%;
+		}
+
+		&::before {
+			width: min(92vw, 22rem);
+			aspect-ratio: 200 / 220;
+			background: $valeria-mirror-ball center / contain no-repeat;
+			opacity: 20%;
+		}
+
+		&::after {
+			width: min(140vw, 34rem);
+			aspect-ratio: 1;
+			background: $valeria-stars center / contain no-repeat;
+			opacity: 45%;
+		}
+	}
+
+	// The preset inks the title in the night tone; on the wine sky it reads in pale cherry.
+	.countdown-title {
+		color: var(--color-night-blush);
+	}
+
+	.countdown-invitation-text {
+		color: var(--color-night-blush);
+		font-family: var(--font-calligraphy);
+		font-size: 2.5rem;
+		font-style: normal;
+		line-height: 1.1;
+		opacity: 100%;
+	}
+
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			.countdown-texture::before {
+				animation: valeria-ball-turn linear both;
+				animation-timeline: view();
+				animation-range: cover;
+			}
+		}
+
+		.countdown-texture::after {
+			animation: valeria-stars-twinkle 4.8s ease-in-out infinite alternate;
+		}
+	}
+
+	@keyframes valeria-ball-turn {
+		from {
+			rotate: -12deg;
+			scale: 0.94;
+		}
+
+		to {
+			rotate: 12deg;
+		}
+	}
+
+	@keyframes valeria-stars-twinkle {
+		from {
+			opacity: 30%;
+		}
+
+		to {
+			opacity: 55%;
+		}
+	}
+}
+
+// The closing name carries the page, large in pale cherry over a sparkle rule.
+.event--valeria-hernandez.event-theme-wrapper .thank-you-section[data-variant='portrait-keepsake'] {
+	.thank-you-message {
+		font-size: 1.25rem;
+	}
+
+	.closing-name {
+		color: var(--color-night-blush);
+		font-size: clamp(5rem, 22vw, 7rem);
+		line-height: 1;
+		text-shadow: 0 0 1.5rem rgb(var(--color-rose-glow-rgb) / 55%);
+
+		&::after {
+			display: block;
+			width: 9rem;
+			aspect-ratio: 104 / 16;
+			margin: 0.5rem auto 0;
+			background: $valeria-sparkle-rule center / contain no-repeat;
+			content: '';
+		}
+	}
+}

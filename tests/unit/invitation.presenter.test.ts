@@ -119,10 +119,10 @@ describe('prepareInvitationPageContext', () => {
 		expect(context.viewModel.sectionOrder).toBeDefined();
 		expect(describeRenderPlan(context.renderPlan)).toEqual([
 			'quote',
-			'location',
 			'countdown',
 			'family',
 			'interlude',
+			'location',
 			'itinerary',
 			'gallery',
 			'interlude',
@@ -176,11 +176,11 @@ describe('prepareInvitationPageContext', () => {
 			eventEntry: event,
 		});
 
-		expect(context.viewModel.hero.focalPointMobile).toBe('50% 32%');
-		expect(context.viewModel.hero.focalPointTablet).toBe('50% 24%');
-		expect(context.viewModel.hero.focalPointDesktop).toBe('50% 21%');
+		expect(context.viewModel.hero.focalPointMobile).toBe('50% 30%');
+		expect(context.viewModel.hero.focalPointTablet).toBe('50% 28%');
+		expect(context.viewModel.hero.focalPointDesktop).toBe('50% 26%');
 		expect(context.viewModel.interludes?.[1]).toMatchObject({
-			focalPoint: '54% 22%',
+			focalPoint: '50% 60%',
 		});
 	});
 

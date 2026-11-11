@@ -1,7 +1,7 @@
 {
     "name": "celebra-me.com",
     "type": "module",
-    "version": "0.69.2-beta.1",
+    "version": "0.70.0",
     "engines": {
         "node": ">=22.23.4 <25"
     },
@@ -82,6 +82,7 @@
         "db:integrity:snapshot": "tsx scripts/db/capture-data-integrity-snapshot.ts",
         "db:contract:verify": "tsx scripts/db/verify-mutation-schema-contract.ts",
         "db:prod:audit": "tsx scripts/db/db-guard.ts check --target production --operation audit && tsx scripts/db/audit-db.ts --target production",
+        "db:preview:bootstrap-admin": "tsx scripts/db/bootstrap-preview-admin.ts",
         "db:preview:audit": "tsx scripts/db/db-guard.ts check --target preview --operation audit && tsx scripts/db/audit-db.ts --target preview",
         "db:preview:sync-invitations": "tsx scripts/db/db-guard.ts check --target preview --operation sync-invitations --db-url \"${PREVIEW_DB_URL}\" && tsx scripts/db/preview-sync-invitations.ts",
         "db:local:audit": "tsx scripts/db/db-guard.ts check --target persistent-local --operation audit && tsx scripts/db/audit-db.ts --target persistent-local",
@@ -134,6 +135,7 @@
         "invitation:registry": "tsx scripts/provision/invitations/generate-client-registry.ts",
         "invitation:reconcile": "tsx scripts/provision/invitation-reconcile-cli.ts",
         "invitation:content-parity": "tsx scripts/provision/content-parity-cli.ts",
+        "preview:admin:session": "tsx scripts/playwright/preview-admin-session.ts",
         "invitation:preview-fixture": "tsx scripts/provision/preview-e2e-fixture-cli.ts",
         "invitation:inventory-audit": "tsx scripts/provision/inventory-audit-cli.ts",
         "invitation:legacy-storage-audit": "tsx scripts/provision/legacy-storage-audit-cli.ts",
