@@ -14,6 +14,9 @@ jest.mock('@/lib/tracking/lead.repository', () => ({}));
 jest.mock('@/lib/commercial/meta-capi/lead-stage-events', () => ({
 	enqueueMetaCrmLeadStageEvent: jest.fn(),
 }));
+jest.mock('@/lib/commercial/meta-capi/order-settled', () => ({
+	enqueueOrderSettledEvent: jest.fn().mockResolvedValue('settled-event-id'),
+}));
 
 import {
 	findOrderProductionSources,
@@ -23,6 +26,7 @@ import {
 	setSalesOrderEventDate,
 } from '@/lib/commercial/orders.repository';
 import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
+import { enqueueOrderSettledEvent } from '@/lib/commercial/meta-capi/order-settled';
 import {
 	getCommercialOrderDetail,
 	registerCommercialOrderPayment,
@@ -46,15 +50,42 @@ const input = {
 beforeEach(() => jest.clearAllMocks());
 
 describe('registerCommercialOrderPayment', () => {
-	it('records the payment through the atomic RPC and sends no Meta event', async () => {
+	it('records an installment through the atomic RPC and sends no Meta event', async () => {
 		mockRegister.mockResolvedValue({
-			order: { id: 'order-id' },
+			order: { id: 'order-id', amountPaid: 800, totalAmount: 1800, isPastSale: false },
 			payment: { id: 'p1' },
 		} as never);
-		const result = await registerCommercialOrderPayment(input);
+		const waitUntil = jest.fn();
+		const result = await registerCommercialOrderPayment(input, { after: { waitUntil } });
 		expect(mockRegister).toHaveBeenCalledWith(input);
 		expect(result.payment).toEqual({ id: 'p1' });
+		expect(waitUntil).not.toHaveBeenCalled();
+		expect(enqueueOrderSettledEvent).not.toHaveBeenCalled();
 		expect(deliverMetaConversionEvent).not.toHaveBeenCalled();
+	});
+
+	it('queues and delivers OrderSettled when the payment settles the balance', async () => {
+		mockRegister.mockResolvedValue({
+			order: {
+				id: 'order-id',
+				customerId: 'customer-id',
+				leadId: 'lead-id',
+				amountPaid: 1800,
+				totalAmount: 1800,
+				isPastSale: false,
+			},
+			payment: { id: 'p2' },
+		} as never);
+		const waitUntil = jest.fn();
+		await registerCommercialOrderPayment(input, { after: { waitUntil } });
+		expect(waitUntil).toHaveBeenCalledTimes(1);
+		await Promise.all(waitUntil.mock.calls.map((call) => call[0]));
+		expect(enqueueOrderSettledEvent).toHaveBeenCalledWith({
+			orderId: 'order-id',
+			customerId: 'customer-id',
+			leadId: 'lead-id',
+		});
+		expect(deliverMetaConversionEvent).toHaveBeenCalledWith('settled-event-id');
 	});
 
 	it('rejects a non positive amount before calling the database', async () => {
