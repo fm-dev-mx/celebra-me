@@ -329,6 +329,36 @@ describe('release check evidence', () => {
 		expect(() => loadLatestProductionDeployment(failed)).toThrow('did not succeed');
 	});
 
+	it('accepts a deploy run whose no-traffic version deployment went inactive', () => {
+		const paired = ghRunner({
+			'deployments?environment=Cloudflare%20Production&per_page=100': [
+				{ id: 43, environment: 'Cloudflare Production', sha },
+				{ id: 42, environment: 'Cloudflare Production', sha },
+			],
+			'deployments/43/statuses?per_page=100': [{ state: 'inactive' }, { state: 'success' }],
+			'deployments/42/statuses?per_page=100': [{ state: 'success' }],
+		});
+		expect(loadLatestProductionDeployment(paired)).toEqual({ id: 42, sha });
+		const pairedFailure = ghRunner({
+			'deployments?environment=Cloudflare%20Production&per_page=100': [
+				{ id: 43, environment: 'Cloudflare Production', sha },
+				{ id: 42, environment: 'Cloudflare Production', sha },
+			],
+			'deployments/43/statuses?per_page=100': [{ state: 'inactive' }],
+			'deployments/42/statuses?per_page=100': [{ state: 'failure' }],
+		});
+		expect(() => loadLatestProductionDeployment(pairedFailure)).toThrow('did not succeed');
+		const loneInactive = ghRunner({
+			'deployments?environment=Cloudflare%20Production&per_page=100': [
+				{ id: 43, environment: 'Cloudflare Production', sha },
+				{ id: 41, environment: 'Cloudflare Production', sha: 'b'.repeat(40) },
+			],
+			'deployments/43/statuses?per_page=100': [{ state: 'inactive' }],
+			'deployments/41/statuses?per_page=100': [{ state: 'success' }],
+		});
+		expect(() => loadLatestProductionDeployment(loneInactive)).toThrow('did not succeed');
+	});
+
 	it.each(['Cloudflare Production', 'cloudflare production', ' Cloudflare Production '])(
 		'accepts a normalized Production deployment environment: %s',
 		(environment) => {

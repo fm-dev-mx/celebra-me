@@ -7,6 +7,10 @@ import { getActiveCampaign, getPackagePrice } from '@/data/promo-campaign.data';
 jest.mock('@/lib/dashboard/api-client', () => ({
 	dashboardApi: { get: jest.fn(), post: jest.fn() },
 }));
+jest.mock('@/components/dashboard/orders/OrderDetailPanel', () => ({
+	__esModule: true,
+	default: ({ orderId }: { orderId: string }) => <div>Pagos del pedido: {orderId}</div>,
+}));
 jest.mock('@/components/dashboard/commercial/InvitationDataPanel', () => ({
 	__esModule: true,
 	default: ({ orderId }: { orderId: string }) => <div>Datos de su invitación: {orderId}</div>,
@@ -153,7 +157,7 @@ test('opens an order detail with customer and event date', async () => {
 		),
 	);
 	render(<OrdersWorkspace />);
-	fireEvent.click(await screen.findByText('Ver detalle'));
+	fireEvent.click(await screen.findByText('Ver detalle y pagos'));
 	expect(await screen.findByText(/Cliente: Cliente de prueba/)).toBeInTheDocument();
 	expect(screen.getAllByText(/Fecha del evento/).length).toBeGreaterThan(0);
 });

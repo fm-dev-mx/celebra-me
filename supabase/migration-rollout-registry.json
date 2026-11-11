@@ -1,6 +1,15 @@
 {
     "$schemaComment": "Migration / deployment compatibility registry. SSOT for expand|neutral|contract phases. Docs: docs/database-workflow.md",
     "migrations": {
+        "20261110130000": {
+            "phase": "contract",
+            "provides": ["order_lifecycle_payments"],
+            "revokes": [
+                "sales_order_payments_initial_privileges",
+                "register_commercial_order_payment_initial_execute"
+            ],
+            "notes": "Registered as contract only because its REVOKE statements initialize privileges on objects it creates (the sales_order_payments table and register_commercial_order_payment); no existing access is removed. Adds sales_orders.event_date, the service-role-only sales_order_payments ledger (deposit, installment, settlement; backfilled with one deposit row per paid order) and register_commercial_order_payment; replaces register_commercial_deposit_purchase keeping signature, privileges and the Purchase total value, additionally writing the deposit ledger row and moving an order whose deposit covers the total to paid. Additive. Must be applied before the app that records installments and settlements is deployed."
+        },
         "20261110120000": {
             "phase": "neutral",
             "notes": "Data only: frees storage_path paths (idx_invitation_assets_storage_path) retained by the archived Preview copy b789dbc3 of daniela-y-martin without deleting evidence or remote storage objects. Idempotent Preview-only update by immutable UUID; Production has different IDs and is completely untouched."

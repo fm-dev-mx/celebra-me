@@ -643,16 +643,30 @@ Use `pnpm db:prod:backup` followed by `pnpm db:local:restore-from-dump` for a no
 - Use for initial local setup or to repair the local admin without resetting the database.
 - Never hardcode real emails or passwords in source or docs.
 
+`pnpm db:preview:bootstrap-admin [--dry-run|--apply] [--json]`
+
+- Connects only to the Preview project (`iwipdvisoyerfdytuhwi`) through `PREVIEW_DB_URL`; any other
+  ref is rejected and the Production ref is always rejected.
+- Verifies (default, read-only) or sets (`--apply`) the password of the existing
+  `preview@preview.com` Auth user from `PLAYWRIGHT_HOST_PASSWORD` in `.env.e2e.local`
+  (`PLAYWRIGHT_HOST_LOGIN` must be exactly `preview@preview.com`). It never creates Auth users.
+- The password is loaded inside the process and travels only over psql stdin; it is never printed,
+  logged or returned. The dry-run compares it against the stored bcrypt hash in SQL.
+- `--apply` also confirms the email, sets `raw_app_meta_data.role = 'super_admin'` and upserts
+  `public.app_user_roles.role = 'super_admin'`, then re-verifies. A TTY asks for `YES`; a non-TTY
+  run requires `CELEBRA_TASK_SCOPE=preview:preview-admin:bootstrap-admin`.
+- Agents may run the dry-run. `--apply` needs the owner's explicit approval in the current task.
+
 ### Agent application identities (Local / Preview)
 
 Agents must authenticate through normal product roles. Do not use browser `service_role`, arbitrary
 DB privileges, Production access, or agent-only authorization bypasses invented for tooling.
 
-| Environment    | Identity                                                             | Role           | Provision / repair                                                             | Used for                                                                      |
-| -------------- | -------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| **Local**      | First `SUPER_ADMIN_EMAILS` entry via `pnpm db:local:bootstrap-admin` | `super_admin`  | `db:local:bootstrap-admin`, `db:local:validate`                                | Login, Editor, RLS admin flows, local authenticated E2E (`PLAYWRIGHT_HOST_*`) |
-| **Preview**    | `preview@preview.com`                                                | `super_admin`  | Preview mirror ownership remap; MFA bypass only via `PREVIEW_MFA_BYPASS` gates | Login, Editor, authenticated Preview E2E                                      |
-| **Production** | Owner-only operators                                                 | N/A for agents | —                                                                              | Agents: dry-run / read-only; `--apply` promote is owner-only                  |
+| Environment    | Identity                                                             | Role           | Provision / repair                                                                                           | Used for                                                                             |
+| -------------- | -------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| **Local**      | First `SUPER_ADMIN_EMAILS` entry via `pnpm db:local:bootstrap-admin` | `super_admin`  | `db:local:bootstrap-admin`, `db:local:validate`                                                              | Login, Editor, RLS admin flows, local authenticated E2E (`PLAYWRIGHT_HOST_*`)        |
+| **Preview**    | `preview@preview.com`                                                | `super_admin`  | `db:preview:bootstrap-admin`; Preview mirror ownership remap; MFA bypass only via `PREVIEW_MFA_BYPASS` gates | Login, Editor, authenticated Preview E2E, agent sessions via `preview:admin:session` |
+| **Production** | Owner-only operators                                                 | N/A for agents | —                                                                                                            | Agents: dry-run / read-only; `--apply` promote is owner-only                         |
 
 CLI provision scripts may use `service_role` in trusted server context only; that is not an
 application login substitute. Host invitation flows continue to use real `host_client` users from

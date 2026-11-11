@@ -246,6 +246,21 @@ function isProductionDeploymentEnvironment(value: unknown): boolean {
 	);
 }
 
+function loadLatestDeploymentState(
+	client: ReturnType<typeof createGitHubClient>,
+	id: number,
+): unknown {
+	const statuses = client.api(`deployments/${id}/statuses?per_page=100`) as Array<{
+		state?: unknown;
+	}>;
+	if (!Array.isArray(statuses) || statuses.length === 0 || statuses.length >= 100)
+		throw new RemoteEvidenceError(
+			'unavailable',
+			'Production deployment status is unavailable or incomplete.',
+		);
+	return statuses[0]?.state;
+}
+
 export function loadLatestProductionDeployment(
 	run: GhRunner = defaultGhRunner,
 ): ProductionDeploymentEvidence {
@@ -267,17 +282,26 @@ export function loadLatestProductionDeployment(
 			'unavailable',
 			'Production deployment history is unavailable or incomplete.',
 		);
-	const statuses = client.api(`deployments/${id}/statuses?per_page=100`) as Array<{
-		state?: unknown;
-	}>;
-	if (!Array.isArray(statuses) || statuses.length === 0 || statuses.length >= 100)
-		throw new RemoteEvidenceError(
-			'unavailable',
-			'Production deployment status is unavailable or incomplete.',
-		);
-	if (statuses[0]?.state !== 'success')
-		throw new RemoteEvidenceError('invalid', 'Latest Production deployment did not succeed.');
-	return { id, sha };
+	// One deploy run records two deployments of the same SHA: the GitHub Actions job environment
+	// (ends in success) and the no-traffic Worker version smoke (ends inactive once smoked). Walk
+	// the newest deployments of the latest SHA, skip inactive ones, and require the first decisive
+	// status to be a success.
+	for (const entry of deployments) {
+		if (!isProductionDeploymentEnvironment(entry.environment)) continue;
+		const entrySha = typeof entry.sha === 'string' ? entry.sha.toLowerCase() : '';
+		if (entrySha !== sha) break;
+		const entryId = typeof entry.id === 'number' ? entry.id : null;
+		if (!entryId)
+			throw new RemoteEvidenceError(
+				'unavailable',
+				'Production deployment history is unavailable or incomplete.',
+			);
+		const state = loadLatestDeploymentState(client, entryId);
+		if (state === 'inactive') continue;
+		if (state !== 'success') break;
+		return { id: entryId, sha };
+	}
+	throw new RemoteEvidenceError('invalid', 'Latest Production deployment did not succeed.');
 }
 /** GitHub check-run statuses and commit-status states that mean "not finished yet". */
 const PENDING_CHECK_STATES: ReadonlySet<string> = new Set([

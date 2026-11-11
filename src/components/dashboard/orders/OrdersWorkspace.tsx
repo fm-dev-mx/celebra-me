@@ -1,8 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { dashboardApi } from '@/lib/dashboard/api-client';
 import type { SalesOrder } from '@/lib/commercial/orders.repository';
 import type { Customer, LeadCandidate } from '@/components/dashboard/commercial/LeadCandidatesList';
 import InvitationDataPanel from '@/components/dashboard/commercial/InvitationDataPanel';
+import OrderDetailPanel from '@/components/dashboard/orders/OrderDetailPanel';
+import OrderCustomerDetail, {
+	eventDateLabel,
+} from '@/components/dashboard/orders/OrderCustomerDetail';
+import {
+	API,
+	OrdersMutationError,
+	getData,
+	postData,
+} from '@/components/dashboard/orders/orders-api';
 import { normalizeCommercialPhone } from '@/lib/commercial/phone';
 import {
 	PACKAGE_CATALOG,
@@ -15,9 +24,7 @@ import {
 	labelCommercialEventType,
 } from '@/lib/tracking/commercial-presentation';
 
-import CustomerOrdersBox from '@/components/dashboard/commercial/CustomerOrdersBox';
 import {
-	CustomerReferralPanel,
 	EMPTY_ORDER_REFERRAL,
 	OrderReferralFields,
 	buildOrderReferralPayload,
@@ -29,7 +36,6 @@ interface OrderPage {
 	nextOffset: number | null;
 }
 
-const API = '/api/dashboard/commercial';
 const money = (value: number) =>
 	new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value);
 const statusLabel = (order: SalesOrder) =>
@@ -50,31 +56,6 @@ const filterQuery = (filters: OrderFilters) =>
 		.join('');
 const today = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mazatlan' });
 
-async function getData<T>(path: string): Promise<T> {
-	const result = await dashboardApi.get<{ data: T }>(path);
-	if (!result.ok) throw new Error(result.message || 'No se pudo cargar la información.');
-	return result.data.data;
-}
-
-class OrdersMutationError extends Error {
-	constructor(
-		message: string,
-		readonly status: number,
-	) {
-		super(message);
-	}
-}
-
-async function postData<T>(path: string, body: unknown): Promise<T> {
-	const result = await dashboardApi.post<{ data: T }>(path, body);
-	if (!result.ok)
-		throw new OrdersMutationError(
-			result.message || 'No se pudo guardar. Intente de nuevo.',
-			result.status,
-		);
-	return result.data.data;
-}
-
 export default function OrdersWorkspace() {
 	const [step, setStep] = useState(1);
 	const [ready, setReady] = useState(false);
@@ -94,6 +75,7 @@ export default function OrdersWorkspace() {
 	);
 	const [amount, setAmount] = useState('');
 	const [date, setDate] = useState(today);
+	const [eventDate, setEventDate] = useState('');
 	const [order, setOrder] = useState<SalesOrder | null>(null);
 	const [paidOrder, setPaidOrder] = useState<SalesOrder | null>(null);
 	const [busy, setBusy] = useState(false);
@@ -264,6 +246,7 @@ export default function OrdersWorkspace() {
 			totalAmount: Number(total),
 			...buildOrderReferralPayload(orderReferral),
 			status: 'quoted',
+			eventDate: eventDate || undefined,
 			idempotencyKey: keys.current.order,
 		};
 		const created = await postData<SalesOrder>(`${API}/orders`, orderAttempt.current);
@@ -292,6 +275,7 @@ export default function OrdersWorkspace() {
 	function startNew() {
 		setTotal(String(getPackagePrice(packageId, getActiveCampaign())));
 		setDate(today());
+		setEventDate('');
 		setCustomer(null);
 		setLead(null);
 		setOrder(null);
@@ -477,6 +461,16 @@ export default function OrdersWorkspace() {
 										</option>
 									))}
 								</select>
+								<label htmlFor="order-event-date">
+									Fecha del evento (opcional)
+								</label>
+								<input
+									disabled={orderLocked}
+									id="order-event-date"
+									type="date"
+									value={eventDate}
+									onChange={(event) => setEventDate(event.target.value)}
+								/>
 								<label htmlFor="order-package">Paquete</label>
 								<select
 									disabled={orderLocked}
@@ -591,81 +585,6 @@ export default function OrdersWorkspace() {
 	);
 }
 
-const eventDateLabel = (value: string) =>
-	new Date(`${value}T12:00:00`).toLocaleDateString('es-MX', { dateStyle: 'long' });
-
-/** Order detail: customer, payments, invitation data (stage) and referrals in one place. */
-function OrderDetail({ order, onChanged }: { order: SalesOrder; onChanged: () => void }) {
-	const [customer, setCustomer] = useState<Customer | null>(null);
-	const [amounts, setAmounts] = useState<Record<string, string>>({});
-	const [marking, setMarking] = useState(false);
-	const [error, setError] = useState('');
-	const [message, setMessage] = useState('');
-	const depositKey = useRef('');
-	useEffect(() => {
-		let active = true;
-		getData<Customer>(`${API}/customers?id=${encodeURIComponent(order.customerId)}`)
-			.then((found) => active && setCustomer(found))
-			.catch(() => active && setError('No se pudo cargar el cliente.'));
-		return () => {
-			active = false;
-		};
-	}, [order.customerId]);
-	async function markDepositPaid(orderId: string) {
-		const value = Number(amounts[orderId] ?? order.depositAmount ?? '');
-		if (!(value > 0)) return setError('El anticipo debe ser mayor a cero.');
-		depositKey.current ||= crypto.randomUUID();
-		setMarking(true);
-		setError('');
-		try {
-			await postData(`${API}/orders/${orderId}/deposit-paid`, {
-				amountPaid: value,
-				idempotencyKey: depositKey.current,
-			});
-			depositKey.current = '';
-			setMessage('Anticipo registrado.');
-			onChanged();
-		} catch (failure) {
-			setError(failure instanceof Error ? failure.message : 'No se pudo guardar.');
-		} finally {
-			setMarking(false);
-		}
-	}
-	return (
-		<section
-			className="orders-workspace__detail"
-			aria-label={`Detalle de ${order.orderNumber}`}
-		>
-			{customer && (
-				<p>
-					Cliente: {customer.displayName}
-					{customer.phoneE164 ? ` · ${customer.phoneE164}` : ''}
-					{customer.email ? ` · ${customer.email}` : ''}
-				</p>
-			)}
-			{order.eventDate && <p>Fecha del evento: {eventDateLabel(order.eventDate)}</p>}
-			{error && <p role="alert">{error}</p>}
-			{message && <p role="status">{message}</p>}
-			<CustomerOrdersBox
-				customerOrders={[{ ...order, eventType: order.eventType ?? '' }]}
-				depositAmounts={amounts}
-				onAmountChange={(id, value) =>
-					setAmounts((current) => ({ ...current, [id]: value }))
-				}
-				markingDepositPaid={{ [order.id]: marking }}
-				onMarkDepositPaid={(id) => void markDepositPaid(id)}
-			/>
-			{customer && (
-				<CustomerReferralPanel
-					customer={customer}
-					onSuccess={setMessage}
-					onError={setError}
-				/>
-			)}
-		</section>
-	);
-}
-
 function OrdersList({
 	orders,
 	filters,
@@ -692,6 +611,7 @@ function OrdersList({
 	onPayment: (order: SalesOrder) => void;
 }) {
 	const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+	const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
 	return (
 		<section className="orders-workspace__list" aria-labelledby="orders-list-title">
 			<h2 id="orders-list-title">Lista de pedidos</h2>
@@ -770,15 +690,39 @@ function OrdersList({
 					<button
 						className="btn-secondary"
 						type="button"
-						aria-expanded={expandedOrderId === item.id}
+						aria-expanded={detailOrderId === item.id}
 						onClick={() =>
-							setExpandedOrderId((current) => (current === item.id ? null : item.id))
+							setDetailOrderId((current) => (current === item.id ? null : item.id))
 						}
 					>
-						{expandedOrderId === item.id ? 'Ocultar detalle' : 'Ver detalle'}
+						{detailOrderId === item.id ? 'Ocultar detalle' : 'Ver detalle y pagos'}
 					</button>
-					{expandedOrderId === item.id && (
-						<OrderDetail order={item} onChanged={onChanged} />
+					{detailOrderId === item.id && (
+						<>
+							<OrderCustomerDetail order={item} onChanged={onChanged} />
+							<OrderDetailPanel orderId={item.id} onChanged={onChanged} />
+						</>
+					)}
+					{['deposit_paid', 'paid'].includes(item.status) && (
+						<>
+							<button
+								className="btn-secondary"
+								type="button"
+								aria-expanded={expandedOrderId === item.id}
+								onClick={() =>
+									setExpandedOrderId((current) =>
+										current === item.id ? null : item.id,
+									)
+								}
+							>
+								{expandedOrderId === item.id
+									? 'Ocultar datos de invitación'
+									: 'Ver datos de invitación'}
+							</button>
+							{expandedOrderId === item.id && (
+								<InvitationDataPanel orderId={item.id} />
+							)}
+						</>
 					)}
 					{['quoted', 'confirmed'].includes(item.status) && !item.amountPaid && (
 						<button

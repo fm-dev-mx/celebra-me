@@ -68,7 +68,70 @@ describe('committed data prerequisite manifest', () => {
 		}
 	});
 
-	it.each(patchIds)('blocks on %s even when every other prerequisite is verified', (id) => {
+	// JSON shapes and storage objects from docs/core/data-prerequisites-json-shapes-inventory.md.
+	const shapeIds = [
+		'invitation-assets-storage-objects',
+		'tracking-event-lead-code',
+		'invitation-data-request-answers-object',
+		'event-memory-object-keys',
+	];
+
+	const gatedIds = [...patchIds, ...shapeIds];
+
+	const verifyQueryPath = (id: string) => {
+		const entry = parseDataPrerequisiteManifest(committedManifest).prerequisites.find(
+			(item) => item.id === id,
+		);
+		expect(entry?.verify).toMatch(/^psql -X --set=ON_ERROR_STOP=1 --file=\S+\.sql$/u);
+		return entry!.verify.match(/--file=(\S+)/u)![1];
+	};
+
+	it.each(['production', 'preview'])('declares the inventory shapes for %s', (environment) => {
+		const parsed = parseDataPrerequisiteManifest(committedManifest);
+		for (const id of shapeIds) {
+			const entry = parsed.prerequisites.find((item) => item.id === id);
+			expect(entry?.environments[environment]).toBeDefined();
+			expect(entry?.introducedBy).toBe(
+				'docs/core/data-prerequisites-json-shapes-inventory.md',
+			);
+			expect(existsSync(resolve(repositoryRoot, entry!.introducedBy))).toBe(true);
+			expect(existsSync(resolve(repositoryRoot, verifyQueryPath(id)))).toBe(true);
+		}
+	});
+
+	it.each(gatedIds)(
+		'verifies %s with a read-only query that prints totals and an ok flag',
+		(id) => {
+			const sql = readFileSync(resolve(repositoryRoot, verifyQueryPath(id)), 'utf8');
+			expect(sql).toMatch(/^BEGIN TRANSACTION READ ONLY;$/mu);
+			expect(sql.trimEnd()).toMatch(/\nROLLBACK;$/u);
+			expect(sql).toMatch(/\bAS ok\b/u);
+			expect(sql).not.toMatch(
+				/\b(INSERT|UPDATE|DELETE|TRUNCATE|ALTER|DROP|CREATE|GRANT|COMMIT)\b/iu,
+			);
+		},
+	);
+
+	it('extends the August itinerary check with the content shape the readers assume', () => {
+		const sql = readFileSync(
+			resolve(
+				repositoryRoot,
+				verifyQueryPath('20260812-itinerary-gallery-structural-contracts'),
+			),
+			'utf8',
+		);
+		for (const total of [
+			'content_not_object',
+			'rsvp_not_object',
+			'event_timing_not_object',
+			'hero_not_object',
+			'client_published_without_event_date',
+		]) {
+			expect(sql).toContain(`AND ${total} = 0`);
+		}
+	});
+
+	it.each(gatedIds)('blocks on %s even when every other prerequisite is verified', (id) => {
 		const parsed = parseDataPrerequisiteManifest(committedManifest);
 		for (const entry of parsed.prerequisites) {
 			for (const environment of ['production', 'preview']) {
