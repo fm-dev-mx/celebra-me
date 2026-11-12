@@ -233,8 +233,12 @@
                 "--datos={datos}",
                 "--cli=C:/Users/fmdevmx/AppData/Local/agy/bin/agy.exe",
                 "--",
+                "--settings",
+                "{\"permissions\":{\"allow\":[\"command(*)\",\"mcp(*)\",\"read_file(*)\"]}}",
                 "--model",
-                "gemini-3.8-flash-medium"
+                "gemini-3.8-flash-medium",
+                "--add-dir",
+                "D:/code/celebra-me/.agent/tmp/tablero/salida"
             ],
             "despacho": [
                 "node",
@@ -249,8 +253,12 @@
                 "--",
                 "--mode",
                 "plan",
+                "--settings",
+                "{\"permissions\":{\"allow\":[\"command(*)\",\"mcp(*)\",\"read_file(*)\"]}}",
                 "--model",
-                "gemini-3.8-flash-medium"
+                "gemini-3.8-flash-medium",
+                "--add-dir",
+                "D:/code/celebra-me/.agent/tmp/tablero/salida"
             ]
         }
     ],
