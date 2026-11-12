@@ -210,7 +210,10 @@ export function validateProductionPatchManifest(manifest: SqlManifest): string[]
 
 function consumeLineComment(sql: string, index: number): number {
 	let nextIndex = index + 2;
-	while (nextIndex < sql.length && sql[nextIndex] !== '\n') nextIndex += 1;
+	// PostgreSQL ends a line comment at either CR or LF.
+	while (nextIndex < sql.length && sql[nextIndex] !== '\n' && sql[nextIndex] !== '\r') {
+		nextIndex += 1;
+	}
 	return nextIndex;
 }
 
@@ -554,6 +557,10 @@ export function patchCallsOnlyBuiltinFunctions(sql: string): boolean {
 	// Scan string and dollar-quoted contents too: `DO '...'`, EXECUTE and string-built SQL
 	// all hide code inside literals, so any call-shaped text anywhere disqualifies the patch.
 	const code = sqlWithoutComments(sql);
+	// Code-point escapes (E'(', \x28, \050) and Unicode-escaped identifiers
+	// (U&"..." UESCAPE) can spell a call or EXECUTE that no pattern over the raw text sees, so
+	// they disqualify the patch. Whitespace, quote and backslash escapes cannot.
+	if (/\\[^tnrbf\\']/.test(code) || /\bu&|\buescape\b/i.test(code)) return false;
 	return (
 		!/\bexecute\b/i.test(code) &&
 		!/"\s*\(/.test(code) &&

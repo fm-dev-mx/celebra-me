@@ -338,6 +338,12 @@ ${statement}
 		"select 'select public.archive_invitation' || '(1)' \\gexec",
 		"do 'begin perform public.archive_invitation(''00000000-0000-0000-0000-000000000000''::uuid); end';",
 		"do e'begin perform public.archive_invitation(\\'x\\'); end';",
+		"do e'begin perform public.archive_invitation\\u0028null::uuid); end';",
+		"do e'begin perform public.archive_invitation\\x28null::uuid); end';",
+		"do e'begin perform public.archive_invitation\\050null::uuid); end';",
+		"do e'begin perform public.archive_invitation\\\\\\u0028null::uuid); end';",
+		'select public.u&"archive_invitation" uescape \'!\' (null::uuid);',
+		'-- note\rselect public.archive_invitation(null::uuid);\n',
 	])('treats a user function call as not builtin-only: %s', (call) => {
 		expect(patchCallsOnlyBuiltinFunctions(authPatch('auth.users', call))).toBe(false);
 	});
@@ -351,6 +357,8 @@ ${statement}
 			const sql = readFileSync(file, 'utf8');
 			expect(lintProductionPatchSql(sql).errors).toEqual([]);
 			expect(patchCallsOnlyBuiltinFunctions(sql)).toBe(true);
+			// A Windows checkout may convert line endings to CRLF.
+			expect(patchCallsOnlyBuiltinFunctions(sql.replace(/\n/g, '\r\n'))).toBe(true);
 		}
 	});
 
