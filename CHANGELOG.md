@@ -10,38 +10,52 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
-## [0.70.0] - 2026-11-11
+## [0.70.0] - 2026-11-12
 
-Adds the order lifecycle to the dashboard, keeps hosts signed in, publishes the Valeria Hernández
-invitation and moves Naomi's RSVP deadline. Includes migration `20261110130000` (order payments and
-stages); the two `20261110100000`/`20261110120000` migrations only release archived Preview data.
+Adds the order lifecycle, stage board and event agenda to the dashboard, keeps hosts signed in,
+publishes the Valeria Hernández invitation and moves Naomi's RSVP deadline. Includes migrations
+`20261110130000` (order payments and stages, expand) and `20261111230000` (order-settled Meta
+event); the two `20261110100000`/`20261110120000` migrations only release archived Preview data.
 
 ### Added
 
-- Dashboard: orders track their full lifecycle with payments and stages (#907).
+- Dashboard: orders track their full lifecycle with payments and stages (#907); Pedidos is the
+  single place for orders (#905), with a stage board and an event agenda (#935).
+- Guests: adult and child counts by summary category (#934); invitations show children on demos, an
+  adults-only pass line and child totals (#890).
+- Tracking: an order-settled Meta event and a Pixel environment lock (#908).
 - Invitations: Valeria Hernández XV invitation (#910) and the second client round of Yireh Ana
   (#909).
-- Demos: the Enchanted Rose demo is redesigned with a jewelry-box finish (#906).
+- Demos: the Enchanted Rose demo is redesigned with a jewelry-box finish (#906); the angelic baptism
+  demo is redesigned (#787).
 - Release: release checks are required before Worker upload and activation (#893); the data
-  prerequisites gate verifies metadata roles, pending password changes and a wider scanner scope
-  (#896, #898, #899, #911); a guarded Preview admin bootstrap (#917).
+  prerequisites gate verifies metadata roles, pending password changes, a wider scanner scope and
+  the JSON shapes and storage objects readers assume (#896, #898, #899, #911, #924); a guarded
+  Preview admin bootstrap (#917); the login alias is rechecked before each release (#919);
+  `prod:window` runs the daily production window (#932).
 
 ### Changed
 
 - Dashboard: commercial reports move off the sales tab and deposit fields are clarified (#901).
-- Docs: owner-only production steps and docs index (#916); Destenid Sofía preparation sheet (#891).
+- Invitations: the Valeria Hernández cherry disco invitation is polished (#922); the storybook-blush
+  base envelope is retired (#925).
+- Docs: owner-only production steps and docs index (#916, #928); Destenid Sofía preparation sheet
+  (#891); Local/Preview autonomy rules (#930); worktree lanes (#921, #936).
 
 ### Fixed
 
 - Invitations: Naomi Huerta's invitation asks guests to confirm before Friday 20 November (#915).
 - Auth: hosts stay signed in and are no longer asked for MFA repeatedly (#903); a 401 from a direct
-  panel fetch redirects to login (#904).
+  panel fetch redirects to login (#904); a failed login alias check names the HTTP status (#929).
+- Database: the order payments migration passes the initial-revoke proof and is registered as expand
+  (#923, #926).
 - Demos: the floating quote keeps its room and uses palette tokens (#885).
 - Release: historical invitation patches require verification (#897); the active package hash
   baseline is updated (#894); invitation note deletions compare from the merge base (#913).
 - Preview data: the archived wedding slug, identity constraints and asset paths are released (#892,
   #900); the login alias backfill is marked verified (#895).
 - Visual: capture images decode synchronously so full-page frames match (#918).
+- Agents: reenvio and dispatch permissions with read-only prefixes (#931).
 
 ## [0.69.2-beta.1] - 2026-11-05
 
