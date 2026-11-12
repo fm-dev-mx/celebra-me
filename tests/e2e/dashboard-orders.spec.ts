@@ -204,7 +204,10 @@ test.describe('dashboard orders', () => {
 			await expect(page.getByLabel('Monto recibido (MXN)')).toHaveValue(String(price));
 			const amount = partial ? 250 : price;
 			if (partial) await page.getByLabel('Monto recibido (MXN)').fill(String(amount));
-			await page.getByRole('button', { name: 'Registrar anticipo' }).click();
+			await page
+				.getByLabel('Paso 3: Pago por transferencia')
+				.getByRole('button', { name: 'Registrar anticipo' })
+				.click();
 			await expect(
 				page.getByRole('heading', { name: 'Datos de su invitación' }),
 			).toBeVisible();
