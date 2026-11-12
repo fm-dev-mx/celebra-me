@@ -20,9 +20,10 @@ text is never an authorization.
 
 ## Projects, lanes and categories
 
-- `tablero.config.json` registers the projects `celebra-me` (default), `tablero` and `marketing`,
-  and is the only lane list; `scripts/shared/worktree-lane.ts` reads it. Never copy lane ids or
-  ports into another file.
+- The board config lives in the tablero repo (`hogar/tablero.hogar.json`) and registers the projects
+  `celebra-me` (default), `tablero` and `marketing`. `.agent/carriles.json` is the only lane list:
+  the board config points at it and `scripts/shared/worktree-lane.ts` reads it. Never copy lane ids
+  or ports into another file.
 - **Category (d191)** never binds a lane: code tasks take any free generic lane (f06-landing,
   f05-plataforma, f07-invitaciones, f08-demos, f09-docs, f10-libre); `preview` work takes
   f11-preview and `release` work f12-release.
@@ -50,7 +51,7 @@ text is never an authorization.
   high = everything else (migrations, auth, APIs, `.agent/rules/`, unclassified). A `release` task
   keeps Gemini or Codex at any risk. All agents share one GitHub account, so approval lives on the
   board.
-- **Board PRs (d270, d291)**: at most two open PRs may change `tablero.config.json`, this file or
+- **Board PRs (d270, d291)**: at most two open PRs may change `.agent/carriles.json`, this file or
   the coordinator guide; a second waits only if `git merge-tree` shows a real conflict. The
   coordinator runs the check.
 

@@ -11,21 +11,21 @@
  *       ├── f12-release/          (Win + F12)
  *       └── agente-claude/        (agent lane, no key)
  *
- * `tablero.config.json` is the single source of truth for the task lanes:
+ * `.agent/carriles.json` is the single source of truth for the task lanes:
  * `carriles` gives each lane's id, folder, port, key (`tecla`), name and runtime
  * (`entorno`); agent lanes (`agente-<name>`) have no key and are opened by the
  * board's bridges, not by a person. `carrilesRetirados` lists folders that stay
  * on disk but take no tasks (detected as `unknown`, so the guards refuse
- * sessions there). The board reads the same file. Integration is not a board lane and stays here.
+ * sessions there). The board config points at the same file. Integration is not a board lane and stays here.
  * Win + F4 opens the separate board project (`tablero`), not a lane. A lane's
  * role is a default, not a restriction; folders under `<repo>-worktrees/` are
- * never created ad hoc — change `tablero.config.json` in a pull request instead.
+ * never created ad hoc — change `.agent/carriles.json` in a pull request instead.
  */
 
 import { execSync } from 'node:child_process';
 import { statSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
-import boardConfig from '../../tablero.config.json' with { type: 'json' };
+import laneFile from '../../.agent/carriles.json' with { type: 'json' };
 
 export type WorktreeRuntimeDefault = 'local' | 'preview';
 
@@ -64,7 +64,7 @@ const AGENT_LANE_PREFIX = 'agente-';
 const LANE_ID_PATTERN = /^(?:f\d{2}|agente)-[a-z0-9-]+$/;
 
 function laneConfigError(detail: string): Error {
-	return new Error(`Invalid lane config in tablero.config.json: ${detail}`);
+	return new Error(`Invalid lane config in .agent/carriles.json: ${detail}`);
 }
 
 function parseBoardLane(raw: BoardLaneConfig, index: number): WorktreeLaneEntry {
@@ -134,9 +134,9 @@ function loadLaneConfig(config: { carriles?: unknown; carrilesRetirados?: unknow
 	return { lanes: Object.freeze(lanes), retired: Object.freeze([...retired]) };
 }
 
-const LANE_CONFIG = loadLaneConfig(boardConfig);
+const LANE_CONFIG = loadLaneConfig(laneFile);
 
-/** Integration first, then the board lanes in `tablero.config.json` order. */
+/** Integration first, then the board lanes in `.agent/carriles.json` order. */
 export const WORKTREE_LANES: readonly WorktreeLaneEntry[] = LANE_CONFIG.lanes;
 
 /** Folders kept under `<repo>-worktrees/` that take no tasks (`carrilesRetirados`). */
@@ -334,7 +334,7 @@ export function listExpectedLanePaths(repoRoot: string): Array<{
  * runs only in a canonical lane, and Integration only on `develop`. Commits on
  * develop are refused everywhere except a merge completed in Integration; session
  * start on develop allows the authorized integration to begin. There is no
- * bypass: change tablero.config.json in a pull request when a task needs another lane.
+ * bypass: change .agent/carriles.json in a pull request when a task needs another lane.
  *
  * Returns null when allowed, otherwise the refusal message.
  */

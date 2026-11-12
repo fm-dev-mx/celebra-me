@@ -88,8 +88,8 @@ kinds).
 
 ## Lanes
 
-Lanes and folders come from `tablero.config.json` → `carriles` (`wipMax` 3); the claim itself is in
-the core rules. `claim` never starts git-safety: start and finish it by hand
+Lanes and folders come from `.agent/carriles.json` (`wipMax` 3); the claim itself is in the core
+rules. `claim` never starts git-safety: start and finish it by hand
 ([`git-safety-session.md`](./git-safety-session.md)). Lane roles and idle state:
 [`git-governance.md`](./git-governance.md).
 

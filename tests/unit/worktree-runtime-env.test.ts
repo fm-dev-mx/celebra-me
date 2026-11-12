@@ -107,7 +107,7 @@ describe('worktree lane detection', () => {
 		).toEqual(['f11-preview', 'f12-release']);
 	});
 
-	it('takes each lane port from tablero.config.json', () => {
+	it('takes each lane port from .agent/carriles.json', () => {
 		expect(getWorktreeDevServerPort('integration')).toBe(4321);
 		expect(getWorktreeDevServerPort('f06-landing')).toBe(4326);
 		expect(getWorktreeDevServerPort('f08-demos')).toBe(4328);
@@ -127,9 +127,9 @@ describe('worktree lane detection', () => {
 		expect(localPorts).not.toContain(WORKTREE_DEV_SERVER_PORTS.unknown);
 	});
 
-	it('derives every non-Integration lane from tablero.config.json', () => {
+	it('derives every non-Integration lane from .agent/carriles.json', () => {
 		const config = JSON.parse(
-			readFileSync(join(process.cwd(), 'tablero.config.json'), 'utf8'),
+			readFileSync(join(process.cwd(), '.agent', 'carriles.json'), 'utf8'),
 		) as {
 			carriles: Array<{
 				id: string;
