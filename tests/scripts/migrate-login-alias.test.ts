@@ -96,13 +96,14 @@ describe('alias migration with a simulated admin API', () => {
 });
 
 /** Runs the real `--check` command against a loopback Auth admin API that serves `users`. */
-async function check(users: unknown[], extraArgs: string[] = [], pageSize = 100) {
+async function check(users: unknown[], extraArgs: string[] = [], pageSize = 100, httpStatus = 200) {
 	const methods: string[] = [];
 	const server = createServer((request, response) => {
 		methods.push(request.method ?? '');
 		const page = Number(
 			new URL(request.url ?? '', 'http://localhost').searchParams.get('page'),
 		);
+		response.statusCode = httpStatus;
 		response.setHeader('Content-Type', 'application/json');
 		response.end(
 			JSON.stringify({ users: users.slice((page - 1) * pageSize, page * pageSize) }),
@@ -206,6 +207,14 @@ describe('read-only login alias check', () => {
 		const result = await check(beforeBackfill, [], 50);
 		expect(JSON.parse(result.stdout)).toMatchObject({ accounts: 120, legacyOnly: 28 });
 		expect(result.methods).toHaveLength(4);
+	});
+
+	it('names the HTTP status when the Auth API rejects the service key, without echoing it', async () => {
+		const result = await check(beforeBackfill, [], 100, 401);
+		expect(result.status).toBe(1);
+		expect(result.stderr).toContain('Alias migration failed (HTTP 401)');
+		expect(result.stderr).not.toContain('synthetic');
+		expect(result.stderr).not.toContain('127.0.0.1');
 	});
 
 	it('refuses to be combined with a writing option', async () => {

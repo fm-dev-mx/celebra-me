@@ -25,7 +25,8 @@ interface CustomerCommercialSummaryProps {
 	pendingBalance: number;
 	suggestedAction: string;
 	onClear: () => void;
-	onOpenOrderTool: () => void;
+	/** Link to «Crear pedido» in Pedidos with this customer preselected. */
+	createOrderHref: string;
 }
 
 export const CustomerCommercialSummary: React.FC<CustomerCommercialSummaryProps> = ({
@@ -36,7 +37,7 @@ export const CustomerCommercialSummary: React.FC<CustomerCommercialSummaryProps>
 	pendingBalance,
 	suggestedAction,
 	onClear,
-	onOpenOrderTool,
+	createOrderHref,
 }) => {
 	const whatsappDigits = getUsableWhatsAppE164(customer.phoneE164);
 	return (
@@ -98,9 +99,9 @@ export const CustomerCommercialSummary: React.FC<CustomerCommercialSummaryProps>
 					<span>Siguiente acción</span>
 					<strong>{suggestedAction}</strong>
 					{orders.length === 0 && (
-						<button type="button" className="btn-primary" onClick={onOpenOrderTool}>
-							Crear orden
-						</button>
+						<a className="btn-primary" href={createOrderHref}>
+							Crear pedido
+						</a>
 					)}
 				</div>
 			</div>

@@ -197,15 +197,23 @@ test.describe('Demo Routing Parity', () => {
 	});
 });
 
-for (const route of [
-	'/bautizo/demo-bautizo-angelic-presence',
-	'/primera-comunion/demo-primera-comunion-angelic-presence',
-]) {
+// Expected opening sequence per demo. The communion demo keeps the pass right after the quote; the
+// redesigned baptism demo opens with the verse interlude and keeps its pass beside the reply.
+const OPENING_SEQUENCE: Record<string, string[]> = {
+	'/bautizo/demo-bautizo-angelic-presence': ['quote', 'interlude', 'countdown'],
+	'/primera-comunion/demo-primera-comunion-angelic-presence': [
+		'quote',
+		'personalized-access',
+		'interlude',
+	],
+};
+
+for (const [route, expected] of Object.entries(OPENING_SEQUENCE)) {
 	for (const viewport of [
 		{ width: 390, height: 844 },
 		{ width: 1440, height: 900 },
 	]) {
-		test(`interlude follows personalized access: ${route} @ ${viewport.width}`, async ({
+		test(`opening sequence follows the demo layout: ${route} @ ${viewport.width}`, async ({
 			page,
 		}) => {
 			await page.setViewportSize(viewport);
@@ -214,12 +222,9 @@ for (const route of [
 			const sections = page.locator(
 				'.event-theme-wrapper .invitation-section-wrapper[data-section-kind]',
 			);
-			await expect(sections.nth(0)).toHaveAttribute('data-section-kind', 'quote');
-			await expect(sections.nth(1)).toHaveAttribute(
-				'data-section-kind',
-				'personalized-access',
-			);
-			await expect(sections.nth(2)).toHaveAttribute('data-section-kind', 'interlude');
+			for (const [index, kind] of expected.entries()) {
+				await expect(sections.nth(index)).toHaveAttribute('data-section-kind', kind);
+			}
 		});
 	}
 }

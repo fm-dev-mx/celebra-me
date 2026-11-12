@@ -2471,8 +2471,8 @@
             "preset": "angelic-presence",
             "viewport": "mobile",
             "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
-            "sha256": "95e7f72ad2b03477949d419be542766c3cb9732381464adc8218ff3c8df5e2ca",
-            "contentHash": "a7b54be038dc73f7654126ab4dfb627af9480303d30c76cb3816f305dc5c6cc5",
+            "sha256": "4e35453b03ea71c6548d3290536390bafb7c55ccb803acdfa45cb2980dba344d",
+            "contentHash": "114c9f64c56627eb49d91968648c5b70cb21600544b28e41a54b40c75382fc2f",
             "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
             "comparisonResult": "ACCEPTED"
         },
@@ -2483,8 +2483,8 @@
             "preset": "angelic-presence",
             "viewport": "desktop",
             "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-desktop.png",
-            "sha256": "efc931d00acb86f47f6c7e4a361c31df6beda79269b3511bfbf9e3a09703b2c8",
-            "contentHash": "a7b54be038dc73f7654126ab4dfb627af9480303d30c76cb3816f305dc5c6cc5",
+            "sha256": "95a62cc2da00c4107cfdc4f2fdf3ac1f4f257196149915fcb44a72d36b893c32",
+            "contentHash": "114c9f64c56627eb49d91968648c5b70cb21600544b28e41a54b40c75382fc2f",
             "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
             "comparisonResult": "ACCEPTED"
         },
@@ -2543,8 +2543,8 @@
             "preset": "eucharistic-grace",
             "viewport": "mobile",
             "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
-            "sha256": "2f013f76a45eb8c6707919c2fd41e9500c58f931ed5db5e44c00e3a8ddd6fbbf",
-            "contentHash": "baa8c31193d85d5e5ddc02be09e940b9e3d92374f63c0651dba3ccc1662e02bb",
+            "sha256": "77b9d757225470d5e42cfaace2179f73d6442868b96ad49ef95814f4c9a8ae3c",
+            "contentHash": "55aaa30b0ae538efc58429724d6fecc94efc17c3524133da9fe90b9e3298f2a7",
             "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
             "comparisonResult": "ACCEPTED"
         },
@@ -2555,8 +2555,8 @@
             "preset": "eucharistic-grace",
             "viewport": "desktop",
             "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-desktop.png",
-            "sha256": "f97c3f1f7da5eb08a316cd6c9158e502cfa95cab2e63719f09330f97b64bf699",
-            "contentHash": "baa8c31193d85d5e5ddc02be09e940b9e3d92374f63c0651dba3ccc1662e02bb",
+            "sha256": "99dc03e029d35605500208739ba4960e4968bbf57da69c5aa97863a7d901d2fb",
+            "contentHash": "55aaa30b0ae538efc58429724d6fecc94efc17c3524133da9fe90b9e3298f2a7",
             "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
             "comparisonResult": "ACCEPTED"
         },
@@ -2591,8 +2591,8 @@
             "preset": "editorial",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-            "sha256": "7f1ac7388ddb04c110b3bab60956c60213b3a8d765ca77973b724186c3426664",
-            "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
+            "sha256": "0d9d7be06ac6a240e4d5b6e64befd04cf7c2f3a9db9b142a8b1ff9601a884f14",
+            "contentHash": "9d86a17c0d2762d1530f8686f78850d88ac3b95a09fde69a721f0f706b06d08d",
             "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
             "comparisonResult": "ACCEPTED"
         },
@@ -2603,8 +2603,8 @@
             "preset": "editorial",
             "viewport": "desktop",
             "file": "pages/demo-xv-demo-xv-editorial-desktop.png",
-            "sha256": "f1f06b82602e214dbd3d78bfc45c9759bcb45299e2b60f7da58f5d12bfbaf803",
-            "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
+            "sha256": "8ebd0d6a0c00e33cd0fd53d1f377b8f56c144558f476ca1f165b4e1b07b474d0",
+            "contentHash": "9d86a17c0d2762d1530f8686f78850d88ac3b95a09fde69a721f0f706b06d08d",
             "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
             "comparisonResult": "ACCEPTED"
         },
@@ -2681,7 +2681,7 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "9abb83a2e953cf950acba4d53dbccd89cec32773",
+    "referenceSha": "d0a4c1e71abb29d406d1213f913fbe1b378abd56",
     "variantManifest": {
         "generatedAt": "2026-11-11T20:50:01.859Z",
         "runtimeFingerprint": {
@@ -4669,7 +4669,7 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "9abb83a2e953cf950acba4d53dbccd89cec32773"
+        "referenceSha": "d0a4c1e71abb29d406d1213f913fbe1b378abd56"
     },
     "pageManifest": {
         "generatedAt": "2026-11-11T20:50:01.864Z",
@@ -5183,8 +5183,8 @@
                 "preset": "angelic-presence",
                 "viewport": "mobile",
                 "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
-                "sha256": "95e7f72ad2b03477949d419be542766c3cb9732381464adc8218ff3c8df5e2ca",
-                "contentHash": "a7b54be038dc73f7654126ab4dfb627af9480303d30c76cb3816f305dc5c6cc5",
+                "sha256": "4e35453b03ea71c6548d3290536390bafb7c55ccb803acdfa45cb2980dba344d",
+                "contentHash": "114c9f64c56627eb49d91968648c5b70cb21600544b28e41a54b40c75382fc2f",
                 "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5195,8 +5195,8 @@
                 "preset": "angelic-presence",
                 "viewport": "desktop",
                 "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-desktop.png",
-                "sha256": "efc931d00acb86f47f6c7e4a361c31df6beda79269b3511bfbf9e3a09703b2c8",
-                "contentHash": "a7b54be038dc73f7654126ab4dfb627af9480303d30c76cb3816f305dc5c6cc5",
+                "sha256": "95a62cc2da00c4107cfdc4f2fdf3ac1f4f257196149915fcb44a72d36b893c32",
+                "contentHash": "114c9f64c56627eb49d91968648c5b70cb21600544b28e41a54b40c75382fc2f",
                 "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5255,8 +5255,8 @@
                 "preset": "eucharistic-grace",
                 "viewport": "mobile",
                 "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
-                "sha256": "2f013f76a45eb8c6707919c2fd41e9500c58f931ed5db5e44c00e3a8ddd6fbbf",
-                "contentHash": "baa8c31193d85d5e5ddc02be09e940b9e3d92374f63c0651dba3ccc1662e02bb",
+                "sha256": "77b9d757225470d5e42cfaace2179f73d6442868b96ad49ef95814f4c9a8ae3c",
+                "contentHash": "55aaa30b0ae538efc58429724d6fecc94efc17c3524133da9fe90b9e3298f2a7",
                 "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5267,8 +5267,8 @@
                 "preset": "eucharistic-grace",
                 "viewport": "desktop",
                 "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-desktop.png",
-                "sha256": "f97c3f1f7da5eb08a316cd6c9158e502cfa95cab2e63719f09330f97b64bf699",
-                "contentHash": "baa8c31193d85d5e5ddc02be09e940b9e3d92374f63c0651dba3ccc1662e02bb",
+                "sha256": "99dc03e029d35605500208739ba4960e4968bbf57da69c5aa97863a7d901d2fb",
+                "contentHash": "55aaa30b0ae538efc58429724d6fecc94efc17c3524133da9fe90b9e3298f2a7",
                 "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5303,8 +5303,8 @@
                 "preset": "editorial",
                 "viewport": "mobile",
                 "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-                "sha256": "7f1ac7388ddb04c110b3bab60956c60213b3a8d765ca77973b724186c3426664",
-                "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
+                "sha256": "0d9d7be06ac6a240e4d5b6e64befd04cf7c2f3a9db9b142a8b1ff9601a884f14",
+                "contentHash": "9d86a17c0d2762d1530f8686f78850d88ac3b95a09fde69a721f0f706b06d08d",
                 "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5315,8 +5315,8 @@
                 "preset": "editorial",
                 "viewport": "desktop",
                 "file": "pages/demo-xv-demo-xv-editorial-desktop.png",
-                "sha256": "f1f06b82602e214dbd3d78bfc45c9759bcb45299e2b60f7da58f5d12bfbaf803",
-                "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
+                "sha256": "8ebd0d6a0c00e33cd0fd53d1f377b8f56c144558f476ca1f165b4e1b07b474d0",
+                "contentHash": "9d86a17c0d2762d1530f8686f78850d88ac3b95a09fde69a721f0f706b06d08d",
                 "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5393,9 +5393,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "9abb83a2e953cf950acba4d53dbccd89cec32773"
+        "referenceSha": "d0a4c1e71abb29d406d1213f913fbe1b378abd56"
     },
-    "candidateManifestSha256": "f2470cd81ceee9fddd63e4fa6047777bb4470a5dcfce0fda002783ebc1e9391c",
-    "acceptedFromCommit": "9abb83a2e953cf950acba4d53dbccd89cec32773",
-    "acceptedAt": "2026-11-11T20:50:31.385Z"
+    "candidateManifestSha256": "8da537debf122c68d67227daab245c0b13c0f49b5796477ab89ae411652a7a3f",
+    "acceptedFromCommit": "d0a4c1e71abb29d406d1213f913fbe1b378abd56",
+    "acceptedAt": "2026-11-12T00:50:08.677Z"
 }
