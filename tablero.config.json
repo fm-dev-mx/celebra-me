@@ -333,6 +333,14 @@
             "entorno": "preview"
         },
         {
+            "id": "f13-prod-release",
+            "carpeta": "../celebra-me-worktrees/f13-prod-release",
+            "puerto": 4336,
+            "tecla": 13,
+            "nombre": "F13 Prod Release",
+            "entorno": "preview"
+        },
+        {
             "id": "agente-claude",
             "carpeta": "../celebra-me-worktrees/agente-claude",
             "puerto": 4333,
