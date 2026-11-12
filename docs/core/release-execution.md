@@ -71,11 +71,12 @@ implementing these skills is never a live-release invocation.
   SHA, changed lockfile, baseline, matrix or runtime invalidates affected evidence.
 - Repository CI owns exact-SHA visual certification on the `develop` push; the optional local
   `pnpm validate:prepush` preview and its cache are evidence, never authorization or a substitute
-  for remote CI. Coverage changes or visual modifications require a complete new candidate and exact
-  hash-bound human acceptance, as
+  for remote CI. Coverage changes or visual modifications require a complete new candidate and
+  hash-bound acceptance, as
   [visual certification](validation-procedures.md#visual-certification-and-candidates) defines.
-  Candidate generation is diagnostic preparation; acceptance stays outside automated invocation.
-  Never edit a manifest to manufacture coverage or relax comparison thresholds.
+  Candidate generation is diagnostic preparation; acceptance follows
+  [Local and Preview autonomy](../../.agent/rules/git-safety.md#local-and-preview-autonomy). Never
+  edit a manifest to manufacture coverage or relax comparison thresholds.
 
 ## Preview integration
 
