@@ -39,6 +39,7 @@ import {
 	VISUAL_VIEWPORTS,
 } from './visual-coverage-contract.ts';
 import { expectedVisualCaptures } from './visual-record-aggregator.ts';
+import { readAcceptedManifestFile, writeAcceptedManifestFiles } from './visual-demo-manifests.ts';
 import { buildCandidateReview, writeCandidateReview } from './visual-candidate-review.ts';
 import { readVisualRecordObservations } from '../../tests/e2e/harness/visual-capture-record.ts';
 
@@ -268,7 +269,7 @@ function compare(): void {
 			`No accepted manifest at ${relative(ROOT, ACCEPTED_MANIFEST)}. Accept an approved candidate first.`,
 		);
 	}
-	const coverageManifest = JSON.parse(readFileSync(ACCEPTED_MANIFEST, 'utf8')) as CaptureManifest;
+	const coverageManifest = readAcceptedManifestFile(ACCEPTED_MANIFEST) as CaptureManifest;
 	failurePhase = 'COVERAGE';
 	assertCoverageMatrix(coverageManifest);
 	failurePhase = 'MANIFEST';
@@ -335,7 +336,7 @@ export function readPreviousAccepted(root = ACCEPTED_ROOT): CaptureManifest | nu
 	const manifestPath = join(root, 'manifest.json');
 	if (!existsSync(manifestPath)) return null;
 	// The previous matrix may legitimately have fewer cases than the new candidate.
-	const previous = JSON.parse(readFileSync(manifestPath, 'utf8')) as CaptureManifest;
+	const previous = readAcceptedManifestFile(manifestPath) as CaptureManifest;
 	if (previous.status !== 'ACCEPTED' || !Array.isArray(previous.captures))
 		throw new Error('Previous visual references are invalid.');
 	assertManifestIntegrity(previous, root);
@@ -505,12 +506,9 @@ function accept(
 		acceptedAt: new Date().toISOString(),
 		candidateManifestSha256,
 	};
-	// Same indentation Prettier uses for JSON, so the committed file is what `accept` wrote.
-	writeFileSync(
-		join(stagingRoot, 'manifest.json'),
-		JSON.stringify(acceptedPayload, null, 4) + '\n',
-		'utf8',
-	);
+	// Same indentation Prettier uses for JSON, so the committed files are what `accept` wrote;
+	// demo captures go to one manifest per demo.
+	writeAcceptedManifestFiles(join(stagingRoot, 'manifest.json'), acceptedPayload);
 	assertManifestIntegrity(acceptedPayload, stagingRoot);
 
 	const backupRoot = resolve(ROOT, '.tmp/visual-parity/accepted-backup-' + head.slice(0, 12));
@@ -630,7 +628,7 @@ function certifiedBrowser(args: string[]): void {
 	process.env.PLAYWRIGHT_REQUIRE_VISUAL_PREFLIGHT = 'true';
 	assertCaptureEnvironment('compare');
 	failurePhase = 'MANIFEST';
-	const coverageManifest = JSON.parse(readFileSync(ACCEPTED_MANIFEST, 'utf8')) as CaptureManifest;
+	const coverageManifest = readAcceptedManifestFile(ACCEPTED_MANIFEST) as CaptureManifest;
 	failurePhase = 'COVERAGE';
 	assertCoverageMatrix(coverageManifest);
 	failurePhase = 'MANIFEST';

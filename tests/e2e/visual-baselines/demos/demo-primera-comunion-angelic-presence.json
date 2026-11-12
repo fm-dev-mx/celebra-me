@@ -1,0 +1,57 @@
+{
+    "version": 1,
+    "slug": "demo-primera-comunion-angelic-presence",
+    "eventType": "primera-comunion",
+    "captures": [
+        {
+            "kind": "demo",
+            "slug": "demo-primera-comunion-angelic-presence",
+            "eventType": "primera-comunion",
+            "preset": "eucharistic-grace",
+            "viewport": "mobile",
+            "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
+            "sha256": "2f013f76a45eb8c6707919c2fd41e9500c58f931ed5db5e44c00e3a8ddd6fbbf",
+            "contentHash": "006b7311c3f649830331ae374e4d2f3e15c3d43f6509b00ee3f53ec7ffa8a764",
+            "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-primera-comunion-angelic-presence",
+            "eventType": "primera-comunion",
+            "preset": "eucharistic-grace",
+            "viewport": "desktop",
+            "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-desktop.png",
+            "sha256": "f97c3f1f7da5eb08a316cd6c9158e502cfa95cab2e63719f09330f97b64bf699",
+            "contentHash": "006b7311c3f649830331ae374e4d2f3e15c3d43f6509b00ee3f53ec7ffa8a764",
+            "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
+            "comparisonResult": "ACCEPTED"
+        }
+    ],
+    "pageCaptures": [
+        {
+            "kind": "demo",
+            "slug": "demo-primera-comunion-angelic-presence",
+            "eventType": "primera-comunion",
+            "preset": "eucharistic-grace",
+            "viewport": "mobile",
+            "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
+            "sha256": "2f013f76a45eb8c6707919c2fd41e9500c58f931ed5db5e44c00e3a8ddd6fbbf",
+            "contentHash": "006b7311c3f649830331ae374e4d2f3e15c3d43f6509b00ee3f53ec7ffa8a764",
+            "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
+            "comparisonResult": "CANDIDATE"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-primera-comunion-angelic-presence",
+            "eventType": "primera-comunion",
+            "preset": "eucharistic-grace",
+            "viewport": "desktop",
+            "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-desktop.png",
+            "sha256": "f97c3f1f7da5eb08a316cd6c9158e502cfa95cab2e63719f09330f97b64bf699",
+            "contentHash": "006b7311c3f649830331ae374e4d2f3e15c3d43f6509b00ee3f53ec7ffa8a764",
+            "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
+            "comparisonResult": "CANDIDATE"
+        }
+    ]
+}
