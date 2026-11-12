@@ -2681,7 +2681,7 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "9abb83a2e953cf950acba4d53dbccd89cec32773",
+    "referenceSha": "d0a4c1e71abb29d406d1213f913fbe1b378abd56",
     "variantManifest": {
         "generatedAt": "2026-11-11T20:50:01.859Z",
         "runtimeFingerprint": {
@@ -4669,7 +4669,7 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "9abb83a2e953cf950acba4d53dbccd89cec32773"
+        "referenceSha": "d0a4c1e71abb29d406d1213f913fbe1b378abd56"
     },
     "pageManifest": {
         "generatedAt": "2026-11-11T20:50:01.864Z",
@@ -5393,9 +5393,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "9abb83a2e953cf950acba4d53dbccd89cec32773"
+        "referenceSha": "d0a4c1e71abb29d406d1213f913fbe1b378abd56"
     },
-    "candidateManifestSha256": "f2470cd81ceee9fddd63e4fa6047777bb4470a5dcfce0fda002783ebc1e9391c",
-    "acceptedFromCommit": "9abb83a2e953cf950acba4d53dbccd89cec32773",
-    "acceptedAt": "2026-11-11T20:50:31.385Z"
+    "candidateManifestSha256": "8da537debf122c68d67227daab245c0b13c0f49b5796477ab89ae411652a7a3f",
+    "acceptedFromCommit": "d0a4c1e71abb29d406d1213f913fbe1b378abd56",
+    "acceptedAt": "2026-11-12T00:50:08.677Z"
 }
