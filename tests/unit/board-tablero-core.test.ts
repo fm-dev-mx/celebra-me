@@ -83,6 +83,77 @@ describe('board core launcher', () => {
 
 describe('board core cutover', () => {
 	const read = (file: string) => JSON.parse(readFileSync(path.join(ROOT, file), 'utf8'));
+	it.each(['reenvio', 'despacho'])(
+		'limits agy %s approvals to inspection and board routing',
+		(mode) => {
+			const agent = read('tablero.config.json').agentes.find(
+				(entry: { id: string }) => entry.id === 'gemini',
+			);
+			const args: string[] = agent[mode];
+			const settingsIndex = args.indexOf('--settings');
+			expect(settingsIndex).toBeGreaterThan(-1);
+			const settings = JSON.parse(args[settingsIndex + 1]);
+			const safeCommands = new Set([
+				'git status',
+				'git diff',
+				'git log',
+				'git show',
+				'git rev-parse',
+				'git branch --show-current',
+				'git ls-files',
+				'git merge-base',
+				'git worktree list',
+				'gh pr view',
+				'gh pr diff',
+				'gh pr checks',
+				'gh pr list',
+				'gh run view',
+				'gh run list',
+			]);
+			const routingTools = new Set([
+				'messages',
+				'msg',
+				'atendido',
+				'inbox',
+				'show',
+				'list',
+				'timeline',
+				'prompt',
+				'asignar',
+				'siguiente',
+			]);
+			// Override only the allow list; inherited denies and interactive asks must survive.
+			expect(Object.keys(settings)).toEqual(['permissions']);
+			expect(Object.keys(settings.permissions)).toEqual(['allow']);
+			const allowed: string[] = settings.permissions.allow;
+			expect(allowed.length).toBeGreaterThan(0);
+			for (const rule of allowed) {
+				const command = /^command\((.+)\)$/.exec(rule)?.[1];
+				const tool = /^mcp\(celebra-board\/(.+)\)$/.exec(rule)?.[1];
+				expect(
+					command ? safeCommands.has(command) : Boolean(tool && routingTools.has(tool)),
+				).toBe(true);
+			}
+			for (const tool of routingTools)
+				expect(allowed).toContain(`mcp(celebra-board/${tool})`);
+		},
+	);
+
+	it.each(['reenvio', 'despacho'])(
+		'resolves agy %s output access from configured board data',
+		(mode) => {
+			const agent = read('tablero.config.json').agentes.find(
+				(entry: { id: string }) => entry.id === 'gemini',
+			);
+			const args: string[] = agent[mode];
+			const index = args.indexOf('--add-dir');
+			expect(index).toBeGreaterThan(-1);
+			expect(args[index + 1]).toBe('{datos}/salida');
+			const data = path.resolve('relocated project', 'custom board data');
+			const resolved = args[index + 1].replace('{datos}', data);
+			expect(path.resolve(resolved)).toBe(path.join(data, 'salida'));
+		},
+	);
 
 	it('keeps one board script group on the core launcher', () => {
 		const { scripts } = read('package.json');
