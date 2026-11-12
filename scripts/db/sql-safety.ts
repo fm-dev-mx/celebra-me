@@ -496,6 +496,69 @@ function checkWhereClauses(statements: ParsedSqlStatement[]): string[] {
 	return errors;
 }
 
+/** SQL keywords that may precede `(` and built-in functions that never write rows. */
+const BUILTIN_SQL_CALLS: ReadonlySet<string> = new Set([
+	'all',
+	'and',
+	'any',
+	'array',
+	'as',
+	'btrim',
+	'cast',
+	'char_length',
+	'coalesce',
+	'count',
+	'exists',
+	'format',
+	'from',
+	'greatest',
+	'if',
+	'in',
+	'is',
+	'jsonb_build_object',
+	'jsonb_typeof',
+	'least',
+	'length',
+	'lower',
+	'max',
+	'min',
+	'not',
+	'now',
+	'nullif',
+	'on',
+	'or',
+	'select',
+	'then',
+	'trim',
+	'upper',
+	'using',
+	'values',
+	'when',
+	'where',
+]);
+
+/**
+ * True when every `name(` in the patch, dollar bodies included, is a keyword or a built-in
+ * function. A user function or a quoted name could write tables that `@tables` never lists.
+ */
+export function patchCallsOnlyBuiltinFunctions(sql: string): boolean {
+	let statements: ParsedSqlStatement[];
+	try {
+		statements = parseProductionPatchStatements(sql);
+	} catch {
+		return false;
+	}
+	return statements
+		.flatMap((statement) => [statement.inspection, ...statement.dollarBodies])
+		.every(
+			(text) =>
+				!/"\s*\(/.test(text) &&
+				[...text.matchAll(/([a-z_][a-z0-9_$.]*)\s*\(/gi)].every((match) =>
+					BUILTIN_SQL_CALLS.has(match[1]!.toLowerCase()),
+				),
+		);
+}
+
 export function lintProductionPatchSql(sql: string): LintResult {
 	const manifest = parseSqlManifest(sql);
 	const errors = validateProductionPatchManifest(manifest);

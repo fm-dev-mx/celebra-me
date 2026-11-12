@@ -5,6 +5,7 @@ import {
 	prepareProductionPatchFile,
 	type PreparedProductionPatch,
 } from './run-prod-patch.ts';
+import { patchCallsOnlyBuiltinFunctions } from './sql-safety.ts';
 import type { ProductionPatchPreviewAssessment } from './production-patch-preview.ts';
 import type { ProductionApplyPlanItem } from './production-apply-plan.ts';
 
@@ -79,10 +80,12 @@ export function inspectPatch(
 		const assessment = (
 			deps.inspectPatchPreview ?? ((input) => inspectProductionPatchPreview(input, dbUrl))
 		)(prepared);
-		const patchTables = (prepared.manifest.tables ?? '')
-			.split(',')
-			.map((table) => table.trim().toLowerCase())
-			.filter(Boolean);
+		const patchTables = patchCallsOnlyBuiltinFunctions(prepared.sql)
+			? (prepared.manifest.tables ?? '')
+					.split(',')
+					.map((table) => table.trim().toLowerCase())
+					.filter(Boolean)
+			: undefined;
 		const expectedRowsMin = Number(prepared.manifest['expected-rows-min']);
 		const expectedRowsMax = Number(prepared.manifest['expected-rows-max']);
 		const patchPreview = {

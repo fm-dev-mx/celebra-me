@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import {
 	lintProductionPatchSql,
 	parseSqlManifest,
+	patchCallsOnlyBuiltinFunctions,
 	validateProductionPatchManifest,
 	argValue,
 } from '../../scripts/db/sql-safety.ts';
@@ -326,6 +327,24 @@ ${statement}
 		expect(result.errors).toContain(
 			'Every mutation must target an unquoted schema-qualified table (schema.table).',
 		);
+	});
+
+	it.each([
+		"select public.archive_invitation('00000000-0000-0000-0000-000000000000');",
+		'update auth.users set raw_app_meta_data = public.touch(raw_app_meta_data) where id is not null;',
+		"do $$ begin perform public.archive_invitation('x'); end $$;",
+		'select "archive_invitation"(1);',
+	])('treats a user function call as not builtin-only: %s', (call) => {
+		expect(patchCallsOnlyBuiltinFunctions(authPatch('auth.users', call))).toBe(false);
+	});
+
+	it('treats the Worker-independent production patches as builtin-only', () => {
+		for (const file of [
+			'scripts/manual/production-patches/20261109_auth_login_alias_app_metadata_backfill.sql',
+			'scripts/manual/production-patches/20261112_tracking_events_blank_lead_code.sql',
+		]) {
+			expect(patchCallsOnlyBuiltinFunctions(readFileSync(file, 'utf8'))).toBe(true);
+		}
 	});
 
 	it('lints the login alias backfill patch', () => {
