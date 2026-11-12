@@ -104,6 +104,8 @@ const content: CanonicalEventContentInput = {
 		presentationOptions: {
 			showCalendarLinks: true,
 			indicationsLayout: 'enclosure',
+			// A mirror ball follows the route from the mass to the dance floor under a spotlight.
+			scene: 'mirror-ball-route',
 		},
 		introHeading: 'Dos lugares, una noche',
 		introLede:

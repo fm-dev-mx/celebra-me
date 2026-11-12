@@ -44,8 +44,10 @@ export interface LocationPresentationOptions {
 	/**
 	 * Pinned scroll scene for editorial invitations (`program-sheet`, two or more venues):
 	 * the route between the venues draws itself while a traveler follows it and the entries take
-	 * turns: a lantern under a starry night (`lantern-route`) or a butterfly over the section's own
-	 * day (`butterfly-route`). Without editorial motion or under reduced motion the program shows as is.
+	 * turns: a lantern under a starry night (`lantern-route`), a butterfly over the section's own
+	 * day (`butterfly-route`) or a mirror ball under a spotlight on a dance-floor night
+	 * (`mirror-ball-route`, a shorter two-screen pin). Without editorial motion or under reduced
+	 * motion the program shows as is.
 	 */
 	scene?: LocationScene;
 	/**
@@ -55,7 +57,7 @@ export interface LocationPresentationOptions {
 	venueCard?: LocationVenueCard;
 }
 
-export const LOCATION_SCENES = ['lantern-route', 'butterfly-route'] as const;
+export const LOCATION_SCENES = ['lantern-route', 'butterfly-route', 'mirror-ball-route'] as const;
 export type LocationScene = (typeof LOCATION_SCENES)[number];
 
 export const LOCATION_VENUE_CARDS = ['compact'] as const;

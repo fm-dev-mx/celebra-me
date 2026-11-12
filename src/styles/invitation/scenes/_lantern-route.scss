@@ -2,12 +2,15 @@
 @use '../scroll-scene-mixins' as scene;
 
 // ==========================================================================
-// LOCATION SCENES — lantern-route and butterfly-route (program-sheet, two or more venues)
+// LOCATION SCENES — lantern-route, butterfly-route and mirror-ball-route (program-sheet, two or
+// more venues)
 // While the scene is pinned the program moves under a sky: the route between the first and the
 // last stop draws itself, a traveler follows it, and the venue entries take turns — the first
 // until the traveler is halfway, then the last. `lantern-route` walks a lantern under a starry
 // night; `butterfly-route` flies a hairline butterfly, facing its way, over a sky taken from the
-// section's own grounds and inks. Entries stay in the DOM and keep their links; the
+// section's own grounds and inks; `mirror-ball-route` rolls a faceted mirror ball, with a twinkle,
+// under a spotlight that opens as the scene pins, over a dance-floor night (a two-screen pin).
+// Entries stay in the DOM and keep their links; the
 // one with focus always shows. The next entry settles from above, so while it waits its links stay
 // under the visible entry, which takes the taps. Unpinned, the program-sheet layout is untouched.
 // Included at the end of _program-sheet.scss so its pinned rules follow the program layout.
@@ -19,6 +22,9 @@
 //   --location-route-glow                  Drawn route, lantern light and butterfly line
 //   --location-route-note-ink / -shadow    The «Siga bajando» note riding the route
 //   --location-route-lantern               Lantern body (lantern-route)
+//   --location-route-ball / -ball-edge     Mirror ball face and facet lines (mirror-ball-route)
+//   --location-route-spot                  Spotlight beam (mirror-ball-route)
+//   --location-route-floor                 Dance-floor light low in the sky (mirror-ball-route)
 //   --location-route-lift                  How far the pinned night rises over the section's top
 //                                          padding (default 0); unpinned, the padding stays
 //   --location-route-cue-bottom / -cue-space  Cue offset and reserved space for floating controls
@@ -41,10 +47,30 @@ $lantern-sky:
 	radial-gradient(120% 70% at 50% 100%, rgb(232 160 64 / 18%), transparent 60%),
 	linear-gradient(180deg, var(--location-route-night-deep) 0%, var(--location-route-night) 100%);
 
+// The mirror ball's night: scattered glints over a low dance-floor light.
+$mirror-ball-sky:
+	radial-gradient(1.5px 1.5px at 14% 18%, var(--location-route-ball) 50%, transparent 51%),
+	radial-gradient(2px 2px at 78% 12%, var(--location-route-floor) 50%, transparent 51%),
+	radial-gradient(1px 1px at 88% 34%, var(--location-route-ball) 50%, transparent 51%),
+	radial-gradient(2px 2px at 26% 44%, var(--location-route-floor) 50%, transparent 51%),
+	radial-gradient(1px 1px at 64% 58%, var(--location-route-ball) 50%, transparent 51%),
+	radial-gradient(1.5px 1.5px at 8% 72%, var(--location-route-ball) 50%, transparent 51%),
+	radial-gradient(
+		130% 55% at 50% 100%,
+		color-mix(in srgb, var(--location-route-floor) 26%, transparent),
+		transparent 62%
+	),
+	linear-gradient(180deg, var(--location-route-night-deep) 0%, var(--location-route-night) 100%);
+
+// Spotlight beam, closed to a pinpoint and fully open; both polygons share their vertices.
+$spot-closed: polygon(49.5% 0%, 50.5% 0%, 50.5% 0%, 49.5% 0%);
+$spot-open: polygon(44% 0%, 56% 0%, 100% 100%, 0% 100%);
+
 @mixin styles {
 	.event-location:is(
 		[data-location-scene='lantern-route'],
-		[data-location-scene='butterfly-route']
+		[data-location-scene='butterfly-route'],
+		[data-location-scene='mirror-ball-route']
 	) {
 		--location-route-night: var(--scene-night, rgb(28 21 48));
 		--location-route-night-deep: rgb(14 10 26);
@@ -58,6 +84,7 @@ $lantern-sky:
 		overflow: clip;
 
 		.location-route__sky,
+		.location-route__spotlight,
 		.location-route__map {
 			display: none;
 		}
@@ -175,6 +202,7 @@ $lantern-sky:
 				--route-t: clamp(0, (var(--scene-progress, 0) - 0.1) / 0.75, 1);
 				--route-out: clamp(0, (0.5 - var(--scene-progress, 0)) / 0.08, 1);
 				--route-in: clamp(0, (var(--scene-progress, 0) - 0.5) / 0.1, 1);
+				--route-spot: clamp(0, var(--scene-progress, 0) / 0.1, 1);
 			}
 
 			@include m.respond-to(lg) {
@@ -194,6 +222,33 @@ $lantern-sky:
 				inset: 0;
 				display: block;
 				background: var(--location-route-sky);
+			}
+		}
+
+		// The beam opens from a pinpoint while the route waits to start.
+		.location-route__spotlight {
+			@include scene.pinned {
+				position: absolute;
+				inset: 0;
+				display: block;
+				background: linear-gradient(180deg, var(--location-route-spot) 0%, transparent 78%);
+				clip-path: #{$spot-open};
+				pointer-events: none;
+			}
+
+			@include scene.timeline {
+				animation: route-spot-open linear both;
+				animation-timeline: --scroll-scene;
+				animation-range: contain 0% contain $route-start;
+			}
+
+			@include scene.scripted {
+				clip-path: polygon(
+					calc(49.5% - var(--route-spot) * 5.5%) 0%,
+					calc(50.5% + var(--route-spot) * 5.5%) 0%,
+					calc(50.5% + var(--route-spot) * 49.5%) calc(var(--route-spot) * 100%),
+					calc(49.5% - var(--route-spot) * 49.5%) calc(var(--route-spot) * 100%)
+				);
 			}
 		}
 
@@ -396,7 +451,8 @@ $lantern-sky:
 		}
 
 		.location-route__lantern,
-		.location-route__butterfly {
+		.location-route__butterfly,
+		.location-route__mirror-ball {
 			offset-path: path($route-path);
 			offset-rotate: 0deg;
 			offset-distance: 0%;
@@ -424,6 +480,38 @@ $lantern-sky:
 
 		.location-route__lantern-cap {
 			fill: var(--location-route-glow);
+		}
+
+		// The mirror ball keeps upright; its glow breathes and one facet catches the light.
+		.location-route__mirror-ball-glow {
+			fill: var(--location-route-glow);
+			opacity: 22%;
+
+			@include m.motion-safe {
+				animation: route-ball-glow 2.6s ease-in-out infinite;
+			}
+		}
+
+		.location-route__mirror-ball-body {
+			fill: var(--location-route-ball);
+			stroke: var(--location-route-ball-edge);
+			stroke-width: 1;
+		}
+
+		.location-route__mirror-ball-facets {
+			fill: none;
+			stroke: var(--location-route-ball-edge);
+			stroke-width: 0.8;
+		}
+
+		.location-route__mirror-ball-spark {
+			fill: var(--location-route-ink);
+			transform-box: fill-box;
+			transform-origin: center;
+
+			@include m.motion-safe {
+				animation: route-ball-spark 1.8s ease-in-out infinite;
+			}
 		}
 
 		// The butterfly faces its way along the route and folds its wings now and then.
@@ -582,6 +670,49 @@ $lantern-sky:
 
 	.event-location[data-location-scene='lantern-route'] {
 		--location-route-sky: #{$lantern-sky};
+	}
+
+	.event-location[data-location-scene='mirror-ball-route'] {
+		--location-route-ball: rgb(233 234 238);
+		--location-route-ball-edge: rgb(157 163 174);
+		--location-route-spot: rgb(244 244 246 / 18%);
+		--location-route-floor: var(--location-route-glow);
+		--location-route-sky: #{$mirror-ball-sky};
+	}
+
+	@keyframes route-spot-open {
+		from {
+			clip-path: #{$spot-closed};
+		}
+
+		to {
+			clip-path: #{$spot-open};
+		}
+	}
+
+	@keyframes route-ball-glow {
+		0%,
+		100% {
+			opacity: 16%;
+		}
+
+		50% {
+			opacity: 34%;
+		}
+	}
+
+	@keyframes route-ball-spark {
+		0%,
+		60%,
+		100% {
+			opacity: 0%;
+			scale: 0.4;
+		}
+
+		75% {
+			opacity: 100%;
+			scale: 1;
+		}
 	}
 
 	@keyframes route-draw {

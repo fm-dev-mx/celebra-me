@@ -136,4 +136,29 @@
 		--rsvp-steps-lantern: var(--color-rose-glow);
 		--rsvp-steps-glow: rgb(var(--color-rose-glow-rgb) / 35%);
 	}
+
+	// The route scene runs on the same wine night: a silver mirror ball, a cherry dance floor and
+	// the route copy in night blush.
+	.event-location[data-location-scene='mirror-ball-route'] {
+		--location-route-night: var(--color-rose-night);
+		--location-route-night-deep: var(--color-rose-midnight);
+		--location-route-ink: var(--color-night-blush);
+		--location-route-muted: rgb(var(--color-night-blush-rgb) / 78%);
+		--location-route-trail: rgb(var(--color-night-blush-rgb) / 26%);
+		--location-route-glow: var(--color-rose-glow);
+		--location-route-floor: var(--color-rose-deep);
+		--location-route-note-ink: var(--color-night-blush);
+	}
+
+	// The album darkens into the night while it assembles; the heading and the footer keep their
+	// paper ground.
+	.gallery-section[data-variant='album-assemble'] {
+		--gallery-album-dusk: linear-gradient(
+			180deg,
+			transparent 0 18%,
+			rgb(var(--color-rose-night-rgb) / 55%) 34%,
+			rgb(var(--color-rose-midnight-rgb) / 70%) 90%,
+			transparent 100%
+		);
+	}
 }
