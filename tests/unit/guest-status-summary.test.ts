@@ -72,8 +72,10 @@ describe('computeGuestSummary', () => {
 			confirmed: 3,
 			confirmedChildren: 0,
 			declined: 2,
+			declinedChildren: 0,
 			unused: 2,
 			noAnswer: 9,
+			noAnswerChildren: 0,
 		});
 		expect(people.confirmed + people.declined + people.unused + people.noAnswer).toBe(
 			people.assigned,
@@ -84,13 +86,13 @@ describe('computeGuestSummary', () => {
 		const { stages, awaitingAnswer } = computeGuestSummary(guests);
 
 		expect(stages).toEqual({
-			'to-send': { invitations: 1, passes: 2 },
-			unopened: { invitations: 1, passes: 3 },
-			opened: { invitations: 1, passes: 4 },
-			confirmed: { invitations: 2, passes: 5 },
-			declined: { invitations: 1, passes: 2 },
+			'to-send': { invitations: 1, passes: 2, children: 0 },
+			unopened: { invitations: 1, passes: 3, children: 0 },
+			opened: { invitations: 1, passes: 4, children: 0 },
+			confirmed: { invitations: 2, passes: 5, children: 0 },
+			declined: { invitations: 1, passes: 2, children: 0 },
 		});
-		expect(awaitingAnswer).toEqual({ invitations: 2, passes: 7 });
+		expect(awaitingAnswer).toEqual({ invitations: 2, passes: 7, children: 0 });
 	});
 
 	it('counts children among the confirmed people only', () => {
@@ -135,8 +137,10 @@ describe('computeGuestSummary', () => {
 			confirmed: 2,
 			confirmedChildren: 0,
 			declined: 0,
+			declinedChildren: 0,
 			unused: 0,
 			noAnswer: 0,
+			noAnswerChildren: 0,
 		});
 		expect(summary.withoutPasses).toBe(1);
 		expect(summary.invitations).toBe(2);
@@ -216,6 +220,76 @@ describe('filterGuestsForReview', () => {
 });
 
 describe('children totals', () => {
+	it('uses reserved children for pending and declined passes, and actual children for confirmations', () => {
+		const summary = computeGuestSummary([
+			makeGuest({
+				deliveryStatus: 'generated',
+				maxAllowedAttendees: 5,
+				maxAllowedChildren: 2,
+				childrenCount: 4,
+			}),
+			makeGuest({ deliveryStatus: 'shared', maxAllowedAttendees: 4, maxAllowedChildren: 1 }),
+			makeGuest({
+				deliveryStatus: 'shared',
+				isViewed: true,
+				maxAllowedAttendees: 3,
+				maxAllowedChildren: 2,
+			}),
+			makeGuest({
+				attendanceStatus: 'declined',
+				maxAllowedAttendees: 6,
+				maxAllowedChildren: 2,
+				childrenCount: 5,
+			}),
+			makeGuest({
+				attendanceStatus: 'confirmed',
+				maxAllowedAttendees: 5,
+				maxAllowedChildren: 3,
+				attendeeCount: 4,
+				childrenCount: 1,
+			}),
+		]);
+		const { people, stages, awaitingAnswer } = summary;
+		expect([people.assigned, people.assignedChildren]).toEqual([23, 10]);
+		expect([people.confirmed, people.confirmedChildren]).toEqual([4, 1]);
+		expect([people.declined, people.declinedChildren]).toEqual([6, 2]);
+		expect([people.noAnswer, people.noAnswerChildren]).toEqual([12, 5]);
+		expect(stages['to-send']).toEqual({ invitations: 1, passes: 5, children: 2 });
+		expect(awaitingAnswer).toEqual({ invitations: 2, passes: 7, children: 3 });
+		expect(Object.values(stages).reduce((sum, stage) => sum + stage.children, 0)).toBe(
+			people.assignedChildren,
+		);
+		const text = buildGuestSummaryShareText(summary, '', '');
+		for (const expected of [
+			'4 personas confirmadas (3 adultos y 1 niño) de 23 pases (13 adultos y 10 niños).',
+			'No asistirán: 6 (4 adultos y 2 niños). Sin respuesta: 12 (7 adultos y 5 niños).',
+			'2 invitaciones enviadas siguen sin respuesta: 7 pases (4 adultos y 3 niños).',
+			'1 por enviar: 5 pases (3 adultos y 2 niños).',
+		])
+			expect(text).toContain(expected);
+	});
+
+	it.each([undefined, -2, 99, Number.NaN, 1.8])(
+		'clamps legacy child allowance %s in every unanswered stage',
+		(maxAllowedChildren) => {
+			const summary = computeGuestSummary([
+				makeGuest({ maxAllowedAttendees: 2, maxAllowedChildren }),
+				makeGuest({ deliveryStatus: 'shared', maxAllowedAttendees: 2, maxAllowedChildren }),
+				makeGuest({
+					attendanceStatus: 'declined',
+					maxAllowedAttendees: 2,
+					maxAllowedChildren,
+				}),
+			]);
+			const expected = maxAllowedChildren === 99 ? 2 : maxAllowedChildren === 1.8 ? 1 : 0;
+			expect(summary.people.assignedChildren).toBe(3 * expected);
+			expect(summary.people.noAnswerChildren).toBe(2 * expected);
+			expect(summary.people.declinedChildren).toBe(expected);
+			expect(summary.awaitingAnswer.children).toBe(expected);
+			expect(summary.stages['to-send'].children).toBe(expected);
+		},
+	);
+
 	const family = [
 		makeGuest({
 			guestId: 'a',
@@ -235,14 +309,18 @@ describe('children totals', () => {
 	});
 
 	it('shows children next to passes, singular and plural', () => {
-		expect(formatPassesWithChildren(4, 2)).toBe('4 pases (2 niños)');
-		expect(formatPassesWithChildren(3, 1)).toBe('3 pases (1 niño)');
+		expect(formatPassesWithChildren(4, 2)).toBe('4 pases (2 adultos y 2 niños)');
+		expect(formatPassesWithChildren(3, 1)).toBe('3 pases (2 adultos y 1 niño)');
+		expect(formatPassesWithChildren(2, 2)).toBe('2 pases (2 niños)');
+		expect(formatPassesWithChildren(0, 99)).toBe('0 pases');
 		expect(formatPassesWithChildren(4, 0)).toBe('4 pases');
 	});
 
 	it('adds the children to the shared summary', () => {
 		const text = buildGuestSummaryShareText(computeGuestSummary(family), '', '');
-		expect(text.split('\n')[1]).toBe('3 personas confirmadas (1 niño) de 6 pases (2 niños).');
+		expect(text.split('\n')[1]).toBe(
+			'3 personas confirmadas (2 adultos y 1 niño) de 6 pases (4 adultos y 2 niños).',
+		);
 	});
 });
 
