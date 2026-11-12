@@ -19,7 +19,11 @@ test.describe('quote reminders', () => {
 			);
 			await context.addCookies([
 				{ name: 'sb-access-token', value: CANONICAL_ADMIN_ACCESS_TOKEN, url: baseURL! },
-				{ name: 'sb-idle-seen', value: String(Math.floor(Date.now() / 1000)), url: baseURL! },
+				{
+					name: 'sb-idle-seen',
+					value: String(Math.floor(Date.now() / 1000)),
+					url: baseURL!,
+				},
 			]);
 			const leadId = '11111111-1111-4111-8111-111111111111';
 			const whatsappUrl =
@@ -140,7 +144,11 @@ test.describe('dashboard orders', () => {
 			);
 			await context.addCookies([
 				{ name: 'sb-access-token', value: CANONICAL_ADMIN_ACCESS_TOKEN, url: baseURL! },
-				{ name: 'sb-idle-seen', value: String(Math.floor(Date.now() / 1000)), url: baseURL! },
+				{
+					name: 'sb-idle-seen',
+					value: String(Math.floor(Date.now() / 1000)),
+					url: baseURL!,
+				},
 			]);
 			const customer = {
 				id: 'customer-orders-fixture',
@@ -196,7 +204,7 @@ test.describe('dashboard orders', () => {
 			await expect(page.getByLabel('Monto recibido (MXN)')).toHaveValue(String(price));
 			const amount = partial ? 250 : price;
 			if (partial) await page.getByLabel('Monto recibido (MXN)').fill(String(amount));
-			await page.getByRole('button', { name: 'Guardar pago por transferencia' }).click();
+			await page.getByRole('button', { name: 'Registrar anticipo' }).click();
 			await expect(
 				page.getByRole('heading', { name: 'Datos de su invitación' }),
 			).toBeVisible();
@@ -221,7 +229,7 @@ test.describe('dashboard orders', () => {
 			await expect(page.locator('.orders-workspace__row')).toContainText(
 				partial ? 'Pagado parcial' : 'Pagado',
 			);
-			await expect(page.locator('.orders-workspace')).not.toContainText(/anticipo|50 %/i);
+			await expect(page.locator('.orders-workspace')).not.toContainText(/50 %/i);
 			expect(
 				await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
 			).toBe(true);
