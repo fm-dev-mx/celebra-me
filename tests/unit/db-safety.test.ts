@@ -311,6 +311,23 @@ ${statement}
 		);
 	});
 
+	it.each([
+		'update public."published_invitation_content" set content = content where id is not null;',
+		'update published_invitation_content set content = content where id is not null;',
+		'update "public".published_invitation_content set content = content where id is not null;',
+	])('rejects a mutation target @tables cannot account for: %s', (hidden) => {
+		const result = lintProductionPatchSql(
+			authPatch(
+				'auth.users',
+				`update auth.users set raw_app_meta_data = raw_app_meta_data where id is not null;\n${hidden}`,
+			),
+		);
+		expect(result.ok).toBe(false);
+		expect(result.errors).toContain(
+			'Every mutation must target an unquoted schema-qualified table (schema.table).',
+		);
+	});
+
 	it('lints the login alias backfill patch', () => {
 		const sql = readFileSync(
 			'scripts/manual/production-patches/20261109_auth_login_alias_app_metadata_backfill.sql',

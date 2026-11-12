@@ -392,17 +392,26 @@ function declaredMutationTables(manifest: SqlManifest): Set<string> {
 	);
 }
 
+// Any schema-qualified target counts, so a mutation outside the patchable tables can never match
+// the validated @tables list.
+const MUTATION_TARGET_PATTERN =
+	/^\s*(?:update|insert\s+into|delete\s+from)\s+(?:only\s+)?([a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*)(?![a-z0-9_$".])/i;
+
 function mutationTargetTables(statements: ParsedSqlStatement[]): Set<string> {
 	const mutationTables = new Set<string>();
 	for (const statement of statements) {
-		const match = statement.inspection.match(
-			// Any schema-qualified target counts, so a mutation outside the patchable tables can never
-			// match the validated @tables list.
-			/^\s*(?:update|insert\s+into|delete\s+from)\s+(?:only\s+)?([a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*)\b/i,
-		);
+		const match = statement.inspection.match(MUTATION_TARGET_PATTERN);
 		if (match?.[1]) mutationTables.add(match[1].toLowerCase());
 	}
 	return mutationTables;
+}
+
+/** A target @tables cannot account for (quoted, unqualified) would hide a write from the checks. */
+function hasUnresolvedMutationTarget(statements: ParsedSqlStatement[]): boolean {
+	return statements.some(
+		(statement) =>
+			mutationVerb(statement) !== null && !MUTATION_TARGET_PATTERN.test(statement.inspection),
+	);
 }
 
 function checkMutationTables(declaredTables: Set<string>, mutationTables: Set<string>): string[] {
@@ -457,6 +466,11 @@ function checkPatchOperationAndTables(
 	if (hasUnverifiableDml(statements) || hasDmlInDollarBlock(statements)) {
 		errors.push(
 			'DML must be a top-level UPDATE, INSERT, or DELETE statement that can be verified.',
+		);
+	}
+	if (hasUnresolvedMutationTarget(statements)) {
+		errors.push(
+			'Every mutation must target an unquoted schema-qualified table (schema.table).',
 		);
 	}
 	errors.push(...checkDeclaredOperation(manifest, mutations));
