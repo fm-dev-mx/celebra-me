@@ -12,8 +12,8 @@
 		pointer-events: none;
 	}
 
-	// Round 1: the letter reads like the cover, her name first and «Mis XV años» beneath it,
-	// without the date.
+	// Round 3: the letter no longer repeats the cover. On a personal link it opens with «Para» and
+	// the guest's name, then her name and the date; «Mis XV Años» stays on the cover.
 	.invitation-reveal-card__inner {
 		display: flex;
 		flex-direction: column;
@@ -21,21 +21,62 @@
 		justify-content: center;
 
 		> * {
-			order: 3;
+			order: 4;
 		}
 	}
 
-	.invitation-reveal-card__name {
+	.invitation-reveal-card__guest {
 		order: 1;
+		margin: 0 0 0.85rem;
 	}
 
-	.invitation-reveal-card__label {
+	.invitation-reveal-card__name {
 		order: 2;
-		margin: 0.45rem 0 0;
 	}
 
 	.invitation-reveal-card__date {
+		order: 3;
+		margin: 0.5rem 0 0;
+	}
+
+	.invitation-reveal-card__label,
+	.invitation-reveal-card__divider {
 		display: none;
+	}
+
+	// Round 3: the cover's watercolour flowers in two opposite corners of the envelope, the white
+	// ground multiplied away and the edges faded into the paper.
+	.envelope-tease::before,
+	.envelope-tease::after {
+		content: '';
+		position: absolute;
+		z-index: -1;
+		width: 52%;
+		aspect-ratio: 1;
+		background: url('./assets/hero-cover.webp') left top / 100% auto no-repeat;
+		mix-blend-mode: multiply;
+		mask-image: radial-gradient(circle at 0 0, black 38%, transparent 72%);
+		pointer-events: none;
+	}
+
+	.envelope-tease::before {
+		top: 0;
+		left: 0;
+	}
+
+	.envelope-tease::after {
+		right: 0;
+		bottom: 0;
+		rotate: 180deg;
+	}
+
+	// Round 3: the two larger ribbons fly inside the envelope's frame instead of half off screen.
+	.storybook-sky__lantern:nth-child(1) {
+		--x: 16%;
+	}
+
+	.storybook-sky__lantern:nth-child(2) {
+		--x: 76%;
 	}
 }
 
@@ -83,8 +124,9 @@
 	}
 }
 
-// Cover (round 1): her name first and «Mis XV años» beneath it, centred; the date and venue leave
-// the cover (they live in the location section). A paper halo keeps both lines off the flowers.
+// Cover: her name first and «Mis XV años» beneath it, centred, with a paper halo that keeps both
+// lines off the flowers. Round 3 brings back the date and the hall under them; the hour stays in
+// the location section.
 .event--yireh-ana .invitation-hero[data-variant='standard'] {
 	.invitation-hero__content {
 		display: flex;
@@ -117,8 +159,22 @@
 		text-shadow: 0 0 0.6rem var(--color-lilac-paper);
 	}
 
-	.invitation-hero__divider,
+	.invitation-hero__divider {
+		order: 3;
+	}
+
 	.invitation-hero__details {
+		order: 4;
+		padding: 0.35em 1.2em;
+		border-radius: 999px;
+		background: radial-gradient(
+			closest-side,
+			rgb(var(--color-lilac-paper-rgb) / 88%) 60%,
+			rgb(var(--color-lilac-paper-rgb) / 0%)
+		);
+	}
+
+	.invitation-hero__time {
 		display: none;
 	}
 }
@@ -475,5 +531,54 @@ $yireh-ribbon-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000
 			translate: 0 0;
 			rotate: 0deg;
 		}
+	}
+}
+
+// Round 3: the quote opens under her yellow bow instead of a thin rule, and reads a size larger.
+.event--yireh-ana .quote-section {
+	--quote-content-size: clamp(1.55rem, 4.6vw, 2rem);
+
+	.quote-top-art {
+		display: block;
+		width: 4.5rem;
+		aspect-ratio: 360 / 308;
+		margin: 0 auto 1.5rem;
+		background: url('./assets/bow.webp') center / contain no-repeat;
+		mask: none;
+	}
+
+	.quote-divider-top {
+		display: none;
+	}
+}
+
+// Round 3: the gift line as a framed card on lilac paper, tied with the bow, like the location
+// card, instead of one line floating on a full page of white.
+.event--yireh-ana .gifts-section__container {
+	position: relative;
+	max-width: 22rem;
+	margin-inline: auto;
+	padding: 3rem 1.75rem 2.5rem;
+	background: linear-gradient(180deg, var(--color-lilac-paper), var(--color-lilac-mist));
+	box-shadow: 0 14px 22px -8px rgb(var(--color-violet-ink-rgb) / 14%);
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0.55rem;
+		border: 1px solid rgb(var(--color-leaf-gold-rgb) / 70%);
+		pointer-events: none;
+	}
+
+	&::after {
+		content: '';
+		position: absolute;
+		top: -1.6rem;
+		left: 50%;
+		width: 4rem;
+		aspect-ratio: 360 / 308;
+		translate: -50% 0;
+		background: url('./assets/bow.webp') center / contain no-repeat;
+		pointer-events: none;
 	}
 }

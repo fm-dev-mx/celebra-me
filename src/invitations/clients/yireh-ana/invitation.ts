@@ -67,8 +67,8 @@ const content: CanonicalEventContentInput = {
 		backgroundImage: 'hero',
 		backgroundImageDesktop: 'heroWide',
 		scrollLabel: 'Deslice para descubrir',
-		// The cover stays while the picture closes in on the oak's yellow ribbon.
-		presentation: { timeFormat: '12h', scene: 'cover-approach' },
+		// Round 3: a single still cover (no pinned close-in) that carries the date and the hall.
+		presentation: { timeFormat: '12h' },
 	},
 	envelope: {
 		disabled: false,
@@ -112,6 +112,8 @@ const content: CanonicalEventContentInput = {
 		venues: [
 			{
 				type: 'reception',
+				// Heads the grouped card instead of the generic on-site label.
+				label: 'Sábado 23 de octubre',
 				venueEvent: 'Recepción',
 				venueName: 'Salón Casino Imperial',
 				address: 'Carr. Delicias–Ortiz km 1, Centro',
@@ -228,10 +230,10 @@ const content: CanonicalEventContentInput = {
 			name: 'Su nombre',
 			notesLabel: 'Un mensaje para mis quince',
 			notesPlaceholder: 'Escriba aquí sus palabras...',
-			guestHint:
-				'Su pase incluye {count} lugares. Si asistirán menos personas, indíquelo aquí.',
+			// The hint only shows on a pass of two or more; the details heading reads for one too.
+			guestHint: 'Su pase es para {count} personas. Si asistirán menos, indíquelo aquí.',
 			stepAttendance: 'Su asistencia',
-			stepDetails: '¿Quiénes le acompañan?',
+			stepDetails: 'Los datos de su pase',
 		},
 		confirmationMessage: `Le espero el sábado ${EVENT_DATE_LABEL}.`,
 		responseMessages: {
@@ -249,10 +251,11 @@ const content: CanonicalEventContentInput = {
 		variant: 'portrait-keepsake',
 		image: 'wreath',
 		focalPoint: '50% 50%',
+		// Round 3 draft, pending the client's approval: the guest reads it before the party.
 		message:
-			'Gracias por acompañarme en mis quince años. Me llevo esta noche y el cariño de cada persona que estuvo aquí.',
+			'Gracias por acompañarme en mis quince años. Esa noche será más bonita con usted y con el cariño de cada persona que llegue.',
 		closingName: CELEBRANT_NAME,
-		closingPhrase: `Yireh Ana · Mis XV Años · Delicias, Chihuahua · MMXXVII`,
+		closingPhrase: `Sábado ${EVENT_DATE_LABEL} · Ciudad Delicias, Chihuahua`,
 	},
 	navigation: [
 		{ label: 'Momento', href: '#quote-section' },

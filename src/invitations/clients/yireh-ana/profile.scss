@@ -123,10 +123,11 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--location-program-label-color: var(--color-violet-ink);
 	--location-program-time-color: var(--color-leaf-gold);
 
-	// Section titles share her name's hand, in gold ink, so every page reads as one set.
+	// Section titles share her name's hand. Round 3: all of them in plum ink, like her name on the
+	// cover; gold stays for the small accents under them (program labels, family groups, rules).
 	--yireh-title-font: var(--font-calligraphy);
 	--yireh-title-size: clamp(2.9rem, 11vw, 4.25rem);
-	--yireh-title-color: var(--color-gold-ink);
+	--yireh-title-color: var(--color-violet-ink);
 	--location-intro-heading-font-family: var(--yireh-title-font);
 	--location-intro-heading-size: var(--yireh-title-size);
 	--location-intro-heading-weight: 400;
@@ -396,7 +397,8 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--location-enclosure-edge-shadow: drop-shadow(
 		0 14px 22px rgb(var(--color-violet-ink-rgb) / 14%)
 	);
-	--location-enclosure-heading-size: clamp(1.75rem, 6.5vw, 2.1rem);
+	--location-enclosure-heading-font: var(--yireh-title-font);
+	--location-enclosure-heading-size: clamp(2.2rem, 8.5vw, 2.75rem);
 	--location-enclosure-heading-color: var(--color-violet-ink);
 	--location-enclosure-note-padding: 0.85rem;
 	--location-enclosure-note-rule-width: 3rem;
@@ -440,8 +442,10 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--location-program-link-decoration: none;
 		--location-program-link-size: 1rem;
 		--location-program-link-tracking: 0.06em;
-		--location-program-link-primary-bg: var(--color-lilac-deep);
-		--location-program-link-primary-color: var(--color-story-cream);
+
+		// Round 3: «Ver mapa» outlined, so it no longer outweighs the rest of the card.
+		--location-program-link-primary-bg: transparent;
+		--location-program-link-primary-color: var(--color-lilac-deep);
 		--location-program-link-primary-border: 1px solid var(--color-lilac-deep);
 		--location-program-link-icon: '';
 		--location-program-map-icon: #{$yireh-icon-pin};
@@ -605,8 +609,9 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--intersection-arch-ink: transparent;
 	}
 
+	// Round 3: the footer is always shown, so the page ends on her name, the date and the city
+	// instead of a held 1px strip and its lone pull lantern.
 	.invitation-footer {
-		--invitation-footer-reveal: held;
 		--invitation-footer-reply: on;
 		--footer-bg: var(--color-violet-night);
 		--footer-reply-eyebrow: 'Su lugar está apartado';
@@ -627,9 +632,6 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--footer-control-font-size: 0.75rem;
 		--footer-link-tap-padding: 0.875rem;
 		--footer-padding-bottom: 5.5rem;
-		--footer-pull-label: 'Deslice hacia arriba para confirmar';
-		--footer-pull-label-color: var(--color-candle-gold);
-		--footer-pull-color: var(--color-candle-gold);
 		--color-text-primary: var(--color-night-lilac);
 		--color-text-secondary: var(--color-night-lilac);
 		--color-action-accent: var(--color-candle-gold);
