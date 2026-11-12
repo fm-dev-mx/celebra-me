@@ -25,6 +25,8 @@ export interface DemoManifest {
 	slug: string;
 	eventType: string;
 	captures: DemoCapture[];
+	/** The same demo's entries in `pageManifest.captures`, kept as written (they may differ). */
+	pageCaptures?: DemoCapture[];
 }
 
 export interface SplitAcceptedManifest {
@@ -46,12 +48,14 @@ function demoKey(demo: Pick<DemoManifest, 'slug' | 'eventType'>): string {
 	return `${demo.eventType}/${demo.slug}`;
 }
 
+function compareDemos(left: DemoManifest, right: DemoManifest): number {
+	return demoKey(left) < demoKey(right) ? -1 : demoKey(left) > demoKey(right) ? 1 : 0;
+}
+
 /** Moves every demo capture out of the manifest, including the nested page manifest copy. */
 export function splitDemoCaptures(manifest: Json): SplitAcceptedManifest {
 	const byDemo = new Map<string, DemoManifest>();
-	const captures = Array.isArray(manifest.captures) ? manifest.captures : [];
-	for (const capture of captures) {
-		if (!isDemoCapture(capture)) continue;
+	const demoFor = (capture: DemoCapture): DemoManifest => {
 		const key = demoKey(capture);
 		const demo = byDemo.get(key) ?? {
 			version: DEMO_MANIFEST_VERSION,
@@ -59,25 +63,34 @@ export function splitDemoCaptures(manifest: Json): SplitAcceptedManifest {
 			eventType: capture.eventType,
 			captures: [],
 		};
-		demo.captures.push(capture);
 		byDemo.set(key, demo);
+		return demo;
+	};
+	const captures = Array.isArray(manifest.captures) ? manifest.captures : [];
+	for (const capture of captures) {
+		if (isDemoCapture(capture)) demoFor(capture).captures.push(capture);
 	}
 	const root: Json = { ...manifest, captures: withoutDemos(manifest.captures) };
 	const nested = manifest.pageManifest as Json | undefined;
-	if (nested) root.pageManifest = { ...nested, captures: withoutDemos(nested.captures) };
-	const demos = [...byDemo.values()].sort((left, right) =>
-		demoKey(left) < demoKey(right) ? -1 : demoKey(left) > demoKey(right) ? 1 : 0,
-	);
+	if (nested) {
+		const nestedCaptures = Array.isArray(nested.captures) ? nested.captures : [];
+		for (const capture of nestedCaptures) {
+			if (!isDemoCapture(capture)) continue;
+			const demo = demoFor(capture);
+			demo.pageCaptures = [...(demo.pageCaptures ?? []), capture];
+		}
+		root.pageManifest = { ...nested, captures: withoutDemos(nested.captures) };
+	}
+	const demos = [...byDemo.values()].sort(compareDemos);
 	return { root, demos };
 }
 
 /** Inverse of {@link splitDemoCaptures}: demo captures follow the root ones, ordered by demo. */
 export function mergeDemoManifests(root: Json, demos: readonly DemoManifest[]): Json {
-	const ordered = [...demos].sort((left, right) =>
-		demoKey(left) < demoKey(right) ? -1 : demoKey(left) > demoKey(right) ? 1 : 0,
-	);
+	const ordered = [...demos].sort(compareDemos);
 	const demoCaptures = ordered.flatMap((demo) => demo.captures);
-	if (demoCaptures.length === 0) return root;
+	const pageCaptures = ordered.flatMap((demo) => demo.pageCaptures ?? []);
+	if (demoCaptures.length === 0 && pageCaptures.length === 0) return root;
 	const merged: Json = {
 		...root,
 		captures: [...((root.captures as unknown[]) ?? []), ...demoCaptures],
@@ -86,7 +99,7 @@ export function mergeDemoManifests(root: Json, demos: readonly DemoManifest[]): 
 	if (nested) {
 		merged.pageManifest = {
 			...nested,
-			captures: [...((nested.captures as unknown[]) ?? []), ...demoCaptures],
+			captures: [...((nested.captures as unknown[]) ?? []), ...pageCaptures],
 		};
 	}
 	return merged;
@@ -111,7 +124,8 @@ function parseDemoManifest(file: string): DemoManifest {
 		demo.version !== DEMO_MANIFEST_VERSION ||
 		typeof demo.slug !== 'string' ||
 		typeof demo.eventType !== 'string' ||
-		!Array.isArray(demo.captures)
+		!Array.isArray(demo.captures) ||
+		(demo.pageCaptures !== undefined && !Array.isArray(demo.pageCaptures))
 	) {
 		throw new Error(`Invalid demo visual manifest: ${file}`);
 	}
@@ -122,14 +136,6 @@ function parseDemoManifest(file: string): DemoManifest {
 export function readAcceptedManifestFile(manifestPath: string): Json {
 	const root = JSON.parse(readFileSync(manifestPath, 'utf8')) as Json;
 	return mergeDemoManifests(root, listDemoManifestFiles(manifestPath).map(parseDemoManifest));
-}
-
-/** Raw bytes of the manifest and its demo manifests, in a stable order, for digesting. */
-export function readAcceptedManifestBytes(manifestPath: string): Buffer {
-	return Buffer.concat([
-		readFileSync(manifestPath),
-		...listDemoManifestFiles(manifestPath).map((file) => readFileSync(file)),
-	]);
 }
 
 /** Writes `manifest.json` plus one file per demo, with the indentation Prettier uses for JSON. */
