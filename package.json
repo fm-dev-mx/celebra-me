@@ -56,6 +56,7 @@
         "db:migrate:new": "supabase migration new",
         "db:migrate": "tsx scripts/db/migrate-cli.ts",
         "prod:apply": "tsx scripts/db/production-apply-cli.ts",
+        "prod:window": "pwsh -NoProfile -File scripts/ops/production-daily-window.ps1",
         "ship:preview": "tsx scripts/db/ship-preview-cli.ts",
         "db:push": "node scripts/db/blocked-db-push.mjs",
         "db:local:reset": "echo 'BLOCKED: Use db:disposable:reset for destructive tests.' && exit 1",

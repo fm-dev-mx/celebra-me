@@ -37,6 +37,8 @@ interface RSVPProps {
 	title: string;
 	celebrantName?: string;
 	guestCap: number;
+	/** Demo previews only: children among the guestCap passes. */
+	demoMaxChildren?: number;
 	accessMode: 'personalized-only' | 'hybrid';
 	confirmationMessage: string;
 	responseMessages?: RsvpResponseMessages;
@@ -136,6 +138,7 @@ const RSVP: React.FC<RSVPProps> = ({
 	title,
 	celebrantName,
 	guestCap,
+	demoMaxChildren,
 	accessMode,
 	confirmationMessage,
 	responseMessages,
@@ -197,6 +200,7 @@ const RSVP: React.FC<RSVPProps> = ({
 		validate,
 	} = useRsvpSubmission({
 		guestCap,
+		demoMaxChildren,
 		eventType,
 		eventSlug,
 		accessMode,

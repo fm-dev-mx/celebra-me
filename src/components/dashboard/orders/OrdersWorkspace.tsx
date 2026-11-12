@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import type { SalesOrder } from '@/lib/commercial/orders.repository';
+import type { SalesOrder, SalesOrderListItem } from '@/lib/commercial/orders.repository';
+import { OrdersAgenda, OrdersStageBoard } from '@/components/dashboard/orders/OrdersFollowUp';
 import type { Customer, LeadCandidate } from '@/components/dashboard/commercial/LeadCandidatesList';
 import InvitationDataPanel from '@/components/dashboard/commercial/InvitationDataPanel';
 import OrderDetailPanel from '@/components/dashboard/orders/OrderDetailPanel';
@@ -32,7 +33,7 @@ import {
 import { ORDER_STAGE_LABELS, getOrderPaymentStatus } from '@/lib/commercial/order-payment-status';
 
 interface OrderPage {
-	items: SalesOrder[];
+	items: SalesOrderListItem[];
 	nextOffset: number | null;
 }
 
@@ -80,7 +81,7 @@ export default function OrdersWorkspace() {
 	const [paidOrder, setPaidOrder] = useState<SalesOrder | null>(null);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState('');
-	const [orders, setOrders] = useState<SalesOrder[]>([]);
+	const [orders, setOrders] = useState<SalesOrderListItem[]>([]);
 	const [filters, setFilters] = useState<OrderFilters>(NO_FILTERS);
 	const [orderReferral, setOrderReferral] = useState(EMPTY_ORDER_REFERRAL);
 	const [listError, setListError] = useState('');
@@ -601,7 +602,7 @@ function OrdersList({
 	onMore,
 	onPayment,
 }: {
-	orders: SalesOrder[];
+	orders: SalesOrderListItem[];
 	filters: OrderFilters;
 	setFilters: (value: OrderFilters) => void;
 	onChanged: () => void;
@@ -615,9 +616,28 @@ function OrdersList({
 }) {
 	const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 	const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
+	const [view, setView] = useState<'list' | 'stages' | 'agenda'>('list');
+	const views = [
+		['list', 'Lista'],
+		['stages', 'Por etapa'],
+		['agenda', 'Próximos eventos'],
+	] as const;
 	return (
 		<section className="orders-workspace__list" aria-labelledby="orders-list-title">
 			<h2 id="orders-list-title">Lista de pedidos</h2>
+			<div className="orders-workspace__views" role="group" aria-label="Vista de pedidos">
+				{views.map(([value, label]) => (
+					<button
+						key={value}
+						type="button"
+						className="btn-secondary"
+						aria-pressed={view === value}
+						onClick={() => setView(value)}
+					>
+						{label}
+					</button>
+				))}
+			</div>
 			<div className="orders-workspace__filters">
 				<label htmlFor="orders-filter">Etapa del pedido</label>
 				<select
@@ -673,72 +693,80 @@ function OrdersList({
 						: 'Sin coincidencias en esta página. Cargue más pedidos para continuar.'}
 				</p>
 			)}
-			{orders.map((item) => (
-				<article className="orders-workspace__row" key={item.id}>
-					<h3>{item.orderNumber}</h3>
-					<p>
-						{labelCommercialEventType(item.eventType ?? '')} · {item.packageName} ·{' '}
-						{ORDER_STAGE_LABELS[item.status]} · {statusLabel(item)}
-					</p>
-					<p>
-						Total: {money(item.totalAmount)} · Pagado: {money(item.amountPaid)}
-					</p>
-					<strong>
-						Saldo pendiente: {money(Math.max(0, item.totalAmount - item.amountPaid))}
-					</strong>
-					{item.totalAmount < item.amountPaid && (
-						<p role="alert">Montos por conciliar.</p>
-					)}
-					{item.eventDate && <p>Fecha del evento: {eventDateLabel(item.eventDate)}</p>}
-					<button
-						className="btn-secondary"
-						type="button"
-						aria-expanded={detailOrderId === item.id}
-						onClick={() =>
-							setDetailOrderId((current) => (current === item.id ? null : item.id))
-						}
-					>
-						{detailOrderId === item.id ? 'Ocultar detalle' : 'Ver detalle y pagos'}
-					</button>
-					{detailOrderId === item.id && (
-						<>
-							<OrderCustomerDetail order={item} onChanged={onChanged} />
-							<OrderDetailPanel orderId={item.id} onChanged={onChanged} />
-						</>
-					)}
-					{['deposit_paid', 'paid'].includes(item.status) && (
-						<>
-							<button
-								className="btn-secondary"
-								type="button"
-								aria-expanded={expandedOrderId === item.id}
-								onClick={() =>
-									setExpandedOrderId((current) =>
-										current === item.id ? null : item.id,
-									)
-								}
-							>
-								{expandedOrderId === item.id
-									? 'Ocultar datos de invitación'
-									: 'Ver datos de invitación'}
-							</button>
-							{expandedOrderId === item.id && (
-								<InvitationDataPanel orderId={item.id} />
-							)}
-						</>
-					)}
-					{['quoted', 'confirmed'].includes(item.status) && !item.amountPaid && (
+			{view === 'stages' && !loading && <OrdersStageBoard orders={orders} today={today()} />}
+			{view === 'agenda' && !loading && <OrdersAgenda orders={orders} today={today()} />}
+			{view === 'list' &&
+				orders.map((item) => (
+					<article className="orders-workspace__row" key={item.id}>
+						<h3>{item.orderNumber}</h3>
+						<p>
+							{labelCommercialEventType(item.eventType ?? '')} · {item.packageName} ·{' '}
+							{ORDER_STAGE_LABELS[item.status]} · {statusLabel(item)}
+						</p>
+						<p>
+							Total: {money(item.totalAmount)} · Pagado: {money(item.amountPaid)}
+						</p>
+						<strong>
+							Saldo pendiente:{' '}
+							{money(Math.max(0, item.totalAmount - item.amountPaid))}
+						</strong>
+						{item.totalAmount < item.amountPaid && (
+							<p role="alert">Montos por conciliar.</p>
+						)}
+						{item.eventDate && (
+							<p>Fecha del evento: {eventDateLabel(item.eventDate)}</p>
+						)}
 						<button
 							className="btn-secondary"
 							type="button"
-							disabled={busy}
-							onClick={() => onPayment(item)}
+							aria-expanded={detailOrderId === item.id}
+							onClick={() =>
+								setDetailOrderId((current) =>
+									current === item.id ? null : item.id,
+								)
+							}
 						>
-							Registrar anticipo
+							{detailOrderId === item.id ? 'Ocultar detalle' : 'Ver detalle y pagos'}
 						</button>
-					)}
-				</article>
-			))}
+						{detailOrderId === item.id && (
+							<>
+								<OrderCustomerDetail order={item} onChanged={onChanged} />
+								<OrderDetailPanel orderId={item.id} onChanged={onChanged} />
+							</>
+						)}
+						{['deposit_paid', 'paid'].includes(item.status) && (
+							<>
+								<button
+									className="btn-secondary"
+									type="button"
+									aria-expanded={expandedOrderId === item.id}
+									onClick={() =>
+										setExpandedOrderId((current) =>
+											current === item.id ? null : item.id,
+										)
+									}
+								>
+									{expandedOrderId === item.id
+										? 'Ocultar datos de invitación'
+										: 'Ver datos de invitación'}
+								</button>
+								{expandedOrderId === item.id && (
+									<InvitationDataPanel orderId={item.id} />
+								)}
+							</>
+						)}
+						{['quoted', 'confirmed'].includes(item.status) && !item.amountPaid && (
+							<button
+								className="btn-secondary"
+								type="button"
+								disabled={busy}
+								onClick={() => onPayment(item)}
+							>
+								Registrar anticipo
+							</button>
+						)}
+					</article>
+				))}
 			{nextOffset !== null && (
 				<button className="btn-secondary" type="button" disabled={loading} onClick={onMore}>
 					Cargar más pedidos

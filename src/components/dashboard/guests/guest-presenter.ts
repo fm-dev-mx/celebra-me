@@ -229,6 +229,7 @@ function attendingOf(item: DashboardGuestItem): number {
 interface GuestStageCount {
 	invitations: number;
 	passes: number;
+	children: number;
 }
 
 /**
@@ -239,12 +240,16 @@ export interface GuestSummary {
 	invitations: number;
 	people: {
 		assigned: number;
+		/** Children among the assigned passes (each pass's child allowance); never a slice. */
+		assignedChildren: number;
 		confirmed: number;
 		/** Children among the confirmed people; never a slice of its own. */
 		confirmedChildren: number;
 		declined: number;
+		declinedChildren: number;
 		unused: number;
 		noAnswer: number;
+		noAnswerChildren: number;
 	};
 	stages: Record<GuestStage, GuestStageCount>;
 	/** Sent and still unanswered (unopened + opened). */
@@ -254,16 +259,19 @@ export interface GuestSummary {
 }
 
 export function computeGuestSummary(items: DashboardGuestItem[]): GuestSummary {
-	const emptyStage = (): GuestStageCount => ({ invitations: 0, passes: 0 });
+	const emptyStage = (): GuestStageCount => ({ invitations: 0, passes: 0, children: 0 });
 	const summary: GuestSummary = {
 		invitations: items.length,
 		people: {
 			assigned: 0,
+			assignedChildren: 0,
 			confirmed: 0,
 			confirmedChildren: 0,
 			declined: 0,
+			declinedChildren: 0,
 			unused: 0,
 			noAnswer: 0,
+			noAnswerChildren: 0,
 		},
 		stages: {
 			'to-send': emptyStage(),
@@ -277,10 +285,13 @@ export function computeGuestSummary(items: DashboardGuestItem[]): GuestSummary {
 	};
 	for (const item of items) {
 		const passes = passesOf(item);
+		const children = resolveChildrenCap(item.maxAllowedChildren, passes);
 		const stage = getGuestStage(item);
 		summary.people.assigned += passes;
+		summary.people.assignedChildren += children;
 		summary.stages[stage].invitations++;
 		summary.stages[stage].passes += passes;
+		summary.stages[stage].children += children;
 		if (passes === 0) summary.withoutPasses++;
 		switch (stage) {
 			case 'confirmed': {
@@ -295,12 +306,15 @@ export function computeGuestSummary(items: DashboardGuestItem[]): GuestSummary {
 			}
 			case 'declined':
 				summary.people.declined += passes;
+				summary.people.declinedChildren += children;
 				break;
 			default:
 				summary.people.noAnswer += passes;
+				summary.people.noAnswerChildren += children;
 				if (stage !== 'to-send') {
 					summary.awaitingAnswer.invitations++;
 					summary.awaitingAnswer.passes += passes;
+					summary.awaitingAnswer.children += children;
 				}
 		}
 	}
@@ -357,6 +371,17 @@ export function getGuestPeopleLabel(item: DashboardGuestItem): GuestPeopleLabel 
 	}
 }
 
+/** Pass total and its adult/child breakdown; plain passes when no children are assigned. */
+export function formatPassesWithChildren(passes: number, children: number): string {
+	const base = formatParty(passes);
+	return `${base}${formatSummaryParty(passes, children)}`;
+}
+
+/** Optional breakdown shared by summary labels and plain text. */
+export function formatSummaryParty(total: number, children: number): string {
+	return resolveChildrenCap(children, total) > 0 ? ` (${formatParty(total, { children })})` : '';
+}
+
 /** Plain-text summary the host can paste into WhatsApp. */
 export function buildGuestSummaryShareText(
 	summary: GuestSummary,
@@ -364,18 +389,22 @@ export function buildGuestSummaryShareText(
 	rsvpDeadline: string,
 ): string {
 	const { people, stages, awaitingAnswer } = summary;
+	const confirmedChildren = formatSummaryParty(people.confirmed, people.confirmedChildren);
 	const lines = [
 		eventTitle ? `${eventTitle}: resumen de invitados` : 'Resumen de invitados',
-		`${people.confirmed} ${people.confirmed === 1 ? 'persona confirmada' : 'personas confirmadas'} de ${formatParty(people.assigned)}.`,
-		`No asistirán: ${people.declined}. Sin respuesta: ${people.noAnswer}.`,
+		`${people.confirmed} ${people.confirmed === 1 ? 'persona confirmada' : 'personas confirmadas'}${confirmedChildren} de ${formatPassesWithChildren(people.assigned, people.assignedChildren)}.`,
+		`No asistirán: ${people.declined}${formatSummaryParty(people.declined, people.declinedChildren)}. Sin respuesta: ${people.noAnswer}${formatSummaryParty(people.noAnswer, people.noAnswerChildren)}.`,
 	];
 	if (awaitingAnswer.invitations > 0) {
 		lines.push(
-			`${awaitingAnswer.invitations} ${awaitingAnswer.invitations === 1 ? 'invitación enviada sigue' : 'invitaciones enviadas siguen'} sin respuesta.`,
+			`${awaitingAnswer.invitations} ${awaitingAnswer.invitations === 1 ? 'invitación enviada sigue' : 'invitaciones enviadas siguen'} sin respuesta${awaitingAnswer.children > 0 ? `: ${formatPassesWithChildren(awaitingAnswer.passes, awaitingAnswer.children)}` : ''}.`,
 		);
 	}
 	if (stages['to-send'].invitations > 0) {
-		lines.push(`${stages['to-send'].invitations} por enviar.`);
+		const toSend = stages['to-send'];
+		lines.push(
+			`${toSend.invitations} por enviar${toSend.children > 0 ? `: ${formatPassesWithChildren(toSend.passes, toSend.children)}` : ''}.`,
+		);
 	}
 	if (rsvpDeadline) lines.push(`Fecha límite para confirmar: ${rsvpDeadline}.`);
 	return lines.join('\n');

@@ -193,6 +193,7 @@
         "subcopy": "Le agradeceré confirmar antes del viernes 3 de septiembre de 2027.",
         "lockedMessage": "Esta invitación es personal. Si le llegó directo de mi familia, abra su enlace para ver su lugar.",
         "guestCap": 4,
+        "demoMaxChildren": 2,
         "accessMode": "personalized-only",
         "confirmationMode": "api",
         "flow": "steps",

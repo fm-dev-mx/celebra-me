@@ -34,8 +34,10 @@ Diagnosis never authorizes mutation. `CURRENT`, green CI, an accessible deployme
   smoke; schema evidence remains separate.
 - **Preview invitation update:** diagnose with
   `pnpm invitation:release -- --slug <slug> --targets preview --dry-run`; use `--apply` instead of
-  `--dry-run` only with scoped Preview authorization. Require canonical package, lifecycle,
-  provenance, asset namespace, three-way plan and hosted approval bound to current hashes.
+  `--dry-run` in Preview
+  ([Local and Preview autonomy](../../.agent/rules/git-safety.md#local-and-preview-autonomy)).
+  Require canonical package, lifecycle, provenance, asset namespace, three-way plan and hosted
+  approval bound to current hashes.
 - **Production invitation publication:** use `pnpm prod:apply -- --slug <slug>` for preflight and
   the same owner-only entrypoint with `--apply`. Require `published`, current hash-bound approval,
   provenance/baseline, resolved conflicts, assets, backup and owner permit.
@@ -229,15 +231,16 @@ a candidate branch.
 Before the promotion, when the release range changes anything inside the CSS visual-parity gate
 scope ("Profile LAYOUT deletion or move" in
 [`../domains/theme/css-visual-parity.md`](../domains/theme/css-visual-parity.md#scope-of-this-gate),
-or a `published` lifecycle change that adds a route to the canonical matrix), obtain the owner's
-release-time visual confirmation. The confirmation reviews the candidate produced with the pinned
-runtime and identifies the exact source SHA, matrix hash, and candidate-manifest SHA-256. Record
-that acceptance through `pnpm visual:parity:accept` before cutting the candidate, land the accepted
-references on `develop` through the same integration as step 4, and cut the candidate at a SHA that
-contains them. The commit that changes the matrix (for example the `published` flip) is committed
-first with normal hooks; the matrix pin is a branch gate (`validate:changed`, CI), so the accepted
-references land in the following commit of the same task branch. This is a human release decision,
-not an automatic action performed by CI or a deployment.
+or a `published` lifecycle change that adds a route to the canonical matrix), confirm it visually at
+release time. The confirmation reviews the candidate produced with the pinned runtime and identifies
+the exact source SHA, matrix hash, and candidate-manifest SHA-256. Record that acceptance through
+`pnpm visual:parity:accept` (allowed with the evidence in
+[Local and Preview autonomy](../../.agent/rules/git-safety.md#local-and-preview-autonomy)) before
+cutting the candidate, land the accepted references on `develop` through the same integration as
+step 4, and cut the candidate at a SHA that contains them. The commit that changes the matrix (for
+example the `published` flip) is committed first with normal hooks; the matrix pin is a branch gate
+(`validate:changed`, CI), so the accepted references land in the following commit of the same task
+branch. CI and deployments never accept references on their own.
 
 If visual confirmation is missing or rejected, the candidate is not eligible for promotion or
 deployment. Do not reduce visual coverage, relax comparison, or treat a Preview build as approval.
