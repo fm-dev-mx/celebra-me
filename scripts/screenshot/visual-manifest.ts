@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { computeVisualMatrixHash } from './visual-coverage-contract';
+import { readAcceptedManifestFile } from './visual-demo-manifests';
 
 export interface CaptureManifest {
 	status: string;
@@ -37,8 +38,7 @@ function readManifestSource(
 		throw new Error(`Missing visual manifest: ${variantFile}`);
 	}
 	const primary = existsSync(variantFile)
-		? (JSON.parse(readFileSync(variantFile, 'utf8')) as CaptureManifest &
-				Partial<CombinedManifest>)
+		? (readAcceptedManifestFile(variantFile) as CaptureManifest & Partial<CombinedManifest>)
 		: undefined;
 	// Regeneration uses fresh suites; acceptance still reads the reviewed combined artifact.
 	return primary && (primary.status === 'ACCEPTED' || preferSuiteManifests)

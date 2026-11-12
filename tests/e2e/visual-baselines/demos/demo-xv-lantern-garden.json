@@ -1,0 +1,57 @@
+{
+    "version": 1,
+    "slug": "demo-xv-lantern-garden",
+    "eventType": "xv",
+    "captures": [
+        {
+            "kind": "demo",
+            "slug": "demo-xv-lantern-garden",
+            "eventType": "xv",
+            "preset": "storybook-lilac",
+            "viewport": "mobile",
+            "file": "pages/demo-xv-demo-xv-lantern-garden-mobile.png",
+            "sha256": "a04a2a9e7707462de3c1682c772b9adac411fdfb6d3b09f853693f4b9c490a39",
+            "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
+            "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-lantern-garden",
+            "eventType": "xv",
+            "preset": "storybook-lilac",
+            "viewport": "desktop",
+            "file": "pages/demo-xv-demo-xv-lantern-garden-desktop.png",
+            "sha256": "4308b13a39c3ecd64c23473dc0dac2474890258765577aa4dfbdf79e9c5ada30",
+            "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
+            "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
+            "comparisonResult": "ACCEPTED"
+        }
+    ],
+    "pageCaptures": [
+        {
+            "kind": "demo",
+            "slug": "demo-xv-lantern-garden",
+            "eventType": "xv",
+            "preset": "storybook-lilac",
+            "viewport": "mobile",
+            "file": "pages/demo-xv-demo-xv-lantern-garden-mobile.png",
+            "sha256": "a04a2a9e7707462de3c1682c772b9adac411fdfb6d3b09f853693f4b9c490a39",
+            "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
+            "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
+            "comparisonResult": "CANDIDATE"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-lantern-garden",
+            "eventType": "xv",
+            "preset": "storybook-lilac",
+            "viewport": "desktop",
+            "file": "pages/demo-xv-demo-xv-lantern-garden-desktop.png",
+            "sha256": "4308b13a39c3ecd64c23473dc0dac2474890258765577aa4dfbdf79e9c5ada30",
+            "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
+            "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
+            "comparisonResult": "CANDIDATE"
+        }
+    ]
+}
