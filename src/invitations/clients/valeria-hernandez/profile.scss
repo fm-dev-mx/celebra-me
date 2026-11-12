@@ -63,20 +63,52 @@
 	// The closing keepsake keeps an even night above and below, not the preset's tall bottom band.
 	--thank-you-keepsake-padding-block-lg: clamp(4.5rem, 10svh, 6rem);
 
-	// The header over the pale opening page drops the dark scrim and reads in wine ink, with the
-	// reply button outlined in cherry.
+	// The header over the night opening reads in pale cherry with no scrim, the reply button
+	// outlined in the same ink; once scrolled it keeps the preset paper bar in wine ink.
 	#event-header {
 		--nav-transparent-scrim: none;
-		--hamburger-color: var(--color-plum-ink);
-		--header-nav-color-transparent: var(--color-plum-ink);
+		--hamburger-color: var(--color-night-blush);
+		--header-nav-color-transparent: var(--color-night-blush);
 		--header-nav-shadow-transparent: none;
 		--header-nav-filter-transparent: none;
 		--header-nav-color: var(--color-plum-ink);
 		--header-nav-title-color: var(--color-plum-ink);
 		--header-nav-cta-bg: transparent;
-		--header-nav-cta-color: var(--color-rose-deep);
-		--header-nav-cta-border: var(--color-rose-deep);
+		--header-nav-cta-color: var(--color-night-blush);
+		--header-nav-cta-border: var(--color-night-blush);
 		--header-nav-cta-shadow: none;
+	}
+
+	// The location card hangs from a silver thread and swings into place, like a sign over the
+	// dance floor.
+	--location-enclosure-hanger-display: block;
+	--location-enclosure-hanger: linear-gradient(rgb(233 234 238), rgb(233 234 238)) center top /
+		1px 100% no-repeat;
+	--location-enclosure-hanger-width: 8px;
+	--location-enclosure-hanger-height: 3rem;
+	--location-enclosure-hanger-to: 0.55rem;
+	--location-enclosure-swing: location-enclosure-swing;
+	--location-enclosure-swing-origin: 50% -3rem;
+
+	// The footer waits below the closing: a small mirror ball rests at the bottom edge and rises on
+	// its thread as the guest keeps scrolling, opening the footer.
+	--footer-pull-scale: 1.6;
+	--footer-pull-shape: 50%;
+	--footer-pull-color: rgb(233 234 238);
+	--footer-pull-body: radial-gradient(
+		circle at 35% 30%,
+		rgb(255 255 255),
+		rgb(196 198 206) 45%,
+		rgb(72 74 86)
+	);
+	--footer-pull-glow: rgb(var(--color-rose-glow-rgb) / 45%);
+	--footer-pull-label: 'Deslice hacia arriba';
+	--footer-pull-label-color: rgb(var(--color-night-blush-rgb) / 90%);
+	--footer-pull-label-size: 0.9375rem;
+	--footer-pull-breathe: footer-pull-breathe;
+
+	.invitation-footer {
+		--invitation-footer-reveal: held;
 	}
 
 	// The night envelope turns into the cherry disco night: a deep wine field and paper, a silver
