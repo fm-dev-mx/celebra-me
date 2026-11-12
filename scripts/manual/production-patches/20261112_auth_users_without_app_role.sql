@@ -15,11 +15,32 @@ begin;
 -- Deleting an account cascades to rows it owns, nulls or blocks on rows that reference it, and
 -- leaves Storage objects pointing at a missing owner. Stop unless nothing references the accounts.
 -- The foreign keys are read from the catalog so a retired or new table cannot go unchecked.
+-- Every table the checks read is share-locked until commit, so no account, role, reference or
+-- Storage object can appear between the checks and the delete.
 do $$
 declare
   fk record;
   referenced boolean;
+  targets integer;
 begin
+  lock table auth.users, public.app_user_roles, storage.objects in share mode;
+  for fk in
+    select distinct c.conrelid::regclass as tbl
+    from pg_constraint c
+    where c.contype = 'f'
+      and c.confrelid = 'auth.users'::regclass
+      and c.connamespace = 'public'::regnamespace
+  loop
+    execute format('lock table %s in share mode', fk.tbl);
+  end loop;
+
+  select count(*) into targets
+  from auth.users u
+  where not exists (select 1 from public.app_user_roles r where r.user_id = u.id);
+  if targets <> 2 then
+    raise exception 'Expected the 2 reviewed Auth accounts without an app role, found %.', targets;
+  end if;
+
   for fk in
     select c.conrelid::regclass as tbl, a.attname as col
     from pg_constraint c
