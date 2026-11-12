@@ -66,7 +66,7 @@ export async function loadCommercialDashboardData(): Promise<CommercialDashboard
 			'leads?select=id,lead_code,customer_id,name,email,phone,phone_e164,event_type,package_interest,status,channel,utm_source,utm_medium,utm_campaign,created_at',
 		),
 		loadCommercialRows<SalesOrderSummaryRow & { id: string }>(
-			'sales_orders?select=id,order_number,customer_id,lead_id,status,event_type,package_name,total_amount,amount_paid,deposit_amount,created_at,deposit_paid_at',
+			'sales_orders?select=id,order_number,customer_id,lead_id,status,event_type,package_name,total_amount,amount_paid,deposit_amount,created_at,deposit_paid_at,is_past_sale',
 		),
 		loadCommercialRows<ConversionSummaryRow & { id: string }>(
 			'meta_conversion_events?select=id,order_id,lead_id,event_id,event_name,customer_id,status,created_at,updated_at,last_error_message,next_attempt_at,claimed_at,claim_expires_at',
@@ -100,6 +100,27 @@ export async function loadCommercialDashboardData(): Promise<CommercialDashboard
 			status: order.status as 'deposit_paid' | 'paid',
 			depositPaidAt: order.deposit_paid_at ?? null,
 		}));
+	const settledOrdersWithoutEvent: HistoricalPaidOrderDiagnostic[] = orders
+		.filter(
+			(order) =>
+				(order.status === 'deposit_paid' || order.status === 'paid') &&
+				order.is_past_sale !== true &&
+				Number(order.total_amount) > 0 &&
+				Number(order.amount_paid) >= Number(order.total_amount) &&
+				!conversions.some(
+					(conversion) =>
+						conversion.event_id === `order-settled:${order.id}` &&
+						conversion.order_id === order.id,
+				),
+		)
+		.map((order) => ({
+			orderId: order.id,
+			orderNumber: order.order_number ?? null,
+			customerId: order.customer_id ?? null,
+			leadId: order.lead_id ?? null,
+			status: order.status as 'deposit_paid' | 'paid',
+			depositPaidAt: order.deposit_paid_at ?? null,
+		}));
 	return {
 		...summarizeCommercialAnalytics({
 			sessions,
@@ -107,6 +128,7 @@ export async function loadCommercialDashboardData(): Promise<CommercialDashboard
 			...commercialRows,
 		}),
 		historicalPaidOrdersWithoutPurchase,
+		settledOrdersWithoutEvent,
 	};
 }
 
