@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { evaluateMigrationSqlRisk } from '../../scripts/db/migration-sql-risk.ts';
 
 const migration = readFileSync(
 	resolve('supabase/migrations/20261110130000_order_lifecycle_payments.sql'),
@@ -19,7 +20,9 @@ describe('order lifecycle payments migration (SQL contract, without database exe
 		expect(migration).toMatch(
 			/alter table public\.sales_orders\s+add column if not exists event_date date/,
 		);
-		expect(migration).toContain('create table if not exists public.sales_order_payments');
+		// No if not exists: the initial revoke must never strip grants from a pre-existing table.
+		expect(migration).toContain('create table public.sales_order_payments (');
+		expect(migration).not.toContain('create table if not exists public.sales_order_payments');
 		expect(migration).toContain("check (kind in ('deposit', 'installment', 'settlement'))");
 		expect(migration).toMatch(/amount\s+numeric\(12, 2\) not null check \(amount > 0\)/);
 		expect(migration).toMatch(/idempotency_key\s+text not null unique/);
@@ -90,10 +93,16 @@ describe('order lifecycle payments migration (SQL contract, without database exe
 		);
 	});
 
-	it('is registered as an expand migration in the rollout registry', () => {
+	it('is registered as an expand migration because its revokes only initialize the objects it creates', () => {
 		const registry = JSON.parse(
 			readFileSync(resolve('supabase/migration-rollout-registry.json'), 'utf8'),
 		);
-		expect(registry.migrations['20261110130000'].phase).toBe('expand');
+		const entry = registry.migrations['20261110130000'];
+		expect(entry.phase).toBe('expand');
+		expect(entry.revokes).toBeUndefined();
+		expect(entry.requiresDeployedAppCapabilities).toBeUndefined();
+		expect(evaluateMigrationSqlRisk({ version: '20261110130000', registry }).blocked).toBe(
+			false,
+		);
 	});
 });

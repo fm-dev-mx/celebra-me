@@ -92,4 +92,26 @@
 		--color-surface-elevated: var(--hacienda-night);
 		--color-surface-dark: var(--hacienda-night-deep);
 	}
+
+	// The envelope is the same coffee night: hacienda-gold ink and stars, gold wax, and a cream
+	// card that flies into the cover's arched window as it opens.
+	.envelope-wrapper[data-variant='night-envelope'] {
+		--night-envelope-field: color-mix(in srgb, var(--hacienda-gold) 10%, var(--hacienda-night));
+		--night-envelope-field-deep: var(--hacienda-night-deep);
+		--night-envelope-ink: var(--hacienda-gold);
+		--night-envelope-star: var(--hacienda-cream);
+		--night-envelope-wax-light: color-mix(
+			in srgb,
+			var(--hacienda-gold) 55%,
+			var(--hacienda-cream)
+		);
+		--night-envelope-wax: var(--hacienda-gold);
+		--night-envelope-wax-deep: color-mix(
+			in srgb,
+			var(--hacienda-gold) 55%,
+			var(--hacienda-night-deep)
+		);
+		--night-envelope-card-bg: var(--hacienda-cream);
+		--night-envelope-card-ink: var(--hacienda-night);
+	}
 }

@@ -1,10 +1,16 @@
 {
     "$schemaComment": "Migration / deployment compatibility registry. SSOT for expand|neutral|contract phases. Docs: docs/database-workflow.md",
     "migrations": {
+        "20261111230000": {
+            "phase": "contract",
+            "provides": ["meta_conversion_events_order_settled"],
+            "requiresDeployedAppCapabilities": ["meta_capi_view_events_client"],
+            "notes": "Widens meta_conversion_events checks to admit the order-linked OrderSettled row (custom event, order and customer set, no value) sent once when an order is fully paid. Registered as contract only because the CHECK swaps use DROP CONSTRAINT. Every change widens accepted rows and leaves existing records and deployed clients working. Must be applied before the app that enqueues OrderSettled rows is deployed."
+        },
         "20261110130000": {
             "phase": "expand",
             "provides": ["order_lifecycle_payments"],
-            "notes": "Adds sales_orders.event_date, the service-role-only sales_order_payments ledger (deposit, installment, settlement; backfilled with one deposit row per paid order) and register_commercial_order_payment; replaces register_commercial_deposit_purchase keeping signature, privileges and the Purchase total value, additionally writing the deposit ledger row and moving an order whose deposit covers the total to paid. Additive. Must be applied before the app that records installments and settlements is deployed."
+            "notes": "Adds sales_orders.event_date, the service-role-only sales_order_payments ledger (deposit, installment, settlement; backfilled with one deposit row per paid order) and register_commercial_order_payment; replaces register_commercial_deposit_purchase keeping signature, privileges and the Purchase total value, additionally writing the deposit ledger row and moving an order whose deposit covers the total to paid. Its REVOKE statements only initialize privileges on objects it creates, which the initial-revoke proof accepts, so no existing access is removed. Additive. Must be applied before the app that records installments and settlements is deployed."
         },
         "20261110120000": {
             "phase": "neutral",

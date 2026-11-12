@@ -27,6 +27,10 @@ jest.mock('@/lib/commercial/meta-capi/lead-stage-events', () => ({
 	enqueueMetaCrmLeadStageEvent: jest.fn(),
 }));
 
+jest.mock('@/lib/commercial/meta-capi/order-settled', () => ({
+	enqueueOrderSettledEvent: jest.fn().mockResolvedValue('settled-event-id'),
+}));
+
 import {
 	createSalesOrder,
 	registerSalesOrderDepositPurchase,
@@ -35,6 +39,7 @@ import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
 import { emitCommercialTrackingEvent } from '@/lib/commercial/commercial-tracking';
 import { findLeadOrderAttribution } from '@/lib/tracking/lead.repository';
 import { enqueueMetaCrmLeadStageEvent } from '@/lib/commercial/meta-capi/lead-stage-events';
+import { enqueueOrderSettledEvent } from '@/lib/commercial/meta-capi/order-settled';
 import {
 	createCommercialSalesOrder,
 	markCommercialOrderDepositPaid,
@@ -52,6 +57,7 @@ const mockEmitTracking = emitCommercialTrackingEvent as jest.MockedFunction<
 >;
 const mockFindAttribution = jest.mocked(findLeadOrderAttribution);
 const mockEnqueueStage = jest.mocked(enqueueMetaCrmLeadStageEvent);
+const mockEnqueueSettled = jest.mocked(enqueueOrderSettledEvent);
 
 const order = {
 	id: 'order-id',
@@ -216,5 +222,106 @@ describe('markCommercialOrderDepositPaid', () => {
 			markCommercialOrderDepositPaid({ orderId: 'order-id', amountPaid: 0 }),
 		).rejects.toThrow('El monto del anticipo debe ser mayor a cero.');
 		expect(mockRegisterDeposit).not.toHaveBeenCalled();
+	});
+
+	it('enqueues and delivers OrderSettled when deposit covers the total amount', async () => {
+		const fullPaidOrder = { ...order, amountPaid: 1800, totalAmount: 1800 };
+		mockRegisterDeposit.mockResolvedValueOnce({
+			order: fullPaidOrder,
+			conversionEvent,
+			idempotent: false,
+		});
+		const waitUntil = jest.fn();
+
+		const result = await markCommercialOrderDepositPaid(
+			{
+				orderId: 'order-id',
+				amountPaid: 1800,
+				idempotencyKey: 'settle-idempotency-key',
+			},
+			{ after: { waitUntil } },
+		);
+
+		expect(result.order.amountPaid).toBe(1800);
+		expect(result.order.totalAmount).toBe(1800);
+		// 4 after-response tasks: CAPI Purchase delivery, deposit_paid tracking, order-settled, CRM lead stage
+		expect(waitUntil).toHaveBeenCalledTimes(4);
+		await Promise.all(waitUntil.mock.calls.map((call) => call[0]));
+
+		expect(mockEnqueueSettled).toHaveBeenCalledWith({
+			orderId: 'order-id',
+			customerId: 'customer-id',
+			leadId: 'lead-id',
+		});
+		expect(mockDeliver).toHaveBeenCalledWith('settled-event-id');
+	});
+
+	it('does not enqueue OrderSettled when deposit is partial', async () => {
+		const partialOrder = { ...order, amountPaid: 899, totalAmount: 1800 };
+		mockRegisterDeposit.mockResolvedValueOnce({
+			order: partialOrder,
+			conversionEvent,
+			idempotent: false,
+		});
+		const waitUntil = jest.fn();
+
+		await markCommercialOrderDepositPaid(
+			{
+				orderId: 'order-id',
+				amountPaid: 899,
+			},
+			{ after: { waitUntil } },
+		);
+
+		await Promise.all(waitUntil.mock.calls.map((call) => call[0]));
+		expect(mockEnqueueSettled).not.toHaveBeenCalled();
+	});
+
+	it('does not enqueue OrderSettled for past sales even when deposit covers the total', async () => {
+		const pastSaleOrder = { ...order, amountPaid: 1800, totalAmount: 1800, isPastSale: true };
+		mockRegisterDeposit.mockResolvedValueOnce({
+			order: pastSaleOrder,
+			conversionEvent: null,
+			idempotent: false,
+		});
+		const waitUntil = jest.fn();
+
+		await markCommercialOrderDepositPaid(
+			{
+				orderId: 'order-id',
+				amountPaid: 1800,
+			},
+			{ after: { waitUntil } },
+		);
+
+		await Promise.all(waitUntil.mock.calls.map((call) => call[0]));
+		expect(mockEnqueueSettled).not.toHaveBeenCalled();
+	});
+
+	it('does not deliver OrderSettled if enqueue returned null due to duplicate conflict', async () => {
+		const fullPaidOrder = { ...order, amountPaid: 1800, totalAmount: 1800 };
+		mockRegisterDeposit.mockResolvedValueOnce({
+			order: fullPaidOrder,
+			conversionEvent,
+			idempotent: false,
+		});
+		mockEnqueueSettled.mockResolvedValueOnce(null);
+		const waitUntil = jest.fn();
+
+		await markCommercialOrderDepositPaid(
+			{
+				orderId: 'order-id',
+				amountPaid: 1800,
+			},
+			{ after: { waitUntil } },
+		);
+
+		await Promise.all(waitUntil.mock.calls.map((call) => call[0]));
+		expect(mockEnqueueSettled).toHaveBeenCalledWith({
+			orderId: 'order-id',
+			customerId: 'customer-id',
+			leadId: 'lead-id',
+		});
+		expect(mockDeliver).not.toHaveBeenCalledWith('settled-event-id');
 	});
 });

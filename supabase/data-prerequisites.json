@@ -68,7 +68,7 @@
         },
         {
             "id": "20260812-itinerary-gallery-structural-contracts",
-            "summary": "The four targeted XV invitations have explicit timeline-paper itinerary contracts and the three celestial targets have index-choreography galleries in published content and every active draft.",
+            "summary": "The four targeted XV invitations have explicit timeline-paper itinerary contracts and the three celestial targets have index-choreography galleries in published content and every active draft; every live published content and active draft is an object whose rsvp, eventTiming and hero paths are objects when present, and every client published content resolves an event date.",
             "introducedBy": "scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql",
             "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20260812_itinerary_gallery.sql",
             "environments": {
@@ -99,6 +99,62 @@
             "summary": "Guest invitation phone objects have the canonical btree(phone) index, no legacy or unexpected equivalent index, and the validated phone/country-code pair CHECK.",
             "introducedBy": "supabase/migrations/20260812210000_reconcile_guest_invitation_phone_objects.sql",
             "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20260812_guest_phone.sql",
+            "environments": {
+                "production": {
+                    "status": "pending"
+                },
+                "preview": {
+                    "status": "pending"
+                }
+            }
+        },
+        {
+            "id": "invitation-assets-storage-objects",
+            "summary": "Every live Supabase-hosted invitation_assets row has a non-blank storage_path and a matching storage.objects row in its bucket.",
+            "introducedBy": "docs/core/data-prerequisites-json-shapes-inventory.md",
+            "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20261111_invitation_asset_objects.sql",
+            "environments": {
+                "production": {
+                    "status": "pending"
+                },
+                "preview": {
+                    "status": "pending"
+                }
+            }
+        },
+        {
+            "id": "tracking-event-lead-code",
+            "summary": "Every non-internal tracking event has object event_properties, any lead_code is a non-blank string, every lead_created event carries one, and lead source events agree with their lead.",
+            "introducedBy": "docs/core/data-prerequisites-json-shapes-inventory.md",
+            "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20261111_tracking_event_lead_code.sql",
+            "environments": {
+                "production": {
+                    "status": "pending"
+                },
+                "preview": {
+                    "status": "pending"
+                }
+            }
+        },
+        {
+            "id": "invitation-data-request-answers-object",
+            "summary": "Every invitation_data_requests.answers value is a JSON object.",
+            "introducedBy": "docs/core/data-prerequisites-json-shapes-inventory.md",
+            "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20261111_invitation_data_request_answers.sql",
+            "environments": {
+                "production": {
+                    "status": "pending"
+                },
+                "preview": {
+                    "status": "pending"
+                }
+            }
+        },
+        {
+            "id": "event-memory-object-keys",
+            "summary": "Every event_memory_items row whose object is not deleted has an original key with the extension its MIME type requires and, when present, a thumbnail key that follows the memories key contract.",
+            "introducedBy": "docs/core/data-prerequisites-json-shapes-inventory.md",
+            "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20261111_event_memory_object_keys.sql",
             "environments": {
                 "production": {
                     "status": "pending"

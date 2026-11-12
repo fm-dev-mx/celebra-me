@@ -77,3 +77,50 @@ describe('commercial historical Purchase diagnostics', () => {
 		expect(summary.historicalPaidOrdersWithoutPurchase).toEqual([]);
 	});
 });
+
+describe('commercial settlement diagnostics', () => {
+	const settledOrder = (overrides: Record<string, unknown> = {}) => ({
+		id: 'order-settled',
+		order_number: 'CMO-1',
+		customer_id: 'customer-1',
+		lead_id: null,
+		status: 'paid',
+		total_amount: 1000,
+		amount_paid: 1000,
+		...overrides,
+	});
+	const load = async (orders: unknown[], conversions: unknown[] = []) => {
+		mockRest
+			.mockResolvedValueOnce([])
+			.mockResolvedValueOnce([])
+			.mockResolvedValueOnce([])
+			.mockResolvedValueOnce(orders)
+			.mockResolvedValueOnce(conversions)
+			.mockResolvedValueOnce([]);
+		return loadCommercialDashboardData();
+	};
+
+	it('lists a fully paid order that has no OrderSettled event', async () => {
+		const summary = await load([settledOrder()]);
+		expect(summary.settledOrdersWithoutEvent?.map((o) => o.orderId)).toEqual(['order-settled']);
+	});
+
+	it('ignores orders with a balance, past sales and orders that already have the event', async () => {
+		const summary = await load(
+			[
+				settledOrder({ id: 'with-balance', amount_paid: 400 }),
+				settledOrder({ id: 'past-sale', is_past_sale: true }),
+				settledOrder({ id: 'has-event' }),
+			],
+			[
+				{
+					id: 'c1',
+					order_id: 'has-event',
+					event_id: 'order-settled:has-event',
+					status: 'sent',
+				},
+			],
+		);
+		expect(summary.settledOrdersWithoutEvent).toEqual([]);
+	});
+});

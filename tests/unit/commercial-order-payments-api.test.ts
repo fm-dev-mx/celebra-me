@@ -53,13 +53,16 @@ describe('POST /orders/[orderId]/payments', () => {
 			{},
 			'commercial:orders:payments',
 		);
-		expect(registerCommercialOrderPayment).toHaveBeenCalledWith({
-			orderId: ORDER_ID,
-			amount: 400,
-			paidAt: undefined,
-			actorId: 'admin-id',
-			idempotencyKey: KEY,
-		});
+		expect(registerCommercialOrderPayment).toHaveBeenCalledWith(
+			{
+				orderId: ORDER_ID,
+				amount: 400,
+				paidAt: undefined,
+				actorId: 'admin-id',
+				idempotencyKey: KEY,
+			},
+			{ after: null },
+		);
 	});
 
 	it.each([

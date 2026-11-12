@@ -1,4 +1,5 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
+import { ORDER_SETTLED_EVENT_NAME } from '@/lib/commercial/meta-capi/order-settled';
 import { isProductionDeployment } from '@/lib/server/deploy-identity';
 import { getEnv } from '@/lib/server/env';
 import { createHash, randomUUID } from 'node:crypto';
@@ -189,6 +190,8 @@ function getDeliveryIneligibility(
 const NOT_SKIPPED_STATUSES = 'pending,sending,failed,sent,ambiguous';
 /** Outbox statuses that mean the row may already have reached Meta. */
 const MAY_HAVE_REACHED_META_STATUSES = 'sending,sent,ambiguous';
+/** Outbox statuses that confirm the row already reached Meta. */
+const DELIVERED_TO_META_STATUSES = 'sent,ambiguous';
 
 /**
  * Meta does not deduplicate server Purchases without a shared event ID, so a lead gets one: the
@@ -218,6 +221,37 @@ async function findDuplicatePurchase(
 				errorCode: 'PURCHASE_SENT_AT_ORDER_CONFIRMED',
 				errorMessage: 'The lead Purchase goes out when the order is confirmed.',
 			};
+}
+
+/**
+ * A person gets one Lead in Meta. The «Aparta su fecha» form Lead (browser event, shared ID with
+ * the Pixel) wins deterministically; the later qualified-lead CRM Lead is skipped whenever a
+ * form Lead exists and has not been skipped (even if its CAPI row is pending or failed, since
+ * the browser Pixel already delivered the Lead). Conversely, a form Lead is skipped only when the
+ * CRM Lead has already been delivered to Meta (sent or ambiguous; never on sending, to prevent
+ * mutual concurrent skip).
+ */
+async function findDuplicateLead(
+	detail: OutboxDetail,
+): Promise<{ errorCode: string; errorMessage: string } | undefined> {
+	if (detail.event_name !== 'Lead' || !detail.lead_id) return undefined;
+	const isCrmLead = detail.trigger_status === META_CRM_LEAD_STAGE_EVENTS.qualified.triggerStatus;
+	const isFormLead = detail.trigger_status === 'form_submitted';
+	if (!isCrmLead && !isFormLead) return undefined;
+	const otherTrigger = isCrmLead
+		? 'form_submitted'
+		: META_CRM_LEAD_STAGE_EVENTS.qualified.triggerStatus;
+	const otherStatuses = isCrmLead ? NOT_SKIPPED_STATUSES : DELIVERED_TO_META_STATUSES;
+	const rows = await supabaseRestRequest<Array<{ id: string }>>({
+		pathWithQuery: `meta_conversion_events?lead_id=eq.${encodeURIComponent(detail.lead_id)}&event_name=eq.Lead&trigger_status=eq.${otherTrigger}&status=in.(${otherStatuses})&id=neq.${encodeURIComponent(detail.id)}&select=id&limit=1`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	if (rows.length === 0) return undefined;
+	return {
+		errorCode: 'LEAD_ALREADY_SENT',
+		errorMessage: 'This lead already has a Lead event in Meta.',
+	};
 }
 
 export function hashSha256(val: string): string {
@@ -562,7 +596,10 @@ function buildEventPayload(
 	// A browser row is enqueued while the click is ingested and a CompleteRegistration row when the
 	// client submits the invitation data form, so their creation time is the event time.
 	const eventTime =
-		(crmLeadStage || browserEvent || detail.event_name === COMPLETE_REGISTRATION_EVENT_NAME
+		(crmLeadStage ||
+		browserEvent ||
+		detail.event_name === COMPLETE_REGISTRATION_EVENT_NAME ||
+		detail.event_name === ORDER_SETTLED_EVENT_NAME
 			? detail.created_at
 			: detail.sales_orders?.deposit_paid_at || detail.sales_orders?.created_at) ||
 		new Date().toISOString();
@@ -738,7 +775,9 @@ export async function deliverMetaConversionEvent(
 	const session = sessionId ? await fetchSessionDetails(sessionId) : null;
 
 	const ineligibility =
-		getDeliveryIneligibility(detail, session) ?? (await findDuplicatePurchase(detail));
+		getDeliveryIneligibility(detail, session) ??
+		(await findDuplicatePurchase(detail)) ??
+		(await findDuplicateLead(detail));
 	if (ineligibility) {
 		return finalizeClaim(
 			outboxId,

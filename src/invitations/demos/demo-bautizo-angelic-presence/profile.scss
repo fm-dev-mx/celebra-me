@@ -23,4 +23,30 @@
 			rgb(var(--color-angelic-mist-rgb) / 46%) 44%,
 			transparent 60%
 		);
+
+	// The envelope is a letter from heaven: a dusk sky where the preset's ink meets a whisper of
+	// angelic blue, ink-and-gold paper with a sacred-gold hairline and stars, and the card inside on
+	// pure ivory with eternal ink.
+	.envelope-wrapper[data-variant='celestial-letter'] {
+		--celestial-letter-field: color-mix(
+			in srgb,
+			rgb(var(--color-angelic-blue-rgb)) 18%,
+			var(--color-eternal-ink)
+		);
+		--celestial-letter-paper: color-mix(
+			in srgb,
+			var(--color-eternal-ink) 78%,
+			var(--color-sacred-gold)
+		);
+		--celestial-letter-liner: color-mix(
+			in srgb,
+			var(--color-eternal-ink) 90%,
+			var(--color-sacred-gold)
+		);
+		--celestial-letter-ink: var(--color-sacred-gold);
+		--celestial-letter-star: var(--color-pure-ivory);
+		--celestial-letter-card: var(--color-pure-ivory);
+		--celestial-letter-card-ink: var(--color-eternal-ink);
+		--celestial-letter-card-accent: var(--color-sacred-gold-readable);
+	}
 }
