@@ -54,8 +54,9 @@ node scripts/agent/git-safety.mjs start
 
 ### From the board (code tasks)
 
-The board core does not run git-safety. After `pnpm board claim <id> --rama=<branch> …` from the
-lane folder, run `start --session=<branch>` by hand; after `pnpm board close <id> …` (or `release`),
+The board core does not run git-safety. After
+`node <tablero>/src/cli.ts claim <id> --rama=<branch> …` from the lane folder, run
+`start --session=<branch>` by hand; after `node <tablero>/src/cli.ts close <id> …` (or `release`),
 run `finish --session=<branch>`. See the [coordinator guide](coordinator-board.md#lanes).
 
 ### Finish session (verify, then clean on PASS)

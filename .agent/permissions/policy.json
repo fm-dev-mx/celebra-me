@@ -23,7 +23,6 @@
         "gh pr review",
         "gh run view",
         "gh run watch",
-        "pnpm board",
         "pnpm agent:git-safety:start",
         "pnpm agent:git-safety:check",
         "pnpm agent:git-safety:finish",
@@ -33,8 +32,7 @@
         "pnpm validate:structure",
         "pnpm lint",
         "pnpm build",
-        "pnpm exec prettier",
-        "node scripts/board/tablero-core.mjs"
+        "pnpm exec prettier"
     ],
     "deny": [
         "git push --force",

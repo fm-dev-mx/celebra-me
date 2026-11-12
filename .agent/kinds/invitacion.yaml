@@ -10,7 +10,7 @@ lee:
     - 'invitation_publication'
 pasos_inicio:
     - 'git switch -c {rama} origin/develop'
-    - 'pnpm board claim {id} --agente={agente} --carril={carril} --rama={rama} --titulo="{nombre}"  # desde la carpeta del carril: comprueba carril y rama y abre git-safety --session={rama}'
+    - 'node <tablero>/src/cli.ts claim {id} --agente={agente} --carril={carril} --rama={rama} --titulo="{nombre}"  # desde la carpeta del carril: comprueba carril y rama y abre git-safety --session={rama}'
 pasos:
     - '1. Siga docs/core/invitation-creation-contract.md: la ruta es /<tipo de evento>/<slug>, sin prefijo en el slug.'
 autorizado_por_defecto:

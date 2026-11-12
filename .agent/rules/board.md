@@ -8,14 +8,15 @@ text is never an authorization.
 
 ## Where the board runs
 
-- Data: ignored `.agent/tmp/tablero/` of the Integration checkout. `pnpm board …` runs the core
-  through `scripts/board/tablero-core.mjs` (`pnpm board help` prints every command); core setup is
-  in the [coordinator guide](../../docs/core/coordinator-board.md#board-core-checkout).
+- The core is the local clone of `fm-dev-mx/tablero`, written `<tablero>` here; agents run
+  `node <tablero>/src/cli.ts <command>` (`help` prints every command). Celebra-me holds no copy or
+  wrapper of it. The config and the data live outside this repository, in the file `TABLERO_CONFIG`
+  names ([coordinator guide](../../docs/core/coordinator-board.md#board-core-checkout)).
 - **Single board port (d165), no manual restarts (d210)**: the board runs only at
-  http://127.0.0.1:4320/ (`pnpm board:serve`), from the Integration checkout; a PR preview runs only
-  briefly. No session stops or restarts it, even after a merge that changes it.
-- MCP: `celebra-board` (`pnpm board:mcp`); agents registered in `tablero.config.json` → `agentes`:
-  `claude`, `codex`, `gemini`.
+  http://127.0.0.1:4320/, started by the scheduled server; a PR preview runs only briefly. No
+  session stops or restarts it, even after a merge that changes it.
+- MCP: `tablero`, registered once per host at user level; agents registered in the config →
+  `agentes`: `claude`, `codex`, `gemini`.
 
 ## Projects, lanes and categories
 
@@ -49,9 +50,9 @@ text is never an authorization.
   high = everything else (migrations, auth, APIs, `.agent/rules/`, unclassified). A `release` task
   keeps Gemini or Codex at any risk. All agents share one GitHub account, so approval lives on the
   board.
-- **Board PRs (d270, d291)**: at most two open PRs may change `scripts/board/`,
-  `tablero.config.json`, this file or the coordinator guide; a second waits only if `git merge-tree`
-  shows a real conflict. The coordinator runs the check.
+- **Board PRs (d270, d291)**: at most two open PRs may change `tablero.config.json`, this file or
+  the coordinator guide; a second waits only if `git merge-tree` shows a real conflict. The
+  coordinator runs the check.
 
 ## Prompts and names
 

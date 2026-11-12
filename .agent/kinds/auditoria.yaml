@@ -8,7 +8,7 @@ para_usted:
 lee:
     - 'documentation_governance'
 pasos_inicio:
-    - 'pnpm board claim {id} --agente={agente} --titulo="{nombre}"'
+    - 'node <tablero>/src/cli.ts claim {id} --agente={agente} --titulo="{nombre}"'
 pasos:
     - '1. Revise el área de QUÉ SE BUSCA sin editar nada.'
     - '2. Escriba el informe en .agent/tmp/reports/<AAAA-MM-DD>-<tema>.md de Integración.'
