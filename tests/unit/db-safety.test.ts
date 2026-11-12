@@ -336,6 +336,8 @@ ${statement}
 		'select "archive_invitation"(1);',
 		"do $$ begin execute 'select public.archive_invitation' || '(''00000000-0000-0000-0000-000000000000''::uuid)'; end $$;",
 		"select 'select public.archive_invitation' || '(1)' \\gexec",
+		"do 'begin perform public.archive_invitation(''00000000-0000-0000-0000-000000000000''::uuid); end';",
+		"do e'begin perform public.archive_invitation(\\'x\\'); end';",
 	])('treats a user function call as not builtin-only: %s', (call) => {
 		expect(patchCallsOnlyBuiltinFunctions(authPatch('auth.users', call))).toBe(false);
 	});
