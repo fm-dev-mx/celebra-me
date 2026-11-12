@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { readAcceptedManifestFile } from '../../../scripts/screenshot/visual-demo-manifests';
 import { assertManifestIntegrity } from '../../../scripts/screenshot/visual-manifest-integrity';
 import {
 	buildVisualCoverageCases,
@@ -49,7 +50,7 @@ function readAcceptedManifest(manifestPath: string): AcceptedVisualManifest {
 
 	let manifest: unknown;
 	try {
-		manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as unknown;
+		manifest = readAcceptedManifestFile(manifestPath) as unknown;
 	} catch (error) {
 		throw new Error(
 			`Visual parity compare could not read the accepted baseline manifest: ${manifestPath}`,
