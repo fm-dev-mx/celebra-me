@@ -8,6 +8,7 @@ import { writeClipboardText } from '@/hooks/use-clipboard';
 import {
 	buildGuestSummaryShareText,
 	formatPassesWithChildren,
+	formatSummaryParty,
 	type GuestReviewFilterValue,
 	type GuestSummary,
 } from '@/components/dashboard/guests/guest-presenter';
@@ -92,7 +93,7 @@ export const GuestNextStep: React.FC<GuestNextStepProps> = ({
 	if (reminderCount > 0 && awaitingAnswer.invitations > 0) {
 		tone = ' guest-overview__next--remind';
 		lead = `${prefix}${awaitingAnswer.invitations} ${plural(awaitingAnswer.invitations, 'invitación enviada sigue', 'invitaciones enviadas siguen')}`;
-		rest = ` sin respuesta (${passes(awaitingAnswer.passes)}).`;
+		rest = ` sin respuesta (${formatPassesWithChildren(awaitingAnswer.passes, awaitingAnswer.children)}).`;
 		action = {
 			label: scopeLabel ? `Recordar a${ofScope(reminderCount)}` : 'Recordar por WhatsApp',
 			onClick: onRemind,
@@ -103,7 +104,7 @@ export const GuestNextStep: React.FC<GuestNextStepProps> = ({
 		}
 	} else if (toSend.invitations > 0) {
 		lead = `${prefix}${toSend.invitations} ${plural(toSend.invitations, 'invitación por enviar', 'invitaciones por enviar')}`;
-		rest = ` (${passes(toSend.passes)}).`;
+		rest = ` (${formatPassesWithChildren(toSend.passes, toSend.children)}).`;
 		action = {
 			label: scopeLabel ? `Enviar${ofScope(toSend.invitations)}` : 'Enviar invitaciones',
 			onClick: onSendPending,
@@ -183,19 +184,19 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 			filter: 'delivery-pending',
 			label: 'Por enviar',
 			count: stages['to-send'].invitations,
-			detail: passes(stages['to-send'].passes),
+			detail: formatPassesWithChildren(stages['to-send'].passes, stages['to-send'].children),
 		},
 		{
 			filter: 'unopened',
 			label: 'Enviadas, sin abrir',
 			count: stages.unopened.invitations,
-			detail: passes(stages.unopened.passes),
+			detail: formatPassesWithChildren(stages.unopened.passes, stages.unopened.children),
 		},
 		{
 			filter: 'opened',
 			label: 'Abiertas, sin responder',
 			count: stages.opened.invitations,
-			detail: passes(stages.opened.passes),
+			detail: formatPassesWithChildren(stages.opened.passes, stages.opened.children),
 		},
 		{
 			filter: 'answered',
@@ -239,13 +240,31 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 	};
 
 	const slices = [
-		{ key: 'confirmed', label: 'Confirmadas', value: people.confirmed },
-		{ key: 'declined', label: 'No asistirán', value: people.declined },
-		{ key: 'unused', label: 'Lugares no usados', value: people.unused },
-		{ key: 'no-answer', label: 'Sin respuesta', value: people.noAnswer },
+		{
+			key: 'confirmed',
+			label: 'Confirmadas',
+			value: people.confirmed,
+			children: people.confirmedChildren,
+		},
+		{
+			key: 'declined',
+			label: 'No asistirán',
+			value: people.declined,
+			children: people.declinedChildren,
+		},
+		{ key: 'unused', label: 'Lugares no usados', value: people.unused, children: 0 },
+		{
+			key: 'no-answer',
+			label: 'Sin respuesta',
+			value: people.noAnswer,
+			children: people.noAnswerChildren,
+		},
 	];
 	const barLabel = `De ${passes(people.assigned)}. ${slices
-		.map((slice) => `${slice.label}: ${slice.value}`)
+		.map(
+			(slice) =>
+				`${slice.label}: ${slice.value}${formatSummaryParty(slice.value, slice.children)}`,
+		)
 		.join(', ')}`;
 
 	return (
@@ -279,7 +298,10 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 									className={`guest-overview__swatch guest-overview__swatch--${slice.key}`}
 									aria-hidden="true"
 								/>
-								<span className="guest-overview__legend-label">{slice.label}</span>
+								<span className="guest-overview__legend-label">
+									{slice.label}
+									{formatSummaryParty(slice.value, slice.children)}
+								</span>
 								<strong className="guest-overview__legend-value">
 									{slice.value}
 								</strong>

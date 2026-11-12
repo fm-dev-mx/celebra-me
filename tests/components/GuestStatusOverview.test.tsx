@@ -23,6 +23,57 @@ const summary = computeGuestSummary([
 ]);
 
 describe('GuestStatusOverview', () => {
+	it('shows adult and child counts for every category without changing its total', () => {
+		const familySummary = computeGuestSummary([
+			makeGuest({ maxAllowedAttendees: 5, maxAllowedChildren: 2 }),
+			makeGuest({ deliveryStatus: 'shared', maxAllowedAttendees: 4, maxAllowedChildren: 1 }),
+			makeGuest({
+				deliveryStatus: 'shared',
+				isViewed: true,
+				maxAllowedAttendees: 3,
+				maxAllowedChildren: 2,
+			}),
+			makeGuest({
+				attendanceStatus: 'declined',
+				maxAllowedAttendees: 6,
+				maxAllowedChildren: 2,
+			}),
+			makeGuest({
+				attendanceStatus: 'confirmed',
+				maxAllowedAttendees: 5,
+				maxAllowedChildren: 3,
+				attendeeCount: 4,
+				childrenCount: 1,
+			}),
+		]);
+		render(
+			<GuestStatusOverview
+				summary={familySummary}
+				activeFilter="all"
+				onFilterChange={jest.fn()}
+			/>,
+		);
+		expect(screen.getByText('de 23 pases (13 adultos y 10 niños) · 17 %')).toBeInTheDocument();
+		expect(
+			screen.getByText('Confirmadas (3 adultos y 1 niño)').closest('li'),
+		).toHaveTextContent('4');
+		expect(
+			screen.getByText('No asistirán (4 adultos y 2 niños)').closest('li'),
+		).toHaveTextContent('6');
+		expect(
+			screen.getByText('Sin respuesta (7 adultos y 5 niños)').closest('li'),
+		).toHaveTextContent('12');
+		expect(screen.getByRole('button', { name: 'Por enviar, 1' })).toHaveTextContent(
+			'5 pases (3 adultos y 2 niños)',
+		);
+		expect(screen.getByRole('button', { name: 'Enviadas, sin abrir, 1' })).toHaveTextContent(
+			'4 pases (3 adultos y 1 niño)',
+		);
+		expect(
+			screen.getByRole('button', { name: 'Abiertas, sin responder, 1' }),
+		).toHaveTextContent('3 pases (1 adulto y 2 niños)');
+	});
+
 	it('leads with confirmed people out of assigned passes', () => {
 		render(
 			<GuestStatusOverview summary={summary} activeFilter="all" onFilterChange={jest.fn()} />,
