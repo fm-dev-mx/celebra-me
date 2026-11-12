@@ -1,5 +1,17 @@
 import type { SalesOrder } from './orders.repository';
 
+/** Order stages shown in Pedidos, in funnel order; they mirror the stored order status. */
+export const ORDER_STAGE_LABELS = {
+	draft: 'Borrador',
+	quoted: 'Cotizado',
+	confirmed: 'Confirmado',
+	deposit_paid: 'Anticipo',
+	paid: 'Liquidado',
+	cancelled: 'Cancelado',
+	lost: 'Perdido',
+} as const;
+export const ORDER_STAGE_VALUES = Object.keys(ORDER_STAGE_LABELS);
+
 /** The first-payment RPC retains deposit_paid even when the transfer covers the total. */
 export function getOrderPaymentStatus(
 	order: Pick<SalesOrder, 'status' | 'amountPaid' | 'totalAmount'>,

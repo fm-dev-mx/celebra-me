@@ -1,9 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { dashboardApi } from '@/lib/dashboard/api-client';
 import type { SalesOrder } from '@/lib/commercial/orders.repository';
 import type { Customer, LeadCandidate } from '@/components/dashboard/commercial/LeadCandidatesList';
 import InvitationDataPanel from '@/components/dashboard/commercial/InvitationDataPanel';
 import OrderDetailPanel from '@/components/dashboard/orders/OrderDetailPanel';
+import OrderCustomerDetail, {
+	eventDateLabel,
+} from '@/components/dashboard/orders/OrderCustomerDetail';
+import {
+	API,
+	OrdersMutationError,
+	getData,
+	postData,
+} from '@/components/dashboard/orders/orders-api';
 import { normalizeCommercialPhone } from '@/lib/commercial/phone';
 import {
 	PACKAGE_CATALOG,
@@ -16,46 +24,37 @@ import {
 	labelCommercialEventType,
 } from '@/lib/tracking/commercial-presentation';
 
-import { getOrderPaymentStatus } from '@/lib/commercial/order-payment-status';
+import {
+	EMPTY_ORDER_REFERRAL,
+	OrderReferralFields,
+	buildOrderReferralPayload,
+} from '@/components/dashboard/commercial/ReferralFields';
+import { ORDER_STAGE_LABELS, getOrderPaymentStatus } from '@/lib/commercial/order-payment-status';
 
 interface OrderPage {
 	items: SalesOrder[];
 	nextOffset: number | null;
 }
 
-const API = '/api/dashboard/commercial';
 const money = (value: number) =>
 	new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(value);
 const statusLabel = (order: SalesOrder) =>
 	({ quoted: 'Cotizado', partial: 'Pagado parcial', paid: 'Pagado', lost: 'Perdido' })[
 		getOrderPaymentStatus(order)
 	];
+interface OrderFilters {
+	stage: string;
+	eventFrom: string;
+	eventTo: string;
+	balance: string;
+}
+const NO_FILTERS: OrderFilters = { stage: '', eventFrom: '', eventTo: '', balance: '' };
+const filterQuery = (filters: OrderFilters) =>
+	Object.entries(filters)
+		.filter(([, value]) => value)
+		.map(([key, value]) => `&${key}=${encodeURIComponent(value)}`)
+		.join('');
 const today = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mazatlan' });
-
-async function getData<T>(path: string): Promise<T> {
-	const result = await dashboardApi.get<{ data: T }>(path);
-	if (!result.ok) throw new Error(result.message || 'No se pudo cargar la información.');
-	return result.data.data;
-}
-
-class OrdersMutationError extends Error {
-	constructor(
-		message: string,
-		readonly status: number,
-	) {
-		super(message);
-	}
-}
-
-async function postData<T>(path: string, body: unknown): Promise<T> {
-	const result = await dashboardApi.post<{ data: T }>(path, body);
-	if (!result.ok)
-		throw new OrdersMutationError(
-			result.message || 'No se pudo guardar. Intente de nuevo.',
-			result.status,
-		);
-	return result.data.data;
-}
 
 export default function OrdersWorkspace() {
 	const [step, setStep] = useState(1);
@@ -82,7 +81,8 @@ export default function OrdersWorkspace() {
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState('');
 	const [orders, setOrders] = useState<SalesOrder[]>([]);
-	const [filter, setFilter] = useState('');
+	const [filters, setFilters] = useState<OrderFilters>(NO_FILTERS);
+	const [orderReferral, setOrderReferral] = useState(EMPTY_ORDER_REFERRAL);
 	const [listError, setListError] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [nextOffset, setNextOffset] = useState<number | null>(null);
@@ -91,6 +91,7 @@ export default function OrdersWorkspace() {
 	const paymentAttempt = useRef<{ amountPaid: number; paidAt: string } | null>(null);
 	const orderAttempt = useRef<Record<string, unknown> | null>(null);
 	const listGeneration = useRef(0);
+	const presetLeadId = useRef<string | undefined>(undefined);
 	const heading = useRef<HTMLHeadingElement>(null);
 	const previousNavigation = useRef({ step, paidOrder });
 	const orderLocked = busy || Boolean(orderAttempt.current);
@@ -105,13 +106,26 @@ export default function OrdersWorkspace() {
 		previousNavigation.current = { step, paidOrder };
 		heading.current?.focus();
 	}, [step, paidOrder]);
+	// Comercial links here with ?cliente=<id>[&lead=<id>] to start «Crear pedido» for that customer.
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search);
+		const customerId = params.get('cliente');
+		if (!customerId) return;
+		presetLeadId.current = params.get('lead') || undefined;
+		getData<Customer>(`${API}/customers?id=${encodeURIComponent(customerId)}`)
+			.then((found) => {
+				setCustomer(found);
+				setStep(2);
+			})
+			.catch(() => setError('No se pudo cargar el cliente. Búsquelo por teléfono o correo.'));
+	}, []);
 	useEffect(() => {
 		const generation = ++listGeneration.current;
 		setOrders([]);
 		setNextOffset(null);
 		setLoading(true);
 		setListError('');
-		getData<OrderPage>(`${API}/orders?view=orders&status=${filter}`)
+		getData<OrderPage>(`${API}/orders?view=orders${filterQuery(filters)}`)
 			.then((rows) => {
 				if (listGeneration.current !== generation) return;
 				setOrders(rows.items);
@@ -127,7 +141,7 @@ export default function OrdersWorkspace() {
 		return () => {
 			listGeneration.current++;
 		};
-	}, [filter, refresh]);
+	}, [filters, refresh]);
 
 	async function run(action: () => Promise<void>) {
 		if (busy) return;
@@ -154,6 +168,8 @@ export default function OrdersWorkspace() {
 		}
 	}
 	function chooseCustomer(value: Customer) {
+		// A customer picked by hand drops the lead preset from the ?lead= link.
+		if (value.id !== customer?.id) presetLeadId.current = undefined;
 		setCustomer(value);
 		setStep(2);
 	}
@@ -220,14 +236,17 @@ export default function OrdersWorkspace() {
 	}
 	async function createOrder() {
 		if (!customer) return;
+		if (orderReferral.isPastSale && !orderReferral.soldAt)
+			throw new Error('Indique la fecha real de la venta anterior.');
 		keys.current.order ||= crypto.randomUUID();
 		orderAttempt.current ||= {
 			customerId: customer.id,
-			leadId: lead?.id,
+			leadId: lead?.id ?? presetLeadId.current,
 			eventType,
 			packageId,
 			packageName: PACKAGE_CATALOG.find((pkg) => pkg.id === packageId)?.name,
 			totalAmount: Number(total),
+			...buildOrderReferralPayload(orderReferral),
 			status: 'quoted',
 			eventDate: eventDate || undefined,
 			idempotencyKey: keys.current.order,
@@ -256,6 +275,7 @@ export default function OrdersWorkspace() {
 		setRefresh((value) => value + 1);
 	}
 	function startNew() {
+		presetLeadId.current = undefined;
 		setTotal(String(getPackagePrice(packageId, getActiveCampaign())));
 		setDate(today());
 		setEventDate('');
@@ -270,6 +290,7 @@ export default function OrdersWorkspace() {
 		setLeads([]);
 		setSearched(false);
 		setError('');
+		setOrderReferral(EMPTY_ORDER_REFERRAL);
 		setStep(1);
 		keys.current = { order: '', payment: '' };
 		paymentAttempt.current = null;
@@ -281,7 +302,7 @@ export default function OrdersWorkspace() {
 		setListError('');
 		try {
 			const rows = await getData<OrderPage>(
-				`${API}/orders?view=orders&status=${filter}&offset=${nextOffset}`,
+				`${API}/orders?view=orders${filterQuery(filters)}&offset=${nextOffset}`,
 			);
 			if (generation !== listGeneration.current) return;
 			setOrders((current) => [...current, ...rows.items]);
@@ -485,6 +506,11 @@ export default function OrdersWorkspace() {
 									Precio vigente del catálogo o promoción. Revise el total antes
 									de continuar.
 								</p>
+								<OrderReferralFields
+									value={orderReferral}
+									onChange={setOrderReferral}
+									referralCreditMxn={customer?.referralCreditMxn ?? 0}
+								/>
 								<div className="dashboard-actions">
 									<button
 										className="btn-secondary"
@@ -538,7 +564,7 @@ export default function OrdersWorkspace() {
 									onChange={(event) => setDate(event.target.value)}
 								/>
 								<button type="submit" className="btn-primary" disabled={busy}>
-									{busy ? 'Guardando…' : 'Guardar pago por transferencia'}
+									{busy ? 'Guardando…' : 'Registrar anticipo'}
 								</button>
 							</form>
 						)}
@@ -547,8 +573,9 @@ export default function OrdersWorkspace() {
 			</section>
 			<OrdersList
 				orders={orders}
-				filter={filter}
-				setFilter={setFilter}
+				filters={filters}
+				setFilters={setFilters}
+				onChanged={() => setRefresh((value) => value + 1)}
 				listError={listError}
 				loading={loading}
 				nextOffset={nextOffset}
@@ -556,7 +583,6 @@ export default function OrdersWorkspace() {
 				onRetry={() => setRefresh((value) => value + 1)}
 				onMore={() => void loadMore()}
 				onPayment={(item) => void run(() => resumePayment(item))}
-				onChanged={() => setRefresh((value) => value + 1)}
 			/>
 		</fieldset>
 	);
@@ -564,8 +590,9 @@ export default function OrdersWorkspace() {
 
 function OrdersList({
 	orders,
-	filter,
-	setFilter,
+	filters,
+	setFilters,
+	onChanged,
 	listError,
 	loading,
 	nextOffset,
@@ -573,11 +600,11 @@ function OrdersList({
 	onRetry,
 	onMore,
 	onPayment,
-	onChanged,
 }: {
 	orders: SalesOrder[];
-	filter: string;
-	setFilter: (value: string) => void;
+	filters: OrderFilters;
+	setFilters: (value: OrderFilters) => void;
+	onChanged: () => void;
 	listError: string;
 	loading: boolean;
 	nextOffset: number | null;
@@ -585,25 +612,51 @@ function OrdersList({
 	onRetry: () => void;
 	onMore: () => void;
 	onPayment: (order: SalesOrder) => void;
-	onChanged: () => void;
 }) {
 	const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 	const [detailOrderId, setDetailOrderId] = useState<string | null>(null);
 	return (
 		<section className="orders-workspace__list" aria-labelledby="orders-list-title">
 			<h2 id="orders-list-title">Lista de pedidos</h2>
-			<label htmlFor="orders-filter">Estado del pedido</label>
-			<select
-				id="orders-filter"
-				value={filter}
-				onChange={(event) => setFilter(event.target.value)}
-			>
-				<option value="">Todos</option>
-				<option value="quoted">Cotizado</option>
-				<option value="partial">Pagado parcial</option>
-				<option value="paid">Pagado</option>
-				<option value="lost">Perdido</option>
-			</select>
+			<div className="orders-workspace__filters">
+				<label htmlFor="orders-filter">Etapa del pedido</label>
+				<select
+					id="orders-filter"
+					value={filters.stage}
+					onChange={(event) => setFilters({ ...filters, stage: event.target.value })}
+				>
+					<option value="">Todas</option>
+					{Object.entries(ORDER_STAGE_LABELS).map(([value, label]) => (
+						<option key={value} value={value}>
+							{label}
+						</option>
+					))}
+				</select>
+				<label htmlFor="orders-filter-balance">Saldo</label>
+				<select
+					id="orders-filter-balance"
+					value={filters.balance}
+					onChange={(event) => setFilters({ ...filters, balance: event.target.value })}
+				>
+					<option value="">Todos</option>
+					<option value="pending">Con saldo pendiente</option>
+					<option value="settled">Sin saldo</option>
+				</select>
+				<label htmlFor="orders-filter-from">Evento desde</label>
+				<input
+					id="orders-filter-from"
+					type="date"
+					value={filters.eventFrom}
+					onChange={(event) => setFilters({ ...filters, eventFrom: event.target.value })}
+				/>
+				<label htmlFor="orders-filter-to">Evento hasta</label>
+				<input
+					id="orders-filter-to"
+					type="date"
+					value={filters.eventTo}
+					onChange={(event) => setFilters({ ...filters, eventTo: event.target.value })}
+				/>
+			</div>
 			{listError && (
 				<p role="alert">
 					{listError}{' '}
@@ -625,7 +678,7 @@ function OrdersList({
 					<h3>{item.orderNumber}</h3>
 					<p>
 						{labelCommercialEventType(item.eventType ?? '')} · {item.packageName} ·{' '}
-						{statusLabel(item)}
+						{ORDER_STAGE_LABELS[item.status]} · {statusLabel(item)}
 					</p>
 					<p>
 						Total: {money(item.totalAmount)} · Pagado: {money(item.amountPaid)}
@@ -636,6 +689,7 @@ function OrdersList({
 					{item.totalAmount < item.amountPaid && (
 						<p role="alert">Montos por conciliar.</p>
 					)}
+					{item.eventDate && <p>Fecha del evento: {eventDateLabel(item.eventDate)}</p>}
 					<button
 						className="btn-secondary"
 						type="button"
@@ -647,7 +701,10 @@ function OrdersList({
 						{detailOrderId === item.id ? 'Ocultar detalle' : 'Ver detalle y pagos'}
 					</button>
 					{detailOrderId === item.id && (
-						<OrderDetailPanel orderId={item.id} onChanged={onChanged} />
+						<>
+							<OrderCustomerDetail order={item} onChanged={onChanged} />
+							<OrderDetailPanel orderId={item.id} onChanged={onChanged} />
+						</>
 					)}
 					{['deposit_paid', 'paid'].includes(item.status) && (
 						<>
@@ -677,7 +734,7 @@ function OrdersList({
 							disabled={busy}
 							onClick={() => onPayment(item)}
 						>
-							Registrar pago
+							Registrar anticipo
 						</button>
 					)}
 				</article>

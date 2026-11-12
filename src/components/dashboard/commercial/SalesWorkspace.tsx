@@ -29,17 +29,10 @@ import {
 	CustomerOriginFields,
 	CustomerReferralPanel,
 	EMPTY_CUSTOMER_ORIGIN,
-	EMPTY_ORDER_REFERRAL,
-	OrderReferralFields,
 	buildCustomerOriginPayload,
-	buildOrderReferralPayload,
 } from '@/components/dashboard/commercial/ReferralFields';
 import { labelLeadChannel, labelLeadStatus } from '@/lib/tracking/commercial-dashboard';
 import { labelCommercialEventType } from '@/lib/tracking/commercial-presentation';
-import {
-	EMPTY_ORDER_BASICS,
-	OrderBasicsFields,
-} from '@/components/dashboard/commercial/OrderBasicsFields';
 
 interface ReconciliationResult {
 	byLeadCode?: LeadCandidate | null;
@@ -87,10 +80,6 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 	const [custOrigin, setCustOrigin] = useState(EMPTY_CUSTOMER_ORIGIN);
 	const [creatingCustomer, setCreatingCustomer] = useState(false);
 	const [customerToolOpen, setCustomerToolOpen] = useState(false);
-	const [orderToolOpen, setOrderToolOpen] = useState(false);
-	const [orderBasics, setOrderBasics] = useState(EMPTY_ORDER_BASICS);
-	const [orderReferral, setOrderReferral] = useState(EMPTY_ORDER_REFERRAL);
-	const [creatingOrder, setCreatingOrder] = useState(false);
 	const [depositAmounts, setDepositAmounts] = useState<Record<string, string>>({});
 	const [markingDepositPaid, setMarkingDepositPaid] = useState<Record<string, boolean>>({});
 	const [errorMessage, setErrorMessage] = useState('');
@@ -100,7 +89,6 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 	const [loadingTimeline, setLoadingTimeline] = useState(false);
 	const [loadingOrders, setLoadingOrders] = useState(false);
 	const [ordersError, setOrdersError] = useState('');
-	const [orderIdempotencyKey, setOrderIdempotencyKey] = useState(() => crypto.randomUUID());
 	const [depositIdempotencyKeys, setDepositIdempotencyKeys] = useState<Record<string, string>>(
 		{},
 	);
@@ -109,7 +97,6 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 		string | null
 	>(null);
 	const customerToolRef = useRef<HTMLDetailsElement>(null);
-	const orderToolRef = useRef<HTMLDetailsElement>(null);
 	const feedbackRef = useRef<HTMLDivElement>(null);
 	const pollGenerationRef = useRef(0);
 
@@ -118,12 +105,6 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 		customerToolRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 		customerToolRef.current?.querySelector<HTMLInputElement>('input')?.focus();
 	}, [customerToolOpen]);
-
-	useEffect(() => {
-		if (!orderToolOpen) return;
-		orderToolRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-		orderToolRef.current?.querySelector<HTMLSelectElement>('select')?.focus();
-	}, [orderToolOpen]);
 
 	useEffect(() => {
 		if (!errorMessage && !successMessage) return;
@@ -233,7 +214,6 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 		setActiveCustomer(customer);
 		setCustomerOrders([]);
 		setTimelineEntries([]);
-		setOrderToolOpen(false);
 		setErrorMessage('');
 		setSuccessMessage('');
 		setCustomerLookupError('');
@@ -355,58 +335,11 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 		}
 	};
 
-	const handleCreateOrder: React.SubmitEventHandler<HTMLFormElement> = async (event) => {
-		event.preventDefault();
-		if (!activeCustomer?.id) {
-			setErrorMessage('Seleccione un cliente antes de crear una orden.');
-			return;
-		}
-		const total = Number.parseFloat(orderBasics.totalAmount);
-		if (!Number.isFinite(total) || total <= 0) {
-			setErrorMessage('El monto total debe ser un número positivo.');
-			return;
-		}
-		const deposit = Number.parseFloat(orderBasics.depositAmount);
-		if (orderReferral.isPastSale && !orderReferral.soldAt) {
-			setErrorMessage('Indique la fecha real de la venta anterior.');
-			return;
-		}
-		setCreatingOrder(true);
-		setErrorMessage('');
-		setSuccessMessage('');
-		try {
-			const response = await dashboardApi.post<{ data: SalesOrder }>(
-				'/api/dashboard/commercial/orders',
-				{
-					customerId: activeCustomer.id,
-					leadId: selectedLead?.id || undefined,
-					eventType: orderBasics.eventType,
-					packageName: orderBasics.packageName.trim() || undefined,
-					totalAmount: total,
-					depositAmount: Number.isFinite(deposit) && deposit >= 0 ? deposit : undefined,
-					idempotencyKey: orderIdempotencyKey,
-					...buildOrderReferralPayload(orderReferral),
-				},
-			);
-			if (response.ok) {
-				setSuccessMessage(
-					`Orden "${response.data.data.orderNumber}" registrada con éxito.`,
-				);
-				void fetchCustomerOrders(activeCustomer.id);
-				void fetchTimeline(activeCustomer.id);
-				setOrderBasics({ ...EMPTY_ORDER_BASICS, eventType: orderBasics.eventType });
-				setOrderReferral(EMPTY_ORDER_REFERRAL);
-				setOrderIdempotencyKey(crypto.randomUUID());
-				void fetchRealCustomer(activeCustomer.id);
-			} else setErrorMessage(response.message || 'Error al crear la orden.');
-		} catch (error) {
-			setErrorMessage(
-				error instanceof Error ? error.message : 'Error de red al crear la orden.',
-			);
-		} finally {
-			setCreatingOrder(false);
-		}
-	};
+	const createOrderHref = activeCustomer?.id
+		? `/dashboard/pedidos?cliente=${encodeURIComponent(activeCustomer.id)}${
+				selectedLead?.id ? `&lead=${encodeURIComponent(selectedLead.id)}` : ''
+			}`
+		: '/dashboard/pedidos';
 
 	const handleMarkDepositPaid = async (orderId: string) => {
 		const order = customerOrders.find((item) => item.id === orderId);
@@ -709,7 +642,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 									setCustomerOrders([]);
 									setTimelineEntries([]);
 								}}
-								onOpenOrderTool={() => setOrderToolOpen(true)}
+								createOrderHref={createOrderHref}
 							/>
 
 							<CustomerReferralPanel
@@ -761,34 +694,11 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 								)}
 							</section>
 
-							<details
-								ref={orderToolRef}
-								className="crm-supporting-tool"
-								open={orderToolOpen}
-								onToggle={(event) => setOrderToolOpen(event.currentTarget.open)}
-							>
-								<summary>Crear una nueva orden</summary>
-								<form className="dashboard-form-grid" onSubmit={handleCreateOrder}>
-									<OrderBasicsFields
-										value={orderBasics}
-										onChange={setOrderBasics}
-									/>
-									<OrderReferralFields
-										value={orderReferral}
-										onChange={setOrderReferral}
-										referralCreditMxn={activeCustomer.referralCreditMxn ?? 0}
-									/>
-									<div className="dashboard-actions dashboard-actions--full">
-										<button
-											type="submit"
-											className="btn-primary"
-											disabled={creatingOrder}
-										>
-											{creatingOrder ? 'Creando orden...' : 'Crear orden'}
-										</button>
-									</div>
-								</form>
-							</details>
+							<p className="crm-supporting-tool">
+								<a className="btn-secondary" href={createOrderHref}>
+									Crear pedido en Pedidos
+								</a>
+							</p>
 
 							<section
 								className="crm-detail__section"
