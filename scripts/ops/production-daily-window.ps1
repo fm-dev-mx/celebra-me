@@ -6,7 +6,7 @@
 param([string]$UploadRunId = '')
 $ErrorActionPreference = 'Stop'
 $repo = 'fm-dev-mx/celebra-me'
-Set-Location D:\code\celebra-me
+Set-Location (Resolve-Path (Join-Path $PSScriptRoot '..\..'))
 fnm env --shell powershell | Out-String | Invoke-Expression
 
 function Nuevo-Run([string]$antes) {
