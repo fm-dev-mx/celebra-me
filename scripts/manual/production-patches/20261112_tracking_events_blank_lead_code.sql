@@ -5,10 +5,11 @@
 -- @tables: public.tracking_events
 -- @operation: update
 -- @expected-rows-min: 1
--- @expected-rows-max: 1500
+-- @expected-rows-max: 800
 -- @requires-backup: true
+-- @rows-max-rationale: 533 rows on 2026-11-12 at about 4 new rows a day until the ingestion fix deploys; 800 covers two months of delay
 -- @dry-run-query: select id from public.tracking_events where is_internal is not true and jsonb_typeof(event_properties) = 'object' and jsonb_typeof(event_properties->'lead_code') = 'string' and btrim(event_properties->>'lead_code') = ''
--- @rollback: update public.tracking_events set event_properties = event_properties || jsonb_build_object('lead_code', '') where id in (the ids listed by the reviewed plan); a blank lead_code matches no lead, so the rollback only restores the empty key, and the critical backup keeps the previous event_properties
+-- @rollback: restore event_properties of public.tracking_events from the pre-apply Production backup, for the rows whose backup copy is a non-internal object with a blank string lead_code (the dry-run query run against the backup lists exactly those ids); the backup keeps the original value, including its whitespace
 
 begin;
 
