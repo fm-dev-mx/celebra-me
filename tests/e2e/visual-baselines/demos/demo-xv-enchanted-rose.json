@@ -1,0 +1,57 @@
+{
+    "version": 1,
+    "slug": "demo-xv-enchanted-rose",
+    "eventType": "xv",
+    "captures": [
+        {
+            "kind": "demo",
+            "slug": "demo-xv-enchanted-rose",
+            "eventType": "xv",
+            "preset": "enchanted-rose",
+            "viewport": "mobile",
+            "file": "pages/demo-xv-demo-xv-enchanted-rose-mobile.png",
+            "sha256": "f7e522ae2dfdaf2e4382e10d70f0735aba11a3c0d0da9139df7831a7f1260be0",
+            "contentHash": "45931b3348c2f10ea80e5e6667f43b3dcf1c7edf3b15716c6af4a2b1b4d3115d",
+            "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-enchanted-rose",
+            "eventType": "xv",
+            "preset": "enchanted-rose",
+            "viewport": "desktop",
+            "file": "pages/demo-xv-demo-xv-enchanted-rose-desktop.png",
+            "sha256": "b4f90e9f33069f3b2870fe2f51bf81bbb9f2128f4d6e02be04f2395e4e85e4fc",
+            "contentHash": "45931b3348c2f10ea80e5e6667f43b3dcf1c7edf3b15716c6af4a2b1b4d3115d",
+            "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
+            "comparisonResult": "ACCEPTED"
+        }
+    ],
+    "pageCaptures": [
+        {
+            "kind": "demo",
+            "slug": "demo-xv-enchanted-rose",
+            "eventType": "xv",
+            "preset": "enchanted-rose",
+            "viewport": "mobile",
+            "file": "pages/demo-xv-demo-xv-enchanted-rose-mobile.png",
+            "sha256": "f7e522ae2dfdaf2e4382e10d70f0735aba11a3c0d0da9139df7831a7f1260be0",
+            "contentHash": "45931b3348c2f10ea80e5e6667f43b3dcf1c7edf3b15716c6af4a2b1b4d3115d",
+            "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
+            "comparisonResult": "CANDIDATE"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-enchanted-rose",
+            "eventType": "xv",
+            "preset": "enchanted-rose",
+            "viewport": "desktop",
+            "file": "pages/demo-xv-demo-xv-enchanted-rose-desktop.png",
+            "sha256": "b4f90e9f33069f3b2870fe2f51bf81bbb9f2128f4d6e02be04f2395e4e85e4fc",
+            "contentHash": "45931b3348c2f10ea80e5e6667f43b3dcf1c7edf3b15716c6af4a2b1b4d3115d",
+            "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
+            "comparisonResult": "CANDIDATE"
+        }
+    ]
+}

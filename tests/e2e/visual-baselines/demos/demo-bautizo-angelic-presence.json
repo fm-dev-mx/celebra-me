@@ -1,0 +1,57 @@
+{
+    "version": 1,
+    "slug": "demo-bautizo-angelic-presence",
+    "eventType": "bautizo",
+    "captures": [
+        {
+            "kind": "demo",
+            "slug": "demo-bautizo-angelic-presence",
+            "eventType": "bautizo",
+            "preset": "angelic-presence",
+            "viewport": "mobile",
+            "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
+            "sha256": "cad066dc743ee81dee6d4f22b110097e840bd1d92cdc3bb948cbc769a081d45f",
+            "contentHash": "3b07e2575cb36444c7bf8c8c32f13cbcba88e0d90c0a54ee00e724119ee4e0d4",
+            "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-bautizo-angelic-presence",
+            "eventType": "bautizo",
+            "preset": "angelic-presence",
+            "viewport": "desktop",
+            "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-desktop.png",
+            "sha256": "8f35013bf8740ceb84d69c9af2ffd3c6b19bb3050d7ca6eee3b65d9d8a5081d9",
+            "contentHash": "3b07e2575cb36444c7bf8c8c32f13cbcba88e0d90c0a54ee00e724119ee4e0d4",
+            "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
+            "comparisonResult": "ACCEPTED"
+        }
+    ],
+    "pageCaptures": [
+        {
+            "kind": "demo",
+            "slug": "demo-bautizo-angelic-presence",
+            "eventType": "bautizo",
+            "preset": "angelic-presence",
+            "viewport": "mobile",
+            "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
+            "sha256": "cad066dc743ee81dee6d4f22b110097e840bd1d92cdc3bb948cbc769a081d45f",
+            "contentHash": "3b07e2575cb36444c7bf8c8c32f13cbcba88e0d90c0a54ee00e724119ee4e0d4",
+            "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
+            "comparisonResult": "CANDIDATE"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-bautizo-angelic-presence",
+            "eventType": "bautizo",
+            "preset": "angelic-presence",
+            "viewport": "desktop",
+            "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-desktop.png",
+            "sha256": "8f35013bf8740ceb84d69c9af2ffd3c6b19bb3050d7ca6eee3b65d9d8a5081d9",
+            "contentHash": "3b07e2575cb36444c7bf8c8c32f13cbcba88e0d90c0a54ee00e724119ee4e0d4",
+            "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
+            "comparisonResult": "CANDIDATE"
+        }
+    ]
+}
