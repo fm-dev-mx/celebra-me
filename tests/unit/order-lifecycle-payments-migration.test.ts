@@ -93,13 +93,13 @@ describe('order lifecycle payments migration (SQL contract, without database exe
 		);
 	});
 
-	it('is registered as a contract migration because it revokes on the objects it creates', () => {
+	it('is registered as an expand migration because its revokes only initialize the objects it creates', () => {
 		const registry = JSON.parse(
 			readFileSync(resolve('supabase/migration-rollout-registry.json'), 'utf8'),
 		);
 		const entry = registry.migrations['20261110130000'];
-		expect(entry.phase).toBe('contract');
-		expect(entry.revokes.length).toBeGreaterThan(0);
+		expect(entry.phase).toBe('expand');
+		expect(entry.revokes).toBeUndefined();
 		expect(entry.requiresDeployedAppCapabilities).toBeUndefined();
 		expect(evaluateMigrationSqlRisk({ version: '20261110130000', registry }).blocked).toBe(
 			false,
