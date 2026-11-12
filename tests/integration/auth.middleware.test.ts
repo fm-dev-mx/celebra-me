@@ -17,14 +17,15 @@ interface TestLocals {
 
 function createContext(path: string) {
 	const locals: TestLocals = {};
+	// Fixed at creation: reading the clock per lookup can land after the middleware's own `now`
+	// (a second boundary), which makes the cookie look like it is from the future.
+	const idleSeen = String(Math.floor(Date.now() / 1000) - 1);
 	return {
 		url: new URL(`http://localhost${path}`),
 		cookies: {
 			...mockCookies,
 			get: (name: string) =>
-				name === 'sb-idle-seen'
-					? { value: String(Math.floor(Date.now() / 1000)) }
-					: mockCookies.get(name),
+				name === 'sb-idle-seen' ? { value: idleSeen } : mockCookies.get(name),
 		},
 		redirect: mockRedirect,
 		request: {
