@@ -149,6 +149,19 @@ export async function migrateLoginAliases({ url, serviceKey, apply = false, fetc
 	return { apply, duplicates, planned: planned.length, written };
 }
 
+/**
+ * Names the failure without echoing the error message, which may carry the endpoint or a response
+ * body: an HTTP status from the Auth API, a timeout, a network error, or a configuration error.
+ * A 401 or 403 means the service key does not belong to the SUPABASE_URL project.
+ */
+export function describeFailure(error) {
+	const status = /\((\d{3})\)\.$/.exec(error instanceof Error ? error.message : '')?.[1];
+	if (status) return `HTTP ${status}`;
+	if (error?.name === 'TimeoutError' || error?.name === 'AbortError') return 'timeout';
+	if (error instanceof TypeError) return 'network or invalid URL';
+	return 'configuration or response';
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
 	try {
 		const args = process.argv.slice(2);
@@ -181,9 +194,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 			console.log(JSON.stringify(result, null, 2));
 			if (result.duplicates.length) process.exitCode = 1;
 		}
-	} catch {
+	} catch (error) {
 		console.error(
-			'Alias migration failed. Verify configuration and Auth API availability; no credentials are logged.',
+			`Alias migration failed (${describeFailure(error)}). Verify configuration and Auth API availability; no credentials are logged.`,
 		);
 		process.exitCode = 1;
 	}
