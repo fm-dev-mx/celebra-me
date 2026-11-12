@@ -50,8 +50,8 @@ This section is the single source for that authority; other documents link here.
   diffs limited to the task's scope; zero geometry errors; `referenceSha`, `matrixHash` and
   `candidateManifestSha256` recorded with the candidate diffs kept. CI still rejects `accept`.
 - **Still the owner's:** Production (merging or deploying `main`, the daily production window),
-  money and external accounts, secrets (`.env*`, `.secrets/`, `.vercel/`, `.backups/`), force push,
-  `--no-verify` and `--admin`.
+  money and external accounts, secrets (`.env*`, `.secrets/`, `.backups/` and the retired host's
+  config folder), force push, `--no-verify` and `--admin`.
 
 ---
 
