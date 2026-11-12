@@ -34,12 +34,14 @@ pnpm visual:parity:accept [-- --reference-sha=<sha> --matrix-hash=<hash> --candi
 
 `candidate` writes ignored files under `.tmp/visual-parity/candidate/`. `compare` never updates
 accepted files and fails when the accepted manifest is missing or a case differs; it runs with
-`updateSnapshots: 'none'`, so a missing reference is never written. `accept` is a human-only
-operation and is rejected in CI. It requires a clean HEAD equal to the candidate reference SHA and
-verifies the candidate manifest hash and integrity; optional hash flags are checked when given.
-Accepted PNGs live under `tests/e2e/visual-baselines/` and use Git LFS. The manifest records the
-reference commit, runtime, viewport, case identity, and hashes. Baselines may not contain database
-payloads, guest personalization, cookies, credentials, signed URLs, or external requests.
+`updateSnapshots: 'none'`, so a missing reference is never written. `accept` is rejected in CI;
+agents may run it in Preview only with the evidence in
+[Local and Preview autonomy](../../../.agent/rules/git-safety.md#local-and-preview-autonomy). It
+requires a clean HEAD equal to the candidate reference SHA and verifies the candidate manifest hash
+and integrity; optional hash flags are checked when given. Accepted PNGs live under
+`tests/e2e/visual-baselines/` and use Git LFS. The manifest records the reference commit, runtime,
+viewport, case identity, and hashes. Baselines may not contain database payloads, guest
+personalization, cookies, credentials, signed URLs, or external requests.
 
 Only the browser validation job downloads Git LFS references, through its checkout step. Other
 validation jobs keep LFS pointers and must not download image objects. Do not add a second

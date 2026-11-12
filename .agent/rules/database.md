@@ -88,13 +88,15 @@ authorization is task scope + target environment + operation risk + existing rep
 - **Credentials**: `PREVIEW_DB_URL` or the gitignored `.env.preview.local`.
 - **Separation of Operations**: Migration (`pnpm db:migrate -- --target preview`), seed, and audit
   (`pnpm db:preview:audit`) are separate operations. Migrate defaults to read-only preflight;
-  `--apply` requires `CELEBRA_TASK_SCOPE=preview:schema:migrate` or interactive TTY confirmation.
-  Missing Preview credentials fail closed with exit code `1`.
-- **Preview mirror**: `pnpm db:preview:sync-invitations --dry-run` writes nothing. `--apply`
-  requires `CELEBRA_TASK_SCOPE=preview:content-mirror:sync-invitations` or interactive confirmation.
-  It is a Production→Preview **content regression mirror** (not promotion) that excludes RSVP/PII
-  tables and resets Preview RSVP children via `TRUNCATE events CASCADE` — re-provision gated
-  synthetic fixtures afterward. Policy:
+  `--apply` is allowed in Preview ([git-safety](git-safety.md#local-and-preview-autonomy)) and
+  requires `CELEBRA_TASK_SCOPE=preview:schema:migrate` or interactive TTY confirmation.
+  `pnpm invitation:release -- --slug <slug> --targets preview --apply` is allowed likewise. Missing
+  Preview credentials fail closed with exit code `1`.
+- **Preview mirror**: `pnpm db:preview:sync-invitations --dry-run` writes nothing. `--apply` is
+  allowed in Preview and requires `CELEBRA_TASK_SCOPE=preview:content-mirror:sync-invitations` or
+  interactive confirmation. It is a Production→Preview **content regression mirror** (not promotion)
+  that excludes RSVP/PII tables and resets Preview RSVP children via `TRUNCATE events CASCADE` —
+  re-provision gated synthetic fixtures afterward. Policy:
   [`docs/core/content-parity-rsvp-isolation.md`](../../docs/core/content-parity-rsvp-isolation.md).
 - **No Production PII Copy**: Production Auth users, guest data, RSVP records, tracking, commercial,
   and other private operational data must NEVER be copied into Preview.
