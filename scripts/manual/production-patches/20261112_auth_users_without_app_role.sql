@@ -8,30 +8,43 @@
 -- @expected-rows-max: 2
 -- @requires-backup: true
 -- @dry-run-query: select u.id from auth.users u where not exists (select 1 from public.app_user_roles r where r.user_id = u.id)
--- @rollback: restore the deleted auth.users rows and their cascaded auth.identities and auth.sessions rows from the pre-apply Production backup (the dry-run query run against the backup lists their ids); public rows that referenced them were checked to be absent before the delete
+-- @rollback: restore the deleted auth.users and auth.identities rows from the pre-apply critical Production backup (the dry-run query run against the backup lists their ids); that backup holds no password hashes or sessions, so a restored account signs in again only after a password reset. Public and Storage rows that referenced the accounts were checked to be absent before the delete, so nothing else needs restoring
 
 begin;
 
--- Deleting an account cascades to rows it owns or blocks on rows that reference it.
--- Stop unless the accounts are referenced nowhere in public data.
+-- Deleting an account cascades to rows it owns, nulls or blocks on rows that reference it, and
+-- leaves Storage objects pointing at a missing owner. Stop unless nothing references the accounts.
+-- The foreign keys are read from the catalog so a retired or new table cannot go unchecked.
 do $$
+declare
+  fk record;
+  referenced boolean;
 begin
+  for fk in
+    select c.conrelid::regclass as tbl, a.attname as col
+    from pg_constraint c
+    join pg_attribute a on a.attrelid = c.conrelid and a.attnum = c.conkey[1]
+    where c.contype = 'f'
+      and c.confrelid = 'auth.users'::regclass
+      and c.connamespace = 'public'::regnamespace
+      and c.conrelid <> 'public.app_user_roles'::regclass
+  loop
+    execute format(
+      'select exists (select 1 from %s t join auth.users u on u.id = t.%I where not exists (select 1 from public.app_user_roles r where r.user_id = u.id))',
+      fk.tbl, fk.col
+    ) into referenced;
+    if referenced then
+      raise exception 'An Auth account without an app role is still referenced by %.%; review it before deleting.', fk.tbl, fk.col;
+    end if;
+  end loop;
+
   if exists (
     select 1
-    from auth.users u
+    from storage.objects o
+    join auth.users u on u.id = o.owner or o.owner_id = u.id::text
     where not exists (select 1 from public.app_user_roles r where r.user_id = u.id)
-      and (
-        exists (select 1 from public.events e where e.owner_user_id = u.id)
-        or exists (select 1 from public.event_memberships m where m.user_id = u.id)
-        or exists (select 1 from public.audit_logs a where a.actor_id = u.id)
-        or exists (select 1 from public.invitation_projects p where p.created_by = u.id)
-        or exists (select 1 from public.invitations i where i.owner_reviewed_by = u.id)
-        or exists (select 1 from public.commercial_demo_followups f where f.created_by = u.id)
-        or exists (select 1 from public.event_memory_settings s where s.created_by = u.id)
-        or exists (select 1 from public.invitation_access_controls c where c.updated_by = u.id)
-      )
   ) then
-    raise exception 'An Auth account without an app role is still referenced by public data; review it before deleting.';
+    raise exception 'An Auth account without an app role still owns Storage objects; review them before deleting.';
   end if;
 end;
 $$;
