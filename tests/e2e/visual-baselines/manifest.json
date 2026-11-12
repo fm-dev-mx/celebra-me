@@ -2471,8 +2471,8 @@
             "preset": "angelic-presence",
             "viewport": "mobile",
             "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
-            "sha256": "3a02c2e389c33627881b7803664bfe1c7bd05c346cb2798f2790e879bf5e5b9d",
-            "contentHash": "99ef711be60de1b499ddafa01df5445b528ad88c5abffb69cf60dfdbdcaf6f8b",
+            "sha256": "4e35453b03ea71c6548d3290536390bafb7c55ccb803acdfa45cb2980dba344d",
+            "contentHash": "114c9f64c56627eb49d91968648c5b70cb21600544b28e41a54b40c75382fc2f",
             "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
             "comparisonResult": "ACCEPTED"
         },
@@ -2483,8 +2483,8 @@
             "preset": "angelic-presence",
             "viewport": "desktop",
             "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-desktop.png",
-            "sha256": "d5207828d77c053d5ede86a0528ec8f52314156a1126dc1e8d64a69e0ef54334",
-            "contentHash": "99ef711be60de1b499ddafa01df5445b528ad88c5abffb69cf60dfdbdcaf6f8b",
+            "sha256": "95a62cc2da00c4107cfdc4f2fdf3ac1f4f257196149915fcb44a72d36b893c32",
+            "contentHash": "114c9f64c56627eb49d91968648c5b70cb21600544b28e41a54b40c75382fc2f",
             "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
             "comparisonResult": "ACCEPTED"
         },
@@ -2681,7 +2681,7 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "9abb83a2e953cf950acba4d53dbccd89cec32773",
+    "referenceSha": "d0a4c1e71abb29d406d1213f913fbe1b378abd56",
     "variantManifest": {
         "generatedAt": "2026-11-11T20:50:01.859Z",
         "runtimeFingerprint": {
@@ -4669,7 +4669,7 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "9abb83a2e953cf950acba4d53dbccd89cec32773"
+        "referenceSha": "d0a4c1e71abb29d406d1213f913fbe1b378abd56"
     },
     "pageManifest": {
         "generatedAt": "2026-11-11T20:50:01.864Z",
@@ -5183,8 +5183,8 @@
                 "preset": "angelic-presence",
                 "viewport": "mobile",
                 "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
-                "sha256": "3a02c2e389c33627881b7803664bfe1c7bd05c346cb2798f2790e879bf5e5b9d",
-                "contentHash": "99ef711be60de1b499ddafa01df5445b528ad88c5abffb69cf60dfdbdcaf6f8b",
+                "sha256": "4e35453b03ea71c6548d3290536390bafb7c55ccb803acdfa45cb2980dba344d",
+                "contentHash": "114c9f64c56627eb49d91968648c5b70cb21600544b28e41a54b40c75382fc2f",
                 "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5195,8 +5195,8 @@
                 "preset": "angelic-presence",
                 "viewport": "desktop",
                 "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-desktop.png",
-                "sha256": "d5207828d77c053d5ede86a0528ec8f52314156a1126dc1e8d64a69e0ef54334",
-                "contentHash": "99ef711be60de1b499ddafa01df5445b528ad88c5abffb69cf60dfdbdcaf6f8b",
+                "sha256": "95a62cc2da00c4107cfdc4f2fdf3ac1f4f257196149915fcb44a72d36b893c32",
+                "contentHash": "114c9f64c56627eb49d91968648c5b70cb21600544b28e41a54b40c75382fc2f",
                 "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5393,9 +5393,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "9abb83a2e953cf950acba4d53dbccd89cec32773"
+        "referenceSha": "d0a4c1e71abb29d406d1213f913fbe1b378abd56"
     },
-    "candidateManifestSha256": "f2470cd81ceee9fddd63e4fa6047777bb4470a5dcfce0fda002783ebc1e9391c",
-    "acceptedFromCommit": "9abb83a2e953cf950acba4d53dbccd89cec32773",
-    "acceptedAt": "2026-11-11T20:50:31.385Z"
+    "candidateManifestSha256": "8da537debf122c68d67227daab245c0b13c0f49b5796477ab89ae411652a7a3f",
+    "acceptedFromCommit": "d0a4c1e71abb29d406d1213f913fbe1b378abd56",
+    "acceptedAt": "2026-11-12T00:50:08.677Z"
 }
