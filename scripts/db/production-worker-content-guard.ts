@@ -69,6 +69,45 @@ async function probeWithDeadline(
 }
 
 /**
+ * Tables the Worker never renders as invitation content. A patch whose every `@tables` entry is
+ * listed here repairs data the serving Worker already handles, so it may land before the deploy
+ * that ships it; data prerequisites of a release are repaired this way. Anything else stays gated.
+ */
+const WORKER_INDEPENDENT_PATCH_TABLES: ReadonlySet<string> = new Set([
+	'auth.users',
+	'public.tracking_events',
+]);
+
+/** Decided from the reviewed plan; the apply step refuses a patch whose file changed since. */
+export function patchTablesAreWorkerIndependent(tables: readonly string[] | undefined): boolean {
+	return (
+		tables !== undefined &&
+		tables.length > 0 &&
+		tables.every((table) => WORKER_INDEPENDENT_PATCH_TABLES.has(table))
+	);
+}
+
+/**
+ * Content the serving Worker cannot resolve breaks every visit until the deploy catches up. Owner
+ * patches are arbitrary SQL that may write invitation content, so they are gated too unless they
+ * write only Worker-independent tables; schema migrations are expand-first and precede the Worker
+ * that uses them.
+ */
+export async function assertServingWorkerFirst(
+	mutations: readonly { domain: string; patchTables?: readonly string[] }[],
+	releaseSha: string,
+	assertWorkerServesRelease: (input: { releaseSha: string }) => Promise<unknown> = (input) =>
+		assertProductionWorkerServesRelease(input),
+): Promise<void> {
+	const gated = mutations.some(
+		(item) =>
+			item.domain === 'invitation' ||
+			(item.domain === 'patch' && !patchTablesAreWorkerIndependent(item.patchTables)),
+	);
+	if (gated) await assertWorkerServesRelease({ releaseSha });
+}
+
+/**
  * Refuses unless the serving Production Worker reports a build SHA that contains `releaseSha`
  * (equal to it or a descendant of it). Runs before any backup, owner prompt or write.
  */

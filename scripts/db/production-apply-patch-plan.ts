@@ -79,6 +79,10 @@ export function inspectPatch(
 		const assessment = (
 			deps.inspectPatchPreview ?? ((input) => inspectProductionPatchPreview(input, dbUrl))
 		)(prepared);
+		const patchTables = (prepared.manifest.tables ?? '')
+			.split(',')
+			.map((table) => table.trim().toLowerCase())
+			.filter(Boolean);
 		const expectedRowsMin = Number(prepared.manifest['expected-rows-min']);
 		const expectedRowsMax = Number(prepared.manifest['expected-rows-max']);
 		const patchPreview = {
@@ -106,6 +110,7 @@ export function inspectPatch(
 				readiness: 'IN_SYNC',
 				summary: 'Parche no requerido: la vista previa LIVE devolvió 0 filas.',
 				binding: prepared.fingerprint,
+				patchTables,
 				detail,
 				patchPreview,
 			};
@@ -122,6 +127,7 @@ export function inspectPatch(
 						? 'PATCH_PREVIEW_STORE_DISAGREEMENT'
 						: 'PATCH_PREVIEW_ROW_COUNT_MISMATCH',
 				binding: prepared.fingerprint,
+				patchTables,
 				patchPreview,
 			};
 		}
@@ -131,6 +137,7 @@ export function inspectPatch(
 			readiness: 'READY',
 			summary: `Parche LIVE aplicable: ${assessment.evidence.total} filas dentro del rango aprobado ${expectedRowsMin}-${expectedRowsMax}.`,
 			binding: prepared.fingerprint,
+			patchTables,
 			detail,
 			patchPreview,
 		};

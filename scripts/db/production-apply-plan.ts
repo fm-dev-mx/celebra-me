@@ -53,6 +53,8 @@ export interface ProductionApplyPlanItem {
 	packageHash?: string;
 	updateScope?: UpdateScope;
 	patchPreview?: ProductionApplyPatchPreview;
+	/** Lower-cased `@tables` of a reviewed patch; decides whether it waits for the Worker. */
+	patchTables?: readonly string[];
 	/** In-process only; stripped from public JSON. Not part of planId. */
 	preflight?: PromotionPreflightReport;
 }
