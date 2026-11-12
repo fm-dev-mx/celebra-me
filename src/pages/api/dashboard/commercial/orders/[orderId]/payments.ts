@@ -4,6 +4,7 @@ import { registerCommercialOrderPayment } from '@/lib/commercial/orders.service'
 import { requireAdminMutationAccess } from '@/lib/rsvp/auth/authorization';
 import { badRequest, errorResponse, successResponse } from '@/lib/rsvp/core/http';
 import { validateBodyOrRespond } from '@/lib/rsvp/core/validation';
+import { resolveAfterResponseContext } from '@/lib/server/platform-request';
 
 const RegisterPaymentSchema = z.object({
 	amount: z.number().positive(),
@@ -12,7 +13,7 @@ const RegisterPaymentSchema = z.object({
 });
 
 /** Records an installment or the settlement of an order that already holds its deposit. */
-export const POST: APIRoute = async ({ request, cookies, params }) => {
+export const POST: APIRoute = async ({ request, cookies, params, locals }) => {
 	try {
 		const session = await requireAdminMutationAccess(
 			request,
@@ -26,13 +27,16 @@ export const POST: APIRoute = async ({ request, cookies, params }) => {
 		if (parsed instanceof Response) return parsed;
 
 		return successResponse(
-			await registerCommercialOrderPayment({
-				orderId,
-				amount: parsed.amount,
-				paidAt: parsed.paidAt,
-				actorId: session.userId,
-				idempotencyKey: parsed.idempotencyKey,
-			}),
+			await registerCommercialOrderPayment(
+				{
+					orderId,
+					amount: parsed.amount,
+					paidAt: parsed.paidAt,
+					actorId: session.userId,
+					idempotencyKey: parsed.idempotencyKey,
+				},
+				{ after: resolveAfterResponseContext(locals) },
+			),
 		);
 	} catch (error) {
 		return errorResponse(error);

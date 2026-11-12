@@ -168,6 +168,25 @@ COMMIT;`;
 		expect(result.risk.isDestructive).toBe(false);
 	});
 
+	it('allows the order lifecycle payments ledger as an expand migration', () => {
+		const version = '20261110130000';
+		const registry = JSON.parse(
+			fs.readFileSync(path.resolve('supabase/migration-rollout-registry.json'), 'utf8'),
+		) as MigrationRolloutRegistry;
+		const result = evaluateMigrationSqlRisk({ version, registry });
+		expect(registry.migrations[version].phase).toBe('expand');
+		expect(result.blocked).toBe(false);
+		expect(result.risk.isDestructive).toBe(false);
+	});
+
+	it('still flags a revoke on a table created with if not exists, which may already exist', () => {
+		const sql = `BEGIN;
+		CREATE TABLE IF NOT EXISTS public.maybe_existing (id uuid primary key);
+		REVOKE ALL ON TABLE public.maybe_existing FROM PUBLIC, anon, authenticated, service_role;
+		COMMIT;`;
+		expect(classifySqlText(sql).map((finding) => finding.kind)).toEqual(['destructive_revoke']);
+	});
+
 	it('keeps table comments and partial indexes of the new table inside the initial-permission proof', () => {
 		const sql = `begin;
 		create table public.new_table (id uuid primary key, note text check (note ~ '^[a-z]+$'), revoked_at timestamptz);

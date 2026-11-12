@@ -22,6 +22,7 @@ import {
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { randomUUID } from 'node:crypto';
 import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
+import { enqueueOrderSettledEvent } from '@/lib/commercial/meta-capi/order-settled';
 import { emitCommercialTrackingEvent } from '@/lib/commercial/commercial-tracking';
 import { runAfterResponse, type AfterResponseContext } from '@/lib/server/platform-request';
 import { safeErr } from '@/lib/server/safe-error';
@@ -356,6 +357,27 @@ function mapDepositTransitionError(error: unknown): never {
 	throw error;
 }
 
+/**
+ * A fully paid order (the deposit covers the total, or a payment settles the balance) queues its
+ * own event: no value, the Purchase already carried the total. Idempotent by order, so a re-run
+ * never sends it twice.
+ */
+function queueOrderSettledEvent(order: SalesOrder, options: CommercialOrderServiceOptions): void {
+	if (order.amountPaid < order.totalAmount || order.isPastSale) return;
+	runAfterResponse(
+		options.after,
+		async () => {
+			const settledId = await enqueueOrderSettledEvent({
+				orderId: order.id,
+				customerId: order.customerId,
+				leadId: order.leadId ?? null,
+			});
+			if (settledId) await deliverMetaConversionEvent(settledId);
+		},
+		{ label: `orders-service:order-settled:${order.id}` },
+	);
+}
+
 export async function markCommercialOrderDepositPaid(
 	input: MarkCommercialOrderDepositPaidInput,
 	options: CommercialOrderServiceOptions = {},
@@ -399,6 +421,7 @@ export async function markCommercialOrderDepositPaid(
 			{ label: 'orders-service:deposit_paid' },
 		);
 	}
+	queueOrderSettledEvent(order, options);
 	const leadId = order.leadId;
 	if (leadId && !order.isPastSale) {
 		runAfterResponse(
@@ -441,24 +464,28 @@ function mapPaymentError(error: unknown): never {
 
 /**
  * Records an installment, or the settlement that covers the balance and moves the order to paid.
- * It sends no Meta event: the Purchase went out with the deposit.
+ * No new Purchase (it went out with the deposit); the settlement queues OrderSettled.
  */
 export async function registerCommercialOrderPayment(
 	input: RegisterCommercialOrderPaymentInput,
+	options: CommercialOrderServiceOptions = {},
 ): Promise<{ order: SalesOrder; payment: SalesOrderPayment }> {
 	assertPositiveAmount(input.amount, 'El monto del pago debe ser mayor a cero.');
+	let result: Awaited<ReturnType<typeof registerSalesOrderPayment>>;
 	try {
-		const { order, payment } = await registerSalesOrderPayment({
+		result = await registerSalesOrderPayment({
 			orderId: input.orderId,
 			amount: input.amount,
 			paidAt: input.paidAt ?? new Date().toISOString(),
 			actorId: input.actorId,
 			idempotencyKey: input.idempotencyKey,
 		});
-		return { order, payment };
 	} catch (error) {
 		mapPaymentError(error);
 	}
+	const { order, payment } = result;
+	queueOrderSettledEvent(order, options);
+	return { order, payment };
 }
 
 export interface CommercialOrderDetail {

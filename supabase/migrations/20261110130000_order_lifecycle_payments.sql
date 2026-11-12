@@ -3,15 +3,13 @@
 -- of register_commercial_deposit_purchase that keeps its signature, privileges and Purchase event
 -- (total value on the deposit) while also writing the deposit into the ledger and moving an order
 -- whose deposit covers the whole total straight to paid.
+-- The new ledger, its initial privileges and the new payment function come first, right
+-- after begin, so the migration risk guard can prove that each revoke initialises an object created
+-- in this same transaction. The table is created without if not exists: a pre-existing table would
+-- make that revoke destructive, so the migration fails instead of revoking its grants.
 begin;
 
-alter table public.sales_orders
-  add column if not exists event_date date null;
-
-comment on column public.sales_orders.event_date is
-  'Date of the celebration the order is for. A fact about the order, not a lifecycle stage.';
-
-create table if not exists public.sales_order_payments (
+create table public.sales_order_payments (
   id uuid primary key default gen_random_uuid(),
   order_id uuid not null references public.sales_orders(id) on delete cascade,
   kind text not null check (kind in ('deposit', 'installment', 'settlement')),
@@ -22,6 +20,84 @@ create table if not exists public.sales_order_payments (
   created_at timestamptz not null default now()
 );
 
+revoke all on table public.sales_order_payments from public, anon, authenticated, service_role;
+alter table public.sales_order_payments enable row level security;
+alter table public.sales_order_payments force row level security;
+
+-- Registers an installment or the settlement of an order that already holds its deposit. The
+-- payment that covers the balance is the settlement and moves the order to paid. It never
+-- creates a Meta event: the Purchase was sent with the deposit.
+create or replace function public.register_commercial_order_payment(
+  p_order_id uuid,
+  p_amount numeric,
+  p_actor_id uuid,
+  p_paid_at timestamptz,
+  p_idempotency_key text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = 'public'
+as $$
+declare
+  v_order public.sales_orders%rowtype;
+  v_payment public.sales_order_payments%rowtype;
+  v_key text := nullif(trim(p_idempotency_key), '');
+  v_kind text;
+  v_paid_at timestamptz := coalesce(p_paid_at, now());
+begin
+  if p_amount is null or p_amount <= 0 then
+    raise exception using errcode = '22023', message = 'El monto del pago debe ser mayor a cero.';
+  end if;
+  if v_key is null or char_length(v_key) > 160 then
+    raise exception using errcode = '22023', message = 'La clave de idempotencia del pago es obligatoria.';
+  end if;
+
+  select * into v_order from public.sales_orders where id = p_order_id for update;
+  if not found then
+    raise exception using errcode = 'P0002', message = 'No se encontró la orden de venta.';
+  end if;
+
+  select * into v_payment from public.sales_order_payments where idempotency_key = v_key;
+  if found then
+    if v_payment.order_id <> p_order_id or v_payment.amount <> p_amount then
+      raise exception using errcode = '40001', message = 'La clave de idempotencia ya se usó con datos diferentes.';
+    end if;
+    return jsonb_build_object('order', to_jsonb(v_order), 'payment', to_jsonb(v_payment), 'idempotent', true);
+  end if;
+
+  if v_order.status <> 'deposit_paid' then
+    raise exception using errcode = '22023',
+      message = format('No se puede registrar un pago en una orden con estado "%s".', v_order.status);
+  end if;
+  if p_amount > v_order.total_amount - v_order.amount_paid then
+    raise exception using errcode = '22023', message = 'El pago no puede superar el saldo pendiente de la orden.';
+  end if;
+
+  v_kind := case when v_order.amount_paid + p_amount >= v_order.total_amount then 'settlement' else 'installment' end;
+
+  insert into public.sales_order_payments (order_id, kind, amount, paid_at, idempotency_key, recorded_by)
+  values (p_order_id, v_kind, p_amount, v_paid_at, v_key, p_actor_id)
+  returning * into v_payment;
+
+  update public.sales_orders
+  set amount_paid = amount_paid + p_amount,
+      status = case when v_kind = 'settlement' then 'paid' else status end,
+      paid_at = case when v_kind = 'settlement' then v_paid_at else paid_at end
+  where id = p_order_id
+  returning * into v_order;
+
+  return jsonb_build_object('order', to_jsonb(v_order), 'payment', to_jsonb(v_payment), 'idempotent', false);
+end;
+$$;
+
+revoke all on function public.register_commercial_order_payment(uuid, numeric, uuid, timestamptz, text)
+  from public, anon, authenticated;
+grant execute on function public.register_commercial_order_payment(uuid, numeric, uuid, timestamptz, text)
+  to service_role;
+
+grant select on table public.sales_order_payments to service_role;
+
 create index if not exists sales_order_payments_order_idx
   on public.sales_order_payments (order_id, paid_at);
 
@@ -31,10 +107,11 @@ create unique index if not exists sales_order_payments_one_deposit_uidx
 create unique index if not exists sales_order_payments_one_settlement_uidx
   on public.sales_order_payments (order_id) where kind = 'settlement';
 
-revoke all on table public.sales_order_payments from public, anon, authenticated, service_role;
-alter table public.sales_order_payments enable row level security;
-alter table public.sales_order_payments force row level security;
-grant select on table public.sales_order_payments to service_role;
+alter table public.sales_orders
+  add column if not exists event_date date null;
+
+comment on column public.sales_orders.event_date is
+  'Date of the celebration the order is for. A fact about the order, not a lifecycle stage.';
 
 -- Backfill: every order that already holds a deposit gets its single deposit ledger row.
 insert into public.sales_order_payments (order_id, kind, amount, paid_at, idempotency_key, recorded_by)
@@ -168,77 +245,5 @@ begin
   return jsonb_build_object('order', to_jsonb(v_order), 'conversion_event', to_jsonb(v_conversion), 'idempotent', false);
 end;
 $$;
-
--- Registers an installment or the settlement of an order that already holds its deposit. The
--- payment that covers the balance is the settlement and moves the order to paid. It never
--- creates a Meta event: the Purchase was sent with the deposit.
-create or replace function public.register_commercial_order_payment(
-  p_order_id uuid,
-  p_amount numeric,
-  p_actor_id uuid,
-  p_paid_at timestamptz,
-  p_idempotency_key text
-)
-returns jsonb
-language plpgsql
-security definer
-set search_path = 'public'
-as $$
-declare
-  v_order public.sales_orders%rowtype;
-  v_payment public.sales_order_payments%rowtype;
-  v_key text := nullif(trim(p_idempotency_key), '');
-  v_kind text;
-  v_paid_at timestamptz := coalesce(p_paid_at, now());
-begin
-  if p_amount is null or p_amount <= 0 then
-    raise exception using errcode = '22023', message = 'El monto del pago debe ser mayor a cero.';
-  end if;
-  if v_key is null or char_length(v_key) > 160 then
-    raise exception using errcode = '22023', message = 'La clave de idempotencia del pago es obligatoria.';
-  end if;
-
-  select * into v_order from public.sales_orders where id = p_order_id for update;
-  if not found then
-    raise exception using errcode = 'P0002', message = 'No se encontró la orden de venta.';
-  end if;
-
-  select * into v_payment from public.sales_order_payments where idempotency_key = v_key;
-  if found then
-    if v_payment.order_id <> p_order_id or v_payment.amount <> p_amount then
-      raise exception using errcode = '40001', message = 'La clave de idempotencia ya se usó con datos diferentes.';
-    end if;
-    return jsonb_build_object('order', to_jsonb(v_order), 'payment', to_jsonb(v_payment), 'idempotent', true);
-  end if;
-
-  if v_order.status <> 'deposit_paid' then
-    raise exception using errcode = '22023',
-      message = format('No se puede registrar un pago en una orden con estado "%s".', v_order.status);
-  end if;
-  if p_amount > v_order.total_amount - v_order.amount_paid then
-    raise exception using errcode = '22023', message = 'El pago no puede superar el saldo pendiente de la orden.';
-  end if;
-
-  v_kind := case when v_order.amount_paid + p_amount >= v_order.total_amount then 'settlement' else 'installment' end;
-
-  insert into public.sales_order_payments (order_id, kind, amount, paid_at, idempotency_key, recorded_by)
-  values (p_order_id, v_kind, p_amount, v_paid_at, v_key, p_actor_id)
-  returning * into v_payment;
-
-  update public.sales_orders
-  set amount_paid = amount_paid + p_amount,
-      status = case when v_kind = 'settlement' then 'paid' else status end,
-      paid_at = case when v_kind = 'settlement' then v_paid_at else paid_at end
-  where id = p_order_id
-  returning * into v_order;
-
-  return jsonb_build_object('order', to_jsonb(v_order), 'payment', to_jsonb(v_payment), 'idempotent', false);
-end;
-$$;
-
-revoke all on function public.register_commercial_order_payment(uuid, numeric, uuid, timestamptz, text)
-  from public, anon, authenticated;
-grant execute on function public.register_commercial_order_payment(uuid, numeric, uuid, timestamptz, text)
-  to service_role;
 
 commit;

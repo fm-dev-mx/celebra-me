@@ -98,6 +98,7 @@ describe('Meta Pixel initialization', () => {
 		localStorage.setItem('cm_visitor_id', 'visitor_123456');
 		rememberMetaPhoneMatchKey('6561234567');
 		document.body.dataset.trackingRouteClass = 'commercial';
+		document.body.dataset.metaDeploy = 'production';
 
 		initMetaPixel();
 		const script = document.querySelector<HTMLScriptElement>('script[src*="fbevents.js"]');
