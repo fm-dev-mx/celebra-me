@@ -62,6 +62,7 @@ export interface SalesOrderSummaryRow {
 	package_name?: string | null;
 	created_at?: string;
 	deposit_paid_at?: string | null;
+	is_past_sale?: boolean | null;
 }
 
 export interface ConversionSummaryRow {
@@ -137,6 +138,8 @@ export interface CommercialDashboardSummary {
 	futureRetryEvents: number;
 	terminalEventsWithActiveDeliveryState: number;
 	historicalPaidOrdersWithoutPurchase?: HistoricalPaidOrderDiagnostic[];
+	/** Fully paid orders (not past sales) with no OrderSettled outbox row. */
+	settledOrdersWithoutEvent?: HistoricalPaidOrderDiagnostic[];
 	keyTrackingEventCounts: KeyTrackingEventCounts;
 	lastConversionAttemptAt: string | null;
 	dataContext: DataContextSummary;

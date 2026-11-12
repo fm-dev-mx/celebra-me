@@ -261,6 +261,14 @@
     "ordenan": ["coordinador", "dueno"],
     "carriles": [
         {
+            "id": "f05-plataforma",
+            "carpeta": "../celebra-me-worktrees/f05-plataforma",
+            "puerto": 4325,
+            "tecla": 3,
+            "nombre": "F5 Plataforma",
+            "entorno": "local"
+        },
+        {
             "id": "f06-landing",
             "carpeta": "../celebra-me-worktrees/f06-landing",
             "puerto": 4326,
@@ -290,6 +298,14 @@
             "puerto": 4329,
             "tecla": 9,
             "nombre": "F9 Docs",
+            "entorno": "local"
+        },
+        {
+            "id": "f10-libre",
+            "carpeta": "../celebra-me-worktrees/f10-libre",
+            "puerto": 4330,
+            "tecla": 10,
+            "nombre": "F10 Libre",
             "entorno": "local"
         },
         {
@@ -330,7 +346,7 @@
             "entorno": "local"
         }
     ],
-    "carrilesRetirados": ["f05-plataforma", "f10-libre"],
+    "carrilesRetirados": [],
     "sesiones": { "sinTarea": "^Despachador\\b" },
     "tiposPrompt": ["codigo", "docs", "operacion", "revision"],
     "github": {
