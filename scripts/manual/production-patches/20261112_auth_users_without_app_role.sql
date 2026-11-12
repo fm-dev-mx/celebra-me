@@ -14,25 +14,67 @@ begin;
 
 -- Deleting an account cascades to rows it owns, nulls or blocks on rows that reference it, and
 -- leaves Storage objects pointing at a missing owner. Stop unless nothing references the accounts.
--- The foreign keys are read from the catalog so a retired or new table cannot go unchecked.
--- Every table the checks read is share-locked until commit, so no account, role, reference or
--- Storage object can appear between the checks and the delete.
+-- The patch builds no SQL at run time: it checks a fixed list of the public foreign keys to
+-- auth.users and first asserts that the catalog holds exactly that list, so a retired or new
+-- reference stops the patch instead of going unchecked. Every table the checks read is
+-- share-locked until commit; the share lock on auth.users also blocks a new foreign key to it,
+-- so no account, role, reference or Storage object can appear between the checks and the delete.
 do $$
 declare
-  fk record;
-  referenced boolean;
   targets integer;
+  listed integer;
+  unlisted integer;
 begin
-  lock table auth.users, public.app_user_roles, storage.objects in share mode;
-  for fk in
-    select distinct c.conrelid::regclass as tbl
-    from pg_constraint c
-    where c.contype = 'f'
-      and c.confrelid = 'auth.users'::regclass
-      and c.connamespace = 'public'::regnamespace
-  loop
-    execute format('lock table %s in share mode', fk.tbl);
-  end loop;
+  lock table
+    auth.users,
+    public.app_user_roles,
+    storage.objects,
+    public.audit_logs,
+    public.commercial_demo_followups,
+    public.event_memberships,
+    public.event_memory_settings,
+    public.events,
+    public.invitation_access_controls,
+    public.invitations
+  in share mode;
+
+  select count(*) into listed
+  from pg_constraint c
+  join pg_class cl on cl.oid = c.conrelid
+  join pg_attribute a on a.attrelid = c.conrelid and a.attnum = any (c.conkey)
+  where c.contype = 'f'
+    and c.confrelid = 'auth.users'::regclass
+    and c.connamespace = 'public'::regnamespace
+    and (cl.relname::text, a.attname::text) in (values
+      ('app_user_roles', 'user_id'),
+      ('events', 'owner_user_id'),
+      ('event_memberships', 'user_id'),
+      ('audit_logs', 'actor_id'),
+      ('invitations', 'created_by'),
+      ('invitations', 'owner_reviewed_by'),
+      ('commercial_demo_followups', 'created_by'),
+      ('event_memory_settings', 'created_by'),
+      ('invitation_access_controls', 'updated_by'));
+  select count(*) into unlisted
+  from pg_constraint c
+  join pg_class cl on cl.oid = c.conrelid
+  join pg_attribute a on a.attrelid = c.conrelid and a.attnum = any (c.conkey)
+  where c.contype = 'f'
+    and c.confrelid = 'auth.users'::regclass
+    and c.connamespace = 'public'::regnamespace
+    and (cl.relname::text, a.attname::text) not in (values
+      ('app_user_roles', 'user_id'),
+      ('events', 'owner_user_id'),
+      ('event_memberships', 'user_id'),
+      ('audit_logs', 'actor_id'),
+      ('invitations', 'created_by'),
+      ('invitations', 'owner_reviewed_by'),
+      ('commercial_demo_followups', 'created_by'),
+      ('event_memory_settings', 'created_by'),
+      ('invitation_access_controls', 'updated_by'));
+  if listed <> 9 or unlisted <> 0 then
+    raise exception 'The public foreign keys to auth.users changed: % listed, % unlisted; review the patch before deleting.', listed, unlisted;
+  end if;
 
   select count(*) into targets
   from auth.users u
@@ -41,23 +83,23 @@ begin
     raise exception 'Expected the 2 reviewed Auth accounts without an app role, found %.', targets;
   end if;
 
-  for fk in
-    select c.conrelid::regclass as tbl, a.attname as col
-    from pg_constraint c
-    join pg_attribute a on a.attrelid = c.conrelid and a.attnum = c.conkey[1]
-    where c.contype = 'f'
-      and c.confrelid = 'auth.users'::regclass
-      and c.connamespace = 'public'::regnamespace
-      and c.conrelid <> 'public.app_user_roles'::regclass
-  loop
-    execute format(
-      'select exists (select 1 from %s t join auth.users u on u.id = t.%I where not exists (select 1 from public.app_user_roles r where r.user_id = u.id))',
-      fk.tbl, fk.col
-    ) into referenced;
-    if referenced then
-      raise exception 'An Auth account without an app role is still referenced by %.%; review it before deleting.', fk.tbl, fk.col;
-    end if;
-  end loop;
+  if exists (
+    select 1
+    from auth.users x
+    where not exists (select 1 from public.app_user_roles r where r.user_id = x.id)
+      and (
+      exists (select 1 from public.events t where t.owner_user_id = x.id)
+      or exists (select 1 from public.event_memberships t where t.user_id = x.id)
+      or exists (select 1 from public.audit_logs t where t.actor_id = x.id)
+      or exists (select 1 from public.invitations t where t.created_by = x.id)
+      or exists (select 1 from public.invitations t where t.owner_reviewed_by = x.id)
+      or exists (select 1 from public.commercial_demo_followups t where t.created_by = x.id)
+      or exists (select 1 from public.event_memory_settings t where t.created_by = x.id)
+      or exists (select 1 from public.invitation_access_controls t where t.updated_by = x.id)
+      )
+  ) then
+    raise exception 'An Auth account without an app role is still referenced by a public table; review it before deleting.';
+  end if;
 
   if exists (
     select 1

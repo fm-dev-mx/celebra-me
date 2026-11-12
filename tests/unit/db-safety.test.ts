@@ -344,8 +344,11 @@ ${statement}
 		for (const file of [
 			'scripts/manual/production-patches/20261109_auth_login_alias_app_metadata_backfill.sql',
 			'scripts/manual/production-patches/20261112_tracking_events_blank_lead_code.sql',
+			'scripts/manual/production-patches/20261112_auth_users_without_app_role.sql',
 		]) {
-			expect(patchCallsOnlyBuiltinFunctions(readFileSync(file, 'utf8'))).toBe(true);
+			const sql = readFileSync(file, 'utf8');
+			expect(lintProductionPatchSql(sql).errors).toEqual([]);
+			expect(patchCallsOnlyBuiltinFunctions(sql)).toBe(true);
 		}
 	});
 
