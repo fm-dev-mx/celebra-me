@@ -3,6 +3,7 @@ import {
 	buildGuestSummaryShareText,
 	computeGuestSummary,
 	filterGuestsForReview,
+	formatPassesWithChildren,
 	getGuestPeopleLabel,
 	getGuestStage,
 	matchesGuestSearch,
@@ -67,6 +68,7 @@ describe('computeGuestSummary', () => {
 		expect(invitations).toBe(6);
 		expect(people).toEqual({
 			assigned: 16,
+			assignedChildren: 0,
 			confirmed: 3,
 			confirmedChildren: 0,
 			declined: 2,
@@ -129,6 +131,7 @@ describe('computeGuestSummary', () => {
 
 		expect(summary.people).toEqual({
 			assigned: 2,
+			assignedChildren: 0,
 			confirmed: 2,
 			confirmedChildren: 0,
 			declined: 0,
@@ -209,6 +212,37 @@ describe('filterGuestsForReview', () => {
 			search: 'full',
 		});
 		expect(result.map((g) => g.guestId)).toEqual(['full']);
+	});
+});
+
+describe('children totals', () => {
+	const family = [
+		makeGuest({
+			guestId: 'a',
+			attendanceStatus: 'confirmed',
+			maxAllowedAttendees: 4,
+			maxAllowedChildren: 2,
+			attendeeCount: 3,
+			childrenCount: 1,
+		}),
+		makeGuest({ guestId: 'b', deliveryStatus: 'shared', maxAllowedAttendees: 2 }),
+	];
+
+	it('sums the child allowance of every assigned pass', () => {
+		const { people } = computeGuestSummary(family);
+		expect(people.assigned).toBe(6);
+		expect(people.assignedChildren).toBe(2);
+	});
+
+	it('shows children next to passes, singular and plural', () => {
+		expect(formatPassesWithChildren(4, 2)).toBe('4 pases (2 niños)');
+		expect(formatPassesWithChildren(3, 1)).toBe('3 pases (1 niño)');
+		expect(formatPassesWithChildren(4, 0)).toBe('4 pases');
+	});
+
+	it('adds the children to the shared summary', () => {
+		const text = buildGuestSummaryShareText(computeGuestSummary(family), '', '');
+		expect(text.split('\n')[1]).toBe('3 personas confirmadas (1 niño) de 6 pases (2 niños).');
 	});
 });
 

@@ -20,7 +20,7 @@ import {
 } from '@/components/invitation/rsvp-logic';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
 import { getSmartScrollBlock } from '@/lib/dom/viewport';
-import { resolveGuestCap } from '@/lib/rsvp/guest-cap';
+import { resolveChildrenCap, resolveGuestCap } from '@/lib/rsvp/guest-cap';
 import { emitInvitationEngagement } from '@/lib/invitation/invitation-analytics';
 
 interface InitialGuestData {
@@ -36,6 +36,8 @@ interface InitialGuestData {
 
 interface UseRsvpSubmissionOptions {
 	guestCap: number;
+	/** Demo previews only: children among the guestCap passes. */
+	demoMaxChildren?: number;
 	eventType: EventRecord['eventType'];
 	eventSlug: string;
 	accessMode: 'personalized-only' | 'hybrid';
@@ -57,6 +59,7 @@ function notifyConfirmedRsvp(inviteId: string): void {
 
 export function useRsvpSubmission({
 	guestCap,
+	demoMaxChildren,
 	eventType,
 	eventSlug,
 	accessMode,
@@ -88,7 +91,11 @@ export function useRsvpSubmission({
 	const initialGuestComment = initialData?.guestComment ?? '';
 	// A single-place pass is the guest alone, so it never asks for children.
 	const maxChildren =
-		isDemoPreview || effectiveGuestCap <= 1 ? 0 : (initialData?.maxAllowedChildren ?? 0);
+		effectiveGuestCap <= 1
+			? 0
+			: isDemoPreview
+				? resolveChildrenCap(demoMaxChildren, effectiveGuestCap)
+				: (initialData?.maxAllowedChildren ?? 0);
 	const initialChildrenCount =
 		initialAttendanceStatus === 'confirmed' ? (initialData?.childrenCount ?? 0) : 0;
 	const [childrenCount, setChildrenCount] = useState<number | string>(initialChildrenCount);

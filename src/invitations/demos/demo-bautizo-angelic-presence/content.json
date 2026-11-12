@@ -218,6 +218,7 @@
     "rsvp": {
         "title": "Confirme su asistencia",
         "guestCap": 4,
+        "demoMaxChildren": 2,
         "confirmationMessage": "Gracias por acompañarnos en este día de fe y familia.",
         "confirmationMode": "api",
         "variant": "standard",

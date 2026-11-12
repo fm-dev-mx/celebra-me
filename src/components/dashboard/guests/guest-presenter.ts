@@ -239,6 +239,8 @@ export interface GuestSummary {
 	invitations: number;
 	people: {
 		assigned: number;
+		/** Children among the assigned passes (each pass's child allowance); never a slice. */
+		assignedChildren: number;
 		confirmed: number;
 		/** Children among the confirmed people; never a slice of its own. */
 		confirmedChildren: number;
@@ -259,6 +261,7 @@ export function computeGuestSummary(items: DashboardGuestItem[]): GuestSummary {
 		invitations: items.length,
 		people: {
 			assigned: 0,
+			assignedChildren: 0,
 			confirmed: 0,
 			confirmedChildren: 0,
 			declined: 0,
@@ -279,6 +282,7 @@ export function computeGuestSummary(items: DashboardGuestItem[]): GuestSummary {
 		const passes = passesOf(item);
 		const stage = getGuestStage(item);
 		summary.people.assigned += passes;
+		summary.people.assignedChildren += resolveChildrenCap(item.maxAllowedChildren, passes);
 		summary.stages[stage].invitations++;
 		summary.stages[stage].passes += passes;
 		if (passes === 0) summary.withoutPasses++;
@@ -357,6 +361,13 @@ export function getGuestPeopleLabel(item: DashboardGuestItem): GuestPeopleLabel 
 	}
 }
 
+/** "4 pases (2 niños)": the passes with their child allowance; plain passes when none. */
+export function formatPassesWithChildren(passes: number, children: number): string {
+	const base = formatParty(passes);
+	if (children <= 0) return base;
+	return `${base} (${children} ${children === 1 ? 'niño' : 'niños'})`;
+}
+
 /** Plain-text summary the host can paste into WhatsApp. */
 export function buildGuestSummaryShareText(
 	summary: GuestSummary,
@@ -364,9 +375,13 @@ export function buildGuestSummaryShareText(
 	rsvpDeadline: string,
 ): string {
 	const { people, stages, awaitingAnswer } = summary;
+	const confirmedChildren =
+		people.confirmedChildren > 0
+			? ` (${people.confirmedChildren} ${people.confirmedChildren === 1 ? 'niño' : 'niños'})`
+			: '';
 	const lines = [
 		eventTitle ? `${eventTitle}: resumen de invitados` : 'Resumen de invitados',
-		`${people.confirmed} ${people.confirmed === 1 ? 'persona confirmada' : 'personas confirmadas'} de ${formatParty(people.assigned)}.`,
+		`${people.confirmed} ${people.confirmed === 1 ? 'persona confirmada' : 'personas confirmadas'}${confirmedChildren} de ${formatPassesWithChildren(people.assigned, people.assignedChildren)}.`,
 		`No asistirán: ${people.declined}. Sin respuesta: ${people.noAnswer}.`,
 	];
 	if (awaitingAnswer.invitations > 0) {
