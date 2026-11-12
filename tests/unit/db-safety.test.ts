@@ -334,6 +334,8 @@ ${statement}
 		'update auth.users set raw_app_meta_data = public.touch(raw_app_meta_data) where id is not null;',
 		"do $$ begin perform public.archive_invitation('x'); end $$;",
 		'select "archive_invitation"(1);',
+		"do $$ begin execute 'select public.archive_invitation' || '(''00000000-0000-0000-0000-000000000000''::uuid)'; end $$;",
+		"select 'select public.archive_invitation' || '(1)' \\gexec",
 	])('treats a user function call as not builtin-only: %s', (call) => {
 		expect(patchCallsOnlyBuiltinFunctions(authPatch('auth.users', call))).toBe(false);
 	});

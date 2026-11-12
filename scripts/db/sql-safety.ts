@@ -539,7 +539,9 @@ const BUILTIN_SQL_CALLS: ReadonlySet<string> = new Set([
 
 /**
  * True when every `name(` in the patch, dollar bodies included, is a keyword or a built-in
- * function. A user function or a quoted name could write tables that `@tables` never lists.
+ * function, and the patch runs no SQL it builds at run time. A user function, a quoted name,
+ * `EXECUTE` of a concatenated string or a psql meta-command such as `\gexec` could write
+ * tables that `@tables` never lists.
  */
 export function patchCallsOnlyBuiltinFunctions(sql: string): boolean {
 	let statements: ParsedSqlStatement[];
@@ -548,10 +550,12 @@ export function patchCallsOnlyBuiltinFunctions(sql: string): boolean {
 	} catch {
 		return false;
 	}
+	if (statements.some((statement) => statement.inspection.includes('\\'))) return false;
 	return statements
 		.flatMap((statement) => [statement.inspection, ...statement.dollarBodies])
 		.every(
 			(text) =>
+				!/\bexecute\b/i.test(text) &&
 				!/"\s*\(/.test(text) &&
 				[...text.matchAll(/([a-z_][a-z0-9_$.]*)\s*\(/gi)].every((match) =>
 					BUILTIN_SQL_CALLS.has(match[1]!.toLowerCase()),
