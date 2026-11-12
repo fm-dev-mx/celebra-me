@@ -6,6 +6,7 @@ import {
 	type PreparedProductionPatch,
 } from './run-prod-patch.ts';
 import { patchCallsOnlyBuiltinFunctions } from './sql-safety.ts';
+import { patchIsReviewedWorkerIndependent } from './production-worker-content-guard.ts';
 import type { ProductionPatchPreviewAssessment } from './production-patch-preview.ts';
 import type { ProductionApplyPlanItem } from './production-apply-plan.ts';
 
@@ -80,12 +81,16 @@ export function inspectPatch(
 		const assessment = (
 			deps.inspectPatchPreview ?? ((input) => inspectProductionPatchPreview(input, dbUrl))
 		)(prepared);
-		const patchTables = patchCallsOnlyBuiltinFunctions(prepared.sql)
-			? (prepared.manifest.tables ?? '')
-					.split(',')
-					.map((table) => table.trim().toLowerCase())
-					.filter(Boolean)
-			: undefined;
+		// Only a reviewed, byte-identical patch may skip the Worker-first guard; the builtin
+		// check is defense in depth for a reviewed entry, never sufficient on its own.
+		const patchTables =
+			patchIsReviewedWorkerIndependent(prepared.manifest['script-id'], prepared.sql) &&
+			patchCallsOnlyBuiltinFunctions(prepared.sql)
+				? (prepared.manifest.tables ?? '')
+						.split(',')
+						.map((table) => table.trim().toLowerCase())
+						.filter(Boolean)
+				: undefined;
 		const expectedRowsMin = Number(prepared.manifest['expected-rows-min']);
 		const expectedRowsMax = Number(prepared.manifest['expected-rows-max']);
 		const patchPreview = {

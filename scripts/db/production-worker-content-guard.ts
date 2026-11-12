@@ -6,6 +6,7 @@
  *
  * Read-only: one bounded `/api/health` request to the public alias and one local `git merge-base`.
  */
+import { createHash } from 'node:crypto';
 import { OperatorError } from './operator-cli-ux.ts';
 import { defaultGitRunner, type GitRunner } from '../ops/release-readiness.ts';
 import { PRODUCTION_ALIAS_URL, probeHealth } from '../ops/release-status.ts';
@@ -77,6 +78,32 @@ const WORKER_INDEPENDENT_PATCH_TABLES: ReadonlySet<string> = new Set([
 	'auth.users',
 	'public.tracking_events',
 ]);
+
+/**
+ * The owner patches reviewed as writing nothing the serving Worker reads, pinned by the SHA-256
+ * of their LF-normalized text. SQL is too expressive to prove Worker independence by inspection
+ * (dynamic SQL, escapes, comments and string concatenation all hide calls), so only a reviewed,
+ * byte-identical patch may skip the Worker-first guard. Add an entry only after reviewing the
+ * patch, and pin the hash printed by `sha256sum` over the file with LF line endings.
+ */
+const REVIEWED_WORKER_INDEPENDENT_PATCHES: Readonly<Record<string, string>> = {
+	'20261109_auth_login_alias_app_metadata_backfill':
+		'a7125da51e7fabd9a955df44aa34fc28fa1ff5abafd072ede4dbf238199f438d',
+	'20261112_tracking_events_blank_lead_code':
+		'2cad945a584d0c3a661bfef45975a60524f3107686aad381a6048ba5a9ddce1d',
+	'20261112_auth_users_without_app_role':
+		'739692fa39f758f5a0494c9bc877baca4653bfabddf6febc508435c2d63ae056',
+};
+
+/** True when the patch text is byte-identical (up to CRLF) to a reviewed entry for its id. */
+export function patchIsReviewedWorkerIndependent(
+	scriptId: string | undefined,
+	sql: string,
+): boolean {
+	if (!scriptId || !Object.hasOwn(REVIEWED_WORKER_INDEPENDENT_PATCHES, scriptId)) return false;
+	const digest = createHash('sha256').update(sql.replace(/\r\n/g, '\n')).digest('hex');
+	return digest === REVIEWED_WORKER_INDEPENDENT_PATCHES[scriptId];
+}
 
 /** Decided from the reviewed plan; the apply step refuses a patch whose file changed since. */
 export function patchTablesAreWorkerIndependent(tables: readonly string[] | undefined): boolean {

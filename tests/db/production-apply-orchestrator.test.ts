@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environment-identity.ts';
 import { buildMigrationPlan, type MigrationPlan } from '../../scripts/db/migration-plan.ts';
@@ -1106,9 +1107,14 @@ describe('production apply execution', () => {
 		expect(applyPatch).not.toHaveBeenCalled();
 	});
 
-	it.each([['auth.users'], ['public.tracking_events'], ['auth.users, public.tracking_events']])(
-		'applies a patch on %s without waiting for the Production Worker',
-		async (tables) => {
+	it.each([
+		['20261112_auth_users_without_app_role', 'auth.users'],
+		['20261112_tracking_events_blank_lead_code', 'public.tracking_events'],
+		['20261109_auth_login_alias_app_metadata_backfill', 'auth.users, public.tracking_events'],
+	])(
+		'applies the reviewed patch %s on %s without waiting for the Production Worker',
+		async (scriptId, tables) => {
+			const sql = readFileSync(`scripts/manual/production-patches/${scriptId}.sql`, 'utf8');
 			const assertWorkerServesRelease = jest.fn(async () => {
 				throw new Error('the Worker must not be consulted');
 			});
@@ -1126,7 +1132,11 @@ describe('production apply execution', () => {
 					...base,
 					preparePatch: (file) => {
 						const prepared = base.preparePatch!(file);
-						return { ...prepared, manifest: { ...prepared.manifest, tables } };
+						return {
+							...prepared,
+							sql,
+							manifest: { ...prepared.manifest, 'script-id': scriptId, tables },
+						};
 					},
 					requireOwnerApply: async (input) => {
 						issueProductionWritePermit({
@@ -1146,6 +1156,46 @@ describe('production apply execution', () => {
 			expect(applyPatch).toHaveBeenCalled();
 		},
 	);
+
+	it('gates an unreviewed patch even when it declares only Worker-independent tables', async () => {
+		const assertWorkerServesRelease = jest.fn<
+			(input: { releaseSha: string }) => Promise<unknown>
+		>(async () => {
+			throw new OperatorError({
+				title: 'Worker behind',
+				cause: 'test',
+				code: 'PRODUCTION_WORKER_BEHIND_CONTENT',
+				remediation: [],
+			});
+		});
+		const applyPatch = jest.fn(async () => ({ state: 'APPLIED_AND_VERIFIED' as const }));
+		const base = baseDeps({ pending: [] });
+		await expect(
+			applyProductionApplyPlan(
+				cli([
+					'--patch',
+					'scripts/manual/production-patches/test.sql',
+					'--owner-user-id',
+					'550e8400-e29b-41d4-a716-446655440000',
+					'--apply',
+				]),
+				{
+					...base,
+					preparePatch: (file) => {
+						const prepared = base.preparePatch!(file);
+						return {
+							...prepared,
+							manifest: { ...prepared.manifest, tables: 'auth.users' },
+						};
+					},
+					assertWorkerServesRelease,
+					applyPatch,
+				},
+			),
+		).rejects.toMatchObject({ code: 'PRODUCTION_WORKER_BEHIND_CONTENT' });
+		expect(assertWorkerServesRelease).toHaveBeenCalled();
+		expect(applyPatch).not.toHaveBeenCalled();
+	});
 
 	it('still gates a patch that also writes invitation content', async () => {
 		const assertWorkerServesRelease = jest.fn<

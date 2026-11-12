@@ -1,5 +1,9 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it, jest } from '@jest/globals';
-import { assertProductionWorkerServesRelease } from '../../scripts/db/production-worker-content-guard.ts';
+import {
+	assertProductionWorkerServesRelease,
+	patchIsReviewedWorkerIndependent,
+} from '../../scripts/db/production-worker-content-guard.ts';
 import type { GitRunner } from '../../scripts/ops/release-readiness.ts';
 
 const releaseSha = 'a'.repeat(40);
@@ -107,5 +111,40 @@ describe('Production Worker content guard', () => {
 		await expect(
 			assertProductionWorkerServesRelease({ releaseSha }, { fetchImpl, git: gitStatus(0) }),
 		).rejects.toMatchObject({ code: 'PRODUCTION_WORKER_UNVERIFIED' });
+	});
+});
+
+describe('reviewed Worker-independent patches', () => {
+	const reviewed = [
+		'20261109_auth_login_alias_app_metadata_backfill',
+		'20261112_tracking_events_blank_lead_code',
+		'20261112_auth_users_without_app_role',
+	];
+	const read = (id: string) =>
+		readFileSync(`scripts/manual/production-patches/${id}.sql`, 'utf8').replace(/\r\n/g, '\n');
+
+	it.each(reviewed)('accepts %s with LF or CRLF line endings', (id) => {
+		const sql = read(id);
+		expect(patchIsReviewedWorkerIndependent(id, sql)).toBe(true);
+		expect(patchIsReviewedWorkerIndependent(id, sql.replace(/\n/g, '\r\n'))).toBe(true);
+	});
+
+	it.each(reviewed)('rejects %s once its text changes', (id) => {
+		const sql = read(id);
+		expect(
+			patchIsReviewedWorkerIndependent(
+				id,
+				`${sql}select public.archive_invitation(null::uuid);\n`,
+			),
+		).toBe(false);
+		expect(patchIsReviewedWorkerIndependent(id, sql.replace(/\n/g, '\r'))).toBe(false);
+	});
+
+	it('rejects an unknown id, a missing id and a reviewed text under another id', () => {
+		const sql = read(reviewed[0]!);
+		expect(patchIsReviewedWorkerIndependent('test-patch', sql)).toBe(false);
+		expect(patchIsReviewedWorkerIndependent(undefined, sql)).toBe(false);
+		expect(patchIsReviewedWorkerIndependent(reviewed[1], sql)).toBe(false);
+		expect(patchIsReviewedWorkerIndependent('constructor', sql)).toBe(false);
 	});
 });
