@@ -8,7 +8,7 @@
 -- @expected-rows-max: 2
 -- @requires-backup: true
 -- @dry-run-query: select u.id from auth.users u where not exists (select 1 from public.app_user_roles r where r.user_id = u.id)
--- @rollback: restore the deleted auth.users and auth.identities rows from the pre-apply critical Production backup (the dry-run query run against the backup lists their ids); that backup holds no password hashes or sessions, so a restored account signs in again only after a password reset. Public and Storage rows that referenced the accounts were checked to be absent before the delete, so nothing else needs restoring
+-- @rollback: restore only the deleted auth.users and auth.identities rows from the pre-apply critical Production backup (the dry-run query run against the backup lists their ids), in one transaction that sets their encrypted_password to an unusable empty value instead of the dump's placeholder password and bans them until the owner sends a password reset; the backup holds no real password hashes or sessions. Public and Storage rows that referenced the accounts were checked to be absent before the delete, so nothing else needs restoring
 
 begin;
 
