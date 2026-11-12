@@ -155,7 +155,7 @@ export interface WorktreeLaneDefinition {
 	segment: string | null;
 }
 
-// 4399: never collides with a canonical lane (4321, 4326–4335) or the typical
+// 4399: never collides with a canonical lane (4321, 4326–4336) or the typical
 // 4324 fallback; surface the non-canonical cwd via detectWorktreeLane callers.
 const UNKNOWN_LANE_PORT = 4399;
 
