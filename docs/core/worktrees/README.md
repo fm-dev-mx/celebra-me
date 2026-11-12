@@ -18,6 +18,7 @@ Adding or retiring a lane is one pull request that edits that file. External pat
 | F10 | `f10-libre`                   | Generic      | Local   | 4330 |
 | F11 | `f11-preview`                 | Preview      | Preview | 4331 |
 | F12 | `f12-release`                 | Release      | Preview | 4332 |
+| F13 | `f13-prod-release`            | Prod release | Preview | 4336 |
 | —   | `agente-claude`               | Agent        | Local   | 4333 |
 | —   | `agente-codex`                | Agent        | Local   | 4334 |
 | —   | `agente-gemini`               | Agent        | Local   | 4335 |
