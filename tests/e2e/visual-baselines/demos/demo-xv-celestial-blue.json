@@ -1,0 +1,57 @@
+{
+    "version": 1,
+    "slug": "demo-xv-celestial-blue",
+    "eventType": "xv",
+    "captures": [
+        {
+            "kind": "demo",
+            "slug": "demo-xv-celestial-blue",
+            "eventType": "xv",
+            "preset": "celestial-blue",
+            "viewport": "mobile",
+            "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
+            "sha256": "0dc5d47d7d815114e896b66a92c23180f2807c0eb33b7a2ff8a17617ff69654c",
+            "contentHash": "c83777586b3831b8b26ad77bb0e5626f6f9eaa13db6ed35e604008b802c5d49e",
+            "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-celestial-blue",
+            "eventType": "xv",
+            "preset": "celestial-blue",
+            "viewport": "desktop",
+            "file": "pages/demo-xv-demo-xv-celestial-blue-desktop.png",
+            "sha256": "cab84f8f58395a93232f2ed51205cb0507bf5aedee1c4502c31081d8b6a4e183",
+            "contentHash": "c83777586b3831b8b26ad77bb0e5626f6f9eaa13db6ed35e604008b802c5d49e",
+            "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
+            "comparisonResult": "ACCEPTED"
+        }
+    ],
+    "pageCaptures": [
+        {
+            "kind": "demo",
+            "slug": "demo-xv-celestial-blue",
+            "eventType": "xv",
+            "preset": "celestial-blue",
+            "viewport": "mobile",
+            "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
+            "sha256": "0dc5d47d7d815114e896b66a92c23180f2807c0eb33b7a2ff8a17617ff69654c",
+            "contentHash": "c83777586b3831b8b26ad77bb0e5626f6f9eaa13db6ed35e604008b802c5d49e",
+            "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
+            "comparisonResult": "CANDIDATE"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-celestial-blue",
+            "eventType": "xv",
+            "preset": "celestial-blue",
+            "viewport": "desktop",
+            "file": "pages/demo-xv-demo-xv-celestial-blue-desktop.png",
+            "sha256": "cab84f8f58395a93232f2ed51205cb0507bf5aedee1c4502c31081d8b6a4e183",
+            "contentHash": "c83777586b3831b8b26ad77bb0e5626f6f9eaa13db6ed35e604008b802c5d49e",
+            "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
+            "comparisonResult": "CANDIDATE"
+        }
+    ]
+}
