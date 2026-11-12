@@ -51,11 +51,12 @@ event); the two `20261110100000`/`20261110120000` migrations only release archiv
   (#923, #926).
 - Demos: the floating quote keeps its room and uses palette tokens (#885).
 - Release: historical invitation patches require verification (#897); the active package hash
-  baseline is updated (#894); invitation note deletions compare from the merge base (#913).
+  baseline is updated (#894); invitation note deletions compare from the merge base (#913); the
+  deploy check accepts an inactive no-traffic smoke when the same SHA has a successful run (#920).
 - Preview data: the archived wedding slug, identity constraints and asset paths are released (#892,
   #900); the login alias backfill is marked verified (#895).
 - Visual: capture images decode synchronously so full-page frames match (#918).
-- Agents: reenvio and dispatch permissions with read-only prefixes (#931).
+- Agents: forwarding and dispatch permissions with read-only prefixes (#931).
 
 ## [0.69.2-beta.1] - 2026-11-05
 
