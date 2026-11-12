@@ -125,63 +125,64 @@
 		}
 	}
 
-	// The letter rises out of the jewelry box in about four seconds and rests for a short reading
-	// beat before the invitation opens, with a quick wrapper fade. The jewelry-box structure and
-	// its choreography (velvet lid, pochette, letter) live in the preset shell; these are its
-	// colors, timing and scale.
-	.envelope-wrapper {
-		$blush: color-mix(in srgb, rgb(var(--color-blush-pink-rgb)) 34%, var(--color-warm-ivory));
-
-		--duration-long: 0.4s;
-		--env-letter-hold: 1300ms;
-
-		// Plain velvet under a soft spotlight: the quilting lives on the lid only.
-		--env-bg:
-			radial-gradient(
-				ellipse 62% 48% at 50% 44%,
-				rgb(var(--color-deep-rose-red-rgb) / 34%),
-				transparent 70%
-			),
-			radial-gradient(ellipse 120% 90% at 50% 50%, transparent 55%, rgb(0 0 0 / 28%)),
-			var(--color-velvet-burgundy);
-		--env-paper-bg: #{$blush};
-		--env-paper-border: rgb(var(--color-action-accent-rgb) / 40%);
-		--env-text-primary: var(--color-velvet-burgundy);
-		--env-text-secondary: var(--color-walnut-brown);
-		--env-seal-accent: var(--color-deep-rose-red);
-		--env-seal-size-min: 84px;
-		--env-seal-size-max: 118px;
-		--env-seal-size-ratio: 19;
-		--env-seal-hint-display: none;
-		--env-title-size: clamp(2rem, 10cqw, 3.25rem);
-		--env-name-tracking: -0.01em;
-		--env-details-tracking: 0.2em;
-		--env-instruction-color: rgb(var(--color-candle-gold-rgb));
-		--env-open-label-opacity: 100%;
-		--env-open-label-size: 0.75rem;
-		--env-container-radius: 2px;
-		--env-container-width: clamp(320px, 45vw, 720px);
-		--env-container-max-height: min(62svh, 520px);
-		--env-shadow-container:
-			0 32px 64px rgb(var(--color-rose-shadow-rgb) / 55%),
-			0 8px 18px rgb(var(--color-rose-shadow-rgb) / 35%);
-
-		// Matte rose wax with a gold monogram: a lighter rose crest and a darker pooled rim give the
-		// poured wax its body while the highlight stays in the rose family, never a glossy bead.
-		--wax-seal-highlight: color-mix(
+	// The envelope is velvet night under candlelight: burgundy paper with a candle-gold hairline,
+	// rose wax with a gold monogram, distant lights and butterflies rising as it opens. The card
+	// inside stays warm ivory with velvet inks.
+	.envelope-wrapper[data-variant='storybook-butterflies'] {
+		--storybook-sky-display: block;
+		--storybook-send-off: butterflies;
+		--storybook-sky-light: var(--color-warm-ivory);
+		--storybook-sky-glow: var(--color-candle-gold);
+		--storybook-sky-lantern: var(--color-candle-gold);
+		--storybook-field: radial-gradient(
+			ellipse 120% 70% at 50% 100%,
+			var(--color-deep-rose-red) 0%,
+			var(--color-velvet-burgundy) 52%,
+			var(--color-rose-shadow) 100%
+		);
+		--storybook-envelope-paper: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--color-deep-rose-red) 38%, var(--color-velvet-burgundy)),
+			var(--color-velvet-burgundy)
+		);
+		--storybook-ink: var(--color-candle-gold);
+		--storybook-liner-paper: radial-gradient(
+			ellipse 90% 80% at 50% 0%,
+			var(--color-warm-ivory) 0%,
+			rgb(var(--color-blush-pink-rgb)) 40%,
+			var(--color-deep-rose-red) 100%
+		);
+		--storybook-instruction-ink: var(--color-candle-gold);
+		--storybook-wax-light: color-mix(
 			in srgb,
 			var(--color-deep-rose-red) 55%,
 			rgb(var(--color-blush-pink-rgb))
 		);
-		--wax-seal-mid: color-mix(
+		--storybook-wax: color-mix(
 			in srgb,
 			var(--color-deep-rose-red) 82%,
 			var(--color-velvet-burgundy)
 		);
-		--wax-seal-deep: color-mix(in srgb, var(--color-velvet-burgundy) 70%, black);
-		--wax-seal-letter: rgb(var(--color-candle-gold-rgb));
-		--wax-seal-shadow: var(--color-rose-shadow);
-		--wax-seal-emboss-shadow: var(--color-velvet-burgundy);
+		--storybook-wax-deep: color-mix(in srgb, var(--color-velvet-burgundy) 70%, black);
+		--storybook-card-bg: var(--color-warm-ivory);
+		--storybook-card-ornament-display: none;
+		--wax-seal-letter: var(--color-candle-gold);
+		--color-text-primary: var(--color-warm-ivory);
+		--color-text-primary-rgb: var(--color-warm-ivory-rgb);
+		--color-text-secondary: var(--color-candle-gold);
+		--color-text-secondary-rgb: var(--color-candle-gold-rgb);
+		--env-shadow-container:
+			0 0 0 1px rgb(var(--color-candle-gold-rgb) / 28%),
+			0 34px 64px -26px rgb(var(--color-rose-shadow-rgb) / 90%);
+		--reveal-card-text-primary: var(--color-velvet-burgundy);
+		--reveal-card-text-secondary: var(--color-walnut-brown);
+	}
+
+	.envelope-wrapper[data-variant='storybook-butterflies'] .invitation-reveal-card {
+		--color-text-primary: var(--color-velvet-burgundy);
+		--color-text-primary-rgb: var(--color-velvet-burgundy-rgb);
+		--color-text-secondary: var(--color-walnut-brown);
+		--color-text-secondary-rgb: var(--color-walnut-brown-rgb);
 	}
 
 	// The gifts folio stays pinned while the access pass rises over it; the sections after the pass

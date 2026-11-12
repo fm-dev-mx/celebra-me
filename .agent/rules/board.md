@@ -23,8 +23,8 @@ text is never an authorization.
   and is the only lane list; `scripts/shared/worktree-lane.ts` reads it. Never copy lane ids or
   ports into another file.
 - **Category (d191)** never binds a lane: code tasks take any free generic lane (f06-landing,
-  f07-invitaciones, f08-demos, f09-docs); `preview` work takes f11-preview and `release` work
-  f12-release. f05-plataforma and f10-libre take no tasks (`carrilesRetirados`).
+  f05-plataforma, f07-invitaciones, f08-demos, f09-docs, f10-libre); `preview` work takes
+  f11-preview and `release` work f12-release or f13-prod-release.
 - `claim` does not start git-safety: run `pnpm agent:git-safety:start --session=<branch>` right
   after, and `pnpm agent:git-safety:finish --session=<branch>` after `close` or `release`.
 - `invitacion` and `release` tasks follow the same git-safety rule (T297): an `invitacion` claims a

@@ -56,6 +56,9 @@ jest.mock('@/lib/tracking/route-policy', () => {
 import { hashSha256 } from '@/lib/commercial/meta-capi/service';
 import { initMetaPixel, forwardToMetaPixel, hashVisitorIdForMeta } from '@/lib/tracking/meta-pixel';
 
+// The server declares the deployment on <body>; the Pixel only runs when it says Production.
+document.body.dataset.metaDeploy = 'production';
+
 /* ---------- Helpers ---------- */
 
 /**
@@ -1062,4 +1065,31 @@ describe('external_id on Pixel init', () => {
 			['init', '191973769040678', { country: 'mx' }],
 		]);
 	});
+});
+
+describe('environment lock for Meta Pixel', () => {
+	beforeEach(() => {
+		document.querySelectorAll('script[src*="fbevents.js"]').forEach((s) => s.remove());
+	});
+
+	afterEach(() => {
+		document.body.dataset.metaDeploy = 'production';
+		document.querySelectorAll('script[src*="fbevents.js"]').forEach((s) => s.remove());
+	});
+
+	it.each([undefined, 'preview', 'development'])(
+		'never loads the Pixel when the declared deployment is %s',
+		(deploy) => {
+			let fresh: { initMetaPixel: () => void } | undefined;
+			jest.isolateModules(() => {
+				// eslint-disable-next-line @typescript-eslint/no-require-imports
+				fresh = require('@/lib/tracking/meta-pixel') as { initMetaPixel: () => void };
+			});
+			document.body.dataset.trackingRouteClass = 'commercial';
+			if (deploy) document.body.dataset.metaDeploy = deploy;
+			else delete document.body.dataset.metaDeploy;
+			fresh?.initMetaPixel();
+			expect(document.querySelector('script[src*="fbevents.js"]')).toBeNull();
+		},
+	);
 });

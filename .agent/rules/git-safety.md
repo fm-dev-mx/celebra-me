@@ -32,9 +32,33 @@ pushes, or operations outside their documented scope.
 
 ---
 
+## Local and Preview Autonomy
+
+The owner authorized agents to act without asking in Local and Preview (autonomy audit 2026-11-11).
+This section is the single source for that authority; other documents link here.
+
+- **Git on the task branch:** an active board task claimed in its own lane authorizes Git on its
+  task branch: stage, commit, push, open the PR and delete merged branches. Bridge lanes
+  (`agente-*`) leave their changes uncommitted. Never merge by hand, force push or skip hooks.
+- **Preview data and deployment:** Preview migrations
+  (`pnpm db:migrate -- --target preview --apply`),
+  `pnpm invitation:release -- --slug <slug> --targets preview --apply` and
+  `pnpm db:preview:sync-invitations --apply` are allowed in Preview without asking. Production stays
+  gated.
+- **Visual acceptance in Preview:** `pnpm visual:parity:accept` is allowed only with all of this
+  evidence: a certified candidate (`pnpm visual:parity:candidate:certified -- --sha <40-hex>`);
+  diffs limited to the task's scope; zero geometry errors; `referenceSha`, `matrixHash` and
+  `candidateManifestSha256` recorded with the candidate diffs kept. CI still rejects `accept`.
+- **Still the owner's:** Production (merging or deploying `main`, the daily production window),
+  money and external accounts, secrets (`.env*`, `.secrets/`, `.backups/` and the retired host's
+  config folder), force push, `--no-verify` and `--admin`.
+
+---
+
 ## Git Write Operations (Forbidden Without Current-Task Authorization)
 
-Without explicit current-task authorization for that exact operation, do not:
+Except where [Local and Preview autonomy](#local-and-preview-autonomy) grants it, and without
+explicit current-task authorization for that exact operation, do not:
 
 - stage or unstage (`git add`, `git restore --staged`, pathspecs that alter the index);
 - commit or amend;

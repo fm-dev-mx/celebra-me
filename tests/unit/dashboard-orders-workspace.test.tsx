@@ -7,6 +7,10 @@ import { getActiveCampaign, getPackagePrice } from '@/data/promo-campaign.data';
 jest.mock('@/lib/dashboard/api-client', () => ({
 	dashboardApi: { get: jest.fn(), post: jest.fn() },
 }));
+jest.mock('@/components/dashboard/orders/OrderDetailPanel', () => ({
+	__esModule: true,
+	default: ({ orderId }: { orderId: string }) => <div>Pagos del pedido: {orderId}</div>,
+}));
 jest.mock('@/components/dashboard/commercial/InvitationDataPanel', () => ({
 	__esModule: true,
 	default: ({ orderId }: { orderId: string }) => <div>Datos de su invitación: {orderId}</div>,
@@ -62,7 +66,7 @@ test.each([1000, 250])(
 		fireEvent.change(screen.getByLabelText('Monto recibido (MXN)'), {
 			target: { value: String(amount) },
 		});
-		fireEvent.click(screen.getByText('Guardar pago por transferencia'));
+		fireEvent.click(screen.getByText('Registrar anticipo'));
 		await screen.findByText('Pago registrado');
 		expect(post).toHaveBeenLastCalledWith(
 			expect.stringContaining('/order-1/deposit-paid'),
@@ -73,7 +77,7 @@ test.each([1000, 250])(
 			}),
 		);
 		expect(post.mock.calls[1][1]).not.toHaveProperty('depositAmount');
-		expect(screen.queryByText(/anticipo|50 %/i)).not.toBeInTheDocument();
+		expect(screen.queryByText(/anticipo|50 %/i, { ignore: 'option' })).not.toBeInTheDocument();
 	},
 );
 test.each(['server', 'network'])(
@@ -89,11 +93,11 @@ test.each(['server', 'network'])(
 				code: 'service_unavailable',
 				message: 'Servicio temporalmente no disponible',
 			});
-		fireEvent.click(screen.getByText('Guardar pago por transferencia'));
+		fireEvent.click(screen.getByText('Registrar anticipo'));
 		await screen.findByRole('alert');
 		const first = post.mock.calls.at(-1);
 		expect(screen.getByLabelText('Monto recibido (MXN)')).toBeDisabled();
-		fireEvent.click(screen.getByText('Guardar pago por transferencia'));
+		fireEvent.click(screen.getByText('Registrar anticipo'));
 		await screen.findByText('Pago registrado');
 		expect(post.mock.calls.at(-1)).toEqual(first);
 		expect(post.mock.calls.filter(([path]) => path.endsWith('/orders'))).toHaveLength(1);
@@ -116,10 +120,77 @@ test('searches a standalone customer and changes the server-side list filter', a
 	fireEvent.click(screen.getByText('Buscar cliente'));
 	fireEvent.click(await screen.findByText(/Cliente de prueba ·/));
 	await screen.findByText('Paso 2: Pedido');
-	fireEvent.change(screen.getByLabelText('Estado del pedido'), { target: { value: 'partial' } });
+	fireEvent.change(screen.getByLabelText('Etapa del pedido'), { target: { value: 'draft' } });
+	await waitFor(() => expect(get).toHaveBeenCalledWith(expect.stringContaining('stage=draft')));
+	fireEvent.change(screen.getByLabelText('Saldo'), { target: { value: 'pending' } });
+	fireEvent.change(screen.getByLabelText('Evento desde'), { target: { value: '2026-12-01' } });
+	fireEvent.change(screen.getByLabelText('Evento hasta'), { target: { value: '2026-12-31' } });
 	await waitFor(() =>
-		expect(get).toHaveBeenCalledWith(expect.stringContaining('status=partial')),
+		expect(get).toHaveBeenCalledWith(
+			expect.stringMatching(
+				/stage=draft&eventFrom=2026-12-01&eventTo=2026-12-31&balance=pending/,
+			),
+		),
 	);
+});
+
+test('offers every stage, including draft, confirmed and cancelled', async () => {
+	render(<OrdersWorkspace />);
+	await waitFor(() => expect(get).toHaveBeenCalled());
+	const options = Array.from(
+		(screen.getByLabelText('Etapa del pedido') as HTMLSelectElement).options,
+	).map((option) => option.value);
+	expect(options).toEqual(
+		expect.arrayContaining(['draft', 'confirmed', 'cancelled', 'deposit_paid', 'paid']),
+	);
+});
+
+test('opens an order detail with customer and event date', async () => {
+	get.mockImplementation(async (path) =>
+		ok(
+			path.includes('/customers?')
+				? customer
+				: {
+						items: [{ ...order, packageName: 'Esencial', eventDate: '2026-12-05' }],
+						nextOffset: null,
+					},
+		),
+	);
+	render(<OrdersWorkspace />);
+	fireEvent.click(await screen.findByText('Ver detalle y pagos'));
+	expect(await screen.findByText(/Cliente: Cliente de prueba/)).toBeInTheDocument();
+	expect(screen.getAllByText(/Fecha del evento/).length).toBeGreaterThan(0);
+});
+
+test('preselects the customer from the Comercial link', async () => {
+	window.history.pushState({}, '', '/dashboard/pedidos?cliente=customer-1&lead=lead-9');
+	get.mockImplementation(async (path) =>
+		ok(path.includes('/customers?') ? customer : { items: [], nextOffset: null }),
+	);
+	render(<OrdersWorkspace />);
+	await screen.findByText('Paso 2: Pedido');
+	window.history.pushState({}, '', '/');
+});
+
+test('keeps the link lead for its own customer and drops it for another', async () => {
+	window.history.pushState({}, '', '/dashboard/pedidos?cliente=customer-1&lead=lead-9');
+	get.mockImplementation(async (path) =>
+		ok(path.includes('/customers?') ? customer : { items: [], nextOffset: null }),
+	);
+	const other = { ...customer, id: 'customer-2', displayName: 'Otro cliente' };
+	post.mockImplementation(async (path) =>
+		ok(path.endsWith('/customers') ? { outcome: 'created', customer: other } : order),
+	);
+	render(<OrdersWorkspace />);
+	await screen.findByText('Paso 2: Pedido');
+	fireEvent.click(screen.getByText('Volver'));
+	await reachOrder();
+	fireEvent.click(screen.getByText('Crear pedido y continuar'));
+	await screen.findByText('Paso 3: Pago por transferencia');
+	const sent = post.mock.calls.find(([path]) => path.endsWith('/orders'))?.[1];
+	expect(sent).toEqual(expect.objectContaining({ customerId: 'customer-2' }));
+	expect(sent).not.toHaveProperty('leadId', 'lead-9');
+	window.history.pushState({}, '', '/');
 });
 
 test('loads the authoritative customer for a CM code and preserves lead attribution', async () => {
@@ -220,7 +291,7 @@ test.each([400, 409, 422])(
 			code: 'validation_error',
 			message: 'Revise el pago.',
 		});
-		fireEvent.click(screen.getByText('Guardar pago por transferencia'));
+		fireEvent.click(screen.getByText('Registrar anticipo'));
 		await screen.findByRole('alert');
 		const first = post.mock.calls.at(-1)?.[1] as Record<string, unknown>;
 		expect(screen.getByLabelText('Monto recibido (MXN)')).toBeEnabled();
@@ -231,7 +302,7 @@ test.each([400, 409, 422])(
 		fireEvent.change(screen.getByLabelText('Fecha del pago'), {
 			target: { value: '2026-01-01' },
 		});
-		fireEvent.click(screen.getByText('Guardar pago por transferencia'));
+		fireEvent.click(screen.getByText('Registrar anticipo'));
 		await screen.findByText('Pago registrado');
 		expect(post.mock.calls.at(-1)?.[1]).toEqual({
 			...first,

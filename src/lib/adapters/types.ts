@@ -389,6 +389,7 @@ export interface InvitationViewModel {
 			lockedMessage?: string;
 			title: string;
 			guestCap: number;
+			demoMaxChildren?: number;
 			locationVisibility?: LocationVisibility;
 			accessMode: 'personalized-only' | 'hybrid';
 			confirmationMessage: string;

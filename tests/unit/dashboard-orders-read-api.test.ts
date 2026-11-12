@@ -37,9 +37,26 @@ beforeEach(() => {
 
 test('lists a bounded page with server-side status selection', async () => {
 	expect((await orders(context('orders?view=orders&status=partial&offset=50'))).status).toBe(200);
-	expect(listCommercialSalesOrders).toHaveBeenCalledWith(50, 'partial');
+	expect(listCommercialSalesOrders).toHaveBeenCalledWith(50, 'partial', {});
 	expect(requireAdminRateLimit).toHaveBeenCalled();
 });
+test('passes stage, event date range and balance filters to the repository', async () => {
+	const query = 'stage=draft&eventFrom=2026-12-01&eventTo=2026-12-31&balance=pending';
+	expect((await orders(context(`orders?view=orders&${query}`))).status).toBe(200);
+	expect(listCommercialSalesOrders).toHaveBeenCalledWith(0, undefined, {
+		stage: 'draft',
+		eventFrom: '2026-12-01',
+		eventTo: '2026-12-31',
+		balance: 'pending',
+	});
+});
+test.each(['stage=nope', 'eventFrom=12/01/2026', 'balance=maybe'])(
+	'rejects invalid filter %s',
+	async (query) => {
+		expect((await orders(context(`orders?view=orders&${query}`))).status).toBe(400);
+		expect(listCommercialSalesOrders).not.toHaveBeenCalled();
+	},
+);
 test.each(['offset=-1', 'offset=1.5', 'offset=no', 'status=unknown'])(
 	'rejects invalid page/filter %s',
 	async (query) => {

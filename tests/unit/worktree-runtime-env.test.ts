@@ -27,12 +27,15 @@ import {
 
 describe('worktree lane detection', () => {
 	const laneSegments = [
+		'f05-plataforma',
 		'f06-landing',
 		'f07-invitaciones',
 		'f08-demos',
 		'f09-docs',
+		'f10-libre',
 		'f11-preview',
 		'f12-release',
+		'f13-prod-release',
 		'agente-claude',
 		'agente-codex',
 		'agente-gemini',
@@ -61,9 +64,8 @@ describe('worktree lane detection', () => {
 			'unknown',
 		);
 		expect(detectWorktreeLane('/mock/celebra-me-worktrees/f06-landing2').id).toBe('unknown');
-		// Retired lane folders are no longer lanes.
-		expect(detectWorktreeLane('/mock/celebra-me-worktrees/f05-plataforma').id).toBe('unknown');
-		expect(detectWorktreeLane('/mock/celebra-me-worktrees/f10-libre').id).toBe('unknown');
+		// Folders the board config does not list are not lanes.
+		expect(detectWorktreeLane('/mock/celebra-me-worktrees/f13-suelto').id).toBe('unknown');
 		expect(detectWorktreeLane('/mock/celebra-me-worktrees/dev-local').id).toBe('unknown');
 	});
 
@@ -87,10 +89,24 @@ describe('worktree lane detection', () => {
 	it('lists expected lane paths, keys and runtimes under the repository root', () => {
 		const lanes = listExpectedLanePaths('/mock/celebra-me');
 		expect(lanes.map((lane) => lane.id)).toEqual(['integration', ...laneSegments]);
-		expect(lanes.map((lane) => lane.key)).toEqual([5, 6, 7, 8, 9, 11, 12, null, null, null]);
+		expect(lanes.map((lane) => lane.key)).toEqual([
+			5,
+			3,
+			6,
+			7,
+			8,
+			9,
+			10,
+			11,
+			12,
+			13,
+			null,
+			null,
+			null,
+		]);
 		expect(
 			lanes.filter((lane) => lane.runtimeDefault === 'preview').map((lane) => lane.id),
-		).toEqual(['f11-preview', 'f12-release']);
+		).toEqual(['f11-preview', 'f12-release', 'f13-prod-release']);
 	});
 
 	it('takes each lane port from tablero.config.json', () => {
@@ -99,6 +115,7 @@ describe('worktree lane detection', () => {
 		expect(getWorktreeDevServerPort('f08-demos')).toBe(4328);
 		expect(getWorktreeDevServerPort('f11-preview')).toBe(4331);
 		expect(getWorktreeDevServerPort('f12-release')).toBe(4332);
+		expect(getWorktreeDevServerPort('f13-prod-release')).toBe(4336);
 		expect(getWorktreeDevServerPort('agente-claude')).toBe(4333);
 		expect(getWorktreeDevServerPort('agente-gemini')).toBe(4335);
 		expect(getWorktreeDevServerPort('unknown')).toBe(4399);
@@ -108,7 +125,7 @@ describe('worktree lane detection', () => {
 		const localPorts = listExpectedLanePaths('/mock/celebra-me')
 			.filter((lane) => lane.runtimeDefault === 'local')
 			.map((lane) => WORKTREE_DEV_SERVER_PORTS[lane.id]);
-		expect(localPorts).toHaveLength(8);
+		expect(localPorts).toHaveLength(10);
 		expect(new Set(localPorts).size).toBe(localPorts.length);
 		expect(localPorts).not.toContain(WORKTREE_DEV_SERVER_PORTS.unknown);
 	});
@@ -162,6 +179,7 @@ describe('lane work policy', () => {
 		expect(message).toContain('lane: unknown');
 		expect(message).toContain('f06-landing (Win + F6)');
 		expect(message).toContain('f12-release (Win + F12)');
+		expect(message).toContain('f13-prod-release (Win + F13)');
 		expect(message).toContain('agente-codex,');
 		expect(message).not.toContain('Win + Fnull');
 	});
@@ -310,33 +328,36 @@ describe('celebra runtime env bootstrap', () => {
 		).toThrow(/Production/);
 	});
 
-	it.each(['f11-preview', 'f12-release'])('bootstraps %s from .env.preview.local', (segment) => {
-		const cwd = writeLane(segment);
-		writeFileSync(
-			join(cwd, '.env.local'),
-			[
-				'NODE_ENV=development',
-				'SUPABASE_URL=http://127.0.0.1:54321',
-				'PUBLIC_SUPABASE_URL=http://127.0.0.1:54321',
-			].join('\n'),
-		);
-		writeFileSync(
-			join(cwd, '.env.preview.local'),
-			[
-				`SUPABASE_URL=https://${PREVIEW_PROJECT_REF}.supabase.co`,
-				`PUBLIC_SUPABASE_URL=https://${PREVIEW_PROJECT_REF}.supabase.co`,
-				'SUPABASE_ANON_KEY=preview-anon',
-				'PUBLIC_SUPABASE_ANON_KEY=preview-anon',
-				'SUPABASE_SERVICE_ROLE_KEY=preview-service',
-			].join('\n'),
-		);
+	it.each(['f11-preview', 'f12-release', 'f13-prod-release'])(
+		'bootstraps %s from .env.preview.local',
+		(segment) => {
+			const cwd = writeLane(segment);
+			writeFileSync(
+				join(cwd, '.env.local'),
+				[
+					'NODE_ENV=development',
+					'SUPABASE_URL=http://127.0.0.1:54321',
+					'PUBLIC_SUPABASE_URL=http://127.0.0.1:54321',
+				].join('\n'),
+			);
+			writeFileSync(
+				join(cwd, '.env.preview.local'),
+				[
+					`SUPABASE_URL=https://${PREVIEW_PROJECT_REF}.supabase.co`,
+					`PUBLIC_SUPABASE_URL=https://${PREVIEW_PROJECT_REF}.supabase.co`,
+					'SUPABASE_ANON_KEY=preview-anon',
+					'PUBLIC_SUPABASE_ANON_KEY=preview-anon',
+					'SUPABASE_SERVICE_ROLE_KEY=preview-service',
+				].join('\n'),
+			);
 
-		const result = bootstrapCelebraRuntimeEnv({ cwd, validate: true });
-		expect(result.target).toBe('preview');
-		expect(process.env.CELEBRA_RUNTIME_TARGET).toBe('preview');
-		expect(classifySupabaseUrl(process.env.SUPABASE_URL)).toBe('preview');
-		expect(classifySupabaseUrl(process.env.PUBLIC_SUPABASE_URL)).toBe('preview');
-	});
+			const result = bootstrapCelebraRuntimeEnv({ cwd, validate: true });
+			expect(result.target).toBe('preview');
+			expect(process.env.CELEBRA_RUNTIME_TARGET).toBe('preview');
+			expect(classifySupabaseUrl(process.env.SUPABASE_URL)).toBe('preview');
+			expect(classifySupabaseUrl(process.env.PUBLIC_SUPABASE_URL)).toBe('preview');
+		},
+	);
 
 	it.each(['f11-preview', 'f12-release'])(
 		'fails closed when %s lacks .env.preview.local',

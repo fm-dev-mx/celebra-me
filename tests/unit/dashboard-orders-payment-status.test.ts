@@ -25,6 +25,24 @@ test('filters full transfers despite the stored first-payment status', async () 
 		'partial',
 	]);
 });
+test('derives each listed order stage from its invitation and data request', async () => {
+	jest.mocked(supabaseRestRequest).mockReset();
+	jest.mocked(supabaseRestRequest)
+		.mockResolvedValueOnce([
+			{
+				id: 'a',
+				status: 'deposit_paid',
+				total_amount: 1000,
+				amount_paid: 300,
+				invitations: { status: 'published' },
+			},
+			{ id: 'b', status: 'deposit_paid', total_amount: 1000, amount_paid: 300 },
+			{ id: 'c', status: 'lost', total_amount: 1000, amount_paid: 0 },
+		])
+		.mockResolvedValueOnce([{ order_id: 'b', status: 'submitted' }]);
+	const { items } = await listCommercialSalesOrders(0);
+	expect(items.map((item) => item.stage)).toEqual(['published', 'data_received', null]);
+});
 test('advances the scan cursor even when the current page contains no matches', async () => {
 	jest.mocked(supabaseRestRequest).mockResolvedValue(
 		Array.from({ length: 50 }, (_, id) => ({
