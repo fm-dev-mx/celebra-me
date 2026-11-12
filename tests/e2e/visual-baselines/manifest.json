@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-12T01:52:20.371Z",
+    "generatedAt": "2026-11-12T17:45:16.568Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-        "cssSha256": "f8699bf4c11472bb3c712c4341e9286277cee0c6378bfe68522ba9a5c5ca852c",
+        "cssSha256": "996d94c07892e1efe8bd902f0cd496c829ba65ee18495761b4ff3e2fd92c79ca",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -565,7 +565,7 @@
             "cssOwner": "src/styles/themes/sections/itinerary/_timeline-paper.scss",
             "fixtureIdentity": "synthetic:itinerary.timeline-paper",
             "file": "jewelry-box-mobile-itinerary-timeline-paper.png",
-            "sha256": "a000e0bca9a959bb9a3e380269173e6161702ad43ccf61191733722b75768623",
+            "sha256": "777051ade9556205f524ff7504e16a85e28dbf5d21d9a8fccbc686a23b815607",
             "contentHash": "01f243c429db7e64feff8f4cdad031000af148fc791b49b3f86d3cf0b3323c7b",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -2465,9 +2465,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "a791ca97cfababf128740c271f29e07bf56461a7",
+    "referenceSha": "1f389db532572f61446805f857dac135987d3fea",
     "variantManifest": {
-        "generatedAt": "2026-11-12T01:52:20.371Z",
+        "generatedAt": "2026-11-12T17:45:16.568Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2480,7 +2480,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "f8699bf4c11472bb3c712c4341e9286277cee0c6378bfe68522ba9a5c5ca852c",
+            "cssSha256": "996d94c07892e1efe8bd902f0cd496c829ba65ee18495761b4ff3e2fd92c79ca",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -3033,7 +3033,7 @@
                 "cssOwner": "src/styles/themes/sections/itinerary/_timeline-paper.scss",
                 "fixtureIdentity": "synthetic:itinerary.timeline-paper",
                 "file": "jewelry-box-mobile-itinerary-timeline-paper.png",
-                "sha256": "a000e0bca9a959bb9a3e380269173e6161702ad43ccf61191733722b75768623",
+                "sha256": "777051ade9556205f524ff7504e16a85e28dbf5d21d9a8fccbc686a23b815607",
                 "contentHash": "01f243c429db7e64feff8f4cdad031000af148fc791b49b3f86d3cf0b3323c7b",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -4453,10 +4453,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "a791ca97cfababf128740c271f29e07bf56461a7"
+        "referenceSha": "1f389db532572f61446805f857dac135987d3fea"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-12T01:52:20.380Z",
+        "generatedAt": "2026-11-12T17:45:16.574Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4469,7 +4469,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "f8699bf4c11472bb3c712c4341e9286277cee0c6378bfe68522ba9a5c5ca852c",
+            "cssSha256": "996d94c07892e1efe8bd902f0cd496c829ba65ee18495761b4ff3e2fd92c79ca",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4961,9 +4961,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "a791ca97cfababf128740c271f29e07bf56461a7"
+        "referenceSha": "1f389db532572f61446805f857dac135987d3fea"
     },
-    "candidateManifestSha256": "0fa33014bbc80c87da8584b87f5d4002b8ca4878fce2eab721f9eb4bc908a363",
-    "acceptedFromCommit": "a791ca97cfababf128740c271f29e07bf56461a7",
-    "acceptedAt": "2026-11-12T01:55:33.906Z"
+    "candidateManifestSha256": "f93d6c9aeeea7655336e10a0f1caa621da3e17280439a27faa69eab040dcbccd",
+    "acceptedFromCommit": "1f389db532572f61446805f857dac135987d3fea",
+    "acceptedAt": "2026-11-12T17:46:08.526Z"
 }
