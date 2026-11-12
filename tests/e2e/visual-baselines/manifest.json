@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-11T05:27:04.600Z",
+    "generatedAt": "2026-11-12T20:04:39.220Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-        "cssSha256": "2c6a38a2a43a726fba0a3c21486c64452aca4e3ae84d5dfaacc93138b15e9f67",
+        "cssSha256": "36ed076756edebff49354a2f1e5f18f5355df21c66bbfe1f89329234e2c5a036",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2400,7 +2400,7 @@
             "viewport": "mobile",
             "file": "pages/invitation-xv-naomi-huerta-mobile.png",
             "sha256": "9421bf27be3c9d95a3f6ca51e4574507a690ceff2da36b5fecdacdd5c028363f",
-            "contentHash": "9aed6dcb324513228805d9fb291d6ca3c240c39619391d782b77a4485649365f",
+            "contentHash": "7a4a32d367aeb852b5e5ccddf7ae1e3d6dbf1373e41f947c6fa7b2d7919f9282",
             "assetHash": "397cb4df3a7cc282903e826a44059f4b8fe66b6192baa5ab591f9b3b6b24629f",
             "comparisonResult": "ACCEPTED"
         },
@@ -2412,7 +2412,7 @@
             "viewport": "desktop",
             "file": "pages/invitation-xv-naomi-huerta-desktop.png",
             "sha256": "be806f1cae907aede758321e5a02bcc69ba8032c34ad2623ca3d54baaedd12ac",
-            "contentHash": "9aed6dcb324513228805d9fb291d6ca3c240c39619391d782b77a4485649365f",
+            "contentHash": "7a4a32d367aeb852b5e5ccddf7ae1e3d6dbf1373e41f947c6fa7b2d7919f9282",
             "assetHash": "397cb4df3a7cc282903e826a44059f4b8fe66b6192baa5ab591f9b3b6b24629f",
             "comparisonResult": "ACCEPTED"
         },
@@ -2447,8 +2447,8 @@
             "preset": "storybook-lilac",
             "viewport": "mobile",
             "file": "pages/invitation-xv-yireh-ana-mobile.png",
-            "sha256": "c66af351dddff86eb38aed2c9a84a222b18cf62c154da956c2a937b33d614de0",
-            "contentHash": "2cb76b1eaf0761605da62fcbb20e194144ea06f6a952c36523eed76617f3c692",
+            "sha256": "e2c74e524238a9b176e8321227d35bb7bfdd52ac0523584465a66440b145183a",
+            "contentHash": "52221527a02950c128fdee4f8fc76c5f0dde1ace56a294b4462494d544a6d00a",
             "assetHash": "e8ad16d04ab5ecbcd79751fbf09a68d833a34fe974c210d9716bfa2d5be16ad5",
             "comparisonResult": "ACCEPTED"
         },
@@ -2459,8 +2459,8 @@
             "preset": "storybook-lilac",
             "viewport": "desktop",
             "file": "pages/invitation-xv-yireh-ana-desktop.png",
-            "sha256": "2e7d376b301da926ad1b5f528f86ce74d6d676e8294cec17d6362a514cbf5f88",
-            "contentHash": "2cb76b1eaf0761605da62fcbb20e194144ea06f6a952c36523eed76617f3c692",
+            "sha256": "53db176a6be6a38b927f3e7aa2f8d3bf2454af42dddeb8b2771773dbdaac7360",
+            "contentHash": "52221527a02950c128fdee4f8fc76c5f0dde1ace56a294b4462494d544a6d00a",
             "assetHash": "e8ad16d04ab5ecbcd79751fbf09a68d833a34fe974c210d9716bfa2d5be16ad5",
             "comparisonResult": "ACCEPTED"
         },
@@ -2681,9 +2681,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "91714305d6d4a8ff1e8e630140f501a8eb6efec5",
+    "referenceSha": "09d1d6ae5a669516dd46f33de92aea8cc2f239be",
     "variantManifest": {
-        "generatedAt": "2026-11-11T05:27:04.600Z",
+        "generatedAt": "2026-11-12T20:04:39.220Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2696,7 +2696,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "2c6a38a2a43a726fba0a3c21486c64452aca4e3ae84d5dfaacc93138b15e9f67",
+            "cssSha256": "36ed076756edebff49354a2f1e5f18f5355df21c66bbfe1f89329234e2c5a036",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4669,10 +4669,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "91714305d6d4a8ff1e8e630140f501a8eb6efec5"
+        "referenceSha": "09d1d6ae5a669516dd46f33de92aea8cc2f239be"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-11T05:27:04.605Z",
+        "generatedAt": "2026-11-12T20:04:39.243Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4685,7 +4685,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "2c6a38a2a43a726fba0a3c21486c64452aca4e3ae84d5dfaacc93138b15e9f67",
+            "cssSha256": "36ed076756edebff49354a2f1e5f18f5355df21c66bbfe1f89329234e2c5a036",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -5112,7 +5112,7 @@
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-naomi-huerta-mobile.png",
                 "sha256": "9421bf27be3c9d95a3f6ca51e4574507a690ceff2da36b5fecdacdd5c028363f",
-                "contentHash": "9aed6dcb324513228805d9fb291d6ca3c240c39619391d782b77a4485649365f",
+                "contentHash": "7a4a32d367aeb852b5e5ccddf7ae1e3d6dbf1373e41f947c6fa7b2d7919f9282",
                 "assetHash": "397cb4df3a7cc282903e826a44059f4b8fe66b6192baa5ab591f9b3b6b24629f",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5124,7 +5124,7 @@
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-naomi-huerta-desktop.png",
                 "sha256": "be806f1cae907aede758321e5a02bcc69ba8032c34ad2623ca3d54baaedd12ac",
-                "contentHash": "9aed6dcb324513228805d9fb291d6ca3c240c39619391d782b77a4485649365f",
+                "contentHash": "7a4a32d367aeb852b5e5ccddf7ae1e3d6dbf1373e41f947c6fa7b2d7919f9282",
                 "assetHash": "397cb4df3a7cc282903e826a44059f4b8fe66b6192baa5ab591f9b3b6b24629f",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5159,8 +5159,8 @@
                 "preset": "storybook-lilac",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-yireh-ana-mobile.png",
-                "sha256": "c66af351dddff86eb38aed2c9a84a222b18cf62c154da956c2a937b33d614de0",
-                "contentHash": "2cb76b1eaf0761605da62fcbb20e194144ea06f6a952c36523eed76617f3c692",
+                "sha256": "e2c74e524238a9b176e8321227d35bb7bfdd52ac0523584465a66440b145183a",
+                "contentHash": "52221527a02950c128fdee4f8fc76c5f0dde1ace56a294b4462494d544a6d00a",
                 "assetHash": "e8ad16d04ab5ecbcd79751fbf09a68d833a34fe974c210d9716bfa2d5be16ad5",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5171,8 +5171,8 @@
                 "preset": "storybook-lilac",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-yireh-ana-desktop.png",
-                "sha256": "2e7d376b301da926ad1b5f528f86ce74d6d676e8294cec17d6362a514cbf5f88",
-                "contentHash": "2cb76b1eaf0761605da62fcbb20e194144ea06f6a952c36523eed76617f3c692",
+                "sha256": "53db176a6be6a38b927f3e7aa2f8d3bf2454af42dddeb8b2771773dbdaac7360",
+                "contentHash": "52221527a02950c128fdee4f8fc76c5f0dde1ace56a294b4462494d544a6d00a",
                 "assetHash": "e8ad16d04ab5ecbcd79751fbf09a68d833a34fe974c210d9716bfa2d5be16ad5",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5393,9 +5393,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "91714305d6d4a8ff1e8e630140f501a8eb6efec5"
+        "referenceSha": "09d1d6ae5a669516dd46f33de92aea8cc2f239be"
     },
-    "candidateManifestSha256": "6ad030357aa9b8e96b4271f8dabec77bc8bf581dcb6fd8b2ecbbdd1b6d6b9b1f",
-    "acceptedFromCommit": "91714305d6d4a8ff1e8e630140f501a8eb6efec5",
-    "acceptedAt": "2026-11-11T06:02:07.619Z"
+    "candidateManifestSha256": "4637ef08fdd1585d210a7d9422d73eb863420e7147a650f33e8ce61f67902ddd",
+    "acceptedFromCommit": "09d1d6ae5a669516dd46f33de92aea8cc2f239be",
+    "acceptedAt": "2026-11-12T20:06:15.762Z"
 }
