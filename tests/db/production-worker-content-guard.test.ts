@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it, jest } from '@jest/globals';
 import {
 	assertProductionWorkerServesRelease,
+	patchIsReviewedWorkerCompatibleContent,
 	patchIsReviewedWorkerIndependent,
 } from '../../scripts/db/production-worker-content-guard.ts';
 import type { GitRunner } from '../../scripts/ops/release-readiness.ts';
@@ -146,5 +147,33 @@ describe('reviewed Worker-independent patches', () => {
 		expect(patchIsReviewedWorkerIndependent(undefined, sql)).toBe(false);
 		expect(patchIsReviewedWorkerIndependent(reviewed[1], sql)).toBe(false);
 		expect(patchIsReviewedWorkerIndependent('constructor', sql)).toBe(false);
+	});
+});
+
+describe('reviewed Worker-compatible content patches', () => {
+	const id = '20261112_itinerary_presentation_removal';
+	const read = (scriptId: string) =>
+		readFileSync(`scripts/manual/production-patches/${scriptId}.sql`, 'utf8').replace(
+			/\r\n/g,
+			'\n',
+		);
+
+	it('accepts the reviewed repair with LF or CRLF line endings', () => {
+		const sql = read(id);
+		expect(patchIsReviewedWorkerCompatibleContent(id, sql)).toBe(true);
+		expect(patchIsReviewedWorkerCompatibleContent(id, sql.replace(/\n/g, '\r\n'))).toBe(true);
+	});
+
+	it('rejects the repair once its text changes or under another id', () => {
+		const sql = read(id);
+		expect(patchIsReviewedWorkerCompatibleContent(id, `${sql}-- edit\n`)).toBe(false);
+		expect(patchIsReviewedWorkerCompatibleContent('test-patch', sql)).toBe(false);
+		expect(patchIsReviewedWorkerCompatibleContent(undefined, sql)).toBe(false);
+	});
+
+	it('keeps the two reviewed lists apart', () => {
+		expect(patchIsReviewedWorkerIndependent(id, read(id))).toBe(false);
+		const independent = '20261112_auth_users_without_app_role';
+		expect(patchIsReviewedWorkerCompatibleContent(independent, read(independent))).toBe(false);
 	});
 });
