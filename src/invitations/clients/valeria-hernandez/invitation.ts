@@ -181,25 +181,68 @@ const content: CanonicalEventContentInput = {
 		],
 	},
 	itinerary: {
-		// Program confirmed by the client; the night ends after midnight, on January 10.
+		// Times, labels and order confirmed by the client; the night ends after midnight, on
+		// January 10. The snacks note is hers too.
 		variant: 'standard',
-		title: 'El programa de mi noche',
+		title: 'Así será mi noche',
+		subtitle: 'Nueve momentos para brillar juntos.',
 		items: [
-			{ time: '17:45', iconName: 'Church', label: 'Ceremonia' },
-			{ time: '19:30', iconName: 'Reception', label: 'Recepción' },
-			{ time: '20:00', iconName: 'Crown', label: 'Entrada XV' },
+			{
+				time: '17:45',
+				iconName: 'Church',
+				label: 'Ceremonia',
+				description: 'Comenzamos dando gracias.',
+			},
+			{
+				time: '19:30',
+				iconName: 'Reception',
+				label: 'Recepción',
+				description: 'Se abren las puertas del salón.',
+			},
+			{
+				time: '20:00',
+				iconName: 'Crown',
+				label: 'Entrada XV',
+				description: 'Luces, música… y mi gran entrada.',
+			},
 			{
 				time: '20:30',
 				iconName: 'Taco',
 				label: 'Snacks',
 				description: 'Habrá snacks; no se servirá cena.',
 			},
-			{ time: '21:30', iconName: 'Toast', label: 'Brindis' },
-			{ time: '22:00', iconName: 'Waltz', label: 'Vals familiar' },
-			{ time: '00:00', iconName: 'Cake', label: 'Pastel' },
-			{ time: '00:10', iconName: 'Sparkles', label: 'Sorpresa' },
-			{ time: '02:00', iconName: 'Party', label: 'Fin del evento' },
+			{
+				time: '21:30',
+				iconName: 'Toast',
+				label: 'Brindis',
+				description: 'Copas en alto por mis quince.',
+			},
+			{
+				time: '22:00',
+				iconName: 'Waltz',
+				label: 'Vals familiar',
+				description: 'Un baile con quienes más quiero.',
+			},
+			{
+				time: '00:00',
+				iconName: 'Cake',
+				label: 'Pastel',
+				description: 'Algo dulce a la medianoche.',
+			},
+			{
+				time: '00:10',
+				iconName: 'Sparkles',
+				label: 'Sorpresa',
+				description: 'No se la pierda.',
+			},
+			{
+				time: '02:00',
+				iconName: 'Party',
+				label: 'Fin del evento',
+				description: 'Gracias por brillar conmigo.',
+			},
 		],
+		closingNote: 'Llegue puntual: la noche no espera.',
 	},
 	gifts: {
 		// The client asked for envelopes only.
