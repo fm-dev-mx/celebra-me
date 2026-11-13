@@ -105,7 +105,7 @@
 
 	.envelope-seal-monogram {
 		font-family: var(--font-calligraphy, var(--font-display));
-		font-size: calc(var(--env-seal-size, 72px) * 0.5);
+		font-size: var(--env-seal-monogram-size, calc(var(--env-seal-size, 72px) * 0.5));
 		letter-spacing: 0;
 		color: var(--disco-night-deep, var(--color-action-accent));
 		text-shadow: 0 1px 0 rgb(255 255 255 / 60%);
@@ -223,7 +223,7 @@
 
 	.invitation-reveal-card__name {
 		font-family: var(--font-calligraphy, var(--font-display));
-		font-size: clamp(2.6rem, 12vw, 3.2rem);
+		font-size: var(--disco-night-name-size, clamp(2.6rem, 12vw, 3.2rem));
 		line-height: 1;
 		color: rgb(248 208 214);
 		text-shadow: 0 0 24px rgb(226 84 104 / 60%);

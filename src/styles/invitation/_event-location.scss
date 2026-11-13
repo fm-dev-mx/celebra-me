@@ -1743,9 +1743,9 @@
 		margin-top: 0.35rem;
 		padding: 0.5rem 1.25rem;
 		border: 1px solid var(--location-reference-trigger-border, currentcolor);
-		border-radius: 999px;
+		border-radius: var(--radius-pill, 999px);
 		font-family: var(--font-label, var(--font-body));
-		font-size: 0.95rem;
+		font-size: var(--location-reference-label-size, 0.95rem);
 		font-variant-caps: all-small-caps;
 		letter-spacing: 0.14em;
 		color: var(--location-reference-trigger-ink, inherit);
@@ -1773,7 +1773,7 @@
 	margin: auto;
 	padding: 0.85rem;
 	border: 1px solid var(--location-reference-border, rgb(16 24 32 / 18%));
-	border-radius: 0.75rem;
+	border-radius: var(--radius-lg, 0.75rem);
 	color: var(--location-reference-ink, var(--color-text-primary));
 	background: var(--location-reference-bg, var(--color-surface-primary));
 
@@ -1801,13 +1801,13 @@
 	height: auto;
 	min-height: 0;
 	max-height: calc(100dvh - 11rem);
-	border-radius: 0.4rem;
+	border-radius: var(--radius-sm, 0.4rem);
 	object-fit: contain;
 }
 
 .event-location__reference-note {
 	font-family: var(--font-body);
-	font-size: 0.95rem;
+	font-size: var(--location-reference-note-size, 0.95rem);
 	font-style: italic;
 	line-height: 1.4;
 	text-align: center;
@@ -1819,9 +1819,9 @@
 	min-height: 2.75rem;
 	padding: 0.5rem 1.5rem;
 	border: 1px solid currentcolor;
-	border-radius: 999px;
+	border-radius: var(--radius-pill, 999px);
 	font-family: var(--font-label, var(--font-body));
-	font-size: 0.95rem;
+	font-size: var(--location-reference-label-size, 0.95rem);
 	font-variant-caps: all-small-caps;
 	letter-spacing: 0.14em;
 	color: inherit;
