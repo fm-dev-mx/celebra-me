@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-13T18:43:21.232Z",
+    "generatedAt": "2026-11-13T19:58:31.798Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-        "cssSha256": "5f6a8d6da6ca98d7bd8caf9cc9ca3c9e6009bceeb7da25698a80e8d1e6362806",
+        "cssSha256": "c3bb2472c2a917d6ca7efac5211f163ef35354400a467cedbd81c09fb7d71a40",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -1013,7 +1013,7 @@
             "cssOwner": "src/styles/themes/sections/gallery/_photo-booth.scss",
             "fixtureIdentity": "synthetic:gallery.photo-booth",
             "file": "jewelry-box-mobile-gallery-photo-booth.png",
-            "sha256": "7a3dd4ee9e82f156d4ca57eaae695d7eedb85efda6edd0d2cbe8159bb25e0f5a",
+            "sha256": "5c1e546b387c8d359fc0fe6fae0a60857ed51b2a1d8d25e747b1901b4474edcb",
             "contentHash": "2abd6c6e0b1744993c2664d29d09283f0fd4b25e445c8f31f03f4f8e2d5133a8",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -1027,7 +1027,7 @@
             "cssOwner": "src/styles/themes/sections/gallery/_photo-booth.scss",
             "fixtureIdentity": "synthetic:gallery.photo-booth",
             "file": "jewelry-box-desktop-gallery-photo-booth.png",
-            "sha256": "b0d61f15738680ebf09bc6c3144a243840cf0c79e6d897d0ba1c5b78ffc8df1b",
+            "sha256": "a477637e57b8bdb2dfebd2702c41ae2ac6441db92923cea8d3bc9c28b01f2d56",
             "contentHash": "2abd6c6e0b1744993c2664d29d09283f0fd4b25e445c8f31f03f4f8e2d5133a8",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -2591,9 +2591,9 @@
             "preset": "storybook-blush",
             "viewport": "mobile",
             "file": "pages/invitation-xv-valeria-hernandez-mobile.png",
-            "sha256": "fdf0036babcc0c32a84a3f6ad2f6c5588ad141d40d4ab522d26249424c74fdcd",
-            "contentHash": "8a45646b31f317278f986b7502d31daf2c6e344a6f9fdb70c73c319c6d36ce94",
-            "assetHash": "781517cb87fb481cd656e5a9b3178a7444c0b0d33cae8725c54d213b4b4c13c1",
+            "sha256": "63d4cce381fb73fc2c4b829ace163dab9c1652c041ff78d424c80a7eb295c936",
+            "contentHash": "d898b42143982e7ff3892fbc04427d6d02734745652f77b8bd457ee87d6b6eda",
+            "assetHash": "7ca2d80d24dc04508869ad1727c98ad909125ceb06bbe9e20044066c183d1319",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2603,9 +2603,9 @@
             "preset": "storybook-blush",
             "viewport": "desktop",
             "file": "pages/invitation-xv-valeria-hernandez-desktop.png",
-            "sha256": "167f3528f1dc5732abb573221d48c7efb6d33656e4ee4b905ace3239d4452238",
-            "contentHash": "8a45646b31f317278f986b7502d31daf2c6e344a6f9fdb70c73c319c6d36ce94",
-            "assetHash": "781517cb87fb481cd656e5a9b3178a7444c0b0d33cae8725c54d213b4b4c13c1",
+            "sha256": "3587b798d7918ad300f1d8e3b6a59b0ed249bb64b4f175ff926b8ed767dad1d0",
+            "contentHash": "d898b42143982e7ff3892fbc04427d6d02734745652f77b8bd457ee87d6b6eda",
+            "assetHash": "7ca2d80d24dc04508869ad1727c98ad909125ceb06bbe9e20044066c183d1319",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2633,9 +2633,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "faff41ef80a77934b35bbfb79f462130e6a56a4c",
+    "referenceSha": "b2907b7e9e3528fbf417a5048eb31e024cd5df55",
     "variantManifest": {
-        "generatedAt": "2026-11-13T18:43:21.232Z",
+        "generatedAt": "2026-11-13T19:58:31.798Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2648,7 +2648,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "5f6a8d6da6ca98d7bd8caf9cc9ca3c9e6009bceeb7da25698a80e8d1e6362806",
+            "cssSha256": "c3bb2472c2a917d6ca7efac5211f163ef35354400a467cedbd81c09fb7d71a40",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -3649,7 +3649,7 @@
                 "cssOwner": "src/styles/themes/sections/gallery/_photo-booth.scss",
                 "fixtureIdentity": "synthetic:gallery.photo-booth",
                 "file": "jewelry-box-mobile-gallery-photo-booth.png",
-                "sha256": "7a3dd4ee9e82f156d4ca57eaae695d7eedb85efda6edd0d2cbe8159bb25e0f5a",
+                "sha256": "5c1e546b387c8d359fc0fe6fae0a60857ed51b2a1d8d25e747b1901b4474edcb",
                 "contentHash": "2abd6c6e0b1744993c2664d29d09283f0fd4b25e445c8f31f03f4f8e2d5133a8",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -3663,7 +3663,7 @@
                 "cssOwner": "src/styles/themes/sections/gallery/_photo-booth.scss",
                 "fixtureIdentity": "synthetic:gallery.photo-booth",
                 "file": "jewelry-box-desktop-gallery-photo-booth.png",
-                "sha256": "b0d61f15738680ebf09bc6c3144a243840cf0c79e6d897d0ba1c5b78ffc8df1b",
+                "sha256": "a477637e57b8bdb2dfebd2702c41ae2ac6441db92923cea8d3bc9c28b01f2d56",
                 "contentHash": "2abd6c6e0b1744993c2664d29d09283f0fd4b25e445c8f31f03f4f8e2d5133a8",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -4789,10 +4789,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "faff41ef80a77934b35bbfb79f462130e6a56a4c"
+        "referenceSha": "b2907b7e9e3528fbf417a5048eb31e024cd5df55"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-13T18:43:21.241Z",
+        "generatedAt": "2026-11-13T19:58:31.805Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4805,7 +4805,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "5f6a8d6da6ca98d7bd8caf9cc9ca3c9e6009bceeb7da25698a80e8d1e6362806",
+            "cssSha256": "c3bb2472c2a917d6ca7efac5211f163ef35354400a467cedbd81c09fb7d71a40",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -5255,9 +5255,9 @@
                 "preset": "storybook-blush",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-valeria-hernandez-mobile.png",
-                "sha256": "fdf0036babcc0c32a84a3f6ad2f6c5588ad141d40d4ab522d26249424c74fdcd",
-                "contentHash": "8a45646b31f317278f986b7502d31daf2c6e344a6f9fdb70c73c319c6d36ce94",
-                "assetHash": "781517cb87fb481cd656e5a9b3178a7444c0b0d33cae8725c54d213b4b4c13c1",
+                "sha256": "63d4cce381fb73fc2c4b829ace163dab9c1652c041ff78d424c80a7eb295c936",
+                "contentHash": "d898b42143982e7ff3892fbc04427d6d02734745652f77b8bd457ee87d6b6eda",
+                "assetHash": "7ca2d80d24dc04508869ad1727c98ad909125ceb06bbe9e20044066c183d1319",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -5267,9 +5267,9 @@
                 "preset": "storybook-blush",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-valeria-hernandez-desktop.png",
-                "sha256": "167f3528f1dc5732abb573221d48c7efb6d33656e4ee4b905ace3239d4452238",
-                "contentHash": "8a45646b31f317278f986b7502d31daf2c6e344a6f9fdb70c73c319c6d36ce94",
-                "assetHash": "781517cb87fb481cd656e5a9b3178a7444c0b0d33cae8725c54d213b4b4c13c1",
+                "sha256": "3587b798d7918ad300f1d8e3b6a59b0ed249bb64b4f175ff926b8ed767dad1d0",
+                "contentHash": "d898b42143982e7ff3892fbc04427d6d02734745652f77b8bd457ee87d6b6eda",
+                "assetHash": "7ca2d80d24dc04508869ad1727c98ad909125ceb06bbe9e20044066c183d1319",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -5297,9 +5297,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "faff41ef80a77934b35bbfb79f462130e6a56a4c"
+        "referenceSha": "b2907b7e9e3528fbf417a5048eb31e024cd5df55"
     },
-    "candidateManifestSha256": "3453c544ff2da26ea376177ceca8f1bcb83d7b838080fbe064254177a9bd15a8",
-    "acceptedFromCommit": "faff41ef80a77934b35bbfb79f462130e6a56a4c",
-    "acceptedAt": "2026-11-13T18:43:59.737Z"
+    "candidateManifestSha256": "724e703db5ec3b707f8522331de3b2dc4a9ee6c711ab5efd68a855b1eab2a52a",
+    "acceptedFromCommit": "b2907b7e9e3528fbf417a5048eb31e024cd5df55",
+    "acceptedAt": "2026-11-13T19:59:19.006Z"
 }
