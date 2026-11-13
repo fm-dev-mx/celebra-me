@@ -7,8 +7,9 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
  * with a mirror ball, fine stars and a cherry pair as the only motifs. The photographs are the
  * client's WhatsApp deliveries, cropped per role and never upscaled. Every guest-facing line is a
  * draft for the client's approval, except the program, the snacks note and the envelope gift,
- * which the client confirmed; the song file, reply deadline and photo-QR space are pending and
- * stay out of the page until the client confirms them.
+ * which the client confirmed. The song is the client's YouTube pick, encoded at 64 kbps and hosted
+ * on the media domain. The reply deadline and photo-QR space are pending and stay out of the page
+ * until the client confirms them.
  */
 const VALERIA_TIMING = {
 	localDateTime: '2027-01-09T17:45',
@@ -366,6 +367,12 @@ const content: CanonicalEventContentInput = {
 		{ label: 'Galería', href: '#galeria' },
 		{ label: 'Confirmar', href: '#rsvp' },
 	],
+	music: {
+		url: 'https://media.celebra-me.com/invitations/xv/valeria-hernandez/music-a3568da6f8a9ced712575065bf378bf6c3ca223bc365aca31c84e4dbaec38d09.mp3',
+		title: 'Someone to Love (Piano Version) — Freya Skye',
+		control: 'equalizer',
+		autoPlay: true,
+	},
 	sharing: {
 		ogImage: 'ogShare',
 		ogDescription: `Sábado ${EVENT_DATE_LABEL} · Puebla, Puebla. Misa a las 5:45 p. m. y recepción a las 7:30 p. m.`,
