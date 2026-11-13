@@ -48,7 +48,9 @@
 	// Flat grounds: the paper carries no grain, so the disco motifs stay the only texture.
 	--storybook-paper: var(--color-blush-paper);
 	--storybook-paper-mist: var(--color-rose-mist);
-	--invitation-paper: var(--color-blush-paper);
+
+	// Under every scene lies the night, so no pale ground shows while a scene moves into place.
+	--invitation-paper: var(--color-rose-night);
 
 	// The «Continúe» labels read at full ink on the cherry paper.
 	--section-nav-label-opacity: 100%;
@@ -210,6 +212,41 @@
 
 	.invitation-footer {
 		--invitation-footer-reveal: held;
+
+		// The floor after the last song: the night deepens under a pool of light, the hosts' line
+		// leads, and the platform signs smaller below a silver rule.
+		--footer-bg: var(--color-rose-midnight);
+		--footer-border-color: transparent;
+		--footer-sky:
+			radial-gradient(
+				ellipse 85% 9rem at 50% 0,
+				rgb(var(--color-rose-glow-rgb) / 24%),
+				transparent 72%
+			),
+			linear-gradient(to bottom, var(--color-rose-night), transparent 12rem);
+		--footer-padding-bottom: 2.75rem;
+		--footer-closing-size: 1.3rem;
+		--footer-closing-color: rgb(var(--color-night-blush-rgb));
+		--footer-divider-line: linear-gradient(
+			to right,
+			transparent,
+			rgb(233 234 238 / 75%),
+			transparent
+		);
+		--footer-divider-glow: 0 0 0.5rem rgb(233 234 238 / 70%);
+		--footer-content-gap: 0.9rem;
+		--footer-replay-order: -1;
+		--footer-replay-font-size: 0.72rem;
+		--footer-platform-rule: linear-gradient(
+			to right,
+			transparent,
+			rgb(233 234 238 / 32%),
+			transparent
+		);
+		--footer-platform-rule-space: 1.5rem;
+		--footer-logo-width: 104px;
+		--footer-contact-border: 1px solid rgb(233 234 238 / 45%);
+		--footer-contact-bg: rgb(233 234 238 / 6%);
 	}
 
 	// The night envelope turns into the cherry disco night: a deep wine field and paper, a silver
@@ -287,7 +324,16 @@
 		--location-route-note-ink: var(--color-night-blush);
 
 		// The hour stays on one line down to the narrowest phone.
-		--mirror-ball-route-time-size: clamp(3.2rem, 26.6vw - 1.9rem, 5.5rem);
+		--mirror-ball-route-time-size: clamp(2.8rem, 23vw - 1.6rem, 4.5rem);
+
+		// The passes are kept compact, so two of them read as a pair of tickets, not two posters.
+		--mirror-ball-route-pass-height: 24.5rem;
+		--mirror-ball-route-pass-padding: 1.25rem 1.25rem 1.35rem;
+		--mirror-ball-route-notch-y: 8.1rem;
+		--mirror-ball-route-place-gap: 1.4rem;
+		--mirror-ball-route-place-size: clamp(1.8rem, 7.8vw, 2.25rem);
+		--mirror-ball-route-address-size: 0.975rem;
+		--mirror-ball-route-label-size: 0.85rem;
 	}
 
 	// Seams. No two neighbouring boundaries join the same way, and none is a straight cut.
@@ -320,6 +366,10 @@
 		&[data-section-kind='personalized-access'] {
 			--intersection-folio-flip: -1;
 			--intersection-folio-rise: clamp(1.75rem, 6vw, 3.5rem);
+
+			// Over the album's night the pale corner read as a white patch: here it turns in wine.
+			--intersection-folio-back: rgb(142 34 62);
+			--intersection-folio-back-shade: rgb(58 10 24);
 		}
 	}
 

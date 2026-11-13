@@ -422,7 +422,7 @@ $valeria-night-ground:
 
 	@include motion.motion-safe {
 		.access-card__divider {
-			animation: valeria-foil-sheen 5s ease-in-out infinite alternate;
+			animation: disco-foil-sheen 5s ease-in-out infinite alternate;
 		}
 	}
 }
@@ -558,43 +558,9 @@ $valeria-night-ground:
 	text-align: left;
 }
 
-// Dress code: a VIP pass with a foil strip along its top edge and the swatches as sequins.
+// Dress code: a VIP pass with a foil strip, a sequin dress mark and the swatches as sequins.
 .event--valeria-hernandez.event-theme-wrapper
 	.event-location
 	.event-location__enclosure.event-location__enclosure {
-	position: relative;
-	overflow: hidden;
-
-	&::before {
-		@include scenes.foil-strip;
-
-		position: absolute;
-		inset: 0 0 auto;
-		display: block;
-		height: 0.45rem;
-		clip-path: none;
-		content: '';
-		pointer-events: none;
-	}
-
-	.event-location__enclosure-swatch {
-		background-image:
-			radial-gradient(circle at 30% 30%, rgb(255 255 255 / 70%) 0 12%, transparent 30%),
-			radial-gradient(circle, rgb(255 255 255 / 25%) 0 1px, transparent 1.5px);
-		background-size:
-			100% 100%,
-			0.35rem 0.35rem;
-	}
-
-	@include motion.motion-safe {
-		&::before {
-			animation: valeria-foil-sheen 5s ease-in-out infinite alternate;
-		}
-	}
-
-	@keyframes valeria-foil-sheen {
-		to {
-			background-position-x: 100%;
-		}
-	}
+	@include scenes.dress-pass;
 }
