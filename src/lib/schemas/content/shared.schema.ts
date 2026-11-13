@@ -15,7 +15,11 @@ import {
 import { COLOR_TOKENS } from '@/lib/theme/color-tokens';
 import { UUID_PATTERN } from '@/lib/intake/constants';
 import { invitationCompositionSchema } from '@/lib/invitation/composition-contract';
-import { THANK_YOU_VARIANTS, COUNTDOWN_VARIANTS } from '@/lib/invitation/section-variants';
+import {
+	THANK_YOU_VARIANTS,
+	COUNTDOWN_VARIANTS,
+	QUOTE_VARIANTS,
+} from '@/lib/invitation/section-variants';
 
 const secureUrlSchema = z
 	.url()
@@ -123,6 +127,16 @@ export const quoteSchema = z
 		author: z.string().optional(),
 		/** Final line set apart from the text, entering after it. */
 		closingLine: z.string().trim().min(1).optional(),
+		variant: z.enum(QUOTE_VARIANTS).optional(),
+	})
+	.strict();
+
+/** A muted, seamless decorative loop (site-relative paths); it plays only after the envelope opens. */
+export const ambientVideoSchema = z
+	.object({
+		webm: z.string().startsWith('/'),
+		mp4: z.string().startsWith('/').optional(),
+		poster: z.string().startsWith('/'),
 	})
 	.strict();
 
@@ -141,6 +155,8 @@ export const thankYouSchema = z
 		image: AssetSchema.optional(),
 		/** Decorative cutout (transparent image) printed below the signature; contained, never cropped. */
 		ornament: AssetSchema.optional(),
+		/** A muted loop layered over the closing portrait while it is on screen. */
+		ambientVideo: ambientVideoSchema.optional(),
 		focalPoint: focalPointSchema.optional(),
 		overlayAnchor: overlayAnchorSchema.optional(),
 		overlaySafeArea: overlaySafeAreaSchema.optional(),
@@ -150,7 +166,8 @@ export const thankYouSchema = z
 		if (
 			(thankYou.variant === 'full-bleed-photo' ||
 				thankYou.variant === 'portrait-letter' ||
-				thankYou.variant === 'portrait-keepsake') &&
+				thankYou.variant === 'portrait-keepsake' ||
+				thankYou.variant === 'last-song') &&
 			!thankYou.image
 		) {
 			context.addIssue({

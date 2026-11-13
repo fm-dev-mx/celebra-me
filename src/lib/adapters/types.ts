@@ -103,6 +103,7 @@ export interface HeroViewModel {
 	focalPointDesktop?: string;
 	scrollLabel?: string;
 	scrollCue?: 'chevron' | 'constellation';
+	ambientVideo?: { webm: string; mp4?: string; poster: string };
 	tagline?: string;
 	photoCredit?: string;
 }
@@ -205,6 +206,7 @@ export interface EnvelopeViewModel {
 		sealColor?: string;
 		sealImage?: ImageAsset;
 		backdropImage?: ImageAsset;
+		openingVideo?: { webm: string; mp4?: string; poster: string };
 		microcopy: string;
 		documentLabel?: string;
 		stampText?: string;
@@ -293,6 +295,8 @@ export interface LocationSection {
 	/** Decorative cutout after the intro. */
 	ornament?: ImageAsset;
 	indicationsHeading?: string;
+	/** Reference picture opened from the indications enclosure. */
+	indicationsReference?: { image: ImageAsset; label: string; note?: string };
 	indicationsLayout?: LocationIndicationsLayout;
 	showCalendarLinks?: boolean;
 	scene?: LocationScene;
@@ -449,6 +453,7 @@ export interface InvitationViewModel {
 			image?: ImageAsset;
 			/** Decorative cutout below the signature. */
 			ornament?: ImageAsset;
+			ambientVideo?: { webm: string; mp4?: string; poster: string };
 			focalPoint?: string;
 			overlayAnchor?: 'left' | 'right' | 'top' | 'bottom';
 			overlaySafeArea?: {

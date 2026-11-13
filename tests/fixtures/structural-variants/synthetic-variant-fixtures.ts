@@ -28,6 +28,8 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 	const { section, variant, themePreset = 'jewelry-box' } = overrides;
 
 	const envelopeVariant = themePreset === 'celestial-blue' ? 'celestial-blue' : 'jewelry-box';
+	// The section under test takes the requested variant; every other section stays standard.
+	const variantFor = (name: string): string => (section === name ? variant : 'standard');
 
 	const data: Record<string, unknown> = {
 		eventType: 'xv',
@@ -63,19 +65,20 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 			portrait: 'portrait',
 			focalPoint: '50% 40%',
 			focalPointMobile: '50% 35%',
-			variant: section === 'hero' ? variant : 'standard',
+			variant: variantFor('hero'),
 		},
 		quote: {
 			text: 'Hay momentos en la vida que son inolvidables, y compartirlos con quienes más amamos los hace eternos.',
 			author: 'Celebrante',
+			variant: variantFor('quote'),
 		},
 		countdown: {
 			title: '¡Falta muy poco!',
 			footerText: 'Prepárate para una noche inolvidable',
-			variant: section === 'countdown' ? variant : 'standard',
+			variant: variantFor('countdown'),
 		},
 		family: {
-			variant: section === 'family' ? variant : 'standard',
+			variant: variantFor('family'),
 			...(section === 'family' &&
 			(variant === 'split-groups' || variant === 'asymmetric-groups')
 				? {
@@ -100,7 +103,7 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 					}),
 		},
 		location: {
-			variant: section === 'location' ? variant : 'standard',
+			variant: variantFor('location'),
 			introEyebrow: 'Monterrey nos espera',
 			introHeading: 'Sábado, 21 de noviembre de 2026',
 			introLede: 'Acompáñanos a celebrar este día tan especial.',
@@ -164,7 +167,7 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 			mapStyle: 'dark',
 		},
 		itinerary: {
-			variant: section === 'itinerary' ? variant : 'standard',
+			variant: variantFor('itinerary'),
 			items: [
 				{
 					iconName: 'Church',
@@ -222,14 +225,19 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 										{ key: 'g2', image: 'gallery02', layoutRole: 'standard' },
 										{ key: 'g3', image: 'gallery03', layoutRole: 'wide' },
 									]
-								: [
-										{ key: 'g1', image: 'gallery01', caption: 'Foto 1' },
-										{ key: 'g2', image: 'gallery02', caption: 'Foto 2' },
-										{ key: 'g3', image: 'gallery03', caption: 'Foto 3' },
-									],
+								: section === 'gallery' && variant === 'photo-booth'
+									? Array.from({ length: 8 }, (_, index) => ({
+											key: `g${index + 1}`,
+											image: `gallery0${(index % 3) + 1}`,
+										}))
+									: [
+											{ key: 'g1', image: 'gallery01', caption: 'Foto 1' },
+											{ key: 'g2', image: 'gallery02', caption: 'Foto 2' },
+											{ key: 'g3', image: 'gallery03', caption: 'Foto 3' },
+										],
 		},
 		gifts: {
-			variant: section === 'gifts' ? variant : 'standard',
+			variant: variantFor('gifts'),
 			title: 'Mesa de Regalos',
 			subtitle: 'Tu presencia es mi mejor regalo, pero si deseas tener un detalle:',
 			items: [
@@ -248,18 +256,18 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 			],
 		},
 		rsvp: {
-			variant: section === 'rsvp' ? variant : 'standard',
+			variant: variantFor('rsvp'),
 			title: 'Confirmación de Asistencia',
 			subcopy: 'Favor de confirmar tu asistencia antes del 1 de noviembre.',
 			personalizedAccess: {
-				variant: section === 'personalizedAccess' ? variant : 'standard',
+				variant: variantFor('personalizedAccess'),
 				title: 'Pase de Acceso',
 				subtitle: 'Este pase muestra los accesos asignados.',
 				footerText: 'Acceso válido para adultos y niños.',
 			},
 		},
 		thankYou: {
-			variant: section === 'thankYou' ? variant : 'standard',
+			variant: variantFor('thankYou'),
 			message: 'Gracias por acompañarme en este día tan especial e inolvidable.',
 			closingName: 'Celebrante Principal',
 			closingPhrase: 'Con cariño,',
@@ -303,6 +311,15 @@ const TWO_ITEM_INCOMPATIBLE_GALLERIES = new Set([
 	'mirrored-mosaic',
 	'album-assemble',
 	'pinned-track',
+	'photo-booth',
+]);
+
+/** Thank-you variants that require a photo. */
+const IMAGE_THANK_YOU_VARIANTS = new Set([
+	'full-bleed-photo',
+	'portrait-letter',
+	'portrait-keepsake',
+	'last-song',
 ]);
 
 function makeLocationIncompatible(data: Record<string, unknown>, variant: string): void {
@@ -354,6 +371,7 @@ export function buildIncompatiblePrerequisiteEvent(
 					'framed-portrait',
 					'bleed-portrait',
 					'cased-portrait',
+					'disco-stage',
 					'ceremonial-portrait',
 				].includes(entry.variant)
 			) {
@@ -408,11 +426,7 @@ export function buildIncompatiblePrerequisiteEvent(
 			}
 			break;
 		case 'thankYou':
-			if (
-				entry.variant === 'full-bleed-photo' ||
-				entry.variant === 'portrait-letter' ||
-				entry.variant === 'portrait-keepsake'
-			) {
+			if (IMAGE_THANK_YOU_VARIANTS.has(entry.variant)) {
 				const thankYou = data.thankYou as Record<string, unknown>;
 				delete thankYou.image;
 			} else if (
@@ -432,6 +446,9 @@ export function buildIncompatiblePrerequisiteEvent(
 			break;
 		case 'memories':
 			delete (data.memories as Record<string, unknown>).publicSlug;
+			break;
+		case 'quote':
+			delete (data.quote as Record<string, unknown>).text;
 			break;
 	}
 
@@ -491,6 +508,12 @@ export function getIncompatiblePrerequisiteExpectation(
 						'album-assemble requires three to eight gallery items',
 				};
 			}
+			if (entry.variant === 'photo-booth') {
+				return {
+					expectedPath: ['gallery', 'items'],
+					expectedMessageSubstring: 'photo-booth requires exactly eight gallery items',
+				};
+			}
 			if (entry.variant === 'feature-stack') {
 				return {
 					expectedPath: ['gallery', 'items'],
@@ -514,11 +537,7 @@ export function getIncompatiblePrerequisiteExpectation(
 		case 'gifts':
 			return { expectedPath: ['gifts', 'items', 0] };
 		case 'thankYou':
-			if (
-				entry.variant === 'full-bleed-photo' ||
-				entry.variant === 'portrait-letter' ||
-				entry.variant === 'portrait-keepsake'
-			) {
+			if (IMAGE_THANK_YOU_VARIANTS.has(entry.variant)) {
 				return { expectedPath: ['thankYou', 'image'] };
 			}
 			return { expectedPath: ['thankYou', 'closingName'] };
@@ -529,5 +548,7 @@ export function getIncompatiblePrerequisiteExpectation(
 			return { expectedPath: ['rsvp', 'personalizedAccess'] };
 		case 'memories':
 			return { expectedPath: ['memories', 'publicSlug'] };
+		case 'quote':
+			return { expectedPath: ['quote', 'text'] };
 	}
 }

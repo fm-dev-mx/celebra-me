@@ -23,6 +23,7 @@ interface Props {
 	sealColor?: string;
 	sealImage?: ImageAsset;
 	backdropImage?: ImageAsset;
+	openingVideo?: { webm: string; mp4?: string; poster: string };
 	revealVariant?: string;
 	microcopy: string;
 	documentLabel?: string;
@@ -46,6 +47,7 @@ const {
 	sealColor,
 	sealImage,
 	backdropImage,
+	openingVideo,
 	revealVariant,
 	microcopy,
 	documentLabel,
@@ -72,7 +74,7 @@ const sealPresentation = resolveSealPresentation({
 const isSeaside = revealVariant === 'seaside-lineart';
 const isStorybook = revealVariant === 'storybook-lanterns' || revealVariant === 'storybook-butterflies';
 const skyMotif = revealVariant === 'storybook-butterflies' ? 'butterflies' : 'lanterns';
-const isNight = revealVariant === 'night-envelope';
+const isNight = revealVariant === 'night-envelope' || revealVariant === 'disco-night';
 const isCelestialLetter = revealVariant === 'celestial-letter';
 // Storybook, night, celestial and Enchanted Rose letters sit inside the envelope, behind the pocket
 // front, and rise out of it.
@@ -106,6 +108,22 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	data-arch-handoff={isNight ? 'true' : undefined}
 >
 	{backdropImage && <img class="envelope-ambient" src={plainImgSrc(backdropImage.src)} alt="" width="960" height="1440" decoding="async" />}
+	{
+		openingVideo && (
+			<video
+				class="envelope-opening-video"
+				poster={openingVideo.poster}
+				muted
+				playsinline
+				preload="auto"
+				aria-hidden="true"
+				data-envelope-opening-video
+			>
+				<source src={openingVideo.webm} type="video/webm" />
+				{openingVideo.mp4 && <source src={openingVideo.mp4} type="video/mp4" />}
+			</video>
+		)
+	}
 	{isStorybook && <StorybookLanternSky motif={skyMotif} />}
 	{isStorybook && <StorybookLanternSky scene="send-off" motif={skyMotif} />}
 	<div class="envelope-container">
@@ -326,7 +344,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			const coverArch =
 				this.dataset.archHandoff === 'true'
 					? document.querySelector<HTMLElement>(
-							'.invitation-hero[data-variant="night-arch"] .invitation-hero__background',
+							'.invitation-hero[data-variant="night-arch"] .invitation-hero__background, .invitation-hero[data-variant="framed-portrait"] .framed-portrait-hero__photograph, .invitation-hero[data-variant="disco-stage"] .framed-portrait-hero__photograph',
 						)
 					: null;
 			const archWindow = this.querySelector<HTMLElement>('[data-arch-window]');
@@ -342,7 +360,9 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				const { width, height } = coverArch.getBoundingClientRect();
 				if (!src || !width || !height) return;
 				photo.src = src;
-				photo.style.objectPosition = getComputedStyle(coverPhoto).objectPosition;
+				const coverStyle = getComputedStyle(coverPhoto);
+				photo.style.objectFit = coverStyle.objectFit;
+				photo.style.objectPosition = coverStyle.objectPosition;
 				archWindow.style.aspectRatio = `${width} / ${height}`;
 				archWindow.classList.add('has-photo');
 			};
@@ -591,45 +611,117 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				};
 			}
 
-			// The window's photograph flies onto the cover arch while the letter and the night fade;
-			// the cover underneath shows the same photograph in the same place, so the reveal's
-			// own fade hands over without a jump. Inverse FLIP: laid out at the arch, so the
-			// photograph is painted at its final size and only the transform moves.
+			// On framed and disco covers the letter becomes the cover: the cover's own arch, occasion and name start where the
+			// letter shows them and grow into place while the letter and the night fade, and the
+			// rest of the cover arrives as they land. Inverse FLIP on the real cover elements:
+			// laid out at their final place, so only the transform moves and nothing is doubled.
 			const handOverToArch = () => {
-				const photo = archWindow?.querySelector('img');
 				const from = archWindow?.getBoundingClientRect();
 				const to = coverArch?.getBoundingClientRect();
-				if (!coverArch || !archWindow || !photo || !from?.width || !to?.width) {
+				const hero = coverArch?.closest<HTMLElement>('.invitation-hero');
+				if (
+					!coverArch ||
+					!archWindow ||
+					!hero ||
+					!from?.width ||
+					!to?.width ||
+					typeof coverArch.animate !== 'function'
+				) {
 					completeReveal();
 					return;
 				}
-				const host = this.getBoundingClientRect();
-				const flight = document.createElement('div');
-				flight.className = 'night-envelope-flight';
-				flight.setAttribute('aria-hidden', 'true');
-				flight.style.left = `${to.left - host.left}px`;
-				flight.style.top = `${to.top - host.top}px`;
-				flight.style.width = `${to.width}px`;
-				flight.style.height = `${to.height}px`;
-				flight.style.borderRadius = getComputedStyle(coverArch).borderRadius;
-				flight.append(photo.cloneNode());
-				this.append(flight);
+				// The night arch cover keeps its own hand-over: a copy of the window's photograph
+				// flies onto the arch while the cover underneath stays still.
+				if (hero.dataset.variant === 'night-arch') {
+					const photo = archWindow.querySelector('img');
+					if (!photo) {
+						completeReveal();
+						return;
+					}
+					const host = this.getBoundingClientRect();
+					const flight = document.createElement('div');
+					flight.className = 'night-envelope-flight';
+					flight.setAttribute('aria-hidden', 'true');
+					flight.style.left = `${to.left - host.left}px`;
+					flight.style.top = `${to.top - host.top}px`;
+					flight.style.width = `${to.width}px`;
+					flight.style.height = `${to.height}px`;
+					flight.style.borderRadius = getComputedStyle(coverArch).borderRadius;
+					flight.append(photo.cloneNode());
+					this.append(flight);
+					archWindow.style.visibility = 'hidden';
+					this.classList.add('is-handing-off');
+					flight
+						.animate(
+							[
+								{
+									transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width})`,
+								},
+								{ transform: 'none' },
+							],
+							{ duration: ARCH_HANDOFF_MS, easing: ARCH_HANDOFF_EASE, fill: 'both' },
+						)
+						.finished.then(completeReveal, completeReveal);
+					return;
+				}
+				// `backwards` holds the first frame through any delay and leaves no style behind.
+				const timing = { duration: ARCH_HANDOFF_MS, easing: ARCH_HANDOFF_EASE, fill: 'backwards' } as const;
+
+				const flyText = (target: HTMLElement | null, source: HTMLElement | null) => {
+					if (!target || !source) return;
+					const a = source.getBoundingClientRect();
+					const b = target.getBoundingClientRect();
+					const sourceSize = Number.parseFloat(getComputedStyle(source).fontSize);
+					const targetSize = Number.parseFloat(getComputedStyle(target).fontSize);
+					if (!b.width || !sourceSize || !targetSize) return;
+					const dx = a.left + a.width / 2 - (b.left + b.width / 2);
+					const dy = a.top + a.height / 2 - (b.top + b.height / 2);
+					target.animate(
+						[
+							{ transform: `translate(${dx}px, ${dy}px) scale(${sourceSize / targetSize})` },
+							{ transform: 'none' },
+						],
+						{ ...timing },
+					);
+				};
+				flyText(
+					hero.querySelector('.framed-portrait-hero__name'),
+					this.querySelector('.invitation-reveal-card__name'),
+				);
+				flyText(
+					hero.querySelector('.framed-portrait-hero__occasion'),
+					this.querySelector('.invitation-reveal-card__label'),
+				);
+
+				const arrivals = Array.from(
+					hero.querySelectorAll<HTMLElement>(
+						'.framed-portrait-hero__details, .framed-portrait-hero__invitation, .framed-portrait-hero__summary, .framed-portrait-hero__facts, .framed-portrait-hero__affordance, .framed-portrait-hero__scroll-prompt',
+					),
+				);
+				arrivals
+					.filter((el) => !arrivals.some((other) => other !== el && other.contains(el)))
+					.forEach((el) =>
+						el.animate(
+							[
+								{ opacity: 0, transform: 'translateY(0.75rem)' },
+								{ opacity: 1, transform: 'none' },
+							],
+							{ ...timing, duration: ARCH_HANDOFF_MS * 0.55, delay: ARCH_HANDOFF_MS * 0.6, easing: 'ease-out' },
+						),
+					);
+
 				archWindow.style.visibility = 'hidden';
 				this.classList.add('is-handing-off');
-				if (typeof flight.animate !== 'function') {
-					completeReveal();
-					return;
-				}
-				const scale = from.width / to.width;
-				flight
+				coverArch
 					.animate(
 						[
 							{
-								transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${scale})`,
+								transformOrigin: '0 0',
+								transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width}, ${from.height / to.height})`,
 							},
-							{ transform: 'none' },
+							{ transformOrigin: '0 0', transform: 'none' },
 						],
-						{ duration: ARCH_HANDOFF_MS, easing: ARCH_HANDOFF_EASE, fill: 'both' },
+						{ ...timing },
 					)
 					.finished.then(completeReveal, completeReveal);
 			};
@@ -664,6 +756,18 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				}
 
 				this.classList.add('is-opening');
+				const openingVideo = this.querySelector<HTMLVideoElement>(
+					'[data-envelope-opening-video]',
+				);
+				// Reduced motion keeps the poster frame only.
+				if (
+					openingVideo &&
+					!window.matchMedia('(prefers-reduced-motion: reduce)').matches
+				) {
+					openingVideo.currentTime = 0;
+					// The poster frame stays if playback is refused; the CSS opening still runs on top.
+					openingVideo.play().catch(() => {});
+				}
 				if (this.dataset.variant === 'satin-filigree') {
 					// One short flap gesture; no intermediate date card.
 					window.setTimeout(completeReveal, 900);

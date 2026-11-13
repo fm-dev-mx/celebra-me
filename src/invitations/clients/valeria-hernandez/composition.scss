@@ -1,24 +1,12 @@
 @use '../../../styles/tools/motion';
+@use '../../../styles/tools/disco-motifs' as disco;
+@use '../../../styles/tools/disco-scenes' as scenes;
 
-// Valeria's cherry disco motifs: a scatter of cherry stars on the opening page, a silver mirror ball
-// turning behind the countdown with stars around it, and a sparkle rule under the closing name.
-// Every motif is a thin drawing so the grounds stay quiet and the photographs stay the lead.
-
-// The mirror ball: a sphere, its meridians and parallels, and the short cord it hangs from.
-$valeria-mirror-ball: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 220' fill='none' stroke='%23E4E6F0' stroke-width='1.2' stroke-linecap='round'%3E%3Cpath d='M100 0v30'/%3E%3Ccircle cx='100' cy='120' r='88'/%3E%3Cellipse cx='100' cy='120' rx='30' ry='88'/%3E%3Cellipse cx='100' cy='120' rx='60' ry='88'/%3E%3Cpath d='M100 32v176'/%3E%3Cellipse cx='100' cy='120' rx='88' ry='22'/%3E%3Cellipse cx='100' cy='120' rx='88' ry='52'/%3E%3Cpath d='M12 120h176'/%3E%3Cpath d='M38 58h124M38 182h124' stroke-opacity='.7'/%3E%3C/svg%3E");
-
-// Four-point stars of three sizes, scattered like light thrown by the ball.
-$valeria-stars: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400' fill='%23E4E6F0'%3E%3Cpath d='M60 40l4 14 14 4-14 4-4 14-4-14-14-4 14-4z'/%3E%3Cpath d='M340 70l3 10 10 3-10 3-3 10-3-10-10-3 10-3z'/%3E%3Cpath d='M320 300l5 17 17 5-17 5-5 17-5-17-17-5 17-5z'/%3E%3Cpath d='M80 320l3 9 9 3-9 3-3 9-3-9-9-3 9-3z'/%3E%3Cpath d='M200 22l2 7 7 2-7 2-2 7-2-7-7-2 7-2z'/%3E%3Cpath d='M30 200l2 6 6 2-6 2-2 6-2-6-6-2 6-2z'/%3E%3Cpath d='M372 200l2 6 6 2-6 2-2 6-2-6-6-2 6-2z'/%3E%3Cpath d='M200 370l2 7 7 2-7 2-2 7-2-7-7-2 7-2z'/%3E%3C/svg%3E");
-
-// A faceted mirror ball lit from the upper left, on a longer cord, for the scenes where it hangs.
-$valeria-mirror-ball-faceted: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 240'%3E%3Cdefs%3E%3CradialGradient id='g' cx='.36' cy='.32' r='.75'%3E%3Cstop offset='0' stop-color='%23FFFFFF'/%3E%3Cstop offset='.4' stop-color='%23D4D6DE'/%3E%3Cstop offset='.8' stop-color='%237A7C88'/%3E%3Cstop offset='1' stop-color='%233E4050'/%3E%3C/radialGradient%3E%3CclipPath id='c'%3E%3Ccircle cx='100' cy='150' r='86'/%3E%3C/clipPath%3E%3C/defs%3E%3Cpath d='M100 0v64' stroke='%23E4E6F0' stroke-width='1.4'/%3E%3Ccircle cx='100' cy='150' r='86' fill='url(%23g)'/%3E%3Cg clip-path='url(%23c)' fill='none' stroke='%232A0610' stroke-opacity='.4' stroke-width='1.1'%3E%3Cpath d='M14 76h172M14 89h172M14 102h172M14 115h172M14 128h172M14 141h172M14 154h172M14 167h172M14 180h172M14 193h172M14 206h172M14 219h172M14 232h172'/%3E%3Cpath d='M100 64A83.8 86 0 0 0 100 236M100 64A77.5 86 0 0 0 100 236M100 64A67.2 86 0 0 0 100 236M100 64A53.6 86 0 0 0 100 236M100 64A37.3 86 0 0 0 100 236M100 64A19.1 86 0 0 0 100 236M100 64v172M100 64A19.1 86 0 0 1 100 236M100 64A37.3 86 0 0 1 100 236M100 64A53.6 86 0 0 1 100 236M100 64A67.2 86 0 0 1 100 236M100 64A77.5 86 0 0 1 100 236M100 64A83.8 86 0 0 1 100 236'/%3E%3C/g%3E%3Cg fill='%23FFFFFF'%3E%3Cpath d='M70 112l3 9 9 3-9 3-3 9-3-9-9-3 9-3z'/%3E%3Cpath d='M128 176l2 6 6 2-6 2-2 6-2-6-6-2 6-2z' fill-opacity='.8'/%3E%3C/g%3E%3C/svg%3E");
-
-// A sparkle rule: two hairlines with a four-point star between them.
-$valeria-sparkle-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 104 16'%3E%3Cpath d='M8 8h36M60 8h36' stroke='%23E4E6F0' stroke-width='1' stroke-linecap='round'/%3E%3Cpath fill='%23E4E6F0' d='M52 1l1.8 5.2L59 8l-5.2 1.8L52 15l-1.8-5.2L45 8l5.2-1.8z'/%3E%3C/svg%3E");
+// Valeria's cherry disco night. The shared disco-stage, mirror-ball, last-song and disco-night
+// variants carry the palette from profile.scss; this file keeps her own scenes on the same night.
 
 // The night scenes: the opening, the words and the family sit on the same wine night as the
-// countdown and the closing, so the invitation reads as one night on the dance floor. The night
-// inks replace the paper inks inside each scene.
+// countdown and the closing. The night inks replace the paper inks inside each scene.
 @mixin valeria-night-inks {
 	--color-surface-primary: var(--color-rose-midnight);
 	--color-surface-primary-rgb: var(--color-rose-midnight-rgb);
@@ -39,189 +27,99 @@ $valeria-night-ground:
 	),
 	var(--color-rose-midnight);
 
-// The opening scene: the mirror ball hangs over the portrait on its cord, silver stars are thrown
-// across the night, a silver hairline frames the portrait and the script name glows in cherry
-// light. As the guest scrolls past, the ball swings down and away.
-.event--valeria-hernandez.event-theme-wrapper .invitation-hero[data-variant='framed-portrait'] {
+.event--valeria-hernandez.event-theme-wrapper .invitation-hero[data-variant='disco-stage'] {
 	@include valeria-night-inks;
+}
 
-	--hero-portrait-outline: 1px solid rgb(233 234 238 / 55%);
-	--hero-portrait-outline-offset: 6px;
-	--hero-title-size: clamp(4.5rem, 20vw, 7rem);
-	--hero-occasion-font: 400 1.125rem / 1.4 var(--font-label);
-	--hero-occasion-letter-spacing: 0.2em;
-	--hero-occasion-color: rgb(var(--color-leaf-silver-rgb));
+// The portrait is the giant mirror ball of the opening: no arch, a round photograph under mirror
+// tiles that turn slowly and stay thin over her face. It replaces the small hanging ball.
+.event--valeria-hernandez.event-theme-wrapper
+	.invitation-hero.framed-portrait-hero[data-variant='disco-stage'] {
+	--valeria-ball: clamp(10rem, min(76vw, 46svh, calc(100svh - 28rem)), 28rem);
+	--valeria-ball-desktop: min(72svh, 30vw, 42rem);
+	--hero-portrait-radius: 50%;
+	--hero-portrait-width-mobile: var(--valeria-ball);
+	--hero-portrait-height-mobile: var(--valeria-ball);
+	--hero-portrait-width-desktop: var(--valeria-ball-desktop);
+	--hero-portrait-height-desktop: var(--valeria-ball-desktop);
 
-	background: $valeria-night-ground;
+	view-timeline-name: --disco-giant-stage;
 
-	.framed-portrait-hero__name {
-		text-shadow: 0 0 1.5rem rgb(var(--color-rose-glow-rgb) / 60%);
-	}
-
-	// The preset's arc turns into the hanging ball, tucked partly behind the portrait.
 	&::before {
-		inset: 0 auto auto 4%;
-		width: min(26vw, 8rem);
-		height: auto;
-		aspect-ratio: 200 / 240;
-		border-radius: 0;
-		background: $valeria-mirror-ball-faceted center top / contain no-repeat;
-		opacity: 90%;
-		transform-origin: 50% 0;
+		content: none;
 	}
 
-	&::after {
-		position: absolute;
-		z-index: -1;
-		inset: 0;
-		background: $valeria-stars center / min(120vw, 44rem) repeat;
-		opacity: 35%;
-		content: '';
-		pointer-events: none;
-	}
+	.framed-portrait-hero__photograph {
+		@include scenes.mirror-ball-portrait;
 
-	@include motion.motion-safe {
-		@supports (animation-timeline: view()) {
-			&::before {
-				animation: valeria-ball-drop linear both;
-				animation-timeline: view();
-				animation-range: exit 0% exit 80%;
-			}
-		}
-	}
-
-	@keyframes valeria-ball-drop {
-		to {
-			rotate: 10deg;
-			translate: 0 35%;
+		img {
+			object-fit: cover;
+			object-position: 50% 24%;
 		}
 	}
 }
 
-// The words scene: the same night, a silver sparkle rule drawn open from its centre, and the
-// words lit like neon in cherry light. Less padding so the words fill the scene.
 .event--valeria-hernandez.event-theme-wrapper .quote-section {
 	@include valeria-night-inks;
 
-	--quote-bg: #{$valeria-night-ground};
-	--quote-text-color: var(--color-night-blush);
-	--quote-divider-color: rgb(var(--color-leaf-silver-rgb) / 70%);
-	--quote-closing-line-color: rgb(233 234 238);
-	--quote-padding-block: clamp(3rem, 7vh, 4.5rem);
-
-	.quote-line {
-		text-shadow: 0 0 0.9rem rgb(var(--color-rose-glow-rgb) / 50%);
+	.neon-sign__sign {
+		@include scenes.neon-power-on;
 	}
 }
 
-.event--valeria-hernandez.event-theme-wrapper .countdown-section {
-	.countdown-texture {
-		overflow: hidden;
+// The countdown is off-centre and each piece arrives and leaves with the scroll, ball included.
+.event--valeria-hernandez.event-theme-wrapper .countdown-section[data-variant='mirror-ball'] {
+	@include scenes.scene-pass-keyframes;
 
-		&::before,
-		&::after {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			content: '';
-			translate: -50% -50%;
-		}
+	padding-top: calc(var(--mirror-ball-cable) + var(--mirror-ball-size) * 0.5 - 1rem);
+	view-timeline-name: --valeria-count;
 
-		&::before {
-			width: min(92vw, 22rem);
-			aspect-ratio: 200 / 220;
-			background: $valeria-mirror-ball-faceted center / contain no-repeat;
-			opacity: 24%;
-		}
-
-		&::after {
-			width: min(140vw, 34rem);
-			aspect-ratio: 1;
-			background: $valeria-stars center / contain no-repeat;
-			opacity: 45%;
-		}
+	.countdown-texture::before,
+	.countdown-texture::after {
+		left: max(26%, 50% - 16rem);
 	}
 
-	// The preset inks the title in the night tone; on the wine sky it reads in pale cherry.
+	.countdown-texture::after {
+		@include scenes.mirror-ball-return(--valeria-count);
+	}
+
 	.countdown-title {
-		color: var(--color-night-blush);
+		@include scenes.scene-pass(--valeria-count, entry 20% entry 55%, exit -2% exit 14%);
+
+		text-align: right;
 	}
 
-	.countdown-invitation-text {
-		color: var(--color-night-blush);
-		font-family: var(--font-calligraphy);
-		font-size: 2.5rem;
-		font-style: normal;
-		line-height: 1.1;
-		opacity: 100%;
+	.countdown-timer-wrapper {
+		@include scenes.scene-pass(--valeria-count, entry 30% entry 65%, exit 5% exit 28%);
 	}
 
-	@include motion.motion-safe {
-		@supports (animation-timeline: view()) {
-			.countdown-texture::before {
-				animation: valeria-ball-turn linear both;
-				animation-timeline: view();
-				animation-range: cover;
-			}
+	.countdown-date {
+		@include scenes.scene-pass(--valeria-count, entry 50% entry 80%, exit 28% exit 52%);
+
+		justify-content: flex-end;
+
+		.subtitle-line:first-child {
+			display: none;
 		}
 
-		.countdown-texture::after {
-			animation: valeria-stars-twinkle 4.8s ease-in-out infinite alternate;
+		.event-date {
+			text-align: right;
 		}
 	}
 
-	@keyframes valeria-ball-turn {
-		from {
-			rotate: -12deg;
-			scale: 0.94;
-		}
+	.countdown-footer {
+		@include scenes.scene-pass(--valeria-count, entry 60% entry 95%, exit 42% exit 68%);
 
-		to {
-			rotate: 12deg;
-		}
-	}
+		--scene-from-turn: 4deg;
 
-	@keyframes valeria-stars-twinkle {
-		from {
-			opacity: 30%;
-		}
-
-		to {
-			opacity: 55%;
-		}
+		margin-top: 1.25rem;
+		rotate: -3deg;
+		text-align: left;
 	}
 }
 
-// The opening words hang from the same sparkle rule that closes the page, in silver.
-.event--valeria-hernandez.event-theme-wrapper .quote-section .quote-top-art {
-	display: block;
-	width: 9rem;
-	aspect-ratio: 104 / 16;
-	margin: 0 auto 1.75rem;
-	background: rgb(233 234 238);
-	mask: $valeria-sparkle-rule center / contain no-repeat;
-
-	@include motion.motion-safe {
-		@supports (animation-timeline: view()) {
-			animation: valeria-rule-open linear both;
-			animation-timeline: view();
-			animation-range: entry 20% cover 35%;
-		}
-	}
-
-	@keyframes valeria-rule-open {
-		from {
-			clip-path: inset(0 50%);
-		}
-
-		to {
-			clip-path: inset(0);
-		}
-	}
-}
-
-// The family scene: the same night, a faceted mirror ball turning behind the parents, the names
-// lit by a sweep of silver light as each one rises, and the ornament between groups drawn open.
+// The family scene is the night's line-up: a left-aligned bill, parents «01», godparents «02»,
+// names in large capitals, a silver rule between the acts and a sweep of light as each rises.
 .event--valeria-hernandez.event-theme-wrapper .family {
 	@include valeria-night-inks;
 
@@ -230,22 +128,46 @@ $valeria-night-ground:
 	--family-accent: rgb(233 234 238);
 	--family-group-title-color: rgb(var(--color-leaf-silver-rgb));
 	--family-title-color: var(--color-night-blush);
+	--family-title-font: var(--font-calligraphy);
+	--family-title-size: clamp(3.4rem, 16vw, 4.5rem);
+	--family-title-line-height: 1;
+	--family-title-letter-spacing: 0;
+	--family-title-max-width: none;
+	--family-title-margin: 0;
+	--family-title-text-shadow:
+		0 0 1.4rem rgb(var(--color-rose-glow-rgb) / 55%),
+		0 0 0.25rem rgb(var(--color-rose-glow-rgb) / 35%);
 	--family-eyebrow-color: rgb(var(--color-leaf-silver-rgb));
 	--family-message-color: rgb(var(--color-night-blush-rgb) / 88%);
 	--family-text-muted: rgb(var(--color-night-blush-rgb) / 80%);
 	--family-name-color: var(--color-night-blush);
+	--family-name-size: clamp(2rem, 9vw, 2.75rem);
+	--family-godparent-name-size: clamp(1.6rem, 7vw, 2.15rem);
+	--family-name-weight: 500;
+	--family-name-line-height: 1;
+	--family-name-letter-spacing: 0.01em;
+	--family-name-max-width: none;
 	--family-meta-color: rgb(var(--color-leaf-silver-rgb));
 	--family-godparent-label-color: rgb(var(--color-leaf-silver-rgb));
 	--family-message-signature-color: var(--color-night-blush);
 	--family-padding-block: clamp(3.5rem, 8vw, 5rem);
-	--family-parents-medallion: #{$valeria-mirror-ball-faceted};
-	--family-parents-medallion-size: min(18rem, 76vw);
-	--family-parents-medallion-opacity: 16%;
-	--family-parents-medallion-spin: family-medallion-spin;
+	--family-group-text-align: left;
+	--family-group-padding: 1.3rem 0 1.1rem;
+	--family-parents-padding: 1.3rem 0 1.1rem;
+	--family-parents-margin-inline: 0;
+	--family-group-title-margin: 0 0 1rem;
+	--family-group-title-size: 0.74rem;
+	--family-group-divider-width: 100%;
+	--family-group-divider-opacity: 100%;
+	--family-divider: linear-gradient(90deg, rgb(233 234 238 / 70%), rgb(233 234 238 / 8%));
+	--family-divider-width: 5rem;
+	--family-divider-margin: 1.1rem 0 0;
+	--family-item-align: flex-start;
+	--family-list-gap: 0.55rem;
 	--family-shine: linear-gradient(
 		100deg,
-		rgb(244 244 248) 0 40%,
-		rgb(var(--color-rose-glow-rgb)) 47%,
+		rgb(255 255 255) 0 40%,
+		rgb(var(--color-leaf-silver-rgb)) 47%,
 		currentcolor 54% 100%
 	);
 	--family-shine-size: 220% 100%;
@@ -257,60 +179,397 @@ $valeria-night-ground:
 	--family-shine-range-godparents: entry 100% cover 55%;
 	--family-shine-glow: rgb(var(--color-rose-glow-rgb) / 45%);
 	--family-divider-draw: family-divider-draw;
-}
 
-// The closing name carries the page, large in pale cherry over a sparkle rule.
-.event--valeria-hernandez.event-theme-wrapper .thank-you-section[data-variant='portrait-keepsake'] {
-	// A solid wine night down to the footer, lit from below the portrait, as tall as its content so
-	// no empty night is left under the name.
-	min-height: auto;
-	background:
-		radial-gradient(ellipse at 50% 70%, rgb(var(--color-rose-dusk-rgb) / 55%), transparent 65%),
-		var(--color-rose-night);
+	// The poster: a neon double edge, a spotlight, halftone dots and a mirror ball in the corner.
+	view-timeline-name: --valeria-family-stage;
 
-	// The portrait was shot in low light; it is lifted so the face reads on the night.
-	.thank-you-editorial__media img {
-		filter: brightness(1.5) contrast(1.05);
-	}
+	.family__container {
+		@include scenes.scene-pass(--valeria-family-stage, entry 10% entry 55%, exit 55% exit 98%);
 
-	// The preset's tall keepsake grid splits its spare height into an empty second row; the photo
-	// and the name sit in one row here, so the grid only takes their height.
-	.thank-you-editorial {
-		grid-template-rows: auto;
-		min-height: auto;
-	}
+		--scene-from-shift: 0 3rem;
+		--scene-from-turn: -1.5deg;
+		--scene-to-shift: 0 -2.5rem;
+		--scene-to-scale: 0.96;
 
-	.thank-you-message {
-		font-size: 1.25rem;
-	}
+		position: relative;
+		isolation: isolate;
+		width: calc(100% - 2rem);
+		max-width: 26rem;
+		margin-inline: auto;
+		padding: 2.6rem 1.5rem 2.2rem;
+		border: 1px solid rgb(233 234 238 / 60%);
+		border-radius: 0.4rem;
+		background:
+			radial-gradient(circle at 1px 1px, rgb(244 244 248 / 9%) 1px, transparent 1.4px) 0 0 /
+				7px 7px,
+			radial-gradient(
+				ellipse 90% 45% at 30% 0%,
+				rgb(var(--color-rose-glow-rgb) / 42%),
+				transparent 70%
+			),
+			linear-gradient(180deg, rgb(52 6 30), rgb(20 2 14));
+		box-shadow:
+			inset 0 0 0 0.4rem rgb(20 2 14 / 90%),
+			inset 0 0 0 calc(0.4rem + 1px) rgb(var(--color-rose-glow-rgb) / 75%),
+			inset 0 0 1.6rem rgb(var(--color-rose-glow-rgb) / 30%),
+			0 0 2.4rem rgb(var(--color-rose-glow-rgb) / 22%);
 
-	.closing-name {
-		color: var(--color-night-blush);
-		font-size: clamp(5rem, 22vw, 7rem);
-		line-height: 1;
-		text-shadow: 0 0 1.5rem rgb(var(--color-rose-glow-rgb) / 55%);
-
-		&::after {
-			display: block;
-			width: 9rem;
-			aspect-ratio: 104 / 16;
-			margin: 0.5rem auto 0;
-			background: $valeria-sparkle-rule center / contain no-repeat;
+		&::before {
+			position: absolute;
+			z-index: -1;
+			top: -1.2rem;
+			right: 1.1rem;
+			width: 5.4rem;
+			aspect-ratio: 200 / 240;
+			background: disco.$mirror-ball-faceted center / contain no-repeat;
+			filter: drop-shadow(0 0 0.9rem rgb(244 244 248 / 45%));
+			transform-origin: 50% 0;
+			pointer-events: none;
 			content: '';
+		}
+	}
+
+	.family__header {
+		text-align: left;
+	}
+
+	.family__header-inner {
+		align-items: flex-start;
+		max-width: calc(100% - 5rem);
+	}
+
+	.family__eyebrow {
+		color: rgb(var(--color-rose-glow-rgb));
+		font: 600 0.68rem / 1.2 var(--font-label);
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+	}
+
+	.family__header-divider {
+		margin-inline: 0;
+	}
+
+	.family__panel {
+		margin-inline: 0;
+		padding-inline: 0;
+		background: none;
+		box-shadow: none;
+	}
+
+	.family__groups {
+		counter-reset: valeria-act;
+	}
+
+	.family__group {
+		counter-increment: valeria-act;
+	}
+
+	.family__group + .family__group::before {
+		left: 0;
+		height: 0;
+		border-top: 1px dashed rgb(233 234 238 / 45%);
+		background: none;
+		transform: none;
+	}
+
+	.family__group-title {
+		display: inline-block;
+		padding: 0.35rem 0.8rem;
+		border: 1px solid rgb(233 234 238 / 65%);
+		border-radius: 999px;
+		color: rgb(244 244 248);
+		font-family: var(--font-label);
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+
+		&::before {
+			content: counter(valeria-act, decimal-leading-zero) ' · ';
+			color: rgb(var(--color-rose-glow-rgb));
+		}
+	}
+
+	.family__name {
+		justify-content: flex-start;
+		color: rgb(255 255 255);
+		font-family: var(--font-ui);
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		text-align: left;
+		text-transform: uppercase;
+		filter: drop-shadow(0 0 0.55rem rgb(var(--color-rose-glow-rgb) / 70%));
+	}
+
+	.family__group--godparents .family__name {
+		color: rgb(var(--color-leaf-silver-rgb));
+		font-size: clamp(0.95rem, 4.4vw, 1.2rem);
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		filter: drop-shadow(0 0 0.4rem rgb(244 244 248 / 35%));
+	}
+
+	@include motion.motion-safe {
+		.family__container::before {
+			animation: valeria-ball-sway 6s ease-in-out infinite alternate;
+		}
+	}
+
+	.family__container::before {
+		@include scenes.mirror-ball-lower(valeria-ball-sway 6s ease-in-out infinite alternate);
+	}
+
+	@keyframes valeria-ball-sway {
+		from {
+			transform: rotate(-4deg);
+		}
+
+		to {
+			transform: rotate(4deg);
 		}
 	}
 }
 
-// The cover is a framed portrait, not the night arch, so the night envelope's letter has no photo
-// to hand over; its empty arched window stays out and the letter carries only the name.
-.event--valeria-hernandez.event-theme-wrapper .envelope-wrapper[data-variant='night-envelope'] {
-	.night-envelope-window {
-		display: none;
+.event--valeria-hernandez.event-theme-wrapper .section-nav-button--event-location {
+	@include scenes.mirror-ball-cue;
+}
+
+// The pass and the reply are one admission ticket: die-cut corners, a mirror ball by the heading,
+// a foil strip, the guest in neon, the seats in a neon ring by a barcode; the reply tears off.
+.event--valeria-hernandez.event-theme-wrapper .personalized-access[data-variant='reply-card'],
+.event--valeria-hernandez.event-theme-wrapper .rsvp-section {
+	--valeria-pass-edge: clamp(0.6rem, 2.4vw, 0.85rem);
+	--valeria-pass-cut: 1.05rem;
+	--valeria-pass-neon:
+		0 0 0.2rem rgb(255 255 255 / 55%), 0 0 0.7rem rgb(var(--color-rose-glow-rgb) / 90%),
+		0 0 1.8rem rgb(var(--color-rose-glow-rgb) / 55%);
+}
+
+.event--valeria-hernandez.event-theme-wrapper .personalized-access[data-variant='reply-card'] {
+	.access-card {
+		background:
+			linear-gradient(
+				118deg,
+				transparent 0 38%,
+				rgb(255 255 255 / 7%) 46%,
+				transparent 54% 100%
+			),
+			radial-gradient(
+				120% 70% at 50% 0%,
+				rgb(var(--color-rose-dusk-rgb) / 55%),
+				transparent 70%
+			),
+			var(--reply-card-bg);
+
+		// Die-cut corners, like a printed admission ticket; the lower pair meets the stub's.
+		@include scenes.ticket-corners(var(--valeria-pass-cut));
+
+		&::before {
+			border-color: transparent;
+		}
+
+		@include scenes.ticket-feed;
+
+		&::after {
+			position: absolute;
+			top: min(1.5rem, 2.2svh);
+			right: 0;
+			left: 0;
+			display: block;
+			color: rgb(var(--color-night-blush-rgb) / 80%);
+			font: 600 0.6875rem / 1 var(--font-body);
+			letter-spacing: 0.34em;
+			text-align: center;
+			text-indent: 0.34em;
+			text-transform: uppercase;
+			content: '★ Entrada · Noche disco ★';
+		}
+	}
+
+	.access-card__header::before {
+		@include scenes.mirror-ball-surface;
+
+		content: '';
+
+		@include scenes.mirror-ball-roll-in;
+	}
+
+	.access-card__guest {
+		font: 400 min(clamp(2.6rem, 12vw, 3.4rem), 6svh) / 1.1 var(--font-calligraphy);
+		color: rgb(255 244 246);
+		text-shadow: var(--valeria-pass-neon);
+	}
+
+	.access-card__divider {
+		@include scenes.foil-strip;
+
+		width: calc(100% + 2 * clamp(1.5rem, 6vw, 2.75rem) - 2 * var(--valeria-pass-edge) - 2px);
+	}
+
+	.access-card__count-frame {
+		border-radius: 50%;
+		box-shadow:
+			0 0 0.2rem rgb(255 255 255 / 60%),
+			0 0 1rem rgb(var(--color-rose-glow-rgb) / 80%),
+			inset 0 0 0.9rem rgb(var(--color-rose-glow-rgb) / 45%);
+	}
+
+	.access-card__count {
+		color: rgb(255 244 246);
+		text-shadow: var(--valeria-pass-neon);
+	}
+
+	// The pass and the first reply step share one screen, whatever its size.
+	@include scenes.ticket-pass-one-screen(rgb(var(--color-night-blush-rgb) / 85%));
+
+	@include motion.motion-safe {
+		.access-card__divider {
+			animation: disco-foil-sheen 5s ease-in-out infinite alternate;
+		}
 	}
 }
 
-// The reply card reads as a ticket to the dance floor: a cherry sequin edge around it.
-.event--valeria-hernandez.event-theme-wrapper .rsvp .rsvp__locked-card {
-	outline: 2px dotted rgb(var(--color-rose-deep-rgb) / 55%);
-	outline-offset: 6px;
+.event--valeria-hernandez.event-theme-wrapper .rsvp[data-variant='reply-card'] {
+	background:
+		radial-gradient(
+			120% 60% at 50% 100%,
+			rgb(var(--color-rose-dusk-rgb) / 40%),
+			transparent 70%
+		),
+		var(--reply-card-bg);
+
+	@include scenes.ticket-notches(var(--valeria-pass-cut));
+
+	&::before {
+		border-color: transparent;
+	}
+
+	@include scenes.ticket-stub-one-screen;
+
+	// Short screens: later steps drop the lede, tighten gaps and put the actions on one row.
+	@media (height <= 760px) {
+		&:has(.rsvp-steps:not([data-step-index='0'])) .rsvp__subcopy {
+			display: none;
+		}
+
+		.rsvp-steps__progress {
+			margin-bottom: min(0.75rem, 1.6svh);
+		}
+
+		.rsvp-steps__heading {
+			margin-bottom: min(0.6rem, 1.2svh);
+			font-size: 1.15rem;
+		}
+
+		.rsvp__guest-hint {
+			margin-bottom: 0;
+		}
+
+		textarea {
+			height: 3.5rem;
+			min-height: 3.5rem;
+		}
+
+		.rsvp__actions {
+			flex-flow: row-reverse nowrap;
+			align-items: center;
+			gap: 0.75rem;
+		}
+
+		.rsvp__button {
+			flex: 1 1 auto;
+			width: auto;
+			min-width: 0;
+			padding-inline: 0.9rem;
+			font-size: 0.8rem;
+			letter-spacing: 0.1em;
+			white-space: nowrap;
+		}
+
+		.rsvp__demo-footer {
+			margin-top: min(0.75rem, 1.4svh);
+		}
+	}
+
+	.rsvp__header > * {
+		margin-inline: 0;
+		text-align: start;
+	}
+
+	.rsvp__title {
+		color: rgb(255 244 246);
+		font: 400 min(clamp(2.25rem, 11.5vw, 3.75rem), 5.5svh) / 1 var(--font-calligraphy);
+		text-shadow: var(--valeria-pass-neon);
+	}
+
+	.rsvp__radio-card {
+		border-radius: 0.6rem;
+
+		&:has(input:checked) {
+			background: rgb(var(--color-rose-glow-rgb) / 16%);
+			box-shadow:
+				0 0 0.9rem rgb(var(--color-rose-glow-rgb) / 55%),
+				inset 0 0 0.6rem rgb(var(--color-rose-glow-rgb) / 25%);
+		}
+	}
+
+	.rsvp__radio-label {
+		color: var(--reply-card-ink);
+	}
+
+	input:not([type='radio']),
+	textarea {
+		border-color: rgb(var(--color-night-blush-rgb) / 30%);
+		border-radius: 0.6rem;
+		background: rgb(255 255 255 / 6%);
+		color: var(--reply-card-ink);
+	}
+
+	.rsvp__button {
+		--rsvp-button-bg-hover: var(--color-rose-glow);
+		--rsvp-button-border-hover: var(--color-rose-glow);
+
+		border-color: transparent;
+		border-radius: 2rem;
+		background: linear-gradient(180deg, var(--color-rose-glow), var(--color-rose-deep));
+		box-shadow: 0 0 1.1rem rgb(var(--color-rose-glow-rgb) / 60%);
+	}
+
+	&[data-state='locked'] {
+		@include scenes.ticket-notches(var(--valeria-pass-cut), 6.6rem);
+
+		&::before {
+			border-radius: 0.7rem;
+		}
+
+		.rsvp__locked-card {
+			margin-top: 1.5rem;
+			padding-top: 1.25rem;
+			border-top: 2px dashed rgb(var(--color-night-blush-rgb) / 35%);
+		}
+	}
+}
+
+.event--valeria-hernandez.event-theme-wrapper .thank-you-section .closing-name {
+	position: relative;
+	left: 14%;
+	rotate: -5deg;
+}
+
+.event--valeria-hernandez.event-theme-wrapper .event-location .event-location__intro {
+	text-align: left;
+}
+
+// Dress code: a VIP pass with a foil strip, a dress-and-jacket mark and the swatches as sequins.
+.event--valeria-hernandez.event-theme-wrapper
+	.event-location
+	.event-location__enclosure.event-location__enclosure {
+	@include scenes.dress-pass;
+}
+
+// Program and gift: a set list on a neon thread, and an envelope pass.
+.event--valeria-hernandez.event-theme-wrapper .itinerary.itinerary {
+	@include scenes.night-program;
+}
+
+.event--valeria-hernandez.event-theme-wrapper .gifts-section.gifts-section {
+	@include scenes.envelope-pass;
 }

@@ -106,8 +106,8 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Purpose**: Emotional, spiritual, or inspirational text quote from celebrant or family.
 - **Required Inputs**: `text`.
 - **Optional Inputs**: `author`.
-- **Variant**: none; the schema rejects a `variant` key and the renderer emits the fixed `standard`
-  marker.
+- **Variant**: `standard` (default) or `neon-sign` (the last line of `text` becomes the neon tube,
+  so a multi-line `text` reads best).
 - **Rendering & Omission**: Rendered when listed in `sectionOrder` and `quote` data exists.
 
 ---
@@ -256,8 +256,8 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Optional Inputs**: `closingNameLeadWords` (1–4), `closingPhrase`, `date` (editorial closing-date
   display string; not derived from `eventTiming`), `image`, `ornament`, `focalPoint`,
   `overlayAnchor`, `overlaySafeArea`.
-- **Validation Rules**: `full-bleed-photo`, `portrait-letter`, and `portrait-keepsake` require
-  `image`.
+- **Validation Rules**: `full-bleed-photo`, `portrait-letter`, `portrait-keepsake`, and `last-song`
+  require `image`.
 - **Rendering & Omission**: Optional closing fold. `closingPhrase` is consumed by the invitation
   footer; `date` renders as the Thank You closing-date line when present.
 - **Editing**: Managed invitations own `date` / `closingPhrase` / section variant via the provision
@@ -335,26 +335,28 @@ Footer remains a visual theme surface and has no independent section variant.
 The registry's `prerequisites` strings are documentation. Only the rules in the first table are
 validated by the schemas; the second table is **authoring guidance, not validated by the schema**.
 
-| Section.variant                 | Rule enforced by the schema                                                          |
-| ------------------------------- | ------------------------------------------------------------------------------------ |
-| `family.split-groups`           | `parents.father` or `parents.mother`, or at least two `groups`                       |
-| `family.asymmetric-groups`      | Same as `split-groups`; any `groups` array needs at least two items                  |
-| `location.split-map`            | One visible venue with `coordinates` or `image`                                      |
-| `location.stacked-venue-plates` | At least two visible venues                                                          |
-| `location.night-route`          | At least two visible venues                                                          |
-| `location.star-route`           | At least two visible venues                                                          |
-| `location.program-sheet`        | At least one visible venue; a `scene` (`lantern-route`, `butterfly-route`) needs two |
-| `gallery.single-keepsake`       | Exactly one item                                                                     |
-| `gallery.paired-portraits`      | Exactly two items                                                                    |
-| `gallery.narrative-stack`       | At least one item; every item has a caption and no `aspectRatio`                     |
-| `gallery.mirrored-mosaic`       | At least three items                                                                 |
-| `gallery.feature-stack`         | At least three items                                                                 |
-| `gallery.paired-feature-band`   | At least three items and one item with `layoutRole: feature`                         |
-| `gallery.pinned-track`          | At least three items                                                                 |
-| `thankYou.full-bleed-photo`     | `image`                                                                              |
-| `thankYou.portrait-letter`      | `image`                                                                              |
-| `thankYou.portrait-keepsake`    | `image`                                                                              |
-| `personalizedAccess` (any)      | `passStyle` other than `classic` requires `formal-pass`                              |
+| Section.variant                 | Rule enforced by the schema                                                                               |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `family.split-groups`           | `parents.father` or `parents.mother`, or at least two `groups`                                            |
+| `family.asymmetric-groups`      | Same as `split-groups`; any `groups` array needs at least two items                                       |
+| `location.split-map`            | One visible venue with `coordinates` or `image`                                                           |
+| `location.stacked-venue-plates` | At least two visible venues                                                                               |
+| `location.night-route`          | At least two visible venues                                                                               |
+| `location.star-route`           | At least two visible venues                                                                               |
+| `location.program-sheet`        | At least one visible venue; a `scene` (`lantern-route`, `butterfly-route`, `mirror-ball-route`) needs two |
+| `gallery.single-keepsake`       | Exactly one item                                                                                          |
+| `gallery.paired-portraits`      | Exactly two items                                                                                         |
+| `gallery.narrative-stack`       | At least one item; every item has a caption and no `aspectRatio`                                          |
+| `gallery.mirrored-mosaic`       | At least three items                                                                                      |
+| `gallery.feature-stack`         | At least three items                                                                                      |
+| `gallery.paired-feature-band`   | At least three items and one item with `layoutRole: feature`                                              |
+| `gallery.pinned-track`          | At least three items                                                                                      |
+| `gallery.photo-booth`           | Exactly eight items                                                                                       |
+| `thankYou.full-bleed-photo`     | `image`                                                                                                   |
+| `thankYou.portrait-letter`      | `image`                                                                                                   |
+| `thankYou.portrait-keepsake`    | `image`                                                                                                   |
+| `thankYou.last-song`            | `image`                                                                                                   |
+| `personalizedAccess` (any)      | `passStyle` other than `classic` requires `formal-pass`                                                   |
 
 | Section.variant               | Authoring guidance (not validated)                       |
 | ----------------------------- | -------------------------------------------------------- |
