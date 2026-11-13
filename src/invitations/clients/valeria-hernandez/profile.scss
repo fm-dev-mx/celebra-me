@@ -286,6 +286,48 @@
 		--mirror-ball-route-time-size: clamp(3.2rem, 26.6vw - 1.9rem, 5.5rem);
 	}
 
+	// Seams. No two neighbouring boundaries join the same way, and none is a straight cut.
+	// The countdown's night runs down into the route on a slant, under a cherry glow.
+	.invitation-section-wrapper[data-section-kind='location'][data-intersection='atmospheric-blend'] {
+		--intersection-depth: clamp(9rem, 36vw, 17rem);
+		--intersection-blend:
+			radial-gradient(
+				ellipse 90% 100% at 20% 0%,
+				rgb(var(--color-rose-glow-rgb) / 26%),
+				transparent 72%
+			),
+			linear-gradient(173deg, var(--color-rose-night) 6%, transparent 62%);
+		--intersection-blend-layer: 2;
+	}
+
+	// The family page and the pass are pages with a turned silver corner, on opposite sides.
+	.invitation-section-wrapper[data-intersection='folio'] {
+		--intersection-z: 1;
+		--intersection-folio-ink: rgb(var(--color-pale-silver-rgb) / 55%);
+		--intersection-folio-back: rgb(232 232 240);
+		--intersection-folio-back-shade: rgb(150 152 166);
+		--intersection-folio-shadow: 0 0.5rem 0.9rem rgb(0 0 0 / 45%);
+		--intersection-folio-lift: 70deg;
+
+		&[data-section-kind='family'] {
+			--intersection-surface-fill: var(--color-rose-midnight);
+		}
+
+		&[data-section-kind='personalized-access'] {
+			--intersection-folio-flip: -1;
+			--intersection-folio-rise: clamp(1.75rem, 6vw, 3.5rem);
+		}
+	}
+
+	// The album climbs a slope out of the family page, edged in silver.
+	.invitation-section-wrapper[data-section-kind='gallery'][data-intersection='arch'] {
+		--intersection-z: 1;
+		--intersection-arch-height: clamp(3rem, 12vw, 6.5rem);
+		--intersection-arch-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0 24V21C28 20.5 62 15 100 3V24Z'/%3E%3C/svg%3E");
+		--intersection-arch-ink: rgb(var(--color-pale-silver-rgb) / 55%);
+		--intersection-arch-ink-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='1.25' vector-effect='non-scaling-stroke' d='M0 21C28 20.5 62 15 100 3'/%3E%3C/svg%3E");
+	}
+
 	// The album darkens into the night while it assembles; the heading and the footer keep their
 	// paper ground.
 	.gallery-section[data-variant='album-assemble'] {

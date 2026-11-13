@@ -37,8 +37,14 @@ const content: CanonicalEventContentInput = {
 	],
 	composition: {
 		intersections: {
-			// Two joins: the night rises out of the quote, and the closing rises into the reply card.
+			// Every boundary is joined, each a different way: the night rises out of the quote, the
+			// route opens in a glow, the family page and the pass turn a corner on opposite sides,
+			// the album climbs a slope, and the closing rises into the reply card.
 			countdown: { family: 'overlap', source: 'quote' },
+			location: { family: 'atmospheric-blend', source: 'countdown' },
+			family: { family: 'folio', source: 'location' },
+			gallery: { family: 'arch', source: 'family' },
+			'personalized-access': { family: 'folio', source: 'gallery' },
 			thankYou: { family: 'arch', source: 'rsvp' },
 		},
 	},
