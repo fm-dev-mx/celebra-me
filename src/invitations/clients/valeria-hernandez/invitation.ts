@@ -98,7 +98,7 @@ const content: CanonicalEventContentInput = {
 		godparents: [{ name: 'Rolando Flores Espinoza' }, { name: 'Cristina Canela Gómez' }],
 		labels: {
 			sectionTitle: 'Mi familia',
-			sectionSubtitle: '',
+			sectionSubtitle: 'Esta noche se presentan',
 			parentsTitle: 'Mis padres',
 			godparentsTitle: 'Mis padrinos',
 			sectionMessage: 'Gracias por acompañarme en cada paso hasta esta noche.',

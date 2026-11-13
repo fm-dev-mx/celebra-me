@@ -38,8 +38,9 @@ $valeria-night-ground:
 	@include valeria-night-inks;
 }
 
-// The family scene: the same night, a faceted mirror ball turning behind the parents, the names
-// lit by a sweep of silver light as each one rises, and the ornament between groups drawn open.
+// The family scene is the night's line-up: a left-aligned bill where the parents headline as
+// «01» and the godparents follow as «02», each name on its own line in large capitals, a silver
+// rule between the acts, and a sweep of silver light across each name as it rises.
 .event--valeria-hernandez.event-theme-wrapper .family {
 	@include valeria-night-inks;
 
@@ -48,22 +49,46 @@ $valeria-night-ground:
 	--family-accent: rgb(233 234 238);
 	--family-group-title-color: rgb(var(--color-leaf-silver-rgb));
 	--family-title-color: var(--color-night-blush);
+	--family-title-font: var(--font-calligraphy);
+	--family-title-size: clamp(3.4rem, 16vw, 4.5rem);
+	--family-title-line-height: 1;
+	--family-title-letter-spacing: 0;
+	--family-title-max-width: none;
+	--family-title-margin: 0;
+	--family-title-text-shadow:
+		0 0 1.4rem rgb(var(--color-rose-glow-rgb) / 55%),
+		0 0 0.25rem rgb(var(--color-rose-glow-rgb) / 35%);
 	--family-eyebrow-color: rgb(var(--color-leaf-silver-rgb));
 	--family-message-color: rgb(var(--color-night-blush-rgb) / 88%);
 	--family-text-muted: rgb(var(--color-night-blush-rgb) / 80%);
 	--family-name-color: var(--color-night-blush);
+	--family-name-size: clamp(2rem, 9vw, 2.75rem);
+	--family-godparent-name-size: clamp(1.6rem, 7vw, 2.15rem);
+	--family-name-weight: 500;
+	--family-name-line-height: 1;
+	--family-name-letter-spacing: 0.01em;
+	--family-name-max-width: none;
 	--family-meta-color: rgb(var(--color-leaf-silver-rgb));
 	--family-godparent-label-color: rgb(var(--color-leaf-silver-rgb));
 	--family-message-signature-color: var(--color-night-blush);
 	--family-padding-block: clamp(3.5rem, 8vw, 5rem);
-	--family-parents-medallion: #{disco.$mirror-ball-faceted};
-	--family-parents-medallion-size: min(18rem, 76vw);
-	--family-parents-medallion-opacity: 16%;
-	--family-parents-medallion-spin: family-medallion-spin;
+	--family-group-text-align: left;
+	--family-group-padding: 1.3rem 0 1.1rem;
+	--family-parents-padding: 1.3rem 0 1.1rem;
+	--family-parents-margin-inline: 0;
+	--family-group-title-margin: 0 0 1rem;
+	--family-group-title-size: 0.74rem;
+	--family-group-divider-width: 100%;
+	--family-group-divider-opacity: 100%;
+	--family-divider: linear-gradient(90deg, rgb(233 234 238 / 70%), rgb(233 234 238 / 8%));
+	--family-divider-width: 5rem;
+	--family-divider-margin: 1.1rem 0 0;
+	--family-item-align: flex-start;
+	--family-list-gap: 0.55rem;
 	--family-shine: linear-gradient(
 		100deg,
-		rgb(244 244 248) 0 40%,
-		rgb(var(--color-rose-glow-rgb)) 47%,
+		rgb(255 255 255) 0 40%,
+		rgb(var(--color-leaf-silver-rgb)) 47%,
 		currentcolor 54% 100%
 	);
 	--family-shine-size: 220% 100%;
@@ -75,6 +100,141 @@ $valeria-night-ground:
 	--family-shine-range-godparents: entry 100% cover 55%;
 	--family-shine-glow: rgb(var(--color-rose-glow-rgb) / 45%);
 	--family-divider-draw: family-divider-draw;
+
+	// The poster: a framed bill with a neon double edge, a spotlight and halftone dots behind the
+	// type, and a mirror ball hanging from the top corner.
+	.family__container {
+		position: relative;
+		isolation: isolate;
+		width: calc(100% - 2rem);
+		max-width: 26rem;
+		margin-inline: auto;
+		padding: 2.6rem 1.5rem 2.2rem;
+		border: 1px solid rgb(233 234 238 / 60%);
+		border-radius: 0.4rem;
+		background:
+			radial-gradient(circle at 1px 1px, rgb(244 244 248 / 9%) 1px, transparent 1.4px) 0 0 /
+				7px 7px,
+			radial-gradient(
+				ellipse 90% 45% at 30% 0%,
+				rgb(var(--color-rose-glow-rgb) / 42%),
+				transparent 70%
+			),
+			linear-gradient(180deg, rgb(52 6 30), rgb(20 2 14));
+		box-shadow:
+			inset 0 0 0 0.4rem rgb(20 2 14 / 90%),
+			inset 0 0 0 calc(0.4rem + 1px) rgb(var(--color-rose-glow-rgb) / 75%),
+			inset 0 0 1.6rem rgb(var(--color-rose-glow-rgb) / 30%),
+			0 0 2.4rem rgb(var(--color-rose-glow-rgb) / 22%);
+
+		&::before {
+			position: absolute;
+			z-index: -1;
+			top: -1.2rem;
+			right: 1.1rem;
+			width: 5.4rem;
+			aspect-ratio: 200 / 240;
+			background: disco.$mirror-ball-faceted center / contain no-repeat;
+			filter: drop-shadow(0 0 0.9rem rgb(244 244 248 / 45%));
+			transform-origin: 50% 0;
+			pointer-events: none;
+			content: '';
+		}
+	}
+
+	.family__header {
+		text-align: left;
+	}
+
+	.family__header-inner {
+		align-items: flex-start;
+		max-width: calc(100% - 5rem);
+	}
+
+	.family__eyebrow {
+		color: rgb(var(--color-rose-glow-rgb));
+		font: 600 0.68rem / 1.2 var(--font-label);
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+	}
+
+	.family__header-divider {
+		margin-inline: 0;
+	}
+
+	.family__panel {
+		margin-inline: 0;
+		padding-inline: 0;
+		background: none;
+		box-shadow: none;
+	}
+
+	.family__groups {
+		counter-reset: valeria-act;
+	}
+
+	.family__group {
+		counter-increment: valeria-act;
+	}
+
+	.family__group + .family__group::before {
+		left: 0;
+		height: 0;
+		border-top: 1px dashed rgb(233 234 238 / 45%);
+		background: none;
+		transform: none;
+	}
+
+	.family__group-title {
+		display: inline-block;
+		padding: 0.35rem 0.8rem;
+		border: 1px solid rgb(233 234 238 / 65%);
+		border-radius: 999px;
+		color: rgb(244 244 248);
+		font-family: var(--font-label);
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+
+		&::before {
+			content: counter(valeria-act, decimal-leading-zero) ' · ';
+			color: rgb(var(--color-rose-glow-rgb));
+		}
+	}
+
+	.family__name {
+		justify-content: flex-start;
+		color: rgb(255 255 255);
+		font-family: var(--font-ui);
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		text-align: left;
+		text-transform: uppercase;
+		filter: drop-shadow(0 0 0.55rem rgb(var(--color-rose-glow-rgb) / 70%));
+	}
+
+	.family__group--godparents .family__name {
+		color: rgb(var(--color-leaf-silver-rgb));
+		font-size: clamp(0.95rem, 4.4vw, 1.2rem);
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		filter: drop-shadow(0 0 0.4rem rgb(244 244 248 / 35%));
+	}
+
+	@include motion.motion-safe {
+		.family__container::before {
+			animation: valeria-ball-sway 6s ease-in-out infinite alternate;
+		}
+	}
+
+	@keyframes valeria-ball-sway {
+		from {
+			transform: rotate(-4deg);
+		}
+
+		to {
+			transform: rotate(4deg);
+		}
+	}
 }
 
 // The reply card is a ticket to the dance floor: a sequin edge with a glint that runs around it,
@@ -200,69 +360,6 @@ $valeria-night-ground:
 	@keyframes valeria-foil-sheen {
 		to {
 			background-position-x: 100%;
-		}
-	}
-}
-
-// Stage credits: each family block gets its own spotlight from above, switched on in turn as the
-// block comes into view (parents first, godparents after). Without scroll timelines, or under
-// reduced motion, both spots stay on.
-.event--valeria-hernandez.event-theme-wrapper .family .family__group {
-	position: relative;
-	isolation: isolate;
-
-	&::after {
-		position: absolute;
-		z-index: -1;
-		inset: -2.5rem 8% -0.5rem;
-		background:
-			radial-gradient(
-				ellipse 60% 22% at 50% 92%,
-				rgb(var(--color-rose-glow-rgb) / 45%),
-				transparent 70%
-			),
-			conic-gradient(
-				from 162deg at 50% -10%,
-				transparent 0deg,
-				rgb(244 244 248 / 26%) 14deg,
-				rgb(244 244 248 / 38%) 18deg,
-				rgb(244 244 248 / 26%) 22deg,
-				transparent 36deg
-			);
-		pointer-events: none;
-		content: '';
-	}
-
-	@include motion.motion-safe {
-		@supports (animation-timeline: view()) {
-			&::after {
-				opacity: 0%;
-				animation: valeria-spot-on linear both;
-				animation-timeline: view();
-				animation-range: entry 60% cover 40%;
-			}
-
-			&.family__group--godparents::after {
-				animation-range: entry 100% cover 50%;
-			}
-		}
-	}
-
-	@keyframes valeria-spot-on {
-		0% {
-			opacity: 0%;
-		}
-
-		30% {
-			opacity: 60%;
-		}
-
-		38% {
-			opacity: 15%;
-		}
-
-		100% {
-			opacity: 100%;
 		}
 	}
 }
