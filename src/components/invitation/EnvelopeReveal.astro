@@ -599,7 +599,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				};
 			}
 
-			// The letter becomes the cover: the cover's own arch, occasion and name start where the
+			// On framed and disco covers the letter becomes the cover: the cover's own arch, occasion and name start where the
 			// letter shows them and grow into place while the letter and the night fade, and the
 			// rest of the cover arrives as they land. Inverse FLIP on the real cover elements:
 			// laid out at their final place, so only the transform moves and nothing is doubled.
@@ -616,6 +616,40 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					typeof coverArch.animate !== 'function'
 				) {
 					completeReveal();
+					return;
+				}
+				// The night arch cover keeps its own hand-over: a copy of the window's photograph
+				// flies onto the arch while the cover underneath stays still.
+				if (hero.dataset.variant === 'night-arch') {
+					const photo = archWindow.querySelector('img');
+					if (!photo) {
+						completeReveal();
+						return;
+					}
+					const host = this.getBoundingClientRect();
+					const flight = document.createElement('div');
+					flight.className = 'night-envelope-flight';
+					flight.setAttribute('aria-hidden', 'true');
+					flight.style.left = `${to.left - host.left}px`;
+					flight.style.top = `${to.top - host.top}px`;
+					flight.style.width = `${to.width}px`;
+					flight.style.height = `${to.height}px`;
+					flight.style.borderRadius = getComputedStyle(coverArch).borderRadius;
+					flight.append(photo.cloneNode());
+					this.append(flight);
+					archWindow.style.visibility = 'hidden';
+					this.classList.add('is-handing-off');
+					flight
+						.animate(
+							[
+								{
+									transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width})`,
+								},
+								{ transform: 'none' },
+							],
+							{ duration: ARCH_HANDOFF_MS, easing: ARCH_HANDOFF_EASE, fill: 'both' },
+						)
+						.finished.then(completeReveal, completeReveal);
 					return;
 				}
 				// `backwards` holds the first frame through any delay and leaves no style behind.
