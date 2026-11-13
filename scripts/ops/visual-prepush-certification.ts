@@ -14,6 +14,10 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { visualImpactFiles } from './visual-impact.ts';
+import {
+	DEMO_MANIFEST_DIR,
+	readAcceptedManifestFile,
+} from '../screenshot/visual-demo-manifests.ts';
 import { affectedVisualPages } from '../screenshot/visual-affected-pages.ts';
 import {
 	buildVisualPageCases,
@@ -118,8 +122,24 @@ function changedPaths(baseSha: string | undefined, sha: string): string[] {
 
 function identityForCommit(sha: string): CertificationIdentity {
 	const readBlob = (path: string): Buffer => execFileSync('git', ['show', `${sha}:${path}`]);
-	const manifestBytes = readBlob(ACCEPTED_MANIFEST);
-	const manifest = JSON.parse(manifestBytes.toString('utf8')) as { matrixHash?: unknown };
+	const rootBytes = readBlob(ACCEPTED_MANIFEST);
+	const demoFiles = execFileSync(
+		'git',
+		[
+			'ls-tree',
+			'--name-only',
+			'-r',
+			sha,
+			`${dirname(ACCEPTED_MANIFEST)}/${DEMO_MANIFEST_DIR}/`,
+		],
+		{ encoding: 'utf8' },
+	)
+		.split(/\r?\n/u)
+		.filter((file) => file.endsWith('.json'))
+		.sort();
+	// The per-demo manifests are part of the accepted baseline identity.
+	const manifestBytes = Buffer.concat([rootBytes, ...demoFiles.map((file) => readBlob(file))]);
+	const manifest = JSON.parse(rootBytes.toString('utf8')) as { matrixHash?: unknown };
 	if (typeof manifest.matrixHash !== 'string' || !/^[0-9a-f]{64}$/u.test(manifest.matrixHash)) {
 		throw new Error('Accepted visual manifest has no valid matrixHash.');
 	}
@@ -430,7 +450,7 @@ function printVisualCandidateSummary(candidateDir: string, root: string, sha: st
 			readFileSync(combinedPath, 'utf8'),
 		) as CombinedCandidateManifest;
 		const acceptedManifest = existsSync(acceptedPath)
-			? (JSON.parse(readFileSync(acceptedPath, 'utf8')) as {
+			? (readAcceptedManifestFile(acceptedPath) as {
 					captures?: CandidateCaptureEntry[];
 				})
 			: null;

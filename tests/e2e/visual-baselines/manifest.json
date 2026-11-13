@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-12T01:52:20.371Z",
+    "generatedAt": "2026-11-12T17:45:16.568Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-        "cssSha256": "f8699bf4c11472bb3c712c4341e9286277cee0c6378bfe68522ba9a5c5ca852c",
+        "cssSha256": "996d94c07892e1efe8bd902f0cd496c829ba65ee18495761b4ff3e2fd92c79ca",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -565,7 +565,7 @@
             "cssOwner": "src/styles/themes/sections/itinerary/_timeline-paper.scss",
             "fixtureIdentity": "synthetic:itinerary.timeline-paper",
             "file": "jewelry-box-mobile-itinerary-timeline-paper.png",
-            "sha256": "a000e0bca9a959bb9a3e380269173e6161702ad43ccf61191733722b75768623",
+            "sha256": "777051ade9556205f524ff7504e16a85e28dbf5d21d9a8fccbc686a23b815607",
             "contentHash": "01f243c429db7e64feff8f4cdad031000af148fc791b49b3f86d3cf0b3323c7b",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -2463,227 +2463,11 @@
             "contentHash": "2cb76b1eaf0761605da62fcbb20e194144ea06f6a952c36523eed76617f3c692",
             "assetHash": "e8ad16d04ab5ecbcd79751fbf09a68d833a34fe974c210d9716bfa2d5be16ad5",
             "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-bautizo-angelic-presence",
-            "eventType": "bautizo",
-            "preset": "angelic-presence",
-            "viewport": "mobile",
-            "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
-            "sha256": "cad066dc743ee81dee6d4f22b110097e840bd1d92cdc3bb948cbc769a081d45f",
-            "contentHash": "3b07e2575cb36444c7bf8c8c32f13cbcba88e0d90c0a54ee00e724119ee4e0d4",
-            "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-bautizo-angelic-presence",
-            "eventType": "bautizo",
-            "preset": "angelic-presence",
-            "viewport": "desktop",
-            "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-desktop.png",
-            "sha256": "8f35013bf8740ceb84d69c9af2ffd3c6b19bb3050d7ca6eee3b65d9d8a5081d9",
-            "contentHash": "3b07e2575cb36444c7bf8c8c32f13cbcba88e0d90c0a54ee00e724119ee4e0d4",
-            "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-brisa",
-            "eventType": "boda",
-            "preset": "jewelry-box-wedding",
-            "viewport": "mobile",
-            "file": "pages/demo-boda-demo-brisa-mobile.png",
-            "sha256": "18bb173b9f98fa5a0cc364e04355029180953905b8529017386180435e918d51",
-            "contentHash": "9bc76dfa55251e31bdba4b5f4f4f26c9d57beb3771cb2977cbe28e313c86f93f",
-            "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-brisa",
-            "eventType": "boda",
-            "preset": "jewelry-box-wedding",
-            "viewport": "desktop",
-            "file": "pages/demo-boda-demo-brisa-desktop.png",
-            "sha256": "bb0331a61995c45f1972727bf6543d6821ce58c8e1c2a178637619e980ff3d7b",
-            "contentHash": "9bc76dfa55251e31bdba4b5f4f4f26c9d57beb3771cb2977cbe28e313c86f93f",
-            "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-cumple-luxury-hacienda",
-            "eventType": "cumple",
-            "preset": "luxury-hacienda",
-            "viewport": "mobile",
-            "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-            "sha256": "d777ea60710ec645254b99f2c5c49b8f8cf3151563b99367e2cd3fe7856534ea",
-            "contentHash": "6bcb33133eea329fe27f6fc69c1a7664bc5e31f069e1cdedb35e4d309f775df1",
-            "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-cumple-luxury-hacienda",
-            "eventType": "cumple",
-            "preset": "luxury-hacienda",
-            "viewport": "desktop",
-            "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-            "sha256": "68e61be365f976e30768f4f41814a2b5b1f47886b61865f08d59e3ec9fa160ea",
-            "contentHash": "6bcb33133eea329fe27f6fc69c1a7664bc5e31f069e1cdedb35e4d309f775df1",
-            "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-primera-comunion-angelic-presence",
-            "eventType": "primera-comunion",
-            "preset": "eucharistic-grace",
-            "viewport": "mobile",
-            "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
-            "sha256": "2f013f76a45eb8c6707919c2fd41e9500c58f931ed5db5e44c00e3a8ddd6fbbf",
-            "contentHash": "006b7311c3f649830331ae374e4d2f3e15c3d43f6509b00ee3f53ec7ffa8a764",
-            "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-primera-comunion-angelic-presence",
-            "eventType": "primera-comunion",
-            "preset": "eucharistic-grace",
-            "viewport": "desktop",
-            "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-desktop.png",
-            "sha256": "f97c3f1f7da5eb08a316cd6c9158e502cfa95cab2e63719f09330f97b64bf699",
-            "contentHash": "006b7311c3f649830331ae374e4d2f3e15c3d43f6509b00ee3f53ec7ffa8a764",
-            "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-xv-celestial-blue",
-            "eventType": "xv",
-            "preset": "celestial-blue",
-            "viewport": "mobile",
-            "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
-            "sha256": "0dc5d47d7d815114e896b66a92c23180f2807c0eb33b7a2ff8a17617ff69654c",
-            "contentHash": "c83777586b3831b8b26ad77bb0e5626f6f9eaa13db6ed35e604008b802c5d49e",
-            "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-xv-celestial-blue",
-            "eventType": "xv",
-            "preset": "celestial-blue",
-            "viewport": "desktop",
-            "file": "pages/demo-xv-demo-xv-celestial-blue-desktop.png",
-            "sha256": "cab84f8f58395a93232f2ed51205cb0507bf5aedee1c4502c31081d8b6a4e183",
-            "contentHash": "c83777586b3831b8b26ad77bb0e5626f6f9eaa13db6ed35e604008b802c5d49e",
-            "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-xv-editorial",
-            "eventType": "xv",
-            "preset": "editorial",
-            "viewport": "mobile",
-            "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-            "sha256": "7f1ac7388ddb04c110b3bab60956c60213b3a8d765ca77973b724186c3426664",
-            "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
-            "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-xv-editorial",
-            "eventType": "xv",
-            "preset": "editorial",
-            "viewport": "desktop",
-            "file": "pages/demo-xv-demo-xv-editorial-desktop.png",
-            "sha256": "f1f06b82602e214dbd3d78bfc45c9759bcb45299e2b60f7da58f5d12bfbaf803",
-            "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
-            "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-xv-enchanted-rose",
-            "eventType": "xv",
-            "preset": "enchanted-rose",
-            "viewport": "mobile",
-            "file": "pages/demo-xv-demo-xv-enchanted-rose-mobile.png",
-            "sha256": "f7e522ae2dfdaf2e4382e10d70f0735aba11a3c0d0da9139df7831a7f1260be0",
-            "contentHash": "45931b3348c2f10ea80e5e6667f43b3dcf1c7edf3b15716c6af4a2b1b4d3115d",
-            "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-xv-enchanted-rose",
-            "eventType": "xv",
-            "preset": "enchanted-rose",
-            "viewport": "desktop",
-            "file": "pages/demo-xv-demo-xv-enchanted-rose-desktop.png",
-            "sha256": "b4f90e9f33069f3b2870fe2f51bf81bbb9f2128f4d6e02be04f2395e4e85e4fc",
-            "contentHash": "45931b3348c2f10ea80e5e6667f43b3dcf1c7edf3b15716c6af4a2b1b4d3115d",
-            "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-xv-lantern-garden",
-            "eventType": "xv",
-            "preset": "storybook-lilac",
-            "viewport": "mobile",
-            "file": "pages/demo-xv-demo-xv-lantern-garden-mobile.png",
-            "sha256": "a04a2a9e7707462de3c1682c772b9adac411fdfb6d3b09f853693f4b9c490a39",
-            "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
-            "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-xv-lantern-garden",
-            "eventType": "xv",
-            "preset": "storybook-lilac",
-            "viewport": "desktop",
-            "file": "pages/demo-xv-demo-xv-lantern-garden-desktop.png",
-            "sha256": "4308b13a39c3ecd64c23473dc0dac2474890258765577aa4dfbdf79e9c5ada30",
-            "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
-            "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-xv-serenata",
-            "eventType": "xv",
-            "preset": "sage-champagne",
-            "viewport": "mobile",
-            "file": "pages/demo-xv-demo-xv-serenata-mobile.png",
-            "sha256": "bc3e7274ae9c45dfa215f45983d4f116dea3d46cb8bd30874475da98064fa24c",
-            "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
-            "assetHash": "83f061b3dfccd05d6b801345587f6cd661e0a577bad69196ac9a8b439ba2ae7b",
-            "comparisonResult": "ACCEPTED"
-        },
-        {
-            "kind": "demo",
-            "slug": "demo-xv-serenata",
-            "eventType": "xv",
-            "preset": "sage-champagne",
-            "viewport": "desktop",
-            "file": "pages/demo-xv-demo-xv-serenata-desktop.png",
-            "sha256": "65ec7f365b707e68baee922ceb3c2c614f3c0cf4ac3e3e932a072139b393e811",
-            "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
-            "assetHash": "83f061b3dfccd05d6b801345587f6cd661e0a577bad69196ac9a8b439ba2ae7b",
-            "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "a791ca97cfababf128740c271f29e07bf56461a7",
+    "referenceSha": "1f389db532572f61446805f857dac135987d3fea",
     "variantManifest": {
-        "generatedAt": "2026-11-12T01:52:20.371Z",
+        "generatedAt": "2026-11-12T17:45:16.568Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2696,7 +2480,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "f8699bf4c11472bb3c712c4341e9286277cee0c6378bfe68522ba9a5c5ca852c",
+            "cssSha256": "996d94c07892e1efe8bd902f0cd496c829ba65ee18495761b4ff3e2fd92c79ca",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -3249,7 +3033,7 @@
                 "cssOwner": "src/styles/themes/sections/itinerary/_timeline-paper.scss",
                 "fixtureIdentity": "synthetic:itinerary.timeline-paper",
                 "file": "jewelry-box-mobile-itinerary-timeline-paper.png",
-                "sha256": "a000e0bca9a959bb9a3e380269173e6161702ad43ccf61191733722b75768623",
+                "sha256": "777051ade9556205f524ff7504e16a85e28dbf5d21d9a8fccbc686a23b815607",
                 "contentHash": "01f243c429db7e64feff8f4cdad031000af148fc791b49b3f86d3cf0b3323c7b",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -4669,10 +4453,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "a791ca97cfababf128740c271f29e07bf56461a7"
+        "referenceSha": "1f389db532572f61446805f857dac135987d3fea"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-12T01:52:20.380Z",
+        "generatedAt": "2026-11-12T17:45:16.574Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4685,7 +4469,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "f8699bf4c11472bb3c712c4341e9286277cee0c6378bfe68522ba9a5c5ca852c",
+            "cssSha256": "996d94c07892e1efe8bd902f0cd496c829ba65ee18495761b4ff3e2fd92c79ca",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -5175,227 +4959,11 @@
                 "contentHash": "2cb76b1eaf0761605da62fcbb20e194144ea06f6a952c36523eed76617f3c692",
                 "assetHash": "e8ad16d04ab5ecbcd79751fbf09a68d833a34fe974c210d9716bfa2d5be16ad5",
                 "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-bautizo-angelic-presence",
-                "eventType": "bautizo",
-                "preset": "angelic-presence",
-                "viewport": "mobile",
-                "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
-                "sha256": "cad066dc743ee81dee6d4f22b110097e840bd1d92cdc3bb948cbc769a081d45f",
-                "contentHash": "3b07e2575cb36444c7bf8c8c32f13cbcba88e0d90c0a54ee00e724119ee4e0d4",
-                "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-bautizo-angelic-presence",
-                "eventType": "bautizo",
-                "preset": "angelic-presence",
-                "viewport": "desktop",
-                "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-desktop.png",
-                "sha256": "8f35013bf8740ceb84d69c9af2ffd3c6b19bb3050d7ca6eee3b65d9d8a5081d9",
-                "contentHash": "3b07e2575cb36444c7bf8c8c32f13cbcba88e0d90c0a54ee00e724119ee4e0d4",
-                "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-brisa",
-                "eventType": "boda",
-                "preset": "jewelry-box-wedding",
-                "viewport": "mobile",
-                "file": "pages/demo-boda-demo-brisa-mobile.png",
-                "sha256": "18bb173b9f98fa5a0cc364e04355029180953905b8529017386180435e918d51",
-                "contentHash": "9bc76dfa55251e31bdba4b5f4f4f26c9d57beb3771cb2977cbe28e313c86f93f",
-                "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-brisa",
-                "eventType": "boda",
-                "preset": "jewelry-box-wedding",
-                "viewport": "desktop",
-                "file": "pages/demo-boda-demo-brisa-desktop.png",
-                "sha256": "bb0331a61995c45f1972727bf6543d6821ce58c8e1c2a178637619e980ff3d7b",
-                "contentHash": "9bc76dfa55251e31bdba4b5f4f4f26c9d57beb3771cb2977cbe28e313c86f93f",
-                "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-cumple-luxury-hacienda",
-                "eventType": "cumple",
-                "preset": "luxury-hacienda",
-                "viewport": "mobile",
-                "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-                "sha256": "d777ea60710ec645254b99f2c5c49b8f8cf3151563b99367e2cd3fe7856534ea",
-                "contentHash": "6bcb33133eea329fe27f6fc69c1a7664bc5e31f069e1cdedb35e4d309f775df1",
-                "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-cumple-luxury-hacienda",
-                "eventType": "cumple",
-                "preset": "luxury-hacienda",
-                "viewport": "desktop",
-                "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-                "sha256": "68e61be365f976e30768f4f41814a2b5b1f47886b61865f08d59e3ec9fa160ea",
-                "contentHash": "6bcb33133eea329fe27f6fc69c1a7664bc5e31f069e1cdedb35e4d309f775df1",
-                "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-primera-comunion-angelic-presence",
-                "eventType": "primera-comunion",
-                "preset": "eucharistic-grace",
-                "viewport": "mobile",
-                "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
-                "sha256": "2f013f76a45eb8c6707919c2fd41e9500c58f931ed5db5e44c00e3a8ddd6fbbf",
-                "contentHash": "006b7311c3f649830331ae374e4d2f3e15c3d43f6509b00ee3f53ec7ffa8a764",
-                "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-primera-comunion-angelic-presence",
-                "eventType": "primera-comunion",
-                "preset": "eucharistic-grace",
-                "viewport": "desktop",
-                "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-desktop.png",
-                "sha256": "f97c3f1f7da5eb08a316cd6c9158e502cfa95cab2e63719f09330f97b64bf699",
-                "contentHash": "006b7311c3f649830331ae374e4d2f3e15c3d43f6509b00ee3f53ec7ffa8a764",
-                "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-xv-celestial-blue",
-                "eventType": "xv",
-                "preset": "celestial-blue",
-                "viewport": "mobile",
-                "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
-                "sha256": "0dc5d47d7d815114e896b66a92c23180f2807c0eb33b7a2ff8a17617ff69654c",
-                "contentHash": "c83777586b3831b8b26ad77bb0e5626f6f9eaa13db6ed35e604008b802c5d49e",
-                "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-xv-celestial-blue",
-                "eventType": "xv",
-                "preset": "celestial-blue",
-                "viewport": "desktop",
-                "file": "pages/demo-xv-demo-xv-celestial-blue-desktop.png",
-                "sha256": "cab84f8f58395a93232f2ed51205cb0507bf5aedee1c4502c31081d8b6a4e183",
-                "contentHash": "c83777586b3831b8b26ad77bb0e5626f6f9eaa13db6ed35e604008b802c5d49e",
-                "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-xv-editorial",
-                "eventType": "xv",
-                "preset": "editorial",
-                "viewport": "mobile",
-                "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-                "sha256": "7f1ac7388ddb04c110b3bab60956c60213b3a8d765ca77973b724186c3426664",
-                "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
-                "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-xv-editorial",
-                "eventType": "xv",
-                "preset": "editorial",
-                "viewport": "desktop",
-                "file": "pages/demo-xv-demo-xv-editorial-desktop.png",
-                "sha256": "f1f06b82602e214dbd3d78bfc45c9759bcb45299e2b60f7da58f5d12bfbaf803",
-                "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
-                "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-xv-enchanted-rose",
-                "eventType": "xv",
-                "preset": "enchanted-rose",
-                "viewport": "mobile",
-                "file": "pages/demo-xv-demo-xv-enchanted-rose-mobile.png",
-                "sha256": "f7e522ae2dfdaf2e4382e10d70f0735aba11a3c0d0da9139df7831a7f1260be0",
-                "contentHash": "45931b3348c2f10ea80e5e6667f43b3dcf1c7edf3b15716c6af4a2b1b4d3115d",
-                "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-xv-enchanted-rose",
-                "eventType": "xv",
-                "preset": "enchanted-rose",
-                "viewport": "desktop",
-                "file": "pages/demo-xv-demo-xv-enchanted-rose-desktop.png",
-                "sha256": "b4f90e9f33069f3b2870fe2f51bf81bbb9f2128f4d6e02be04f2395e4e85e4fc",
-                "contentHash": "45931b3348c2f10ea80e5e6667f43b3dcf1c7edf3b15716c6af4a2b1b4d3115d",
-                "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-xv-lantern-garden",
-                "eventType": "xv",
-                "preset": "storybook-lilac",
-                "viewport": "mobile",
-                "file": "pages/demo-xv-demo-xv-lantern-garden-mobile.png",
-                "sha256": "a04a2a9e7707462de3c1682c772b9adac411fdfb6d3b09f853693f4b9c490a39",
-                "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
-                "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-xv-lantern-garden",
-                "eventType": "xv",
-                "preset": "storybook-lilac",
-                "viewport": "desktop",
-                "file": "pages/demo-xv-demo-xv-lantern-garden-desktop.png",
-                "sha256": "4308b13a39c3ecd64c23473dc0dac2474890258765577aa4dfbdf79e9c5ada30",
-                "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
-                "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-xv-serenata",
-                "eventType": "xv",
-                "preset": "sage-champagne",
-                "viewport": "mobile",
-                "file": "pages/demo-xv-demo-xv-serenata-mobile.png",
-                "sha256": "bc3e7274ae9c45dfa215f45983d4f116dea3d46cb8bd30874475da98064fa24c",
-                "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
-                "assetHash": "83f061b3dfccd05d6b801345587f6cd661e0a577bad69196ac9a8b439ba2ae7b",
-                "comparisonResult": "CANDIDATE"
-            },
-            {
-                "kind": "demo",
-                "slug": "demo-xv-serenata",
-                "eventType": "xv",
-                "preset": "sage-champagne",
-                "viewport": "desktop",
-                "file": "pages/demo-xv-demo-xv-serenata-desktop.png",
-                "sha256": "65ec7f365b707e68baee922ceb3c2c614f3c0cf4ac3e3e932a072139b393e811",
-                "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
-                "assetHash": "83f061b3dfccd05d6b801345587f6cd661e0a577bad69196ac9a8b439ba2ae7b",
-                "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "a791ca97cfababf128740c271f29e07bf56461a7"
+        "referenceSha": "1f389db532572f61446805f857dac135987d3fea"
     },
-    "candidateManifestSha256": "0fa33014bbc80c87da8584b87f5d4002b8ca4878fce2eab721f9eb4bc908a363",
-    "acceptedFromCommit": "a791ca97cfababf128740c271f29e07bf56461a7",
-    "acceptedAt": "2026-11-12T01:55:33.906Z"
+    "candidateManifestSha256": "f93d6c9aeeea7655336e10a0f1caa621da3e17280439a27faa69eab040dcbccd",
+    "acceptedFromCommit": "1f389db532572f61446805f857dac135987d3fea",
+    "acceptedAt": "2026-11-12T17:46:08.526Z"
 }

@@ -1,7 +1,7 @@
 ---
 // src/components/invitation/ItineraryProgram.astro
 import type { ItineraryItem } from '@/lib/adapters/types';
-import { formatTime12h, isValidTime } from '@/lib/time/time-format';
+import { formatTimeSpanish, isValidTime } from '@/lib/time/time-format';
 
 interface Props {
 	items: ItineraryItem[];
@@ -32,7 +32,7 @@ const { items, monogram } = Astro.props;
 					>
 						<span class="itinerary__program-row-num" aria-hidden="true">{num}</span>
 						{timeValid ? (
-							<time class="itinerary__program-row-time">{formatTime12h(item.time)}</time>
+							<time class="itinerary__program-row-time">{formatTimeSpanish(item.time)}</time>
 						) : (
 							<span
 								class="itinerary__program-row-time itinerary__program-row-time--pending"

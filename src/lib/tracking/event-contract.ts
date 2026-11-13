@@ -123,7 +123,10 @@ export function sanitizeEventProperties(
 	for (const [key, value] of Object.entries(properties)) {
 		if (!SAFE_EVENT_PROPERTY_KEYS.has(key)) continue;
 		if (typeof value === 'string') {
-			sanitized[key] = value.trim().slice(0, 160);
+			const text = value.trim().slice(0, 160);
+			// A blank lead_code names no lead; keep the key absent instead of storing ''.
+			if (key === 'lead_code' && !text) continue;
+			sanitized[key] = text;
 			continue;
 		}
 		if (typeof value === 'number' && Number.isFinite(value)) {

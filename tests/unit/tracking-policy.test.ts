@@ -79,6 +79,15 @@ describe('tracking event contract', () => {
 		});
 	});
 
+	it('drops a blank lead_code and keeps a real one', () => {
+		expect(sanitizeEventProperties({ cta_id: 'pricing', lead_code: '  ' })).toEqual({
+			cta_id: 'pricing',
+		});
+		expect(sanitizeEventProperties({ lead_code: ' CM-ABC123 ' })).toEqual({
+			lead_code: 'CM-ABC123',
+		});
+	});
+
 	it('detects unsafe PII-like event properties', () => {
 		expect(hasUnsafeEventProperties({ email: 'client@example.com' })).toBe(true);
 		expect(hasUnsafeEventProperties({ phone: '5215555555555' })).toBe(true);

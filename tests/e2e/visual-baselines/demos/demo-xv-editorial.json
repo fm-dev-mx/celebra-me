@@ -1,0 +1,57 @@
+{
+    "version": 1,
+    "slug": "demo-xv-editorial",
+    "eventType": "xv",
+    "captures": [
+        {
+            "kind": "demo",
+            "slug": "demo-xv-editorial",
+            "eventType": "xv",
+            "preset": "editorial",
+            "viewport": "mobile",
+            "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
+            "sha256": "7f1ac7388ddb04c110b3bab60956c60213b3a8d765ca77973b724186c3426664",
+            "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
+            "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-editorial",
+            "eventType": "xv",
+            "preset": "editorial",
+            "viewport": "desktop",
+            "file": "pages/demo-xv-demo-xv-editorial-desktop.png",
+            "sha256": "f1f06b82602e214dbd3d78bfc45c9759bcb45299e2b60f7da58f5d12bfbaf803",
+            "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
+            "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
+            "comparisonResult": "ACCEPTED"
+        }
+    ],
+    "pageCaptures": [
+        {
+            "kind": "demo",
+            "slug": "demo-xv-editorial",
+            "eventType": "xv",
+            "preset": "editorial",
+            "viewport": "mobile",
+            "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
+            "sha256": "7f1ac7388ddb04c110b3bab60956c60213b3a8d765ca77973b724186c3426664",
+            "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
+            "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
+            "comparisonResult": "CANDIDATE"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-editorial",
+            "eventType": "xv",
+            "preset": "editorial",
+            "viewport": "desktop",
+            "file": "pages/demo-xv-demo-xv-editorial-desktop.png",
+            "sha256": "f1f06b82602e214dbd3d78bfc45c9759bcb45299e2b60f7da58f5d12bfbaf803",
+            "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
+            "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
+            "comparisonResult": "CANDIDATE"
+        }
+    ]
+}

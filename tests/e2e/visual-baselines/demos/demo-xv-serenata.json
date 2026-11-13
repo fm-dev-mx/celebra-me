@@ -1,0 +1,57 @@
+{
+    "version": 1,
+    "slug": "demo-xv-serenata",
+    "eventType": "xv",
+    "captures": [
+        {
+            "kind": "demo",
+            "slug": "demo-xv-serenata",
+            "eventType": "xv",
+            "preset": "sage-champagne",
+            "viewport": "mobile",
+            "file": "pages/demo-xv-demo-xv-serenata-mobile.png",
+            "sha256": "bc3e7274ae9c45dfa215f45983d4f116dea3d46cb8bd30874475da98064fa24c",
+            "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
+            "assetHash": "83f061b3dfccd05d6b801345587f6cd661e0a577bad69196ac9a8b439ba2ae7b",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-serenata",
+            "eventType": "xv",
+            "preset": "sage-champagne",
+            "viewport": "desktop",
+            "file": "pages/demo-xv-demo-xv-serenata-desktop.png",
+            "sha256": "65ec7f365b707e68baee922ceb3c2c614f3c0cf4ac3e3e932a072139b393e811",
+            "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
+            "assetHash": "83f061b3dfccd05d6b801345587f6cd661e0a577bad69196ac9a8b439ba2ae7b",
+            "comparisonResult": "ACCEPTED"
+        }
+    ],
+    "pageCaptures": [
+        {
+            "kind": "demo",
+            "slug": "demo-xv-serenata",
+            "eventType": "xv",
+            "preset": "sage-champagne",
+            "viewport": "mobile",
+            "file": "pages/demo-xv-demo-xv-serenata-mobile.png",
+            "sha256": "bc3e7274ae9c45dfa215f45983d4f116dea3d46cb8bd30874475da98064fa24c",
+            "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
+            "assetHash": "83f061b3dfccd05d6b801345587f6cd661e0a577bad69196ac9a8b439ba2ae7b",
+            "comparisonResult": "CANDIDATE"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-xv-serenata",
+            "eventType": "xv",
+            "preset": "sage-champagne",
+            "viewport": "desktop",
+            "file": "pages/demo-xv-demo-xv-serenata-desktop.png",
+            "sha256": "65ec7f365b707e68baee922ceb3c2c614f3c0cf4ac3e3e932a072139b393e811",
+            "contentHash": "a72df351713f31a5a2dc41d6cc35d4dcfae9faa613afd49c1453841cf9ea6012",
+            "assetHash": "83f061b3dfccd05d6b801345587f6cd661e0a577bad69196ac9a8b439ba2ae7b",
+            "comparisonResult": "CANDIDATE"
+        }
+    ]
+}
