@@ -111,11 +111,14 @@ const height = delivery?.height ?? ('height' in backgroundImage ? backgroundImag
 
 <script>
 	import { getMotionPreference } from '@/lib/invitation/reveal-manager';
+	import { isVisualCaptureMode } from '@/lib/invitation/visual-capture-mode';
 
 	// The loop waits for the envelope so it never competes with the opening clip, plays only
 	// while the hero is on screen, and stays on its poster under reduced motion or in captures.
 	const video = document.querySelector<HTMLVideoElement>('[data-hero-ambient-video]');
-	const isCapture = new URLSearchParams(window.location.search).get('screenshot') === '1';
+	const isCapture =
+		isVisualCaptureMode() ||
+		new URLSearchParams(window.location.search).get('screenshot') === '1';
 	if (video && !isCapture && !getMotionPreference()) {
 		let started = false;
 		const start = () => {
