@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import {
 	lintProductionPatchSql,
 	parseSqlManifest,
+	patchCallsOnlyBuiltinFunctions,
 	validateProductionPatchManifest,
 	argValue,
 } from '../../scripts/db/sql-safety.ts';
@@ -309,6 +310,57 @@ ${statement}
 		expect(undeclared.errors).toContain(
 			'@tables must match the complete set of mutation target tables.',
 		);
+	});
+
+	it.each([
+		'update public."published_invitation_content" set content = content where id is not null;',
+		'update published_invitation_content set content = content where id is not null;',
+		'update "public".published_invitation_content set content = content where id is not null;',
+	])('rejects a mutation target @tables cannot account for: %s', (hidden) => {
+		const result = lintProductionPatchSql(
+			authPatch(
+				'auth.users',
+				`update auth.users set raw_app_meta_data = raw_app_meta_data where id is not null;\n${hidden}`,
+			),
+		);
+		expect(result.ok).toBe(false);
+		expect(result.errors).toContain(
+			'Every mutation must target an unquoted schema-qualified table (schema.table).',
+		);
+	});
+
+	it.each([
+		"select public.archive_invitation('00000000-0000-0000-0000-000000000000');",
+		'update auth.users set raw_app_meta_data = public.touch(raw_app_meta_data) where id is not null;',
+		"do $$ begin perform public.archive_invitation('x'); end $$;",
+		'select "archive_invitation"(1);',
+		"do $$ begin execute 'select public.archive_invitation' || '(''00000000-0000-0000-0000-000000000000''::uuid)'; end $$;",
+		"select 'select public.archive_invitation' || '(1)' \\gexec",
+		"do 'begin perform public.archive_invitation(''00000000-0000-0000-0000-000000000000''::uuid); end';",
+		"do e'begin perform public.archive_invitation(\\'x\\'); end';",
+		"do e'begin perform public.archive_invitation\\u0028null::uuid); end';",
+		"do e'begin perform public.archive_invitation\\x28null::uuid); end';",
+		"do e'begin perform public.archive_invitation\\050null::uuid); end';",
+		"do e'begin perform public.archive_invitation\\\\\\u0028null::uuid); end';",
+		'select public.u&"archive_invitation" uescape \'!\' (null::uuid);',
+		'-- note\rselect public.archive_invitation(null::uuid);\n',
+	])('treats a user function call as not builtin-only: %s', (call) => {
+		expect(patchCallsOnlyBuiltinFunctions(authPatch('auth.users', call))).toBe(false);
+	});
+
+	it('treats the reviewed pre-deploy production patches as builtin-only', () => {
+		for (const file of [
+			'scripts/manual/production-patches/20261109_auth_login_alias_app_metadata_backfill.sql',
+			'scripts/manual/production-patches/20261112_tracking_events_blank_lead_code.sql',
+			'scripts/manual/production-patches/20261112_auth_users_without_app_role.sql',
+			'scripts/manual/production-patches/20261112_itinerary_presentation_removal.sql',
+		]) {
+			const sql = readFileSync(file, 'utf8');
+			expect(lintProductionPatchSql(sql).errors).toEqual([]);
+			expect(patchCallsOnlyBuiltinFunctions(sql)).toBe(true);
+			// A Windows checkout may convert line endings to CRLF.
+			expect(patchCallsOnlyBuiltinFunctions(sql.replace(/\n/g, '\r\n'))).toBe(true);
+		}
 	});
 
 	it('lints the login alias backfill patch', () => {
