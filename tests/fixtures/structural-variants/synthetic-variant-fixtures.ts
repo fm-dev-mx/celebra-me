@@ -305,6 +305,14 @@ const TWO_ITEM_INCOMPATIBLE_GALLERIES = new Set([
 	'pinned-track',
 ]);
 
+/** Thank-you variants that require a photo. */
+const IMAGE_THANK_YOU_VARIANTS = new Set([
+	'full-bleed-photo',
+	'portrait-letter',
+	'portrait-keepsake',
+	'last-song',
+]);
+
 function makeLocationIncompatible(data: Record<string, unknown>, variant: string): void {
 	if (variant === 'split-map') {
 		const location = data.location as Record<string, unknown>;
@@ -354,6 +362,7 @@ export function buildIncompatiblePrerequisiteEvent(
 					'framed-portrait',
 					'bleed-portrait',
 					'cased-portrait',
+					'disco-stage',
 					'ceremonial-portrait',
 				].includes(entry.variant)
 			) {
@@ -408,11 +417,7 @@ export function buildIncompatiblePrerequisiteEvent(
 			}
 			break;
 		case 'thankYou':
-			if (
-				entry.variant === 'full-bleed-photo' ||
-				entry.variant === 'portrait-letter' ||
-				entry.variant === 'portrait-keepsake'
-			) {
+			if (IMAGE_THANK_YOU_VARIANTS.has(entry.variant)) {
 				const thankYou = data.thankYou as Record<string, unknown>;
 				delete thankYou.image;
 			} else if (
@@ -514,11 +519,7 @@ export function getIncompatiblePrerequisiteExpectation(
 		case 'gifts':
 			return { expectedPath: ['gifts', 'items', 0] };
 		case 'thankYou':
-			if (
-				entry.variant === 'full-bleed-photo' ||
-				entry.variant === 'portrait-letter' ||
-				entry.variant === 'portrait-keepsake'
-			) {
+			if (IMAGE_THANK_YOU_VARIANTS.has(entry.variant)) {
 				return { expectedPath: ['thankYou', 'image'] };
 			}
 			return { expectedPath: ['thankYou', 'closingName'] };

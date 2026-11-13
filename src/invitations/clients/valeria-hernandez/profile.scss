@@ -60,6 +60,27 @@
 	// The «Vino» swatch shows the wine reserved for the quinceañera, not the cherry accent.
 	--location-enclosure-swatch: rgb(110 14 36);
 
+	// The disco variants read the cherry night: cherry light, silver sequins, blush ink on wine.
+	--disco-stage-glow-rgb: var(--color-rose-glow-rgb);
+	--disco-stage-silver-rgb: var(--color-leaf-silver-rgb);
+	--disco-stage-ground:
+		radial-gradient(
+			ellipse 90% 60% at 50% 18%,
+			rgb(var(--color-rose-dusk-rgb) / 50%),
+			transparent 70%
+		),
+		var(--color-rose-midnight);
+	--mirror-ball-glow-rgb: var(--color-rose-glow-rgb);
+	--mirror-ball-silver-rgb: var(--color-leaf-silver-rgb);
+	--mirror-ball-ink: var(--color-night-blush);
+	--last-song-glow-rgb: var(--color-rose-glow-rgb);
+	--last-song-dusk-rgb: var(--color-rose-dusk-rgb);
+	--last-song-ground: var(--color-rose-night);
+	--last-song-ink: var(--color-night-blush);
+	--last-song-ink-rgb: var(--color-night-blush-rgb);
+	--disco-night-deep: var(--color-rose-deep);
+	--disco-night-deep-rgb: var(--color-rose-deep-rgb);
+
 	// The closing keepsake keeps an even night above and below, not the preset's tall bottom band.
 	--thank-you-keepsake-padding-block-lg: clamp(4.5rem, 10svh, 6rem);
 
@@ -113,7 +134,7 @@
 
 	// The night envelope turns into the cherry disco night: a deep wine field and paper, a silver
 	// mirror-ball seal, cherry sparks, and a cherry-paper letter.
-	.envelope-wrapper[data-variant='night-envelope'] {
+	.envelope-wrapper[data-variant='disco-night'] {
 		--night-envelope-field: var(--color-rose-midnight);
 		--night-envelope-field-deep: rgb(32 4 12);
 		--night-envelope-ink: var(--color-leaf-silver);

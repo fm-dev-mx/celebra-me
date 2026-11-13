@@ -256,8 +256,8 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Optional Inputs**: `closingNameLeadWords` (1–4), `closingPhrase`, `date` (editorial closing-date
   display string; not derived from `eventTiming`), `image`, `ornament`, `focalPoint`,
   `overlayAnchor`, `overlaySafeArea`.
-- **Validation Rules**: `full-bleed-photo`, `portrait-letter`, and `portrait-keepsake` require
-  `image`.
+- **Validation Rules**: `full-bleed-photo`, `portrait-letter`, `portrait-keepsake`, and `last-song`
+  require `image`.
 - **Rendering & Omission**: Optional closing fold. `closingPhrase` is consumed by the invitation
   footer; `date` renders as the Thank You closing-date line when present.
 - **Editing**: Managed invitations own `date` / `closingPhrase` / section variant via the provision
@@ -354,6 +354,7 @@ validated by the schemas; the second table is **authoring guidance, not validate
 | `thankYou.full-bleed-photo`     | `image`                                                                                                   |
 | `thankYou.portrait-letter`      | `image`                                                                                                   |
 | `thankYou.portrait-keepsake`    | `image`                                                                                                   |
+| `thankYou.last-song`            | `image`                                                                                                   |
 | `personalizedAccess` (any)      | `passStyle` other than `classic` requires `formal-pass`                                                   |
 
 | Section.variant               | Authoring guidance (not validated)                       |

@@ -68,7 +68,8 @@ export function buildHeroImagePreloads(hero: HeroImageInput): HeroImagePreload[]
 	if (
 		hero.variant === 'framed-portrait' ||
 		hero.variant === 'bleed-portrait' ||
-		hero.variant === 'cased-portrait'
+		hero.variant === 'cased-portrait' ||
+		hero.variant === 'disco-stage'
 	) {
 		const portrait = hero.backgroundImage && portraitSource(hero.backgroundImage);
 		return portrait ? [preload(portrait, undefined, PORTRAIT_HERO_SIZES)] : [];

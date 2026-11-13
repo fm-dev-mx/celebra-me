@@ -203,6 +203,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		focalPointDesktop: data.hero.focalPointDesktop,
 		scrollLabel: data.hero.scrollLabel,
 		scrollCue: data.hero.scrollCue,
+		ambientVideo: data.hero.ambientVideo,
 		tagline: data.hero.tagline,
 		photoCredit: data.hero.photoCredit,
 	};
@@ -251,6 +252,7 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			teaserDetails,
 			sealStyle: data.envelope.sealStyle,
 			backdropImage: resolveAsset(eventSlug, data.envelope.backdropImage, ''),
+			openingVideo: data.envelope.openingVideo,
 			sealIcon: data.envelope.sealIcon,
 			sealInitials: data.envelope.sealInitials,
 			sealVariant: data.envelope.sealVariant,

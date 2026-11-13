@@ -42,8 +42,8 @@ audit tooling (`pnpm invitation:published-audit`).
 ## Canonical inventory
 
 - **Hero:** `standard`, `editorial-cover`, `split-cover`, `framed-portrait`, `bleed-portrait`,
-  `cased-portrait`, `ceremonial-portrait`, `night-arch` (the photograph inside an arched window on a
-  night sky, names below; wide screens put the arch on the right).
+  `cased-portrait`, `disco-stage`, `ceremonial-portrait`, `night-arch` (the photograph inside an
+  arched window on a night sky, names below; wide screens put the arch on the right).
 - **Family:** `standard`, `split-groups`, `asymmetric-groups`, `ceremonial-family`; both group
   layouts require at least two explicit `groups`.
 - **Location:** `standard`, `split-map`, `stacked-venue-plates`, `night-route` (the venue plates as
@@ -68,8 +68,10 @@ audit tooling (`pnpm invitation:published-audit`).
 - **RSVP:** `standard`, `editorial-press-pass`, `formal-register`, `reply-card`.
 - **Personalized Access:** `standard`, `ornamented`, `editorial-pass`, `formal-pass`, `reply-card`.
 - **Thank You:** `standard`, `editorial-back-cover`, `portrait-letter`, `full-bleed-photo`,
-  `portrait-keepsake`, `ceremonial-closing`; `full-bleed-photo` requires `thankYou.image`.
-- **Countdown:** `standard`, `editorial-folio`, `magazine-folio`, `clock-face`, `written-days`.
+  `portrait-keepsake`, `last-song`, `ceremonial-closing`; `full-bleed-photo` requires
+  `thankYou.image`.
+- **Countdown:** `standard`, `editorial-folio`, `magazine-folio`, `clock-face`, `written-days`,
+  `mirror-ball`.
 - **Memories:** `card`; requires `memories.publicSlug`. It has no default variant, because the
   section exists only for invitations with a memory space.
 
@@ -196,6 +198,11 @@ invitation profiles.
   holds the cover photograph; when the hero is `night-arch`, that window flies onto the cover arch
   before the page opens. Profiles tune it only through optional `--night-envelope-*` tokens. Proven
   on the Olivia y Antonio invitation (`/boda/olivia-y-antonio`).
+- envelope.revealVariant disco-night: the night-envelope letter under a disco ceiling. It loads the
+  night-envelope sheet and adds a faceted mirror-ball seal, sequin sparks and a lit frame on the
+  card window; the colors still come from `--night-envelope-*`, and `--disco-night-*` (deep,
+  deep-rgb) tints the sparks and the frame glow. Proven on the Valeria Hernández invitation
+  (`/xv/valeria-hernandez`).
 - envelope.revealVariant celestial-letter: a letter drawn out of a night envelope. The flap turns on
   its hinge and shows a star-chart liner, the pocket sinks while a pearl letter with a crescent
   emblem and a double silver rule slides out of it, then the letter comes forward and settles where
@@ -250,6 +257,16 @@ invitation profiles.
   paper card). Geometry lives in `hero/_cased-portrait.scss`; a preset supplies only materials
   through `--case-*` tokens (lining, pool, gold, glow, sheen, ink, card background and mask), and
   every token has a neutral fallback so any preset renders it.
+- hero.disco-stage: framed-portrait markup on a disco stage — the arched portrait under a faceted
+  mirror ball on its thread, light beams and sequin stars on a night ground. Geometry and motion
+  live in `hero/_disco-stage.scss`; a profile supplies only `--disco-stage-*` tokens (glow-rgb,
+  silver-rgb, ground, ball-centre, ball-width), each with a neutral night fallback. Requires
+  `hero.backgroundImage`.
+- countdown.mirror-ball: the countdown as a mirror ball turning over the numbers; the tiles read as
+  pale ink on the night band with a sparkle rule. `--mirror-ball-*` (glow-rgb, silver-rgb, ink).
+- thankYou.last-song: portrait-keepsake markup as the last dance — the closing portrait in a lit
+  frame on a night ground, with the ambient video and sequin light over it. Requires
+  `thankYou.image`. `--last-song-*` (dusk-rgb, glow-rgb, ground, ink, ink-rgb).
 - countdown.written-days: one composed fact — small-caps lead, a light display day count with an
   italic "días", and the date in lowercase with old-style numerals; no tiles, the timer updates once
   a minute. `--countdown-written-*`.

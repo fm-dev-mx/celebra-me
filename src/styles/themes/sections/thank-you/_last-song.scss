@@ -1,0 +1,129 @@
+@use '../../../tools/motion';
+@use '../../../tools/disco-motifs' as disco;
+@use 'portrait-keepsake';
+
+// Last song: the portrait keepsake on a lit night ground, with sequins over the photograph and a
+// neon closing line. Profiles map `--last-song-*` to their palette.
+.event-theme-wrapper .thank-you-section[data-variant='last-song'] {
+	// A solid wine night down to the footer, lit from below the portrait, as tall as its content so
+	// no empty night is left under the name.
+	min-height: auto;
+	background:
+		radial-gradient(
+			ellipse at 50% 70%,
+			rgb(var(--last-song-dusk-rgb, var(--color-surface-secondary-rgb)) / 55%),
+			transparent 65%
+		),
+		var(--last-song-ground, var(--color-surface-primary));
+
+	// The last song: the hero's disco loop washes its lights over the portrait (screen blend keeps
+	// the face), and silver sequins drift down inside the arch. Still, only the portrait shows.
+	--thank-you-ambient-blend: screen;
+	--thank-you-ambient-opacity: 55%;
+
+	// The portrait was shot in low light; it is lifted so the face reads on the night.
+	.thank-you-editorial__media img {
+		filter: brightness(1.5) contrast(1.05);
+	}
+
+	.thank-you-editorial__image-shell::after {
+		position: absolute;
+		z-index: 1;
+		inset: -40% 0 0;
+		background:
+			radial-gradient(circle at 18% 12%, rgb(244 244 248 / 90%) 0 1.5px, transparent 2.5px),
+			radial-gradient(
+				circle at 64% 4%,
+				rgb(var(--last-song-glow-rgb, var(--color-action-accent-rgb)) / 85%) 0 1.5px,
+				transparent 2.5px
+			),
+			radial-gradient(circle at 82% 30%, rgb(244 244 248 / 80%) 0 1px, transparent 2px),
+			radial-gradient(circle at 38% 44%, rgb(244 244 248 / 75%) 0 1px, transparent 2px),
+			radial-gradient(
+				circle at 8% 70%,
+				rgb(var(--last-song-glow-rgb, var(--color-action-accent-rgb)) / 75%) 0 1.5px,
+				transparent 2.5px
+			),
+			radial-gradient(circle at 72% 82%, rgb(244 244 248 / 85%) 0 1.5px, transparent 2.5px);
+		background-size: 100% 50%;
+		opacity: 0%;
+		pointer-events: none;
+		content: '';
+	}
+
+	@include motion.motion-safe {
+		.thank-you-editorial__image-shell::after {
+			opacity: 100%;
+			animation: last-song-closing-sequins 9s linear infinite;
+		}
+
+		@supports (animation-timeline: view()) {
+			.closing-name {
+				animation: last-song-closing-neon linear both;
+				animation-timeline: view();
+				animation-range: entry 30% cover 40%;
+			}
+		}
+	}
+
+	@keyframes last-song-closing-sequins {
+		from {
+			transform: translateY(0);
+		}
+
+		to {
+			transform: translateY(28.5%);
+		}
+	}
+
+	// The marquee tube flickers twice and then holds.
+	@keyframes last-song-closing-neon {
+		0%,
+		22%,
+		44% {
+			color: rgb(var(--last-song-ink-rgb, var(--color-text-primary-rgb)) / 45%);
+			text-shadow: none;
+		}
+
+		14%,
+		34%,
+		60%,
+		100% {
+			color: rgb(255 240 244);
+			text-shadow:
+				0 0 1.5rem rgb(var(--last-song-glow-rgb, var(--color-action-accent-rgb)) / 70%),
+				0 0 0.3rem rgb(var(--last-song-glow-rgb, var(--color-action-accent-rgb)) / 55%);
+		}
+	}
+
+	// The preset's tall keepsake grid splits its spare height into an empty second row; the photo
+	// and the name sit in one row here, so the grid only takes their height.
+	.thank-you-editorial {
+		grid-template-rows: auto;
+		min-height: auto;
+	}
+
+	.thank-you-message {
+		font-size: 1.25rem;
+	}
+
+	.closing-name {
+		color: var(--last-song-ink, var(--color-text-primary));
+		font-size: clamp(5rem, 22vw, 7rem);
+		line-height: 1;
+		text-shadow: 0 0 1.5rem rgb(var(--last-song-glow-rgb, var(--color-action-accent-rgb)) / 55%);
+
+		&::after {
+			display: block;
+			width: 9rem;
+			aspect-ratio: 104 / 16;
+			margin: 0.5rem auto 0;
+			background: disco.$sparkle-rule center / contain no-repeat;
+			content: '';
+		}
+	}
+}
+
+// The reply card is a ticket to the dance floor: a sequin edge with a glint that runs around it,
+// the invitation in the marquee script, and a perforated stub (notched sides, dashed tear line)
+// holding the note about the personal pass. Reduced motion keeps the edge without the glint.

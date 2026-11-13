@@ -44,7 +44,7 @@ const content: CanonicalEventContentInput = {
 	},
 	hero: {
 		// The close portrait stands in an arch over the name.
-		variant: 'framed-portrait',
+		variant: 'disco-stage',
 		name: CELEBRANT_NAME,
 		label: 'Mis XV Años',
 		// Hero formats its display date in UTC; eventTiming owns the real instant.
@@ -54,12 +54,18 @@ const content: CanonicalEventContentInput = {
 		focalPointMobile: '50% 35%',
 		presentation: { venueIndex: 0 },
 		scrollLabel: 'Deslice para descubrir',
+		// The same disco room as the opening clip, looping without the ball the hero draws itself.
+		ambientVideo: {
+			webm: '/videos/valeria-hernandez/hero-loop.webm',
+			mp4: '/videos/valeria-hernandez/hero-loop.mp4',
+			poster: '/videos/valeria-hernandez/hero-loop-poster.webp',
+		},
 	},
 	envelope: {
 		disabled: false,
 		variant: 'storybook-blush',
 		// The night envelope opens the cherry disco night; the profile recolors it to wine and silver.
-		revealVariant: 'night-envelope',
+		revealVariant: 'disco-night',
 		sealStyle: 'wax',
 		sealIcon: 'wax-monogram',
 		sealInitials: 'V',
@@ -68,6 +74,12 @@ const content: CanonicalEventContentInput = {
 		cardLabel: 'Mis XV Años',
 		guestLabel: 'Para',
 		microcopy: 'Abra su invitación',
+		// The rendered disco room plays behind the live letter as it opens.
+		openingVideo: {
+			webm: '/videos/valeria-hernandez/opening.webm',
+			mp4: '/videos/valeria-hernandez/opening.mp4',
+			poster: '/videos/valeria-hernandez/poster.webp',
+		},
 	},
 	quote: {
 		text: 'Quince años, una noche y una pista llena de luces.',
@@ -92,7 +104,7 @@ const content: CanonicalEventContentInput = {
 		},
 	},
 	countdown: {
-		variant: 'standard',
+		variant: 'mirror-ball',
 		title: 'Faltan',
 		footerText: 'para mi noche disco',
 		presentationOptions: { visibleUnits: ['days', 'hours', 'minutes', 'seconds'] },
@@ -240,8 +252,14 @@ const content: CanonicalEventContentInput = {
 	},
 	thankYou: {
 		// A smiling night photograph closes the page the way the party ends.
-		variant: 'portrait-keepsake',
+		variant: 'last-song',
 		image: 'thankYouPortrait',
+		// The last song: the hero's disco room plays its lights over the closing portrait.
+		ambientVideo: {
+			webm: '/videos/valeria-hernandez/hero-loop.webm',
+			mp4: '/videos/valeria-hernandez/hero-loop.mp4',
+			poster: '/videos/valeria-hernandez/hero-loop-poster.webp',
+		},
 		focalPoint: '50% 35%',
 		message: 'Gracias por ser parte de mis quince años. Le espero el 9 de enero.',
 		closingName: CELEBRANT_NAME,

@@ -6,6 +6,7 @@ import { THEME_PRESETS } from '@/lib/theme/theme-contract';
 export const envelopeRevealVariantSchema = z.enum([
 	'celestial-blue',
 	'celestial-letter',
+	'disco-night',
 	'editorial-cover',
 	'night-envelope',
 	'satin-filigree',
@@ -43,6 +44,15 @@ export const envelopeSchema = z
 		sealVariant: z.enum(['wax-organic', 'wax-medallion', 'premium-rose']).optional(),
 		sealImage: AssetSchema.optional(),
 		backdropImage: AssetSchema.optional(),
+		// A pre-rendered opening clip played behind the live envelope; the poster is its first frame.
+		openingVideo: z
+			.object({
+				webm: z.string().startsWith('/'),
+				mp4: z.string().startsWith('/').optional(),
+				poster: z.string().startsWith('/'),
+			})
+			.strict()
+			.optional(),
 		cardLabel: z.string().trim().max(60).optional(),
 		envelopeName: z.string().trim().max(200).optional(),
 		cardName: z.string().trim().max(200).optional(),

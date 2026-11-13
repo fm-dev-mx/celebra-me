@@ -56,6 +56,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'hero',
+		variant: 'disco-stage',
+		default: false,
+		prerequisites: ['hero.backgroundImage'],
+		cssOwner: 'src/styles/themes/sections/hero/_disco-stage.scss',
+	},
+	{
+		section: 'hero',
 		variant: 'bleed-portrait',
 		default: false,
 		prerequisites: ['hero.backgroundImage'],
@@ -385,6 +392,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'thankYou',
+		variant: 'last-song',
+		default: false,
+		prerequisites: ['thankYou.message', 'thankYou.closingName', 'thankYou.image'],
+		cssOwner: 'src/styles/themes/sections/thank-you/_last-song.scss',
+	},
+	{
+		section: 'thankYou',
 		variant: 'full-bleed-photo',
 		default: false,
 		prerequisites: ['thankYou.image'],
@@ -417,6 +431,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		default: false,
 		prerequisites: noSpecialPrerequisites,
 		cssOwner: 'src/styles/themes/sections/countdown/_written-days.scss',
+	},
+	{
+		section: 'countdown',
+		variant: 'mirror-ball',
+		default: false,
+		prerequisites: ['countdown'],
+		cssOwner: 'src/styles/themes/sections/countdown/_mirror-ball.scss',
 	},
 	{
 		section: 'countdown',

@@ -126,6 +126,15 @@ export const quoteSchema = z
 	})
 	.strict();
 
+/** A muted, seamless decorative loop (site-relative paths); it plays only after the envelope opens. */
+export const ambientVideoSchema = z
+	.object({
+		webm: z.string().startsWith('/'),
+		mp4: z.string().startsWith('/').optional(),
+		poster: z.string().startsWith('/'),
+	})
+	.strict();
+
 /** Leading words of `closingName` set as the display line; presentation only. */
 export const closingNameLeadWordsSchema = z.number().int().min(1).max(4).optional();
 
@@ -141,6 +150,8 @@ export const thankYouSchema = z
 		image: AssetSchema.optional(),
 		/** Decorative cutout (transparent image) printed below the signature; contained, never cropped. */
 		ornament: AssetSchema.optional(),
+		/** A muted loop layered over the closing portrait while it is on screen. */
+		ambientVideo: ambientVideoSchema.optional(),
 		focalPoint: focalPointSchema.optional(),
 		overlayAnchor: overlayAnchorSchema.optional(),
 		overlaySafeArea: overlaySafeAreaSchema.optional(),
@@ -150,7 +161,8 @@ export const thankYouSchema = z
 		if (
 			(thankYou.variant === 'full-bleed-photo' ||
 				thankYou.variant === 'portrait-letter' ||
-				thankYou.variant === 'portrait-keepsake') &&
+				thankYou.variant === 'portrait-keepsake' ||
+				thankYou.variant === 'last-song') &&
 			!thankYou.image
 		) {
 			context.addIssue({
