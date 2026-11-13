@@ -68,7 +68,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | gifts                 | —                                                                          | not_applicable | wa-export     | Not requested                                                      |
 | itinerary             | [[PENDIENTE:ITINERARY]]                                                    | pending        | wa-export     | The client asked whether it is included; section hidden until sent |
 | menu                  | [[PENDIENTE:MENU]]                                                         | pending        | wa-export     | The client wants a menu; section hidden until sent                 |
-| musicUrl              | Client song (YouTube reference)                                            | verified       | wa-export     | Not hosted this round; joins in an adjustment round                |
+| musicUrl              | Client song (YouTube reference)                                            | verified       | wa-export     | Hosted at 64 kbps on the media domain (Someone to Love, piano)     |
 | checkInQr             | —                                                                          | not_applicable | wa-export     | No check-in QR                                                     |
 | memoriesQr            | Photo QR add-on                                                            | verified       | wa-export     | «También quiero el Qr»; needs a memory space first                 |
 | specialMessages       | [[PENDIENTE:CELEBRANT_MESSAGE]]                                            | pending        | owner-session | The quote and closing are agent drafts until Valeria sends hers    |
@@ -89,7 +89,7 @@ content the client has not supplied stays hidden; nothing is invented.
 - RSVP deadline, itinerary and menu: not supplied; the sections stay hidden and the RSVP copy names
   no date.
 - Valeria's own message: the quote and closing are agent drafts.
-- Music: the client sent a YouTube link only; hosting the track is an adjustment-round step.
+- Music: the client sent a YouTube link; it is encoded at 64 kbps and hosted on the media domain.
 - Photo QR: the invitation section needs an existing memory space owned by this event, created from
   the admin panel after the first publication; it joins in a later managed update.
 - Map pins: both links are address searches; the reception hall has no public listing.
@@ -144,7 +144,7 @@ Release scope: up to develop + Preview; Production waits for the owner's package
 | ---------------------- | ------------------------------------------------------------------------------ |
 | requested              | location (two venues), family (parents + godparents), dress code, passes, RSVP |
 | inferred / recommended | envelope, hero, quote, countdown, gallery, personalizedAccess, thankYou        |
-| client-provided        | music: YouTube link (not hosted this round)                                    |
+| client-provided        | music: YouTube link; encoded to 64 kbps and hosted on the media domain         |
 | omitted                | itinerary, menu (pending), gifts (not requested), memories (pending space)     |
 | unresolved             | —                                                                              |
 
