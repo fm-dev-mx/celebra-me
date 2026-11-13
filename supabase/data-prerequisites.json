@@ -72,14 +72,12 @@
         },
         {
             "id": "20260812-itinerary-gallery-structural-contracts",
-            "summary": "The four targeted XV invitations have explicit timeline-paper itinerary contracts and the three celestial targets have index-choreography galleries in published content and every active draft; every live published content and active draft is an object whose rsvp, eventTiming and hero paths are objects when present, and every client published content resolves an event date.",
+            "summary": "The four targeted XV invitations have timeline-paper itinerary variants without the non-schema itinerary.presentation key, and the three celestial targets have index-choreography galleries in published content and every active draft; every live published content and active draft is an object whose rsvp, eventTiming and hero paths are objects when present, and every client published content resolves an event date.",
             "introducedBy": "scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql",
             "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20260812_itinerary_gallery.sql",
             "environments": {
                 "production": {
-                    "status": "verified",
-                    "verifiedAt": "2026-11-12",
-                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Owner patch 20260812_p0_itinerary_gallery_structural_contracts.sql applied (APPLIED_AND_VERIFIED), then the verifier: invalid_published_targets=0, checked_rows=8, mismatched_rows=0, shape_checked_rows=70, content/rsvp/eventTiming/hero not object=0, client_published_without_event_date=0, ok=t."
+                    "status": "pending"
                 },
                 "preview": {
                     "status": "pending"

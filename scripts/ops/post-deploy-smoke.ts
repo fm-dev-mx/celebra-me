@@ -21,6 +21,7 @@ export type PostDeployProbeId =
 	| 'demo'
 	| 'auth_boundary'
 	| 'runtime_health'
+	| 'invitations_health'
 	| 'header_policy'
 	| 'asset';
 /** Page probes target `{eventType}:{slug}`; evidence tokens cannot carry a path. */
@@ -29,6 +30,7 @@ export type PostDeployProbeTarget =
 	| 'login'
 	| 'auth_session'
 	| 'health'
+	| 'invitations_health'
 	| 'root_headers'
 	| 'astro_asset'
 	| `${string}:${string}`;
@@ -123,10 +125,30 @@ const PAGE_TITLE_PATTERN = /<title>[^<]+<\/title>/i;
  * A rendered page is 200 with a non-empty title. An invitation may also answer 403: that is
  * the neutral page for an invitation the administrator disabled (for example /xv/mia-pintor),
  * a database state the catalog cannot know.
+ *
+ * An invitation may answer 404 only when `/api/health/invitations` reported zero failing
+ * invitations: every published row then resolves, so the 404 means the catalog invitation has
+ * no published row yet (`prod:apply` publishes it after activation), not that its content is
+ * invalid.
  */
-function isExpectedPageResponse(route: SmokePageRoute, status: number, html: string): boolean {
+function isExpectedPageResponse(
+	route: SmokePageRoute,
+	status: number,
+	html: string,
+	pendingPublicationAllowed: boolean,
+): boolean {
 	if (status === 200) return PAGE_TITLE_PATTERN.test(html);
-	return route.kind === 'invitation' && status === 403;
+	if (route.kind !== 'invitation') return false;
+	return status === 403 || (status === 404 && pendingPublicationAllowed);
+}
+
+/** Options of one deployment smoke. */
+export interface DeploymentSmokeOptions {
+	/**
+	 * Probe `/api/health/invitations` before the pages: it must report zero failing
+	 * invitations. Production only; Preview data is not held to it.
+	 */
+	invitationsHealth?: boolean;
 }
 
 function requireValue(value: string, name: string): string {
@@ -255,7 +277,7 @@ export async function runProductionSmoke(
 ): Promise<ProductionSmokeResult> {
 	const origin = parseDeploymentOrigin(baseUrl);
 	// No credentials: the application session probe must remain anonymous.
-	return runDeploymentSmoke(origin, fetchImpl, {}, access.pages);
+	return runDeploymentSmoke(origin, fetchImpl, {}, access.pages, { invitationsHealth: true });
 }
 
 /**
@@ -267,6 +289,7 @@ export async function runDeploymentSmoke(
 	fetchImpl: FetchLike,
 	accessHeaders: Record<string, string>,
 	pages: readonly SmokePageRoute[] = listSmokePageRoutes(),
+	options: DeploymentSmokeOptions = {},
 ): Promise<ProductionSmokeResult> {
 	const baseUrl = origin.origin;
 	const request: FetchLike = (url, init) => {
@@ -282,6 +305,7 @@ export async function runDeploymentSmoke(
 	let assetVerified = false;
 	let authBoundaryVerified = false;
 	let headerPolicyVerified = false;
+	let invitationsHealthVerified = false;
 	let rootHtml: string | null = null;
 	let rootHeaders: Headers | null = null;
 	let rootStatusCode: number | null = null;
@@ -346,6 +370,41 @@ export async function runDeploymentSmoke(
 			retryCount,
 		};
 	});
+	if (options.invitationsHealth) {
+		await probe(
+			'invitations_health_failed',
+			'invitations_health',
+			'invitations_health',
+			async () => {
+				const { response, retryCount } = await fetchWithOneRetry(
+					request,
+					`${baseUrl}/api/health/invitations`,
+				);
+				type InvitationsHealthPayload = {
+					checks?: { invitations?: { failing?: unknown } };
+				};
+				let payload: InvitationsHealthPayload | null;
+				try {
+					payload = (await response.json()) as InvitationsHealthPayload | null;
+				} catch {
+					return {
+						passed: false,
+						statusCode: response.status,
+						failureClass: 'json_invalid',
+						retryCount,
+					};
+				}
+				invitationsHealthVerified =
+					response.status === 200 && payload?.checks?.invitations?.failing === 0;
+				return {
+					passed: invitationsHealthVerified,
+					statusCode: response.status,
+					failureClass: response.status === 200 ? 'contract_mismatch' : 'http_status',
+					retryCount,
+				};
+			},
+		);
+	}
 	for (const route of pages) {
 		const target = `${route.eventType}:${route.slug}` as const;
 		await probe(`${route.kind}_failed:${target}`, route.kind, target, async () => {
@@ -355,7 +414,12 @@ export async function runDeploymentSmoke(
 			);
 			const html = await response.text();
 			return {
-				passed: isExpectedPageResponse(route, response.status, html),
+				passed: isExpectedPageResponse(
+					route,
+					response.status,
+					html,
+					invitationsHealthVerified,
+				),
 				statusCode: response.status,
 				failureClass: response.status === 200 ? 'contract_mismatch' : 'http_status',
 				retryCount,

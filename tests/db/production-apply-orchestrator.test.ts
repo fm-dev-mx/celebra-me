@@ -1157,6 +1157,96 @@ describe('production apply execution', () => {
 		},
 	);
 
+	it('applies the reviewed Worker-compatible content repair without waiting for the Worker', async () => {
+		const scriptId = '20261112_itinerary_presentation_removal';
+		const sql = readFileSync(`scripts/manual/production-patches/${scriptId}.sql`, 'utf8');
+		const assertWorkerServesRelease = jest.fn(async () => {
+			throw new Error('the Worker must not be consulted');
+		});
+		const applyPatch = jest.fn(async () => ({ state: 'APPLIED_AND_VERIFIED' as const }));
+		const base = baseDeps({ pending: [] });
+		const result = await applyProductionApplyPlan(
+			cli([
+				'--patch',
+				'scripts/manual/production-patches/test.sql',
+				'--owner-user-id',
+				'550e8400-e29b-41d4-a716-446655440000',
+				'--apply',
+			]),
+			{
+				...base,
+				preparePatch: (file) => {
+					const prepared = base.preparePatch!(file);
+					return {
+						...prepared,
+						sql,
+						manifest: {
+							...prepared.manifest,
+							'script-id': scriptId,
+							tables: 'public.published_invitation_content, public.invitation_content_drafts',
+						},
+					};
+				},
+				requireOwnerApply: async (input) => {
+					issueProductionWritePermit({
+						projectRef: SUPABASE_PROJECT_REFS.production,
+						operationType: 'production_apply',
+						bindingHex: input.bindingHex,
+					});
+				},
+				assertWorkerServesRelease,
+				ensurePatchBackup: () => ({ manifestPath: '.tmp/test-backup.json' }),
+				revalidatePatchBackup: () => undefined,
+				applyPatch,
+			},
+		);
+		expect(result.wrote).toBe(true);
+		expect(assertWorkerServesRelease).not.toHaveBeenCalled();
+		expect(applyPatch).toHaveBeenCalled();
+	});
+
+	it('gates a content patch whose text differs from the reviewed repair', async () => {
+		const scriptId = '20261112_itinerary_presentation_removal';
+		const sql = `${readFileSync(`scripts/manual/production-patches/${scriptId}.sql`, 'utf8')}\n-- edit\n`;
+		const assertWorkerServesRelease = jest.fn<
+			(input: { releaseSha: string }) => Promise<unknown>
+		>(async () => {
+			throw new OperatorError({
+				title: 'Worker behind',
+				cause: 'test',
+				code: 'PRODUCTION_WORKER_BEHIND_CONTENT',
+				remediation: [],
+			});
+		});
+		const applyPatch = jest.fn(async () => ({ state: 'APPLIED_AND_VERIFIED' as const }));
+		const base = baseDeps({ pending: [] });
+		await expect(
+			applyProductionApplyPlan(
+				cli([
+					'--patch',
+					'scripts/manual/production-patches/test.sql',
+					'--owner-user-id',
+					'550e8400-e29b-41d4-a716-446655440000',
+					'--apply',
+				]),
+				{
+					...base,
+					preparePatch: (file) => {
+						const prepared = base.preparePatch!(file);
+						return {
+							...prepared,
+							sql,
+							manifest: { ...prepared.manifest, 'script-id': scriptId },
+						};
+					},
+					assertWorkerServesRelease,
+					applyPatch,
+				},
+			),
+		).rejects.toMatchObject({ code: 'PRODUCTION_WORKER_BEHIND_CONTENT' });
+		expect(applyPatch).not.toHaveBeenCalled();
+	});
+
 	it('gates an unreviewed patch even when it declares only Worker-independent tables', async () => {
 		const assertWorkerServesRelease = jest.fn<
 			(input: { releaseSha: string }) => Promise<unknown>

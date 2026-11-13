@@ -20,7 +20,11 @@ function response(status: number, body = '', headers: Record<string, string> = {
 
 function previewFetch(
 	build: { commitSha: string; environment: string | null },
-	options: { openWithoutToken?: boolean; contactLocation?: string } = {},
+	options: {
+		openWithoutToken?: boolean;
+		contactLocation?: string;
+		failingInvitations?: number;
+	} = {},
 ) {
 	return jest.fn(async (input: string, init?: RequestInit) => {
 		const pathname = new URL(input).pathname;
@@ -45,6 +49,13 @@ function previewFetch(
 				200,
 				JSON.stringify({ status: 'healthy', checks: { runtime: { status: 'ok' } }, build }),
 			);
+		if (pathname === '/api/health/invitations') {
+			const failing = options.failingInvitations ?? 0;
+			return response(
+				failing === 0 ? 200 : 503,
+				JSON.stringify({ checks: { invitations: { active: 5, failing } } }),
+			);
+		}
 		if (pathname === '/api/whatsapp')
 			return response(302, '', {
 				location: options.contactLocation ?? 'https://wa.me/5216681234567?text=Hola',
@@ -86,12 +97,14 @@ describe('Cloudflare Preview smoke', () => {
 					fetchMock,
 					accessHeaders,
 				);
-				const expectedFailures = [
-					...(environment === 'production'
-						? ['invitation_failed:boda:daniela-y-martin']
-						: []),
-					...(unrelatedMissing ? ['invitation_failed:xv:mia-pintor'] : []),
-				];
+				// Production probes /api/health/invitations first; with zero failing
+				// invitations a 404 invitation is pending publication, not a failure.
+				const expectedFailures =
+					environment === 'production'
+						? []
+						: unrelatedMissing
+							? ['invitation_failed:xv:mia-pintor']
+							: [];
 				expect(result.failureCodes).toEqual(expectedFailures);
 				const requestedPaths = fetchMock.mock.calls.map(([url]) => new URL(url).pathname);
 				expect(requestedPaths.includes('/boda/daniela-y-martin')).toBe(
@@ -103,6 +116,51 @@ describe('Cloudflare Preview smoke', () => {
 			}
 		},
 	);
+
+	it('fails a Production version whose invitations health reports failing content', async () => {
+		const baseFetch = previewFetch(
+			{ commitSha: sha, environment: 'production' },
+			{ failingInvitations: 4 },
+		);
+		const fetchMock = jest.fn(async (input: string, init?: RequestInit) =>
+			new URL(input).pathname === '/xv/mia-pintor' ? response(404) : baseFetch(input, init),
+		);
+		jest.useFakeTimers({ now: new Date('2026-10-27T12:00:00Z') });
+		const result = await runCloudflareWorkerSmoke(
+			{
+				url: 'https://9f8e7d6c-celebra-me.celebra-me-com.workers.dev',
+				sha,
+				environment: 'production',
+			},
+			fetchMock,
+			accessHeaders,
+		).finally(() => jest.useRealTimers());
+		expect(result.passed).toBe(false);
+		expect(result.failureCodes).toEqual(
+			expect.arrayContaining([
+				'invitations_health_failed',
+				'invitation_failed:xv:mia-pintor',
+			]),
+		);
+	});
+
+	it('does not probe invitations health on Preview', async () => {
+		const fetchMock = previewFetch(
+			{ commitSha: sha, environment: 'preview' },
+			{ failingInvitations: 4 },
+		);
+		const result = await runCloudflareWorkerSmoke(
+			{ url: `https://${versionHost}`, sha },
+			fetchMock,
+			accessHeaders,
+		);
+		expect(result.passed).toBe(true);
+		expect(
+			fetchMock.mock.calls.some(
+				([url]) => new URL(url).pathname === '/api/health/invitations',
+			),
+		).toBe(false);
+	});
 
 	it('accepts only the Preview Worker host or one of its version URLs', () => {
 		expect(parseCloudflareWorkerOrigin(`https://${stableHost}`).hostname).toBe(stableHost);
