@@ -1527,7 +1527,9 @@
 //                                          A cord from above the card down to its eyelet
 //   --location-enclosure-swing             Scroll-linked keyframes as the card arrives
 //                                          (`location-enclosure-swing`), around -swing-origin
-//   --location-enclosure-heading-{transform,tracking,color}
+//   --location-enclosure-heading-{transform,tracking,color,shadow}
+//   --location-enclosure-palette / -palette-display / -palette-width / -palette-height / -palette-mask
+//                                          A strip under the first note (the allowed colors)
 //   --location-enclosure-lead-title-{font,size,caps,tracking,color}  First note's title
 //   --location-enclosure-swatch-size / -swatch-ring
 //   --location-enclosure-last-text-{font,size,caps,transform,tracking,color}  Last note's text
@@ -1619,6 +1621,17 @@
 		text-transform: var(--location-enclosure-heading-transform, none);
 		text-wrap: balance;
 		color: var(--location-enclosure-heading-color, inherit);
+		text-shadow: var(--location-enclosure-heading-shadow, none);
+	}
+
+	.event-location__enclosure-note:first-of-type::after {
+		content: '';
+		display: var(--location-enclosure-palette-display, none);
+		width: var(--location-enclosure-palette-width, 100%);
+		height: var(--location-enclosure-palette-height, 1.5rem);
+		margin-top: 0.5rem;
+		background: var(--location-enclosure-palette, none);
+		mask: var(--location-enclosure-palette-mask, none);
 	}
 
 	.event-location__enclosure-note:first-of-type .event-location__enclosure-title {
@@ -1722,6 +1735,107 @@
 		);
 		rotate: var(--location-enclosure-reserved-title-tilt, 0deg);
 	}
+
+	// Opens the reference picture; sits under the palette of the first note.
+	.event-location__reference-trigger {
+		order: 1;
+		min-height: 2.75rem;
+		margin-top: 0.35rem;
+		padding: 0.5rem 1.25rem;
+		border: 1px solid var(--location-reference-trigger-border, currentcolor);
+		border-radius: var(--radius-pill, 999px);
+		font-family: var(--font-label, var(--font-body));
+		font-size: var(--location-reference-label-size, 0.95rem);
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.14em;
+		color: var(--location-reference-trigger-ink, inherit);
+		cursor: pointer;
+		background: var(--location-reference-trigger-bg, transparent);
+		box-shadow: var(--location-reference-trigger-shadow, none);
+
+		&:focus-visible {
+			outline: 2px solid currentcolor;
+			outline-offset: 3px;
+		}
+	}
+}
+
+// Reference picture of the enclosure (`location.indicationsReference`), in the top layer.
+// Tokens: --location-reference-{bg,ink,border,backdrop} and
+// --location-reference-trigger-{border,ink,bg,shadow}
+.event-location__reference-dialog {
+	flex-direction: column;
+	gap: 0.85rem;
+	align-items: center;
+	width: min(100vw - 1.5rem, 34rem);
+	max-width: none;
+	max-height: calc(100dvh - 1.5rem);
+	margin: auto;
+	padding: 0.85rem;
+	border: 1px solid var(--location-reference-border, rgb(16 24 32 / 18%));
+	border-radius: var(--radius-lg, 0.75rem);
+	color: var(--location-reference-ink, var(--color-text-primary));
+	background: var(--location-reference-bg, var(--color-surface-primary));
+
+	&[open] {
+		display: flex;
+	}
+
+	&::backdrop {
+		background: var(--location-reference-backdrop, rgb(0 0 0 / 78%));
+	}
+}
+
+.event-location__reference-figure {
+	display: flex;
+	flex-direction: column;
+	gap: 0.6rem;
+	align-items: center;
+	min-height: 0;
+	margin: 0;
+}
+
+.event-location__reference-image {
+	width: auto;
+	max-width: 100%;
+	height: auto;
+	min-height: 0;
+	max-height: calc(100dvh - 11rem);
+	border-radius: var(--radius-sm, 0.4rem);
+	object-fit: contain;
+}
+
+.event-location__reference-note {
+	font-family: var(--font-body);
+	font-size: var(--location-reference-note-size, 0.95rem);
+	font-style: italic;
+	line-height: 1.4;
+	text-align: center;
+	text-wrap: balance;
+}
+
+.event-location__reference-close {
+	flex: none;
+	min-height: 2.75rem;
+	padding: 0.5rem 1.5rem;
+	border: 1px solid currentcolor;
+	border-radius: var(--radius-pill, 999px);
+	font-family: var(--font-label, var(--font-body));
+	font-size: var(--location-reference-label-size, 0.95rem);
+	font-variant-caps: all-small-caps;
+	letter-spacing: 0.14em;
+	color: inherit;
+	cursor: pointer;
+	background: transparent;
+
+	&:focus-visible {
+		outline: 2px solid currentcolor;
+		outline-offset: 3px;
+	}
+}
+
+html:has(.event-location__reference-dialog[open]) {
+	overflow: hidden;
 }
 
 // The tag settles from a slight swing on its cord as it arrives (opt-in, scroll-linked).

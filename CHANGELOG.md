@@ -10,6 +10,29 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.71.0] - 2026-11-13
+
+Ships the third client round of Yireh Ana and the cherry disco redesign of Valeria Hernández. No
+database migrations.
+
+### Added
+
+- Invitations: Valeria Hernández becomes a cherry disco night (#939), with a mirror-ball-route
+  location scene and an album dusk shift (#941).
+- Invitations: shared `satin-ribbons` ornament set, opted into only by Yireh Ana (#940).
+
+### Changed
+
+- Invitations: third client round of Yireh Ana — single-screen hero, always-visible footer with a
+  closing phrase, neutral RSVP step titles, envelope and location polish (#940).
+- RSVP: the stepped flow keeps the chosen answer marked when the guest goes back, and choosing it
+  again moves on (#940).
+
+### Fixed
+
+- Ops: the post-deploy smoke reports unpublished catalog invitations as pending content instead of
+  failing (#955).
+
 ## [0.70.0] - 2026-11-12
 
 Adds the order lifecycle, stage board and event agenda to the dashboard, keeps hosts signed in,

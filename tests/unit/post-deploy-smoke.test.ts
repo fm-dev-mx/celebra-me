@@ -3,8 +3,11 @@ import { resolve } from 'node:path';
 import {
 	formatEvidenceSummary,
 	listSmokePageRoutes,
+	passedOwnerAction,
 	resolveSmokeBaseUrl,
+	runDeploymentSmoke,
 	runProductionSmoke,
+	toPostDeployPayload,
 	type PostDeployEvidence,
 } from '../../scripts/ops/post-deploy-smoke';
 import { visualPageRoute } from '../../scripts/screenshot/visual-coverage-contract';
@@ -109,6 +112,7 @@ describe('post-deploy smoke', () => {
 			authBoundaryVerified: true,
 			headerPolicyVerified: true,
 			failureCodes: [],
+			pendingContentTargets: [],
 			probeResults: expect.arrayContaining([
 				expect.objectContaining({
 					probe: 'homepage',
@@ -174,7 +178,7 @@ describe('post-deploy smoke', () => {
 		expect(fetchMock).toHaveBeenCalledWith('https://celebra-me.com/brisa', expect.anything());
 	});
 
-	it('accepts a 404 invitation as pending publication only while no invitation fails', async () => {
+	it('reports a 404 invitation as pending content only while no invitation fails', async () => {
 		const pages = [
 			{ kind: 'invitation', eventType: 'xv', slug: 'unpublished' },
 			{ kind: 'demo', eventType: 'xv', slug: 'demo-missing' },
@@ -192,6 +196,7 @@ describe('post-deploy smoke', () => {
 		const result = await runProductionSmoke('https://celebra-me.com', fetchMock, { pages });
 
 		expect(result.failureCodes).toEqual(['demo_failed:xv:demo-missing']);
+		expect(result.pendingContentTargets).toEqual(['xv:unpublished']);
 		expect(result.probeResults).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
@@ -204,10 +209,109 @@ describe('post-deploy smoke', () => {
 					probe: 'invitation',
 					target: 'xv:unpublished',
 					status_code: 404,
-					failure_class: 'none',
+					failure_class: 'pending_content',
 				}),
 			]),
 		);
+	});
+
+	it('passes the release smoke with unpublished catalog invitations and names them as pending', async () => {
+		const pages = [
+			{ kind: 'invitation', eventType: 'xv', slug: 'abril-michelle-becerra-rea' },
+			{ kind: 'invitation', eventType: 'xv', slug: 'valeria-hernandez' },
+			{ kind: 'invitation', eventType: 'boda', slug: 'published' },
+		] as const;
+		const baseFetch = productionFetch();
+		const fetchMock = productionFetch();
+		fetchMock.mockImplementation(async (input: string) => {
+			const pathname = new URL(input).pathname;
+			if (
+				pathname === '/xv/abril-michelle-becerra-rea' ||
+				pathname === '/xv/valeria-hernandez'
+			)
+				return response(404);
+			if (pathname === '/boda/published')
+				return response(200, '<html><head><title>Boda</title></head></html>');
+			return baseFetch(input);
+		});
+
+		const result = await runProductionSmoke('https://celebra-me.com', fetchMock, { pages });
+
+		expect(result.failedProbeCount).toBe(0);
+		expect(result.pendingContentTargets).toEqual([
+			'xv:abril-michelle-becerra-rea',
+			'xv:valeria-hernandez',
+		]);
+		expect(toPostDeployPayload(result).pending_content_count).toBe(2);
+		expect(passedOwnerAction(result.pendingContentTargets)).toBe(
+			'Publique el contenido pendiente con `pnpm prod:apply` (después del Worker): xv:abril-michelle-becerra-rea, xv:valeria-hernandez.',
+		);
+		expect(passedOwnerAction([])).toBe(
+			'No se requiere acción; conserve el Job Summary como evidencia.',
+		);
+	});
+
+	it('fails a 404 invitation when the health probe answers 200 but counts a failing invitation', async () => {
+		const pages = [{ kind: 'invitation', eventType: 'xv', slug: 'published-broken' }] as const;
+		const baseFetch = productionFetch();
+		const fetchMock = productionFetch();
+		fetchMock.mockImplementation(async (input: string) => {
+			const pathname = new URL(input).pathname;
+			if (pathname === '/xv/published-broken') return response(404);
+			if (pathname === '/api/health/invitations') {
+				return response(
+					200,
+					JSON.stringify({ checks: { invitations: { active: 3, failing: 1 } } }),
+				);
+			}
+			return baseFetch(input);
+		});
+
+		const result = await runProductionSmoke('https://celebra-me.com', fetchMock, { pages });
+
+		expect(result.failureCodes).toEqual([
+			'invitations_health_failed',
+			'invitation_failed:xv:published-broken',
+		]);
+		expect(result.pendingContentTargets).toEqual([]);
+		expect(result.probeResults).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					target: 'xv:published-broken',
+					status_code: 404,
+					failure_class: 'http_status',
+				}),
+			]),
+		);
+	});
+
+	it('never treats a 404 demo, or a 404 invitation without the health proof, as pending content', async () => {
+		const pages = [
+			{ kind: 'demo', eventType: 'xv', slug: 'demo-missing' },
+			{ kind: 'invitation', eventType: 'xv', slug: 'unpublished' },
+		] as const;
+		const baseFetch = productionFetch();
+		const fetchMock = productionFetch();
+		fetchMock.mockImplementation(async (input: string) => {
+			const pathname = new URL(input).pathname;
+			if (pathname === '/xv/demo-missing' || pathname === '/xv/unpublished')
+				return response(404);
+			return baseFetch(input);
+		});
+
+		// No invitations health probe (Preview): nothing proves the 404 is unpublished content.
+		const result = await runDeploymentSmoke(
+			new URL('https://celebra-me.com'),
+			fetchMock,
+			{},
+			pages,
+		);
+
+		expect(result.failureCodes).toEqual([
+			'demo_failed:xv:demo-missing',
+			'invitation_failed:xv:unpublished',
+		]);
+		expect(result.pendingContentTargets).toEqual([]);
 	});
 
 	it('fails the invitations health probe and every 404 invitation when content fails to resolve', async () => {
@@ -407,6 +511,7 @@ describe('post-deploy smoke', () => {
 			payload: {
 				probe_count: 7,
 				failed_probe_count: 1,
+				pending_content_count: 0,
 				network_retry_count: 0,
 				runtime_health_verified: false,
 				asset_verified: false,
@@ -428,6 +533,51 @@ describe('post-deploy smoke', () => {
 		const summary = formatEvidenceSummary(evidence);
 		expect(summary).toContain('| homepage | root | 403 | http_status | 0 | 8 |');
 		expect(summary).not.toMatch(/https?:\/\/|\?|cookie|body|token|secret/i);
+		expect(summary).not.toContain('Pending content');
+	});
+
+	it('lists pending content targets in the summary of a verified smoke', () => {
+		const evidence: PostDeployEvidence = {
+			schemaVersion: 1,
+			check: 'post_deploy_smoke',
+			environment: 'production',
+			runId: 'run_abcdef123',
+			startedAt: '2026-09-10T22:00:00.000Z',
+			completedAt: '2026-09-10T22:00:01.000Z',
+			observedAt: '2026-09-10T22:00:01.000Z',
+			status: 'VERIFIED',
+			reasonCode: 'url_smoke_passed',
+			source: 'github_actions',
+			ownerAction: passedOwnerAction(['xv:valeria-hernandez']),
+			payload: {
+				probe_count: 8,
+				failed_probe_count: 0,
+				pending_content_count: 1,
+				network_retry_count: 0,
+				runtime_health_verified: true,
+				asset_verified: true,
+				auth_boundary_verified: true,
+				header_policy_verified: true,
+				probe_results: [
+					{
+						probe: 'invitation',
+						target: 'xv:valeria-hernandez',
+						status_code: 404,
+						failure_class: 'pending_content',
+						retry_count: 0,
+						duration_ms: 12,
+					},
+				],
+			},
+		};
+
+		const summary = formatEvidenceSummary(evidence);
+		expect(summary).toContain(
+			'- Pending content (not a failure; publish with `pnpm prod:apply`): `xv:valeria-hernandez`',
+		);
+		expect(summary).toContain(
+			'| invitation | xv:valeria-hernandez | 404 | pending_content | 0 | 12 |',
+		);
 	});
 
 	it('runs a separate daily read-only Production image audit', () => {

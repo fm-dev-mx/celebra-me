@@ -49,6 +49,7 @@ const content: CanonicalEventContentInput = {
 		'thankYou',
 	],
 	composition: {
+		ornaments: 'satin-ribbons',
 		intersections: {
 			// Three intentional joins across the whole narrative arc (Bridge, Bridge, Climax),
 			// preserving clean neutral paper-mist cuts everywhere else.
@@ -66,16 +67,17 @@ const content: CanonicalEventContentInput = {
 		date: '2027-10-23T12:00:00.000Z',
 		backgroundImage: 'hero',
 		backgroundImageDesktop: 'heroWide',
-		scrollLabel: 'Deslice para descubrir',
-		// The cover stays while the picture closes in on the oak's yellow ribbon.
-		presentation: { timeFormat: '12h', scene: 'cover-approach' },
+		scrollLabel: 'Descubra mi celebración',
+		// A single still cover (no pinned close-in) that carries the date and the hall.
+		presentation: { timeFormat: '12h' },
 	},
 	envelope: {
 		disabled: false,
 		revealVariant: 'storybook-butterflies',
 		sealStyle: 'wax',
 		sealIcon: 'flower',
-		sealColor: 'champagne',
+		sealColor: 'mauve',
+		sealInitials: 'YA',
 		envelopeName: CELEBRANT_NAME,
 		cardName: CELEBRANT_NAME,
 		cardLabel: 'Mis XV Años',
@@ -112,6 +114,8 @@ const content: CanonicalEventContentInput = {
 		venues: [
 			{
 				type: 'reception',
+				// Heads the grouped card instead of the generic on-site label.
+				label: 'Sábado 23 de octubre',
 				venueEvent: 'Recepción',
 				venueName: 'Salón Casino Imperial',
 				address: 'Carr. Delicias–Ortiz km 1, Centro',
@@ -137,7 +141,8 @@ const content: CanonicalEventContentInput = {
 		],
 	},
 	itinerary: {
-		// Estimated hours agreed with the client on 2026-10-29; the copy says they may shift.
+		// Estimated hours agreed with the client on 2026-10-29; the copy says they may shift. One short
+		// line per moment at most, so the whole night reads large in a single screen.
 		variant: 'standard',
 		// Pinned scene: a yellow ribbon draws itself down the program and ends in the bow.
 		scene: 'ribbon-route',
@@ -147,36 +152,32 @@ const content: CanonicalEventContentInput = {
 				time: '19:00',
 				iconName: 'Reception',
 				label: 'Recepción',
-				description:
-					'Bienvenida en el Salón Casino Imperial. Le agradeceré llegar con tiempo para estar presente desde el inicio.',
+				description: 'Llegue con tiempo',
 			},
 			{
 				time: '19:30',
 				iconName: 'Dove',
 				label: 'Acción de gracias',
-				description:
-					'En el mismo salón, a cargo del Pastor Jesús Manuel Ozaeta Pérez. En ella recibiré diez elementos simbólicos.',
+				description: 'Con el Pastor Jesús Manuel Ozaeta',
 			},
 			{
 				time: '21:00',
 				iconName: 'Waltz',
 				label: 'Vals y brindis',
-				description: 'Bailaré mi vals y después brindaremos juntos.',
 			},
 			{
 				time: '21:30',
 				iconName: 'Dinner',
-				label: 'Bocadillos y aguas frescas',
-				description: 'La pista queda abierta para bailar.',
+				label: 'Bocadillos y baile',
 			},
 			{
 				time: '00:00',
 				iconName: 'Party',
 				label: 'Cierre',
-				description: 'Gracias por compartir esta noche conmigo.',
+				description: 'Gracias por acompañarme',
 			},
 		],
-		closingNote: 'Los horarios son aproximados; la celebración termina a medianoche.',
+		closingNote: 'Horarios aproximados',
 	},
 	gifts: {
 		// No registry and no envelopes: one gentle line, in the client's words.
@@ -228,10 +229,10 @@ const content: CanonicalEventContentInput = {
 			name: 'Su nombre',
 			notesLabel: 'Un mensaje para mis quince',
 			notesPlaceholder: 'Escriba aquí sus palabras...',
-			guestHint:
-				'Su pase incluye {count} lugares. Si asistirán menos personas, indíquelo aquí.',
+			// The hint only shows on a pass of two or more; the details heading reads for one too.
+			guestHint: 'Su pase es para {count} personas. Si asistirán menos, indíquelo aquí.',
 			stepAttendance: 'Su asistencia',
-			stepDetails: '¿Quiénes le acompañan?',
+			stepDetails: 'Los datos de su pase',
 		},
 		confirmationMessage: `Le espero el sábado ${EVENT_DATE_LABEL}.`,
 		responseMessages: {
@@ -249,10 +250,11 @@ const content: CanonicalEventContentInput = {
 		variant: 'portrait-keepsake',
 		image: 'wreath',
 		focalPoint: '50% 50%',
+		// Draft copy, pending the client's approval: the guest reads it before the party.
 		message:
-			'Gracias por acompañarme en mis quince años. Me llevo esta noche y el cariño de cada persona que estuvo aquí.',
+			'Gracias por acompañarme en mis quince años. Esa noche será más bonita con usted y con el cariño de cada persona que llegue.',
 		closingName: CELEBRANT_NAME,
-		closingPhrase: `Yireh Ana · Mis XV Años · Delicias, Chihuahua · MMXXVII`,
+		closingPhrase: `Sábado ${EVENT_DATE_LABEL}\nCiudad Delicias, Chihuahua`,
 	},
 	navigation: [
 		{ label: 'Momento', href: '#quote-section' },
@@ -293,8 +295,8 @@ export default defineCanonicalInvitation({
 	hostLoginAlias: 'yireh_ana',
 	assetDir: 'src/invitations/clients/yireh-ana/assets',
 	assetFiles: {
-		hero: 'hero-cover.webp',
-		heroWide: 'hero-cover-wide.webp',
+		hero: 'hero-ground.webp',
+		heroWide: 'hero-ground-wide.webp',
 		wreath: 'closing-wreath.webp',
 		ogShare: 'og-share.webp',
 	},

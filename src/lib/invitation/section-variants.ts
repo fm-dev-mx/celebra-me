@@ -17,7 +17,8 @@ export type CanonicalVariantSection =
 	| 'personalizedAccess'
 	| 'thankYou'
 	| 'countdown'
-	| 'memories';
+	| 'memories'
+	| 'quote';
 
 export type CanonicalVariantCssOwner =
 	`src/styles/themes/sections/${string}` | `section-base:${string}`;
@@ -53,6 +54,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		default: false,
 		prerequisites: ['hero.backgroundImage'],
 		cssOwner: 'src/styles/themes/sections/hero/_cased-portrait.scss',
+	},
+	{
+		section: 'hero',
+		variant: 'disco-stage',
+		default: false,
+		prerequisites: ['hero.backgroundImage'],
+		cssOwner: 'src/styles/themes/sections/hero/_disco-stage.scss',
 	},
 	{
 		section: 'hero',
@@ -272,6 +280,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		cssOwner: 'src/styles/themes/sections/gallery/_single-keepsake.scss',
 	},
 	{
+		section: 'gallery',
+		variant: 'photo-booth',
+		default: false,
+		prerequisites: ['gallery.items with exactly eight images'],
+		cssOwner: 'src/styles/themes/sections/gallery/_photo-booth.scss',
+	},
+	{
 		section: 'gifts',
 		variant: 'standard',
 		default: true,
@@ -385,6 +400,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'thankYou',
+		variant: 'last-song',
+		default: false,
+		prerequisites: ['thankYou.message', 'thankYou.closingName', 'thankYou.image'],
+		cssOwner: 'src/styles/themes/sections/thank-you/_last-song.scss',
+	},
+	{
+		section: 'thankYou',
 		variant: 'full-bleed-photo',
 		default: false,
 		prerequisites: ['thankYou.image'],
@@ -420,6 +442,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'countdown',
+		variant: 'mirror-ball',
+		default: false,
+		prerequisites: ['countdown'],
+		cssOwner: 'src/styles/themes/sections/countdown/_mirror-ball.scss',
+	},
+	{
+		section: 'countdown',
 		variant: 'clock-face',
 		default: false,
 		prerequisites: ['countdown'],
@@ -445,6 +474,20 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		default: false,
 		prerequisites: ['Family names'],
 		cssOwner: 'src/styles/themes/sections/family/_ceremonial-family.scss',
+	},
+	{
+		section: 'quote',
+		variant: 'standard',
+		default: true,
+		prerequisites: ['quote.text'],
+		cssOwner: 'section-base:quote',
+	},
+	{
+		section: 'quote',
+		variant: 'neon-sign',
+		default: false,
+		prerequisites: ['quote.text'],
+		cssOwner: 'src/styles/themes/sections/quote/_neon-sign.scss',
 	},
 	{
 		section: 'memories',
@@ -487,8 +530,9 @@ export const COUNTDOWN_VARIANTS = variantsFor('countdown');
 export type CountdownVariant = (typeof COUNTDOWN_VARIANTS)[number];
 export const MEMORIES_VARIANTS = variantsFor('memories');
 export type MemoriesVariant = (typeof MEMORIES_VARIANTS)[number];
+export const QUOTE_VARIANTS = variantsFor('quote');
+export type QuoteVariant = (typeof QUOTE_VARIANTS)[number];
 
 /** Sections without a layout/skin choice emit this closed value. */ type StandardSectionVariant =
 	'standard';
-export type QuoteVariant = StandardSectionVariant;
 export type SharedSectionVariant = StandardSectionVariant;

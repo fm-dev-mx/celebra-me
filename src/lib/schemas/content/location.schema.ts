@@ -85,6 +85,19 @@ const locationBaseSchema = z.object({
 	/** Decorative cutout (transparent image) printed after the intro; contained, never cropped. */
 	ornament: AssetSchema.optional(),
 	indicationsHeading: z.string().default(''),
+	/**
+	 * Reference picture for the indications (a dress-code moodboard): a button on the enclosure
+	 * card opens it full screen. Rendered only by `indicationsLayout: 'enclosure'`.
+	 */
+	indicationsReference: z
+		.object({
+			image: AssetSchema,
+			label: z.string().min(1),
+			alt: z.string().min(1),
+			note: z.string().optional(),
+		})
+		.strict()
+		.optional(),
 	venues: z.array(venueEntrySchema),
 	indications: z
 		.array(

@@ -1,0 +1,247 @@
+@use '../../../tools/motion';
+@use '../../../tools/disco-motifs' as disco;
+@use 'framed-portrait';
+
+// Disco stage: the framed portrait on a night dance floor, with a faceted mirror ball dropping
+// in over the arch, thrown stars and slow light rays. Profiles map `--disco-stage-*` to their
+// palette; every token falls back to the semantic theme colours.
+.event-theme-wrapper .invitation-hero.framed-portrait-hero[data-variant='disco-stage'] {
+	// One size for the ball drives where its rays start.
+	--disco-stage-ball-width: min(24vw, 7rem);
+	--disco-stage-ball-centre: calc(var(--disco-stage-ball-width) * 0.75);
+	--hero-section-padding: calc(var(--disco-stage-ball-width) * 0.95) 1.5rem 1.5rem;
+	--hero-portrait-margin: 0 auto;
+	--hero-portrait-outline: 1px solid rgb(233 234 238 / 55%);
+	--hero-portrait-outline-offset: 6px;
+	--hero-letter-align: center;
+	--hero-name-margin: 0 auto;
+	--hero-title-size: clamp(4.5rem, 20vw, 7rem);
+	--hero-occasion-font: 400 1rem / 1.4 var(--font-label, var(--font-body));
+	--hero-occasion-letter-spacing: 0.32em;
+	--hero-occasion-color: rgb(var(--disco-stage-silver-rgb, 233 234 238));
+	--hero-details-font: 400 0.9rem / 1.6 var(--font-label, var(--font-body));
+	--hero-details-letter-spacing: 0.28em;
+	--hero-details-text-transform: uppercase;
+	--hero-details-color: rgb(233 234 238 / 88%);
+	--hero-scroll-align: center;
+
+	// The disco room keeps turning behind the portrait and fades out under the name.
+	--hero-ambient-opacity: 85%;
+	--hero-ambient-mask: linear-gradient(to bottom, rgb(0 0 0) 0 50%, transparent 88%);
+
+	background:
+		radial-gradient(
+			ellipse 70% 38% at 50% 40%,
+			rgb(var(--disco-stage-glow-rgb, var(--color-action-accent-rgb)) / 24%),
+			transparent 72%
+		),
+		var(--disco-stage-ground, var(--color-surface-primary));
+
+	.framed-portrait-hero__photograph {
+		box-shadow:
+			0 0 0 1px rgb(233 234 238 / 18%),
+			0 1.5rem 3.5rem rgb(20 2 8 / 55%),
+			0 0 4rem rgb(var(--disco-stage-glow-rgb, var(--color-action-accent-rgb)) / 28%);
+	}
+
+	.framed-portrait-hero__occasion {
+		margin-top: 0.75rem;
+		text-indent: 0.32em;
+	}
+
+	.framed-portrait-hero__name {
+		text-shadow:
+			0 0 1.5rem rgb(var(--disco-stage-glow-rgb, var(--color-action-accent-rgb)) / 65%),
+			0 0 0.25rem rgb(var(--disco-stage-glow-rgb, var(--color-action-accent-rgb)) / 40%);
+	}
+
+	// The date hangs from the sparkle rule that recurs through the night.
+	.framed-portrait-hero__details {
+		margin-top: 0.25rem;
+		text-indent: 0.28em;
+
+		&::before {
+			display: block;
+			width: 6.5rem;
+			height: 1rem;
+			margin: 0 auto 0.5rem;
+			background: disco.$sparkle-rule center / contain no-repeat;
+			opacity: 80%;
+			content: '';
+		}
+	}
+
+	// The scroll cue is a marquee caption over a silver hairline; a sparkle slides down the line
+	// like a light catching the ball, then fades and starts again.
+	--hero-scroll-display: grid;
+	--hero-scroll-font: 400 0.7rem / 1.4 var(--font-label, var(--font-body));
+	--hero-scroll-letter-spacing: 0.34em;
+	--hero-scroll-text-transform: uppercase;
+	--hero-scroll-cue-width: 1px;
+	--hero-scroll-cue-height: 2.75rem;
+	--hero-scroll-cue-margin: 0;
+	--hero-scroll-cue-overflow: visible;
+	--hero-scroll-cue-font-size: 0;
+	--hero-scroll-cue-bg: linear-gradient(to bottom, rgb(233 234 238 / 70%), transparent);
+
+	.framed-portrait-hero__invitation {
+		gap: 0.6rem;
+		text-indent: 0.34em;
+		color: rgb(233 234 238 / 78%);
+
+		span {
+			position: relative;
+
+			&::after {
+				position: absolute;
+				top: 0;
+				left: 50%;
+				width: 0.7rem;
+				aspect-ratio: 1;
+				background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23FFFFFF' d='M8 0l1.8 6.2L16 8l-6.2 1.8L8 16l-1.8-6.2L0 8l6.2-1.8z'/%3E%3C/svg%3E")
+					center / contain no-repeat;
+				filter: drop-shadow(
+					0 0 0.35rem
+						rgb(var(--disco-stage-glow-rgb, var(--color-action-accent-rgb)) / 90%)
+				);
+				translate: -50% -50%;
+				content: '';
+			}
+		}
+	}
+
+	// The preset's arc turns into the hanging ball, centred above the arch.
+	&::before {
+		inset: 0 auto auto calc(50% - var(--disco-stage-ball-width) / 2);
+		z-index: 1;
+		width: var(--disco-stage-ball-width);
+		height: auto;
+		aspect-ratio: 200 / 240;
+		border-radius: 0;
+		background: disco.$mirror-ball-faceted center top / contain no-repeat;
+		opacity: 100%;
+		filter: drop-shadow(0 0 1.25rem rgb(233 234 238 / 35%));
+		transform-origin: 50% 0;
+	}
+
+	// Silver stars, thicker where the ball throws its light and fading to the edges.
+	&::after {
+		position: absolute;
+		z-index: -1;
+		inset: 0;
+		background: disco.$stars center / min(110vw, 40rem) repeat;
+		opacity: 42%;
+		mask: radial-gradient(ellipse 85% 70% at 50% 35%, rgb(0 0 0) 35%, transparent 85%);
+		content: '';
+		pointer-events: none;
+	}
+
+	// The rays fan out from the ball over the portrait and fade before the name.
+	.framed-portrait-hero__layout::before {
+		position: absolute;
+		z-index: -1;
+		inset: 0;
+		background: conic-gradient(
+			from 140deg at 50% var(--disco-stage-ball-centre),
+			transparent 0deg,
+			rgb(233 234 238 / 26%) 4deg,
+			transparent 9deg 18deg,
+			rgb(var(--disco-stage-glow-rgb, var(--color-action-accent-rgb)) / 34%) 23deg,
+			transparent 29deg 36deg,
+			rgb(233 234 238 / 22%) 40deg,
+			transparent 44deg 52deg,
+			rgb(var(--disco-stage-glow-rgb, var(--color-action-accent-rgb)) / 32%) 57deg,
+			transparent 63deg 70deg,
+			rgb(233 234 238 / 26%) 75deg,
+			transparent 80deg
+		);
+		mask: radial-gradient(
+			circle at 50% var(--disco-stage-ball-centre),
+			rgb(0 0 0) 0,
+			rgb(0 0 0 / 60%) 40%,
+			transparent 72%
+		);
+		mix-blend-mode: screen;
+		transform-origin: 50% var(--disco-stage-ball-centre);
+		content: '';
+		pointer-events: none;
+	}
+
+	@include motion.motion-safe {
+		&::after {
+			animation: disco-stage-stars-twinkle 4.8s ease-in-out infinite alternate;
+		}
+
+		.framed-portrait-hero__layout::before {
+			animation: disco-stage-rays-sweep 9s ease-in-out infinite alternate;
+		}
+
+		// The line holds still; only its sparkle travels.
+		.framed-portrait-hero__invitation span {
+			animation: none;
+
+			&::after {
+				animation: disco-stage-cue-sparkle 2.6s cubic-bezier(0.45, 0, 0.3, 1) infinite;
+			}
+		}
+
+		@supports (animation-timeline: view()) {
+			&::before {
+				animation: disco-stage-ball-drop linear both;
+				animation-timeline: view();
+				animation-range: exit 0% exit 80%;
+			}
+		}
+	}
+
+	@keyframes disco-stage-cue-sparkle {
+		0% {
+			top: 0;
+			opacity: 0%;
+			scale: 0.6;
+		}
+
+		20% {
+			opacity: 100%;
+			scale: 1;
+		}
+
+		75% {
+			top: 100%;
+			opacity: 0%;
+			scale: 0.7;
+		}
+
+		100% {
+			top: 100%;
+			opacity: 0%;
+		}
+	}
+
+	@keyframes disco-stage-rays-sweep {
+		from {
+			rotate: -6deg;
+		}
+
+		to {
+			rotate: 6deg;
+		}
+	}
+
+	@keyframes disco-stage-ball-drop {
+		to {
+			rotate: 10deg;
+			translate: 0 35%;
+		}
+	}
+
+	@keyframes disco-stage-stars-twinkle {
+		from {
+			opacity: 30%;
+		}
+
+		to {
+			opacity: 55%;
+		}
+	}
+}

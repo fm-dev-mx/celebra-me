@@ -9,7 +9,10 @@ import { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
 import { safeHttpUrlSchema } from '@/lib/schemas/content/gifts.schema';
 import { THEME_PRESETS, INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { ENVELOPE_SEAL_COLORS } from '@/lib/invitation/reveal-card';
-import { envelopeRevealVariantSchema } from '@/lib/schemas/content/envelope.schema';
+import {
+	envelopeOpeningVideoSchema,
+	envelopeRevealVariantSchema,
+} from '@/lib/schemas/content/envelope.schema';
 import {
 	COUNTDOWN_CALENDAR_MARKS,
 	COUNTDOWN_DAY_UNITS,
@@ -294,6 +297,7 @@ export const envelopeSchema = z
 		teaserDetails: z.string().trim().max(500).optional(),
 		variant: z.enum(THEME_PRESETS).optional(),
 		revealVariant: envelopeRevealVariantSchema.optional(),
+		openingVideo: envelopeOpeningVideoSchema.optional(),
 		coverEdition: z.string().trim().max(80).optional(),
 		coverEditionLabel: z.string().trim().max(16).optional(),
 		coverVolume: z.string().trim().max(40).optional(),

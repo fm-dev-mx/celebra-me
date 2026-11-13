@@ -2,6 +2,7 @@
 
 $yireh-bow: url('./assets/bow.webp');
 $yireh-horizon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%23211938' d='M0 100V90C120 90 200 16 400 8v92z'/%3E%3Cpath fill='none' stroke='%23BA8E30' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M0 76C120 76 200 4 400 0'/%3E%3C/svg%3E");
+$yireh-horizon-end: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 100' preserveAspectRatio='none'%3E%3Cpath fill='%23F1EAF8' d='M400 100V10C280 10 200 84 0 92v8z'/%3E%3Cpath fill='none' stroke='%23BA8E30' stroke-opacity='.7' stroke-width='1' vector-effect='non-scaling-stroke' d='M400 24C280 24 200 96 0 100'/%3E%3C/svg%3E");
 $yireh-icon-pin: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z'/%3E%3Ccircle cx='12' cy='10' r='2.4'/%3E%3C/svg%3E");
 $yireh-icon-calendar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5.5' width='16' height='14.5' rx='2'/%3E%3Cpath d='M4 10h16M8.5 3.5v4M15.5 3.5v4'/%3E%3C/svg%3E");
 $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='8.5' y='8.5' width='11' height='11' rx='2'/%3E%3Cpath d='M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5'/%3E%3C/svg%3E");
@@ -10,11 +11,29 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 // paper, matted watercolor stills between sections, and the night kept only as contrast for the
 // countdown and the closing. Each motif has one job: the oak on the cover, flowers only on the
 // cover, the bouquet and envelope stills and the closing wreath, and the small yellow bow tying off
-// the program ribbon (the only bow besides the oak's). Two pinned scenes (the cover closing in on the
-// oak's ribbon, the program ribbon) and per-element accents elsewhere. Pure custom property tokens
+// the program ribbon (the only bow besides the oak's). Two pinned scenes (the quote written over her
+// ribbon, the program ribbon) and per-element accents elsewhere. Pure custom property tokens
 // only.
 
+// The send-off ribbons fly in a layer on <body> that carries only the event class.
+.event--yireh-ana {
+	--yireh-ribbon-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64'%3E%3Cpath d='M24 16C14 4 3 10 8 18c3 4 11 1 16-2zM24 16c10-12 21-6 16 2-3 4-11 1-16-2z'/%3E%3Ccircle cx='24' cy='16' r='3.6'/%3E%3Cpath d='M23 18c-6 12 3 22-8 40M25 18c7 13-2 25 9 42' fill='none' stroke='black' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
 .event--yireh-ana.theme-preset--storybook-lilac {
+	// Art and words the satin-ribbons ornament set draws with.
+	--ornament-art-gifts-ribbon: url('./assets/gifts-ribbon.svg');
+	--ornament-art-gifts-band: url('./assets/gifts-band.svg');
+	--ornament-art-gifts-bow: url('./assets/gifts-bow.svg');
+	--ornament-art-hero-flora-right: url('./assets/hero-flora-right.webp');
+	--ornament-art-hero-flora-left: url('./assets/hero-flora-left.webp');
+	--ornament-art-closing-flourish: url('./assets/closing-flourish.svg');
+	--ornament-art-location-oak: url('./assets/location-oak.webp');
+	--ornament-art-hero-cover: url('./assets/hero-cover.webp');
+	--ornament-monogram: 'Y';
+	--ornament-family-joiner: 'y de mi';
+	--ornament-signature: 'Yireh Ana';
+
 	// Base surfaces and ink
 	--color-lilac-paper: rgb(250 247 253);
 	--color-lilac-paper-rgb: 250 247 253;
@@ -51,6 +70,7 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	.envelope-wrapper[data-variant='storybook-butterflies'] {
 		--storybook-sky-display: block;
 		--storybook-send-off: butterflies;
+		--storybook-send-off-delay: 1.6s;
 		--storybook-sky-light: var(--color-lilac-paper);
 		--storybook-sky-glow: var(--color-lilac-veil);
 		--storybook-field: radial-gradient(
@@ -93,17 +113,26 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--reveal-card-text-secondary: var(--color-violet-ink-soft);
 		--reveal-card-shadow: 0 1px 4px rgb(var(--color-violet-ink-rgb) / 20%);
 
-		// A slightly smaller seal, the flower alone.
-		--env-seal-size-min: 64px;
-		--env-seal-size-max: 86px;
+		// Her seal: mauve wax pressed with «YA», a small disc under the ribbon.
+		--env-seal-size-min: 50px;
+		--env-seal-size-max: 64px;
+		--env-seal-accent: var(--color-lilac-deep);
+		--env-seal-icon: rgb(244 236 252 / 88%);
+		--storybook-seal-rim-bg: radial-gradient(
+			circle at 34% 28%,
+			rgb(178 150 214) 0%,
+			var(--color-lilac-deep) 46%,
+			rgb(74 52 112) 100%
+		);
 
-		// Letter: her stationery rather than plain cream. Lilac paper and a double gold hairline; the
-		// bow stays for the oak and the program ribbon only.
+		// Letter: her lilac stationery. It rests a short beat, then fades up into the cover.
 		--storybook-card-bg: linear-gradient(
 			180deg,
-			var(--color-lilac-paper),
-			var(--color-lilac-mist)
+			var(--color-lilac-veil),
+			color-mix(in srgb, var(--color-lilac-veil) 82%, var(--color-lilac-deep))
 		);
+		--storybook-letter-hold: 800ms;
+		--storybook-letter-exit: 700ms;
 	}
 
 	.envelope-wrapper[data-variant='storybook-butterflies'] .invitation-reveal-card {
@@ -113,25 +142,53 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--color-text-secondary-rgb: var(--color-violet-ink-soft-rgb);
 	}
 
-	// Quote styling with bespoke motif
+	// Quote: handwritten over a flat satin ribbon in the itinerary's gold. It enters from the left
+	// edge, falls along it with two half twists (its darker back face shows between them),
+	// underlines the phrase and ties one bow with dovetailed ends. The art fills the scene, so each
+	// scene shape has its own drawing instead of a stretched one.
 	--storybook-quote-art: none;
+	--ornament-quote-ribbon: url('./assets/quote-ribbon.svg');
+
+	@media (aspect-ratio >= 0.6) {
+		--ornament-quote-ribbon: url('./assets/quote-ribbon-tablet.svg');
+	}
+
+	@media (width >= 820px) {
+		--ornament-quote-ribbon: url('./assets/quote-ribbon-wide.svg');
+	}
+
+	--quote-divider-display: none;
+	--quote-content-font: var(--font-calligraphy);
+	--quote-content-style: normal;
 	--quote-content-weight: 400;
-	--quote-content-size: clamp(1.4rem, 3.6vw, 1.85rem);
-	--quote-content-line-height: 1.45;
+	--quote-content-size: clamp(2.4rem, 8vw, 2.9rem);
+	--quote-content-line-height: 1.25;
+
+	.quote-texture {
+		--quote-texture-opacity: 1;
+		--ornament-inking: ribbon-route-draw; // falls from the top as the scene arrives
+		--ornament-inking-range: entry 30% contain 12%;
+	}
+
+	// No lead-in space above the first line: the phrase sits centred inside the ribbon.
+	.quote-line[data-reveal-role='title'] {
+		--quote-line-margin-start: 0;
+	}
 
 	// Location
 	--location-program-label-color: var(--color-violet-ink);
 	--location-program-time-color: var(--color-leaf-gold);
 
-	// Section titles share her name's hand, in gold ink, so every page reads as one set.
+	// Section titles share her name's hand. All of them in plum ink, like her name on the
+	// cover; gold stays for the small accents under them (program labels, family groups, rules).
 	--yireh-title-font: var(--font-calligraphy);
 	--yireh-title-size: clamp(2.9rem, 11vw, 4.25rem);
-	--yireh-title-color: var(--color-gold-ink);
+	--ornament-title-color: var(--color-violet-ink);
 	--location-intro-heading-font-family: var(--yireh-title-font);
 	--location-intro-heading-size: var(--yireh-title-size);
 	--location-intro-heading-weight: 400;
 	--location-intro-heading-line-height: 1.2;
-	--location-intro-heading-color: var(--yireh-title-color);
+	--location-intro-heading-color: var(--ornament-title-color);
 	--location-intro-text-size: clamp(1.05rem, 1.5vw, 1.2rem);
 	--itinerary-ribbon-title-font: var(--yireh-title-font);
 	--itinerary-ribbon-title-size: var(--yireh-title-size);
@@ -140,6 +197,24 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--rsvp-title-font-weight: 400;
 	--rsvp-title-size: clamp(2.5rem, 9vw, 3.4rem);
 	--rsvp-title-line-height: 1.2;
+
+	.rsvp[data-variant='reply-card'] {
+		--rsvp-title-font: var(--yireh-title-font);
+		--rsvp-title-font-weight: 400;
+		--rsvp-title-color: var(--ornament-title-color);
+		--rsvp-steps-heading-align: center;
+
+		// The chosen answer is told by its gold wash and dot, not by a dark ring.
+		--rsvp-radio-selected-shadow: none;
+		--rsvp-radio-indicator-border: rgb(var(--color-leaf-gold-rgb) / 80%);
+		--rsvp-radio-indicator-dot: var(--color-gold-ink);
+
+		.rsvp-steps {
+			--rsvp-steps-track: rgb(var(--color-leaf-gold-rgb) / 24%);
+			--rsvp-steps-lantern: rgb(var(--color-leaf-gold-rgb));
+			--rsvp-steps-glow: rgb(var(--color-candle-gold-rgb) / 0%);
+		}
+	}
 
 	// Family: the thanks to her mother, signed, over a place card with her name.
 	--family-bg: var(--color-lilac-mist);
@@ -152,24 +227,39 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--family-title-style: normal;
 	--family-title-letter-spacing: 0;
 	--family-title-line-height: 1.2;
-	--family-title-color: var(--yireh-title-color);
+	--family-title-color: var(--ornament-title-color);
 	--family-text-color: var(--color-violet-ink-soft);
 	--family-message-font: var(--font-display);
 	--family-message-size: clamp(1.2rem, 3.4vw, 1.5rem);
 	--family-message-style: italic;
 	--family-message-line-height: 1.45;
-	--family-message-max-width: 30rem;
+	--family-message-max-width: 26ch;
+	--family-message-margin: 1.2rem 0 0 auto;
 	--family-message-signature: 'Yireh Ana';
 	--family-message-signature-font: var(--font-calligraphy);
 	--family-message-signature-size: clamp(2rem, 7vw, 2.6rem);
 	--family-message-signature-color: var(--color-violet-ink);
-	--family-panel-max-width: 24rem;
-	--family-panel-margin-top: 0;
-	--family-panel-spacing: 2rem 1.5rem;
-	--family-panel-bg: var(--color-lilac-paper);
-	--family-panel-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 35%);
+
+	// Asymmetric: her mother on the leading edge, her brother answers from the far one; the
+	// message steps in from the right and her signature closes it there.
+	--family-title-margin: 0;
+	--family-group-text-align: start;
+	--family-item-align: flex-start;
+	--family-panel-max-width: none;
+	--family-panel-width: 100%;
+	--family-content-gap: 0;
+
+	.family__group--group-1 {
+		--family-group-text-align: end;
+		--family-item-align: flex-end;
+	}
+
+	--family-panel-margin-top: 0.4rem;
+	--family-panel-spacing: 0;
+	--family-panel-bg: none;
+	--family-panel-border: 0;
 	--family-panel-radius: 2px;
-	--family-panel-shadow: 0 18px 40px -24px rgb(var(--color-violet-ink-rgb) / 40%);
+	--family-panel-shadow: none;
 	--family-panel-surface-inset: 0.5rem;
 	--family-panel-edge-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 60%);
 
@@ -177,6 +267,7 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--gifts-padding-block: clamp(3.5rem, 8vw, 5.5rem);
 	--gifts-subtitle-size: clamp(1.15rem, 3.2vw, 1.4rem);
 	--gifts-subtitle-max-width: 30rem;
+	--gifts-container-max-width: 22rem;
 
 	// RSVP
 	--rsvp-title-color: var(--color-violet-ink);
@@ -210,13 +301,24 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--thank-you-drop-cap-size-desktop: 1em;
 		--thank-you-drop-cap-weight: inherit;
 		--thank-you-drop-cap-line-height: inherit;
+		--thank-you-drop-cap-color: currentcolor;
+
+		@media (width >= 600px) {
+			--ornament-closing-flora: 15rem;
+		}
+
+		@media (width >= 1024px) {
+			--ornament-closing-glow-y: 50%;
+			--ornament-closing-flora: min(22%, 20rem);
+		}
 	}
 
 	--yireh-cut: clamp(4.5rem, 14vw, 6.5rem);
 	--yireh-print-overlap: clamp(4rem, 18vw, 7rem);
 	--yireh-band-padding: clamp(4.5rem, 12vw, 7.5rem);
 	--yireh-gutter: clamp(1.5rem, 6vw, 4rem);
-	--yireh-rule: rgb(var(--color-violet-ink-rgb) / 18%);
+	--ornament-rule: rgb(var(--color-violet-ink-rgb) / 18%);
+	--ornament-sprig: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 18' fill='%237056a0'%3E%3Cpath d='M4 9q28-7 56 0' fill='none' stroke='%237056a0' stroke-width='1.2' stroke-linecap='round'/%3E%3Cellipse cx='18' cy='4.6' rx='4' ry='1.6' transform='rotate(-24 18 4.6)'/%3E%3Cellipse cx='46' cy='4.6' rx='4' ry='1.6' transform='rotate(24 46 4.6)'/%3E%3Ccircle cx='32' cy='10' r='1.7'/%3E%3Ccircle cx='28.5' cy='12.6' r='1.4' opacity='.8'/%3E%3Ccircle cx='35.5' cy='12.6' r='1.4' opacity='.8'/%3E%3Ccircle cx='32' cy='15.2' r='1.2' opacity='.6'/%3E%3C/svg%3E");
 
 	// Cover: reference 40 on paper. The plate's floral corners frame the top, the oak and its one
 	// ribbon hold the bottom, and the name sits on the clean paper between them; the wide
@@ -225,43 +327,63 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--font-display: var(--font-calligraphy);
 		--hero-overlay: transparent;
 
+		// Opening: a faint, blurred underpainting that broad strokes bring to full colour.
+		--ornament-stroke-0: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 40' preserveAspectRatio='none'%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x2='300'%3E%3Cstop offset='0' stop-opacity='.12'/%3E%3Cstop offset='.55' stop-opacity='.3'/%3E%3Cstop offset='1' stop-opacity='.75'/%3E%3C/linearGradient%3E%3Cfilter id='s'%3E%3CfeGaussianBlur stdDeviation='.5'/%3E%3C/filter%3E%3Cmask id='m'%3E%3Crect width='300' height='40' fill='%23fff'/%3E%3Cg stroke='url(%23g)' stroke-linecap='round'%3E%3Cpath d='M12 4.7H255' stroke-width='0.7' stroke-dasharray='21 2'/%3E%3Cpath d='M32 6.3H285' stroke-width='0.8' stroke-dasharray='26 3'/%3E%3Cpath d='M56 7.6H265' stroke-width='1.1' stroke-dasharray='60 4'/%3E%3Cpath d='M85 9.0H154' stroke-width='0.7' stroke-dasharray='40 6'/%3E%3Cpath d='M14 10.4H169' stroke-width='0.7' stroke-dasharray='37 7'/%3E%3Cpath d='M27 12.6H169' stroke-width='0.7' stroke-dasharray='41 2'/%3E%3Cpath d='M26 13.9H237' stroke-width='0.6' stroke-dasharray='48 3'/%3E%3Cpath d='M63 15.5H157' stroke-width='1.0' stroke-dasharray='54 2'/%3E%3Cpath d='M89 16.7H247' stroke-width='0.8' stroke-dasharray='56 3'/%3E%3Cpath d='M20 17.7H179' stroke-width='1.1' stroke-dasharray='44 7'/%3E%3Cpath d='M59 19.8H267' stroke-width='0.7' stroke-dasharray='52 3'/%3E%3Cpath d='M76 21.2H157' stroke-width='0.5' stroke-dasharray='23 9'/%3E%3Cpath d='M12 22.2H178' stroke-width='0.7' stroke-dasharray='57 9'/%3E%3Cpath d='M42 24.2H244' stroke-width='0.5' stroke-dasharray='57 5'/%3E%3Cpath d='M76 25.0H237' stroke-width='0.8' stroke-dasharray='46 9'/%3E%3Cpath d='M40 26.6H214' stroke-width='0.5' stroke-dasharray='45 5'/%3E%3Cpath d='M37 28.1H231' stroke-width='0.5' stroke-dasharray='26 9'/%3E%3Cpath d='M54 29.9H160' stroke-width='0.9' stroke-dasharray='35 4'/%3E%3Cpath d='M24 31.1H220' stroke-width='1.0' stroke-dasharray='44 8'/%3E%3Cpath d='M90 32.6H230' stroke-width='0.9' stroke-dasharray='57 9'/%3E%3Cpath d='M51 33.7H158' stroke-width='0.5' stroke-dasharray='56 2'/%3E%3C/g%3E%3C/mask%3E%3Cg mask='url(%23m)' filter='url(%23s)'%3E%3Cpath d='M13 34 6 30 2 22 3 14 7 7 13 4 14 4.3 21 4.2 28 3.8 35 3.9 42 3.3 49 2.8 56 2.9 63 3.5 70 3.6 77 3.2 84 3.2 91 2.8 98 2.3 105 2.3 112 2.4 119 2.4 126 2.4 133 3.1 140 3.6 147 3.4 154 3.3 161 3.7 168 4.3 175 4.9 182 4.5 189 5.2 196 5.6 203 5.3 210 5.8 217 5.5 224 6.3 231 6.1 238 20.29886193040248 231 32.0 224 32.4 217 32.1 210 32.4 203 32.7 196 32.6 189 32.8 182 32.9 175 33.3 168 33.0 161 33.2 154 33.4 147 34.0 140 34.4 133 34.3 126 33.8 119 34.1 112 34.0 105 34.0 98 33.7 91 33.8 84 34.3 77 34.9 70 35.6 63 35.6 56 35.1 49 35.8 42 35.5 35 35.9 28 35.7 21 35.7 14 35.8Z'/%3E%3Cg stroke='%23000' stroke-linecap='round'%3E%3Cpath d='M199 8.3L269 8.9' stroke-width='1.0'/%3E%3Cpath d='M224 10.3L272 9.7' stroke-width='2.0'/%3E%3Cpath d='M220 12.9L247 12.7' stroke-width='1.1'/%3E%3Cpath d='M215 15.3L296 14.3' stroke-width='0.8'/%3E%3Cpath d='M202 17.7L242 18.7' stroke-width='3.0'/%3E%3Cpath d='M217 20.4L293 20.0' stroke-width='1.4'/%3E%3Cpath d='M211 22.0L240 22.2' stroke-width='1.0'/%3E%3Cpath d='M226 24.1L293 24.2' stroke-width='1.8'/%3E%3Cpath d='M205 26.8L259 27.6' stroke-width='1.2'/%3E%3Cpath d='M208 29.3L250 29.8' stroke-width='1.3'/%3E%3Cpath d='M220 31.9L296 31.9' stroke-width='1.2'/%3E%3Cpath d='M202 33.4L242 33.4' stroke-width='0.9'/%3E%3Cpath d='M170 5.2h41' stroke-width='.5'/%3E%3Cpath d='M196 4.3h56' stroke-width='.5'/%3E%3Cpath d='M142 3.9h29' stroke-width='.5'/%3E%3Cpath d='M181 34.4h60' stroke-width='.5'/%3E%3Cpath d='M198 36.0h64' stroke-width='.5'/%3E%3Cpath d='M147 34.2h38' stroke-width='.5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+		--ornament-stroke-1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 40' preserveAspectRatio='none'%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x2='300'%3E%3Cstop offset='0' stop-opacity='.12'/%3E%3Cstop offset='.55' stop-opacity='.3'/%3E%3Cstop offset='1' stop-opacity='.75'/%3E%3C/linearGradient%3E%3Cfilter id='s'%3E%3CfeGaussianBlur stdDeviation='.5'/%3E%3C/filter%3E%3Cmask id='m'%3E%3Crect width='300' height='40' fill='%23fff'/%3E%3Cg stroke='url(%23g)' stroke-linecap='round'%3E%3Cpath d='M16 5.4H255' stroke-width='0.6' stroke-dasharray='37 9'/%3E%3Cpath d='M86 6.2H280' stroke-width='0.4' stroke-dasharray='47 9'/%3E%3Cpath d='M12 7.8H294' stroke-width='0.7' stroke-dasharray='22 6'/%3E%3Cpath d='M72 9.4H212' stroke-width='0.6' stroke-dasharray='39 4'/%3E%3Cpath d='M69 10.4H175' stroke-width='0.8' stroke-dasharray='47 6'/%3E%3Cpath d='M79 12.4H156' stroke-width='1.1' stroke-dasharray='30 6'/%3E%3Cpath d='M15 13.9H288' stroke-width='0.7' stroke-dasharray='22 3'/%3E%3Cpath d='M76 15.3H272' stroke-width='0.7' stroke-dasharray='41 6'/%3E%3Cpath d='M62 16.8H202' stroke-width='0.9' stroke-dasharray='23 3'/%3E%3Cpath d='M75 18.3H253' stroke-width='1.1' stroke-dasharray='52 7'/%3E%3Cpath d='M23 19.8H173' stroke-width='1.0' stroke-dasharray='45 7'/%3E%3Cpath d='M16 20.8H164' stroke-width='1.0' stroke-dasharray='58 6'/%3E%3Cpath d='M42 22.2H203' stroke-width='0.7' stroke-dasharray='60 6'/%3E%3Cpath d='M66 24.2H262' stroke-width='0.6' stroke-dasharray='21 4'/%3E%3Cpath d='M84 25.3H157' stroke-width='0.6' stroke-dasharray='47 9'/%3E%3Cpath d='M88 27.0H215' stroke-width='0.5' stroke-dasharray='37 3'/%3E%3Cpath d='M31 28.1H277' stroke-width='0.6' stroke-dasharray='33 6'/%3E%3Cpath d='M50 29.7H247' stroke-width='1.0' stroke-dasharray='56 9'/%3E%3Cpath d='M88 31.1H246' stroke-width='1.0' stroke-dasharray='29 4'/%3E%3Cpath d='M89 32.2H255' stroke-width='0.3' stroke-dasharray='47 4'/%3E%3Cpath d='M86 33.9H185' stroke-width='0.9' stroke-dasharray='53 8'/%3E%3C/g%3E%3C/mask%3E%3Cg transform='matrix(-1 0 0 1 300 0)' mask='url(%23m)' filter='url(%23s)'%3E%3Cpath d='M13 34 6 30 2 22 3 14 7 7 13 4 14 3.7 21 3.7 28 3.0 35 2.5 42 2.5 49 2.4 56 2.8 63 2.9 70 2.8 77 3.4 84 3.2 91 3.3 98 3.6 105 4.0 112 3.5 119 3.3 126 3.4 133 3.7 140 4.2 147 4.0 154 4.4 161 4.6 168 4.7 175 4.9 182 5.0 189 4.9 196 4.8 203 5.3 210 5.6 217 5.8 224 6.0 231 6.1 238 19.65093122995049 231 33.1 224 32.6 217 32.6 210 32.1 203 32.5 196 32.5 189 32.3 182 32.0 175 32.6 168 32.9 161 33.4 154 33.7 147 33.7 140 33.5 133 33.2 126 32.8 119 33.2 112 33.5 105 33.8 98 33.4 91 33.9 84 33.9 77 33.8 70 34.5 63 34.8 56 35.2 49 34.9 42 35.0 35 34.5 28 35.1 21 35.3 14 35.6Z'/%3E%3Cg stroke='%23000' stroke-linecap='round'%3E%3Cpath d='M201 8.2L244 7.7' stroke-width='2.0'/%3E%3Cpath d='M223 11.4L263 12.2' stroke-width='2.0'/%3E%3Cpath d='M226 13.4L298 13.8' stroke-width='1.4'/%3E%3Cpath d='M197 16.1L276 15.6' stroke-width='1.5'/%3E%3Cpath d='M207 19.0L251 18.9' stroke-width='3.0'/%3E%3Cpath d='M218 21.5L273 21.3' stroke-width='1.0'/%3E%3Cpath d='M203 23.0L266 22.1' stroke-width='0.8'/%3E%3Cpath d='M207 24.2L287 24.2' stroke-width='0.9'/%3E%3Cpath d='M227 26.7L273 26.6' stroke-width='2.5'/%3E%3Cpath d='M207 30.1L293 29.4' stroke-width='2.3'/%3E%3Cpath d='M198 33.2L296 33.4' stroke-width='2.2'/%3E%3Cpath d='M122 4.1h30' stroke-width='.5'/%3E%3Cpath d='M190 3.9h44' stroke-width='.5'/%3E%3Cpath d='M213 3.7h59' stroke-width='.5'/%3E%3Cpath d='M194 34.5h42' stroke-width='.5'/%3E%3Cpath d='M193 35.9h30' stroke-width='.5'/%3E%3Cpath d='M163 35.7h60' stroke-width='.5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+		--ornament-canvas: rgb(248 245 252);
+		--ornament-ghost: linear-gradient(rgb(0 0 0 / clamp(0%, var(--ornament-t) * 60%, 40%)) 0 0);
+		--ornament-wash: blur(calc(clamp(0, 2.4 - var(--ornament-t), 1.4) * 4px))
+			saturate(calc(100% - clamp(0, 2.4 - var(--ornament-t), 1.4) * 40%));
+
 		// The picture's foot melts into the paper the quote sits on.
 		--hero-overlay-gradient: linear-gradient(transparent 82%, var(--color-lilac-paper));
+
+		// The floral corners are their own layers over a plate that holds only the oak, so they
+		// keep one small size on every screen instead of growing with the crop.
+		--ornament-flora: clamp(6.5rem, min(38vw, 22svh), 24rem);
 
 		// The close-in ends on the oak's yellow ribbon; the portrait crop keeps its left edge so the
 		// ribbon is not cut, and the zoom lifts it clear of the fade.
 		--hero-approach-focus: 9% 72%;
 		--hero-approach-focus-mobile: 4% 96%;
 		--hero-approach-scale: 1.9;
-		--hero-focal-point-mobile: 0% 50%;
+		--hero-focal-point-mobile: 0% 100%;
 		--calligraphy-accent-font: var(--font-calligraphy);
 		--calligraphy-accent-color: var(--color-gold-ink);
-		--hero-focal-point-default: 50% 50%;
+		--hero-focal-point-default: 50% 100%;
 
 		// The name rests on the clean paper above the oak's crown.
-		--hero-content-margin: auto 0 clamp(16rem, 38svh, 21rem);
-		--hero-content-rail: clamp(16rem, 38svh, 21rem);
+		--hero-content-margin: auto 0 clamp(17.5rem, 45svh, 23rem);
+		--hero-content-rail: clamp(17.5rem, 45svh, 23rem);
 		--hero-content-width: min(100%, 34rem);
 		--hero-copy-shadow: 0 0 1.5rem rgb(var(--color-lilac-paper-rgb) / 90%);
 		--hero-badge-text: var(--color-violet-ink);
-		--hero-label-color: var(--color-gold-ink);
+		--hero-label-color: var(--color-lilac-deep);
 		--hero-eyebrow-font: var(--font-body);
-		--hero-eyebrow-size: 1.1rem;
+		--hero-eyebrow-size: clamp(0.95rem, 0.8rem + 0.5vw, 1.25rem);
 		--hero-eyebrow-weight: 500;
-		--hero-eyebrow-tracking: 0.32em;
+		--hero-eyebrow-tracking: 0.42em;
 		--hero-heading-paint: linear-gradient(var(--color-violet-ink), var(--color-violet-ink));
-		--hero-heading-size: clamp(4.75rem, 21vw, 8.75rem);
+		--hero-heading-size: clamp(5rem, 24vw, 10rem);
 		--hero-heading-weight: 400;
 		--hero-heading-line-height: 1.15;
-		--hero-divider-fill: rgb(var(--color-leaf-gold-rgb) / 80%);
-		--hero-divider-margin: 0.75rem auto 1rem;
+		--hero-divider-display: none;
 		--hero-date-font: var(--font-body);
 		--hero-details-family: var(--font-body);
 		--hero-date-size: 1.1rem;
 		--hero-date-weight: 400;
 		--hero-date-tracking: 0.12em;
 		--hero-scroll-z-index: 2;
+		--hero-scroll-indicator-color: var(--color-violet-ink);
+		--ornament-title-glow: drop-shadow(0 0 0.35rem var(--color-lilac-paper))
+			drop-shadow(0 0 1.1rem rgb(var(--color-lilac-paper-rgb) / 85%));
 		--hero-content-z-index: 1;
+
+		// The scroll cue is a slim frosted tag at the foot of the picture: quiet beside the name,
+		// yet on its own ground so neither the oak nor the flowers can swallow it.
+		.invitation-hero__scroll-indicator {
+			--hero-scroll-distance: 3px;
+		}
 	}
 
 	#event-header {
@@ -281,6 +403,7 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--intersection-depth: var(--yireh-cut);
 		--section-band-paper:
 			#{$yireh-horizon} left top / 100% var(--yireh-cut) no-repeat,
+			#{$yireh-horizon-end} left bottom / 100% var(--yireh-cut) no-repeat,
 			linear-gradient(var(--color-violet-night) 0 0) left calc(var(--yireh-cut) - 1px) / 100%
 				100% no-repeat;
 	}
@@ -289,7 +412,7 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--yireh-band-padding: clamp(3.5rem, 6vw, 6.5rem);
 		--countdown-written-bg: transparent;
 		--countdown-written-padding-block: calc(var(--yireh-band-padding) + var(--yireh-cut))
-			calc(var(--yireh-band-padding) + var(--yireh-print-overlap));
+			calc(var(--yireh-band-padding) + var(--yireh-cut));
 		--countdown-written-muted: var(--color-night-lilac);
 		--countdown-written-title-size: 1rem;
 		--countdown-written-title-tracking: 0.14em;
@@ -358,7 +481,7 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--color-text-secondary-rgb: var(--color-violet-ink-soft-rgb);
 		--color-text-emphasis: var(--color-gold-ink);
 		--color-text-muted: var(--color-violet-ink-soft);
-		--color-border-subtle: var(--yireh-rule);
+		--color-border-subtle: var(--ornament-rule);
 		--color-border-premium: rgb(var(--color-leaf-gold-rgb) / 62%);
 		--color-ornament-gold: var(--color-leaf-gold);
 	}
@@ -373,30 +496,28 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--yireh-ground-rgb: var(--color-lilac-mist-rgb);
 	}
 
-	--location-enclosure-bg: var(--color-lilac-paper);
+	--location-enclosure-bg: rgb(var(--color-story-cream-rgb) / 82%);
 	--location-enclosure-ink: var(--color-violet-ink);
 	--location-enclosure-muted: var(--color-violet-ink-soft);
 	--location-enclosure-rule: rgb(var(--color-leaf-gold-rgb) / 45%);
 	--location-enclosure-shadow: none;
 
-	// Round 2: a plain card with one inner gold hairline, like the envelope letter: no clipped
-	// corners and no hanger.
+	// The dress card speaks the pass's language: same width, rounded corners, cream ground and a
+	// double gold line. Its drawing is a gown tied with her yellow bow beside a suit with a yellow
+	// bow tie, each on a gold hanger.
 	--location-enclosure-shape: none;
 	--location-enclosure-outline: 0 solid transparent;
-	--location-enclosure-frame-display: block;
-	--location-enclosure-frame-inset: 0.55rem;
-	--location-enclosure-frame: rgb(var(--color-leaf-gold-rgb) / 70%);
-	--location-enclosure-frame-shape: none;
-	--location-enclosure-padding: 2.5rem 1.75rem;
-	--location-enclosure-max-width: 22rem;
+	--location-enclosure-frame-display: none;
+	--location-enclosure-art: url('./assets/dress-code.svg') center 2.25rem / 10.5rem auto no-repeat;
+	--location-enclosure-padding: 11.25rem 1.75rem 2.25rem;
+	--location-enclosure-max-width: 26rem;
 	--location-enclosure-hanger-display: none;
 	// stylelint-disable-next-line length-zero-no-unit -- read inside calc() sums, so it needs a unit
 	--location-enclosure-hanger-height: 0px;
 	--location-enclosure-swing: none;
-	--location-enclosure-edge-shadow: drop-shadow(
-		0 14px 22px rgb(var(--color-violet-ink-rgb) / 14%)
-	);
-	--location-enclosure-heading-size: clamp(1.75rem, 6.5vw, 2.1rem);
+	--location-enclosure-edge-shadow: none;
+	--location-enclosure-heading-font: var(--yireh-title-font);
+	--location-enclosure-heading-size: clamp(2.2rem, 8.5vw, 2.75rem);
 	--location-enclosure-heading-color: var(--color-violet-ink);
 	--location-enclosure-note-padding: 0.85rem;
 	--location-enclosure-note-rule-width: 3rem;
@@ -415,33 +536,64 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--location-enclosure-reserved-title-tracking: 0;
 	--location-enclosure-reserved-title-color: var(--color-gold-ink);
 	--location-enclosure-last-text-font: var(--font-label);
-	--location-enclosure-last-text-size: 1.0625rem;
+	--location-enclosure-last-text-size: 1.125rem;
+	--location-enclosure-lead-title-size: 1.125rem;
+	--location-program-address-size: 1.125rem;
 	--location-enclosure-last-text-transform: none;
 	--location-enclosure-last-text-tracking: 0.02em;
 	--location-enclosure-last-text-color: var(--color-violet-ink-soft);
 
 	.event-location {
+		--location-program-max-width: 26rem;
+		--location-program-margin-top: 0;
+		--location-program-entry-align: center;
+		--location-program-entry-text-align: center;
+		--location-program-entry-gap: 0.5rem;
+		--location-program-entry-padding: 1.75rem 1.5rem 1.5rem;
+		--location-program-entry-border: 1px solid rgb(var(--color-candle-gold-rgb) / 70%);
+		--location-program-entry-border-top: var(--location-program-entry-border);
+		--location-program-entry-radius: 1.25rem;
+		--location-program-entry-bg: rgb(var(--color-story-cream-rgb) / 82%);
+		--location-program-entry-shadow:
+			inset 0 0 0 5px rgb(var(--color-story-cream-rgb) / 82%),
+			inset 0 0 0 6px rgb(var(--color-candle-gold-rgb) / 45%),
+			0 0.75rem 2rem rgb(var(--color-lilac-deep-rgb) / 14%);
+		--location-program-schedule-font: var(--font-display);
+		--location-program-schedule-size: clamp(2.6rem, 11vw, 3.25rem);
+		--location-program-schedule-style: normal;
+		--location-program-schedule-line-height: 1.1;
+		--location-program-schedule-color: var(--color-violet-ink);
+		--location-program-schedule-rest-display: none;
+		--location-program-schedule-name-display: none;
+		--location-program-place-size: clamp(1.6rem, 7vw, 2rem);
+		--location-program-place-gap: 0;
+		--location-program-actions-align: stretch;
+		--location-program-actions-margin: 1rem;
+		--location-program-actions-padding: 1.5rem;
+		--location-program-actions-rule: 2px dashed rgb(var(--color-candle-gold-rgb) / 75%);
 		--location-program-label-color: var(--color-gold-ink);
 		--location-program-label-size: 1.125rem;
 		--location-program-time-color: var(--color-violet-ink-soft);
 		--location-program-address-color: var(--color-violet-ink-soft);
 		--location-program-link: var(--color-lilac-deep);
 		--location-program-link-ink: var(--color-story-cream);
-		--location-program-action-flex: 1 1 0;
+		--location-program-action-flex: 1 1 100%;
 		--location-program-action-primary-flex: 1 1 100%;
 		--location-program-links-gap: 0.625rem;
 		--location-program-links-row-gap: 0.625rem;
 		--location-program-link-width: 100%;
 		--location-program-link-justify: center;
-		--location-program-link-padding: 0.35rem 1rem;
+		--location-program-link-padding: 0.8rem 1rem;
 		--location-program-link-border: 1px solid rgb(var(--color-lilac-deep-rgb) / 45%);
 		--location-program-link-bg: rgb(var(--color-story-cream-rgb) / 55%);
 		--location-program-link-radius: 999px;
 		--location-program-link-decoration: none;
-		--location-program-link-size: 1rem;
+		--location-program-link-size: 1.125rem;
 		--location-program-link-tracking: 0.06em;
-		--location-program-link-primary-bg: var(--color-lilac-deep);
-		--location-program-link-primary-color: var(--color-story-cream);
+
+		// «Ver mapa» is outlined, so it no longer outweighs the rest of the card.
+		--location-program-link-primary-bg: transparent;
+		--location-program-link-primary-color: var(--color-lilac-deep);
 		--location-program-link-primary-border: 1px solid var(--color-lilac-deep);
 		--location-program-link-icon: '';
 		--location-program-map-icon: #{$yireh-icon-pin};
@@ -449,17 +601,13 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--location-program-copy-icon: #{$yireh-icon-copy};
 		--location-calendar-menu-bg: var(--color-story-cream);
 		--location-calendar-menu-ink: var(--color-violet-ink);
-
-		@media (width >= 768px) {
-			--location-program-action-flex: 0 1 auto;
-			--location-program-action-primary-flex: 0 1 auto;
-			--location-program-link-width: auto;
-			--location-program-link-padding: 0.35rem 1.35rem;
-		}
 	}
 
 	--reply-card-max-width: 30rem;
-	--reply-card-guest-size: clamp(2rem, 9vw, 2.75rem);
+	--reply-card-guest-size: min(
+		clamp(2.1rem, 10vw, 2.6rem),
+		calc(1.9rem + var(--ornament-fit) * 0.073)
+	);
 	--reply-card-guest-style: italic;
 	--reply-card-guest-weight: 400;
 	--reply-card-divider:
@@ -479,6 +627,8 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	);
 	--reply-card-seam-width: calc(100% - 2 * (var(--yireh-punch) + 0.5rem));
 	--yireh-punch: 0.8rem;
+	--ornament-ticket-radius: 1.25rem;
+	--ornament-ticket-inner-radius: 0.7rem;
 	--reply-card-mask-upper:
 		radial-gradient(
 				circle at 0 100%,
@@ -507,8 +657,19 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--reply-card-shadow-upper: none;
 	--reply-card-shadow-lower: none;
 	--reply-card-edge-shadow: drop-shadow(0 14px 14px rgb(var(--color-violet-ink-rgb) / 12%));
-	--reply-card-count-size: 3.25rem;
-	--reply-card-count-frame-size: 6.5rem;
+
+	// The pass and the reply share one screen: every measure below grows with the screen's height,
+	// from a 640px-tall phone (0) to 860px and taller (220px).
+	--ornament-fit: clamp(0px, 100svh - 640px, 220px);
+
+	// Shorter screens still take the whole ticket: the same measures give back up to 72px.
+	--ornament-squeeze: clamp(0px, 640px - 100svh, 72px);
+	--reply-card-count-size: calc(
+		1.7rem + var(--ornament-fit) * 0.05 - var(--ornament-squeeze) * 0.05
+	);
+	--reply-card-count-frame-size: calc(
+		3.25rem + var(--ornament-fit) * 0.1 - var(--ornament-squeeze) * 0.11
+	);
 	--reply-card-count-frame-ratio: 1;
 	--reply-card-count-frame-border: 1px solid rgb(var(--color-leaf-gold-rgb) / 60%);
 	--reply-card-count-frame-bg: radial-gradient(
@@ -524,12 +685,23 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--reply-card-option-rule: rgb(var(--color-leaf-gold-rgb) / 55%);
 	--reply-card-option-hover-rule: var(--color-gold-ink);
 	--reply-card-option-checked-rule: var(--color-gold-ink);
+	--reply-card-title-size: min(
+		clamp(2.5rem, 9vw, 3.4rem),
+		calc(1.9rem + var(--ornament-fit) * 0.045 - var(--ornament-squeeze) * 0.055)
+	);
+	--reply-card-title-line-height: 1.2;
 
 	// Short labels use a dark gold ink on paper; pale gold is reserved for the night.
 	--quote-closing-line-color: var(--color-gold-ink);
 	--family-group-title-color: var(--color-gold-ink);
 	--family-group-title-font: var(--font-calligraphy);
-	--family-group-title-size: clamp(2.1rem, 8vw, 2.6rem);
+	--family-group-title-size: clamp(3rem, 13vw, 3.8rem);
+	--family-group-title-margin: 0 0 0.15rem;
+	--family-name-font: var(--font-display);
+	--family-name-size: clamp(1.125rem, 4.6vw, 1.3rem);
+	--family-name-weight: 500;
+	--family-name-letter-spacing: 0.14em;
+	--family-name-line-height: 1.45;
 	--family-group-title-weight: 400;
 	--family-group-title-letter-spacing: 0;
 	--family-group-title-text-transform: none;
@@ -540,39 +712,56 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--location-program-lede-font: var(--font-body);
 	--location-program-lede-size: 1.0625rem;
 	--location-text-color: var(--color-violet-ink-soft);
-	--reply-card-bg: var(--color-lilac-paper);
+
+	// Cotton card stock: a fine tooth and a few fibres over the paper, shaded toward the long edges.
+	--reply-card-bg:
+		linear-gradient(
+			90deg,
+			rgb(var(--color-violet-ink-rgb) / 5%),
+			transparent 14%,
+			transparent 86%,
+			rgb(var(--color-violet-ink-rgb) / 5%)
+		),
+		url('./assets/ticket-paper.svg') center top / 360px 360px, var(--color-lilac-paper);
 	--thank-you-keepsake-ambient: none;
 	--thank-you-keepsake-ambient-stacked: none;
 
 	// Program: the ribbon scene; a yellow ribbon draws down the evening and ties off in the bow.
 	--itinerary-bg: transparent;
 	--itinerary-title-tracking: 0.02em;
-	--itinerary-ribbon-title-color: var(--yireh-title-color);
-	--itinerary-ribbon-band: var(--color-candle-gold);
-	--itinerary-ribbon-sheen: rgb(255 248 222 / 85%);
-	--itinerary-ribbon-knot: var(--color-leaf-gold);
+	--itinerary-ribbon-title-color: var(--ornament-title-color);
+	--itinerary-ribbon-band: transparent;
+	--itinerary-ribbon-sheen: transparent;
+	--itinerary-ribbon-art: url('./assets/itinerary-ribbon.svg');
+	--itinerary-ribbon-knot: url('./assets/itinerary-knot.svg') center / 100% 100% no-repeat;
 	--itinerary-ribbon-time: var(--color-gold-ink);
 	--itinerary-ribbon-ink: var(--color-violet-ink);
-	--itinerary-ribbon-time-size: 1rem;
-	--itinerary-ribbon-desc-size: 1.0625rem;
+	--itinerary-ribbon-time-size: 1.0625rem;
+	--itinerary-ribbon-desc-size: 1.125rem;
 	--itinerary-ribbon-muted: var(--color-violet-ink-soft);
-	--itinerary-ribbon-bow-art: #{$yireh-bow};
 	--itinerary-ribbon-bow-drawing: none;
+
+	// Very short screens only: the ribbon route's labels step down, never below reading size.
+	@media (width < 1024px) and (height <= 700px) {
+		.itinerary[data-itinerary-scene='ribbon-route'] {
+			--itinerary-ribbon-label-size: 1.3rem;
+			--itinerary-ribbon-desc-size: 1rem;
+			--itinerary-ribbon-time-size: 1rem;
+		}
+	}
 
 	// Scroll accents: each section moves its own way as it arrives.
 	--scroll-accents: on;
-	--quote-scroll-accent: invitation-settle-3d;
+	--quote-scroll-accent: none; // the quote is its own scene
 	--countdown-scroll-accent: scroll-accent-unfold;
 	--gifts-scroll-accent: scroll-accent-rise;
-	--access-scroll-accent: invitation-settle-3d;
-	--rsvp-scroll-accent: scroll-accent-rise;
+	--access-scroll-accent: scroll-accent-rise;
+	--rsvp-scroll-accent: none; // the ticket arrives as one piece, led by the pass
 	--thank-you-scroll-accent: scroll-accent-unfold;
 	--family-divider-draw: family-divider-draw;
 
-	.quote-section,
 	.personalized-access {
-		--settle-tilt: 10deg;
-		--settle-rise: 2rem;
+		--scroll-accent-rise: 2rem;
 	}
 
 	// Gift line: the heading in her hand.
@@ -581,18 +770,26 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--gifts-title-weight: 400;
 	--gifts-title-size: var(--yireh-title-size);
 	--gifts-title-line-height: 1.2;
-	--gifts-title-color: var(--yireh-title-color);
+	--gifts-title-color: var(--ornament-title-color);
 
 	.gifts-section__title {
 		--font-display: var(--yireh-title-font);
 	}
 
-	// The quote follows the cover on clean paper, with room under it for the night's cut.
+	// The quote follows the cover on clean paper as a scene two screens tall, pinned for one, with
+	// room under it for the night's cut.
 	.invitation-section-wrapper[data-section-kind='quote'] {
 		--section-band-paper: var(--color-lilac-paper);
 		--quote-bg: transparent;
-		--quote-padding-block: clamp(4rem, 10vh, 6rem)
-			calc(clamp(4rem, 10vh, 6rem) + var(--yireh-cut));
+		--quote-min-height: 200svh;
+
+		// The section sets its own padding, so the tokens go on it: edge to edge for the ribbon; the
+		// night's cut lands on the empty paper under the centred phrase.
+		.quote-section {
+			--quote-padding-block: 0;
+			--quote-padding-inline: 0;
+			--quote-content-max-width: calc(100% - 3rem);
+		}
 	}
 
 	.invitation-section-wrapper[data-section-kind='thankYou'] {
@@ -605,8 +802,9 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--intersection-arch-ink: transparent;
 	}
 
+	// The footer is always shown, so the page ends on her name, the date and the city
+	// instead of a held 1px strip and its lone pull lantern.
 	.invitation-footer {
-		--invitation-footer-reveal: held;
 		--invitation-footer-reply: on;
 		--footer-bg: var(--color-violet-night);
 		--footer-reply-eyebrow: 'Su lugar está apartado';
@@ -616,7 +814,15 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--footer-reply-ink: var(--color-candle-cream);
 		--footer-reply-muted: var(--color-night-lilac);
 		--footer-reply-accent: var(--color-candle-gold);
-		--footer-reply-button-bg: var(--color-candle-gold);
+		--footer-reply-button-bg: linear-gradient(
+			to bottom,
+			color-mix(in srgb, var(--color-candle-gold) 72%, var(--color-candle-cream)),
+			var(--color-candle-gold) 52%,
+			color-mix(in srgb, var(--color-candle-gold) 90%, var(--color-violet-night))
+		);
+		--footer-reply-button-size: 0.8125rem;
+		--footer-reply-eyebrow-size: 0.72rem;
+		--footer-reply-note-size: 0.9rem;
 		--footer-reply-button-ink: var(--color-violet-night);
 		--footer-closing-color: var(--color-night-lilac);
 		--footer-contact-color: var(--color-night-lilac);
@@ -627,11 +833,103 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--footer-control-font-size: 0.75rem;
 		--footer-link-tap-padding: 0.875rem;
 		--footer-padding-bottom: 5.5rem;
-		--footer-pull-label: 'Deslice hacia arriba para confirmar';
-		--footer-pull-label-color: var(--color-candle-gold);
-		--footer-pull-color: var(--color-candle-gold);
 		--color-text-primary: var(--color-night-lilac);
 		--color-text-secondary: var(--color-night-lilac);
 		--color-action-accent: var(--color-candle-gold);
+
+		// One candle-gold light for lantern, thread and button; a few faint stars and the
+		// lantern's halo on the ground.
+		--footer-border-color: rgb(var(--color-candle-gold-rgb) / 16%);
+		--footer-reply-lantern-height: 1.7rem;
+		--footer-reply-lantern-glow: rgb(var(--color-candle-gold-rgb) / 30%);
+		--footer-reply-lantern:
+			linear-gradient(
+				to right,
+				transparent 31%,
+				rgb(var(--color-violet-night-rgb) / 16%) 31% 35%,
+				transparent 35% 65%,
+				rgb(var(--color-violet-night-rgb) / 16%) 65% 69%,
+				transparent 69%
+			),
+			radial-gradient(
+				ellipse 62% 58% at 50% 60%,
+				var(--color-candle-cream) 0%,
+				var(--color-candle-gold) 58%,
+				rgb(var(--color-candle-gold-rgb) / 78%) 100%
+			);
+		--footer-reply-gap: 3rem;
+		--footer-sky-twinkle: footer-sky-twinkle;
+		--footer-sky:
+			radial-gradient(
+				ellipse 75% 15rem at 50% 0,
+				rgb(var(--color-candle-gold-rgb) / 11%),
+				transparent 72%
+			),
+			radial-gradient(
+				ellipse 70% 9rem at 50% 64%,
+				rgb(var(--color-night-lilac-rgb) / 9%),
+				transparent 70%
+			),
+			radial-gradient(
+				circle at 9% 7%,
+				rgb(var(--color-candle-cream-rgb) / 55%) 0 0.6px,
+				transparent 1.3px
+			),
+			radial-gradient(
+				circle at 88% 11%,
+				rgb(var(--color-candle-cream-rgb) / 45%) 0 0.7px,
+				transparent 1.4px
+			),
+			radial-gradient(
+				circle at 20% 24%,
+				rgb(var(--color-candle-cream-rgb) / 30%) 0 0.5px,
+				transparent 1.1px
+			),
+			radial-gradient(
+				circle at 94% 33%,
+				rgb(var(--color-candle-cream-rgb) / 40%) 0 0.6px,
+				transparent 1.2px
+			),
+			radial-gradient(
+				circle at 5% 46%,
+				rgb(var(--color-candle-cream-rgb) / 35%) 0 0.6px,
+				transparent 1.2px
+			),
+			radial-gradient(
+				circle at 81% 58%,
+				rgb(var(--color-candle-cream-rgb) / 28%) 0 0.5px,
+				transparent 1.1px
+			),
+			radial-gradient(
+				circle at 13% 71%,
+				rgb(var(--color-candle-cream-rgb) / 38%) 0 0.6px,
+				transparent 1.2px
+			),
+			radial-gradient(
+				circle at 91% 84%,
+				rgb(var(--color-candle-cream-rgb) / 30%) 0 0.5px,
+				transparent 1.1px
+			);
+
+		// Her signature, then the credits: the replay link sits under her name, and a short rule
+		// sets the platform's row apart.
+		--footer-divider-display: none;
+		--footer-replay-order: -1;
+		--footer-replay-opacity: 85%;
+		--footer-content-gap: 1rem;
+		--footer-primary-row-direction: row;
+		--footer-platform-rule: linear-gradient(
+			to right,
+			transparent,
+			rgb(var(--color-night-lilac-rgb) / 26%),
+			transparent
+		);
+		--footer-platform-rule-space: 1.75rem;
+		--footer-logo-width: 104px;
+		--footer-logo-opacity: 80%;
+		--footer-contact-border: 1px solid rgb(var(--color-night-lilac-rgb) / 38%);
+		--footer-contact-bg: transparent;
+		--footer-contact-padding: 0.5rem 1.125rem;
+		--footer-contact-weight: 400;
 	}
 }

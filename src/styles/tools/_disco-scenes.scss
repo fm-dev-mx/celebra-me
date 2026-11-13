@@ -1,0 +1,1074 @@
+@use 'sass:math';
+@use './motion';
+@use './disco-motifs' as disco;
+
+// ==========================================================================
+// DISCO SCENES — reusable scene pieces for a disco night invitation.
+// Mixins only: nothing here emits CSS until a composition includes it. Every moving piece is a
+// transform driven by the scroll position (`animation-timeline: view()`), wrapped in the
+// motion-safe query and in `@supports`, with the finished pose as the static fallback.
+// ==========================================================================
+
+// --------------------------------------------------------------------------
+// Mirror-ball scroll cue. Include on a `.section-nav-button`: the label becomes a small neon
+// sign and the icon a mirror ball that comes down on its thread as the cue scrolls into view,
+// swaying gently. The chevron stays below the ball as the direction mark.
+//   $glow-rgb  Neon colour, as an `r g b` triplet or a custom property holding one.
+//   $ink       Label and thread colour.
+// --------------------------------------------------------------------------
+@mixin mirror-ball-cue($glow-rgb: var(--color-rose-glow-rgb), $ink: rgb(255 244 246)) {
+	--section-nav-animation: none;
+	--disco-cue-drop: 2.1rem;
+
+	gap: 0.35rem;
+	color: $ink;
+	view-timeline: --disco-cue block;
+
+	.section-nav-button__text {
+		font-size: 0.8em;
+		font-weight: 600;
+		letter-spacing: 0.3em;
+		text-indent: 0.3em;
+		text-shadow:
+			0 0 0.2rem rgb(255 255 255 / 55%),
+			0 0 0.7rem rgb($glow-rgb / 90%),
+			0 0 1.6rem rgb($glow-rgb / 55%);
+		text-transform: uppercase;
+	}
+
+	.section-nav-button__icon {
+		position: relative;
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+		width: 2.4rem;
+		height: 5.5rem;
+		transform-origin: 50% 0;
+
+		// The ball enters from above the icon box; its glow may spill on the other three sides.
+		clip-path: inset(0 -3rem -3rem);
+
+		&::before,
+		&::after {
+			position: absolute;
+			left: 50%;
+			content: '';
+		}
+
+		// The thread, long enough to stay attached while the ball is still up.
+		&::before {
+			top: calc(-1 * var(--disco-cue-drop));
+			width: 1px;
+			height: calc(2 * var(--disco-cue-drop) + 0.2rem);
+			margin-left: -0.5px;
+			background: linear-gradient(180deg, rgb(255 255 255 / 20%), rgb(255 255 255 / 85%));
+		}
+
+		&::after {
+			top: var(--disco-cue-drop);
+			width: 2rem;
+			margin-left: -1rem;
+			background: disco.$mirror-ball-faceted center / contain no-repeat;
+			filter: drop-shadow(0 0 0.5rem rgb($glow-rgb / 85%))
+				drop-shadow(0 0 1.3rem rgb($glow-rgb / 45%));
+			aspect-ratio: 200 / 240;
+		}
+
+		svg {
+			width: 0.85rem;
+			height: 0.85rem;
+			opacity: 85%;
+		}
+	}
+
+	@include motion.motion-safe {
+		--section-nav-icon-animation: disco-cue-sway 3.4s ease-in-out infinite alternate;
+
+		@supports (animation-timeline: view()) {
+			.section-nav-button__icon::before,
+			.section-nav-button__icon::after {
+				animation: disco-cue-drop linear both;
+				animation-timeline: --disco-cue;
+				animation-range: entry 10% cover 50%;
+			}
+
+			.section-nav-button__icon svg {
+				animation: disco-cue-mark linear both;
+				animation-timeline: --disco-cue;
+				animation-range: cover 35% cover 55%;
+			}
+		}
+	}
+
+	@keyframes disco-cue-drop {
+		from {
+			translate: 0 calc(-1 * var(--disco-cue-drop) - 2.6rem);
+		}
+	}
+
+	@keyframes disco-cue-mark {
+		from {
+			opacity: 0%;
+			translate: 0 -0.6rem;
+		}
+	}
+
+	@keyframes disco-cue-sway {
+		from {
+			rotate: -5deg;
+		}
+
+		to {
+			rotate: 5deg;
+		}
+	}
+}
+
+// --------------------------------------------------------------------------
+// Ticket pieces. A pass and its reply stub read as one printed admission ticket.
+// --------------------------------------------------------------------------
+
+// A mirror ball drawn with gradients: a round face, a grid of facets, a hot spot and a glow.
+@mixin mirror-ball-surface($glow-rgb: var(--color-rose-glow-rgb)) {
+	border-radius: 50%;
+	background:
+		radial-gradient(circle at 32% 28%, rgb(255 255 255 / 95%), transparent 22%),
+		radial-gradient(circle at 70% 76%, rgb($glow-rgb / 75%), transparent 42%),
+		repeating-linear-gradient(0deg, rgb(40 42 54 / 55%) 0 1px, transparent 1px 0.5rem),
+		repeating-linear-gradient(90deg, rgb(40 42 54 / 55%) 0 1px, transparent 1px 0.5rem),
+		radial-gradient(circle at 38% 34%, rgb(244 244 248), rgb(168 170 182) 55%, rgb(74 76 90));
+	box-shadow:
+		0 0 1.4rem rgb($glow-rgb / 70%),
+		0 0 3.2rem rgb($glow-rgb / 35%);
+	aspect-ratio: 1;
+}
+
+// Holographic foil, twice as wide as its box so a sheen can slide across it.
+@mixin foil-strip($glow-rgb: var(--color-rose-glow-rgb)) {
+	background: linear-gradient(
+			100deg,
+			rgb(214 170 180),
+			rgb(232 232 240),
+			rgb($glow-rgb),
+			rgb(214 196 150),
+			rgb(214 170 180)
+		)
+		0 0 / 200% 100%;
+}
+
+// Dress-code pass. Include on an `.event-location__enclosure`: a foil strip runs along its top
+// edge, a sequin dress beside a dinner jacket opens the dress-code note, and the swatch reads as a
+// sequin.
+@mixin dress-pass($glow-rgb: var(--color-rose-glow-rgb)) {
+	position: relative;
+	overflow: hidden;
+
+	&::before {
+		@include foil-strip($glow-rgb);
+
+		position: absolute;
+		inset: 0 0 auto;
+		display: block;
+		height: 0.45rem;
+		clip-path: none;
+		content: '';
+		pointer-events: none;
+	}
+
+	.event-location__enclosure-note:first-of-type .event-location__enclosure-title::before {
+		display: block;
+		width: 5.6rem;
+		height: 4.05rem;
+		margin: 0 auto 0.7rem;
+		background: disco.$glam-attire center / contain no-repeat;
+		filter: drop-shadow(0 0 0.4rem rgb($glow-rgb / 85%))
+			drop-shadow(0 0 1.1rem rgb($glow-rgb / 45%));
+		content: '';
+	}
+
+	.event-location__enclosure-swatch {
+		background-image:
+			radial-gradient(circle at 30% 30%, rgb(255 255 255 / 70%) 0 12%, transparent 30%),
+			radial-gradient(circle, rgb(255 255 255 / 25%) 0 1px, transparent 1.5px);
+		background-size:
+			100% 100%,
+			0.35rem 0.35rem;
+	}
+
+	@include motion.motion-safe {
+		&::before {
+			animation: disco-foil-sheen 5s ease-in-out infinite alternate;
+		}
+	}
+
+	@keyframes disco-foil-sheen {
+		to {
+			background-position-x: 100%;
+		}
+	}
+}
+
+// Night program. Include on an `.itinerary`: the timeline becomes the set list of a disco night.
+// Two stage lights swing across the ground, the title is a neon sign, a mirror ball comes down
+// over a neon thread that pays out with the scroll, and every act is a dark glass card that
+// slides in beside its bead; the hour of the act crossing the middle of the screen burns hotter.
+@mixin night-program($glow-rgb: var(--color-rose-glow-rgb), $ink: rgb(244 240 244)) {
+	--program-rail: 1.5rem;
+	--program-bead: 2.75rem;
+	--itinerary-line-color: rgb(#{$glow-rgb} / 90%);
+	--itinerary-item-time-color: rgb(var(--color-night-blush-rgb));
+	--itinerary-item-label-color: #{$ink};
+	--itinerary-item-desc-color: rgb(var(--color-night-blush-rgb) / 88%);
+	--itinerary-icon-bg: rgb(30 5 13 / 92%);
+	--itinerary-icon-border: 1px solid rgb(var(--color-night-blush-rgb) / 55%);
+	--itinerary-icon-shadow: 0 0 0.9rem rgb(#{$glow-rgb} / 55%);
+	--itinerary-icon-color: #{$ink};
+	--itinerary-closing-note-color: rgb(var(--color-night-blush-rgb));
+
+	padding-block: 4.5rem 4rem;
+
+	// `clip`, unlike `hidden`, leaves the page as the scroller that drives the scene.
+	overflow: clip;
+	isolation: isolate;
+
+	// Stage lights: one cone from each top corner, swinging inward as the section crosses.
+	&::before,
+	&::after {
+		position: absolute;
+		top: -4rem;
+		z-index: -1;
+		width: 70%;
+		height: 92%;
+		background: linear-gradient(180deg, rgb($glow-rgb / 26%), transparent 88%);
+		content: '';
+		clip-path: polygon(47% 0, 53% 0, 100% 100%, 0 100%);
+		pointer-events: none;
+		transform-origin: 50% 0;
+	}
+
+	&::before {
+		left: -30%;
+		rotate: -15deg;
+
+		@include on-scroll(disco-program-light-left, cover 0% cover 100%);
+	}
+
+	&::after {
+		right: -30%;
+		rotate: 15deg;
+
+		@include on-scroll(disco-program-light-right, cover 0% cover 100%);
+	}
+
+	.itinerary__header {
+		margin-bottom: 1.5rem;
+	}
+
+	.itinerary__header .itinerary__title {
+		color: $ink;
+		font-size: clamp(1.9rem, 8.5vw, 2.6rem);
+		line-height: 1.1;
+		text-shadow:
+			0 0 0.25rem rgb(255 255 255 / 45%),
+			0 0 0.9rem rgb($glow-rgb / 85%),
+			0 0 2rem rgb($glow-rgb / 50%);
+
+		@include neon-power-on;
+	}
+
+	.itinerary__subtitle {
+		max-width: 26ch;
+		margin: 0.6rem auto 0;
+		color: rgb(var(--color-night-blush-rgb) / 92%);
+		font-family: var(--font-display);
+		font-size: 1.15rem;
+		font-style: italic;
+		line-height: 1.35;
+		text-wrap: balance;
+	}
+
+	.itinerary__header-flourish {
+		height: 1rem;
+		margin-top: 0.9rem;
+		background: disco.$sparkle-rule center / contain no-repeat;
+
+		> * {
+			display: none;
+		}
+	}
+
+	.itinerary__timeline {
+		max-width: 26rem;
+		margin-inline: auto;
+		padding-block: 4.5rem 2.4rem;
+	}
+
+	// The mirror ball, on a cord that runs up out of the scene.
+	.itinerary__line-start {
+		position: absolute;
+		top: 1.3rem;
+		left: var(--program-rail);
+		z-index: 2;
+		display: block;
+		width: 3rem;
+		margin-left: -1.5rem;
+		transform: none;
+
+		@include mirror-ball-surface($glow-rgb);
+
+		&::before {
+			position: absolute;
+			bottom: 100%;
+			left: 50%;
+			width: 1px;
+			height: 7rem;
+			background: linear-gradient(180deg, transparent, rgb(255 255 255 / 75%));
+			content: '';
+		}
+
+		@include on-scroll(
+			disco-program-ball,
+			entry 25% cover 45%,
+			disco-program-ball-turn 2.4s linear infinite
+		);
+	}
+
+	// The last spark, where the thread ends.
+	.itinerary__line-end {
+		position: absolute;
+		bottom: 0.5rem;
+		left: var(--program-rail);
+		display: block;
+		width: 1.3rem;
+		height: 1.3rem;
+		margin-left: -0.65rem;
+		background: $ink;
+		clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+		transform: none;
+
+		@include motion.motion-safe {
+			animation: disco-program-spark 2.2s ease-in-out infinite alternate;
+		}
+	}
+
+	// The thread pays out so its tip keeps to the lower third of the screen.
+	.itinerary__animated-line-container {
+		left: var(--program-rail);
+		transform-origin: 50% 0;
+
+		@include on-scroll(disco-program-thread, cover 35vh cover calc(100% - 62vh));
+	}
+
+	.itinerary__items {
+		gap: 1.1rem;
+	}
+
+	.itinerary__item {
+		display: block;
+		padding-left: calc(var(--program-rail) + var(--program-bead) / 2 + 0.9rem);
+	}
+
+	.itinerary__item-dot {
+		display: none;
+	}
+
+	.itinerary__item .itinerary__item-content {
+		position: relative;
+		padding: 0.8rem 1rem 0.9rem;
+		border: 1px solid rgb(var(--color-night-blush-rgb) / 22%);
+		border-radius: 0.9rem;
+		background:
+			linear-gradient(140deg, rgb(255 255 255 / 9%), transparent 42%), rgb(30 5 13 / 60%);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 10%),
+			0 0.6rem 1.4rem rgb(0 0 0 / 22%);
+		text-align: left;
+
+		// The arm that ties the card to its bead.
+		&::before {
+			position: absolute;
+			top: calc(0.7rem + var(--program-bead) / 2);
+			right: 100%;
+			width: 0.9rem;
+			height: 1px;
+			background: rgb($glow-rgb / 80%);
+			content: '';
+		}
+
+		@include on-scroll(disco-program-act, entry 20% cover 28%);
+	}
+
+	.itinerary__item .itinerary__item-icon-wrapper {
+		position: absolute;
+		top: 0.7rem;
+		left: calc(var(--program-rail) - var(--program-bead) / 2);
+		width: var(--program-bead);
+		height: var(--program-bead);
+		margin: 0;
+
+		&::before {
+			border-color: rgb($glow-rgb / 80%);
+			opacity: 70%;
+		}
+
+		@include on-scroll(disco-program-bead, entry 30% cover 34%);
+	}
+
+	.itinerary__item-icon-inner {
+		width: 1.5rem;
+		height: 1.5rem;
+	}
+
+	.itinerary__item-time {
+		margin-bottom: 0.15rem;
+		font-size: 0.76rem;
+		font-weight: 700;
+		letter-spacing: 0.24em;
+		text-shadow: 0 0 0.7rem rgb($glow-rgb / 70%);
+
+		@include on-scroll(disco-program-live, cover 30% cover 70%);
+	}
+
+	.itinerary__item .itinerary__item-label {
+		margin: 0.4rem 0 0;
+		font-size: 1.45rem;
+		font-weight: 500;
+	}
+
+	.itinerary__item .itinerary__item-description {
+		display: block;
+		max-width: none;
+		margin: 0.2rem 0 0;
+		font-family: var(--font-display);
+		font-size: 1.05rem;
+		font-style: italic;
+		line-height: 1.3;
+	}
+
+	.itinerary__closing-note {
+		max-width: 24ch;
+		margin-top: 1.25rem;
+		font-size: 1.15rem;
+		line-height: 1.4;
+	}
+
+	@keyframes disco-program-light-left {
+		from {
+			rotate: 8deg;
+		}
+	}
+
+	@keyframes disco-program-light-right {
+		from {
+			rotate: -8deg;
+		}
+	}
+
+	@keyframes disco-program-ball {
+		from {
+			opacity: 0%;
+			translate: 0 -5rem;
+		}
+	}
+
+	// One facet to the side: the grid loops, so the ball seems to turn.
+	@keyframes disco-program-ball-turn {
+		to {
+			background-position:
+				0 0,
+				0 0,
+				0 0,
+				0.5rem 0,
+				0 0;
+		}
+	}
+
+	@keyframes disco-program-spark {
+		from {
+			opacity: 45%;
+			scale: 0.7;
+		}
+	}
+
+	@keyframes disco-program-thread {
+		from {
+			scale: 1 0;
+		}
+	}
+
+	@keyframes disco-program-act {
+		from {
+			opacity: 0%;
+			translate: 1.75rem 0;
+		}
+	}
+
+	@keyframes disco-program-bead {
+		from {
+			box-shadow: none;
+			opacity: 30%;
+			scale: 0.55;
+		}
+	}
+
+	@keyframes disco-program-live {
+		50% {
+			color: rgb(255 255 255);
+			text-shadow:
+				0 0 0.3rem rgb(255 255 255 / 70%),
+				0 0 0.9rem rgb($glow-rgb),
+				0 0 2rem rgb($glow-rgb / 75%);
+		}
+	}
+}
+
+// Envelope pass. Include on a `.gifts-section`: the gift card turns into a dark glass pass under
+// a foil strip, with its title lit in neon.
+@mixin envelope-pass($glow-rgb: var(--color-rose-glow-rgb), $ink: rgb(244 240 244)) {
+	min-height: 0;
+
+	.gift-card {
+		position: relative;
+		overflow: hidden;
+		border: 1px solid rgb(var(--color-night-blush-rgb) / 30%);
+		background:
+			radial-gradient(120% 70% at 50% 0%, rgb(152 30 52 / 55%), transparent 70%), rgb(30 5 13);
+		box-shadow: 0 1.2rem 2.4rem rgb(0 0 0 / 35%);
+		color: $ink;
+
+		&::before {
+			@include foil-strip($glow-rgb);
+
+			position: absolute;
+			inset: 0 0 auto;
+			display: block;
+			height: 0.45rem;
+			clip-path: none;
+			content: '';
+			pointer-events: none;
+		}
+	}
+
+	.gift-card__icon-medallion {
+		border: 1px solid rgb(var(--color-night-blush-rgb) / 55%);
+		background: rgb(30 5 13 / 92%);
+		box-shadow: 0 0 0.9rem rgb(#{$glow-rgb} / 55%);
+	}
+
+	.gift-card__title {
+		color: $ink;
+		text-shadow:
+			0 0 0.5rem rgb(#{$glow-rgb} / 90%),
+			0 0 1.2rem rgb(#{$glow-rgb} / 50%);
+	}
+
+	.gift-card__description {
+		color: rgb(var(--color-night-blush-rgb) / 92%);
+	}
+}
+
+// Four die-cut corners.
+@mixin ticket-corners($cut) {
+	mask:
+		radial-gradient(circle $cut at 0 0, transparent 96%, rgb(0 0 0)) left top / 51% 51%
+			no-repeat,
+		radial-gradient(circle $cut at 100% 0, transparent 96%, rgb(0 0 0)) right top / 51% 51%
+			no-repeat,
+		radial-gradient(circle $cut at 0 100%, transparent 96%, rgb(0 0 0)) left bottom / 51% 51%
+			no-repeat,
+		radial-gradient(circle $cut at 100% 100%, transparent 96%, rgb(0 0 0)) right bottom / 51%
+			51% no-repeat;
+}
+
+// A pair of side punches at height `$y` (0 = the top edge, where a stub meets its pass).
+@mixin ticket-notches($cut, $y: 0) {
+	mask:
+		radial-gradient(circle $cut at 0 $y, transparent 96%, rgb(0 0 0)) left / 51% 100% no-repeat,
+		radial-gradient(circle $cut at 100% $y, transparent 96%, rgb(0 0 0)) right / 51% 100%
+			no-repeat;
+}
+
+@mixin barcode($ink) {
+	background: repeating-linear-gradient(
+		90deg,
+		$ink 0 2px,
+		transparent 2px 5px,
+		$ink 5px 6px,
+		transparent 6px 8px,
+		$ink 8px 11px,
+		transparent 11px 13px
+	);
+}
+
+// --------------------------------------------------------------------------
+// One-screen ticket. Include the first on a `reply-card` pass and the second on its `reply-card`
+// reply: the pass turns into a horizontal ticket (emblem beside the heading, seat ring beside the
+// barcode) and every measure also yields to the small viewport height, so the pass and the first
+// reply step share one screen under a fixed header on any phone or desktop.
+//   $barcode-ink  Barcode colour.
+// --------------------------------------------------------------------------
+@mixin ticket-pass-one-screen($barcode-ink: currentcolor) {
+	.access-card {
+		padding-top: min(clamp(3.6rem, 14vw, 4.4rem), 5svh);
+		padding-bottom: min(1.5rem, 2svh);
+	}
+
+	.access-card__header {
+		display: grid;
+		grid-template-columns: auto minmax(0, auto);
+		align-items: center;
+		justify-content: center;
+		gap: 0.15rem min(0.9rem, 3.5vw);
+		text-align: left;
+
+		> * {
+			grid-column: 2;
+		}
+
+		&::before {
+			grid-area: 1 / 1 / span 3;
+			width: min(4.75rem, 7svh);
+			margin: 0;
+		}
+	}
+
+	.access-card__subtitle {
+		margin-top: 0;
+
+		@media (height <= 600px) {
+			display: none;
+		}
+	}
+
+	.access-card__field {
+		margin-top: min(1rem, 1.2svh);
+	}
+
+	.access-card__divider {
+		height: 0.35rem;
+		margin: min(1.2rem, 1.4svh) 0;
+	}
+
+	.access-card__quota {
+		display: grid;
+		grid-template-columns: auto minmax(0, auto);
+		place-items: center start;
+		justify-content: center;
+		gap: 0.2rem min(1.1rem, 4vw);
+		text-align: left;
+
+		> * {
+			grid-column: 2;
+		}
+
+		> .access-card__count-frame {
+			grid-area: 1 / 1 / span 3;
+		}
+
+		> .access-card__label {
+			display: block;
+		}
+
+		@media (height <= 600px) {
+			> .access-card__count-words {
+				display: none;
+			}
+		}
+
+		// Barcode under the seats.
+		&::after {
+			@include barcode($barcode-ink);
+
+			grid-column: 2;
+			width: min(8.5rem, 36vw);
+			height: min(1.9rem, 3svh);
+			margin-top: 0.2rem;
+			content: '';
+		}
+	}
+}
+
+@mixin ticket-stub-one-screen {
+	padding-block: min(1.75rem, 2.5svh) min(3rem, 2.4svh);
+
+	.rsvp__header {
+		margin-bottom: min(1.5rem, 1.6svh);
+	}
+
+	.rsvp__subcopy {
+		margin-top: min(0.6rem, 1svh);
+
+		@media (height <= 600px) {
+			display: none;
+		}
+	}
+
+	.rsvp-steps__progress {
+		margin-bottom: min(1.25rem, 1.6svh);
+	}
+
+	.rsvp-steps__heading {
+		margin-bottom: min(1rem, 1.2svh);
+	}
+
+	.rsvp-steps__panel {
+		gap: min(1rem, 1.4svh);
+	}
+
+	// The first step is one tap: its two answers sit side by side as buttons, the radio mark
+	// hidden (the chosen card lights up) but still focusable.
+	.rsvp-steps[data-step-index='0'] {
+		.rsvp__radio-group {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 0.6rem;
+			margin-block: 0;
+		}
+
+		.rsvp__radio-card {
+			justify-content: center;
+			min-height: max(44px, min(56px, 8svh));
+			padding: 0.25rem 0.5rem;
+			font-size: min(1.05rem, 2.7svh);
+			line-height: 1.15;
+			text-align: center;
+			text-wrap: balance;
+		}
+
+		.rsvp__radio-indicator {
+			display: none;
+		}
+	}
+
+	.rsvp__demo-footer {
+		margin-top: min(1.5rem, 1.4svh);
+		font-size: min(0.95rem, 2.3svh);
+	}
+}
+
+// --------------------------------------------------------------------------
+// Scroll entrances. Each piece reaches its resting pose as its own box crosses the viewport.
+// Without scroll timelines, or with reduced motion, the piece simply rests there.
+//   $name   Keyframes that hold only the starting pose.
+//   $range  Stretch of the crossing that drives the move.
+//   $also   A clock-driven animation the piece keeps running, if it has one.
+// --------------------------------------------------------------------------
+@mixin on-scroll($name, $range: entry 0% cover 40%, $also: null) {
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			@if $also {
+				animation:
+					#{$also},
+					$name linear both;
+				animation-timeline: auto, view();
+			} @else {
+				animation: $name linear both;
+				animation-timeline: view();
+			}
+
+			animation-range: $range;
+		}
+	}
+}
+
+// A neon sign that comes down on its cables and flickers on.
+@mixin neon-power-on($range: entry 15% cover 45%) {
+	@include on-scroll(disco-neon-power-on, $range);
+
+	@keyframes disco-neon-power-on {
+		0% {
+			opacity: 12%;
+			translate: 0 -1.75rem;
+		}
+
+		35% {
+			opacity: 70%;
+		}
+
+		45% {
+			opacity: 25%;
+		}
+
+		65% {
+			opacity: 90%;
+		}
+
+		72% {
+			opacity: 50%;
+		}
+	}
+}
+
+// A printed ticket fed up out of its slot.
+@mixin ticket-feed($range: entry 0% cover 28%) {
+	@include on-scroll(disco-ticket-feed, $range);
+
+	@keyframes disco-ticket-feed {
+		from {
+			opacity: 0%;
+			translate: 0 2.5rem;
+		}
+	}
+}
+
+// A mirror ball that rolls in from the side to its place.
+@mixin mirror-ball-roll-in($range: entry 10% cover 35%) {
+	@include on-scroll(disco-ball-roll-in, $range);
+
+	@keyframes disco-ball-roll-in {
+		from {
+			opacity: 0%;
+			rotate: -200deg;
+			translate: -2.5rem 0;
+		}
+	}
+}
+
+// A hanging mirror ball lowered into place; `$also` keeps its own sway going.
+@mixin mirror-ball-lower($also: null, $range: entry 20% cover 50%) {
+	@include on-scroll(disco-ball-lower, $range, $also);
+
+	@keyframes disco-ball-lower {
+		from {
+			translate: 0 -7rem;
+		}
+	}
+}
+
+// --------------------------------------------------------------------------
+// Scenes that arrive and leave. The host section declares `view-timeline-name: $timeline`; a
+// piece takes its place as the section arrives and gives it up as the section goes. The poses
+// come from `--scene-from-*` and `--scene-to-*` on the piece. Without scroll timelines, or with
+// reduced motion, the piece simply rests in place. Include `scene-pass-keyframes` once.
+//   $arrive  Stretch of the section's crossing that brings the piece in.
+//   $leave   Stretch that takes it away.
+// --------------------------------------------------------------------------
+@mixin scene-pass($timeline, $arrive: entry 20% entry 80%, $leave: exit 30% exit 85%) {
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			animation:
+				disco-scene-arrive linear both,
+				disco-scene-leave linear both;
+			animation-timeline: $timeline;
+			animation-range: $arrive, $leave;
+		}
+	}
+}
+
+// The countdown ball on a named stage: it drops as the section arrives and goes back up its cable
+// as the section leaves. Include on `.countdown-texture::after` of the mirror-ball countdown.
+@mixin mirror-ball-return($timeline, $drop: entry 10% entry 80%, $raise: exit -2% exit 16%) {
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			animation:
+				mirror-ball-drop linear both,
+				mirror-ball-spin 3.2s linear infinite,
+				disco-ball-return linear both;
+			animation-timeline: $timeline, auto, $timeline;
+			animation-range: $drop, normal, $raise;
+		}
+	}
+}
+
+@mixin scene-pass-keyframes {
+	@keyframes disco-ball-return {
+		to {
+			translate: -50% calc(-1 * (var(--mirror-ball-cable) + var(--mirror-ball-size)));
+		}
+	}
+
+	@keyframes disco-scene-arrive {
+		from {
+			opacity: var(--scene-from-opacity, 0%);
+			translate: var(--scene-from-shift, 0 2rem);
+			rotate: var(--scene-from-turn, 0deg);
+		}
+	}
+
+	@keyframes disco-scene-leave {
+		to {
+			opacity: var(--scene-to-opacity, 0%);
+			translate: var(--scene-to-shift, 0 -1.5rem);
+			scale: var(--scene-to-scale, 1);
+		}
+	}
+}
+
+// --------------------------------------------------------------------------
+// The portrait as a giant mirror ball: a round picture under a skin of mirror tiles laid on the
+// sphere (rows along the parallels, columns along the meridians), so the tiles narrow toward
+// the rim. The columns step sideways to turn the ball, a band of light sweeps across it and
+// the tiles thin out over `$keep-clear` (the face).
+// The host section declares `view-timeline-name: --disco-giant-stage`; the ball lifts and
+// shrinks a little as that section scrolls away.
+// --------------------------------------------------------------------------
+@function -ball-round($value) {
+	@return math.div(math.round($value * 100), 100);
+}
+
+// One corner of a tile on the sphere, as seen from the front.
+@function -ball-point($turn, $tilt) {
+	@return '#{-ball-round(50 + 50 * math.sin($turn) * math.cos($tilt))} #{-ball-round(50 - 50 * math.sin($tilt))}';
+}
+
+// One still of the ball, turned by `$shift` of a tile: the seams between the mirrors plus a
+// scatter of mirrors that catch the light or fall dark. `$still` reshuffles that scatter, so
+// the sparkle jumps from still to still the way it does on a turning ball.
+@function -ball-seams($rows, $shift, $still: 0) {
+	$step: math.div(180deg, $rows);
+	$path: '';
+	$lit: '';
+	$dim: '';
+
+	@for $i from 1 to $rows {
+		$path: $path + 'M0 #{-ball-round(50 - 50 * math.sin(-90deg + $i * $step))}H100';
+	}
+
+	@for $i from 0 to $rows {
+		$turn: -90deg + ($i + $shift) * $step;
+		$path: $path +
+			'M50 0A#{-ball-round(math.abs(50 * math.sin($turn)))} 50 0 0 #{if($turn < 0deg, 0, 1)} 50 100';
+	}
+
+	@for $i from 1 to $rows - 1 {
+		@for $j from 0 to $rows - 1 {
+			$pick: ($i * 7 + $j * 13 + $still * 5) % 9;
+
+			@if $pick < 2 {
+				$west: -90deg + ($j + $shift) * $step;
+				$south: -90deg + $i * $step;
+				$tile: 'M#{-ball-point($west, $south)}L#{-ball-point($west + $step, $south)}L#{-ball-point($west + $step, $south + $step)}L#{-ball-point($west, $south + $step)}Z';
+
+				@if $pick == 0 {
+					$lit: $lit + $tile;
+				} @else {
+					$dim: $dim + $tile;
+				}
+			}
+		}
+	}
+
+	@return url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'><defs><path id='s' d='#{$path}'/></defs><path d='#{$lit}' fill='white' fill-opacity='.24'/><path d='#{$dim}' fill='rgb(18,4,10)' fill-opacity='.26'/><use href='%23s' stroke='rgb(18,4,10)' stroke-opacity='.62' stroke-width='.5'/><use href='%23s' x='.42' y='.42' stroke='white' stroke-opacity='.34' stroke-width='.28'/></svg>");
+}
+
+@mixin mirror-ball-portrait(
+	$rows: 18,
+	$frames: 6,
+	$keep-clear: 50% 38%,
+	$glow-rgb: var(--color-rose-glow-rgb)
+) {
+	box-shadow:
+		0 0 3.4rem rgb($glow-rgb / 42%),
+		0.5rem 1.8rem 2.8rem rgb(0 0 0 / 62%);
+	outline: 0;
+
+	&::before,
+	&::after {
+		position: absolute;
+		z-index: 1;
+		inset: 0;
+		border-radius: inherit;
+		content: '';
+		pointer-events: none;
+	}
+
+	// The seams between the mirrors.
+	&::before {
+		background: -ball-seams($rows, 0) center / 100% 100% no-repeat;
+		mask: radial-gradient(ellipse 40% 38% at $keep-clear, rgb(0 0 0 / 22%) 55%, rgb(0 0 0));
+
+		@include motion.motion-safe {
+			animation: disco-portrait-turn 2.4s step-end infinite;
+		}
+	}
+
+	// The sphere, lit from the upper left: a sweeping band of light, a flare and sparks on single
+	// mirrors, the specular highlight, a white rim towards the lamp, a rose rim and bounce on the
+	// far side, the core shadow away from the lamp and a dark limb all round.
+	&::after {
+		background:
+			linear-gradient(
+					100deg,
+					transparent 42%,
+					rgb(255 255 255 / 20%) 49%,
+					rgb(255 255 255 / 4%) 53%,
+					transparent 58%
+				)
+				0 0 / 300% 100%,
+			radial-gradient(ellipse 17% 0.45% at 27% 19%, rgb(255 255 255), transparent),
+			radial-gradient(ellipse 0.45% 17% at 27% 19%, rgb(255 255 255), transparent),
+			radial-gradient(circle at 27% 19%, rgb(255 255 255) 0 1%, transparent 4.5%),
+			radial-gradient(circle at 14% 41%, rgb(255 255 255 / 95%) 0 0.7%, transparent 2.6%),
+			radial-gradient(circle at 81% 24%, rgb(255 255 255 / 90%) 0 0.6%, transparent 2.2%),
+			radial-gradient(circle at 88% 61%, rgb($glow-rgb / 95%) 0 0.7%, transparent 2.8%),
+			radial-gradient(circle at 24% 80%, rgb(255 255 255 / 85%) 0 0.5%, transparent 2%),
+			radial-gradient(circle at 62% 92%, rgb($glow-rgb / 90%) 0 0.6%, transparent 2.4%),
+			radial-gradient(
+				ellipse 34% 26% at 29% 20%,
+				rgb(255 255 255 / 58%),
+				rgb(255 255 255 / 14%) 55%,
+				transparent
+			),
+			radial-gradient(
+				ellipse 50% 50% at 51.6% 51.6%,
+				transparent 94%,
+				rgb(255 255 255 / 70%) 98%,
+				transparent 100%
+			),
+			radial-gradient(
+				ellipse 50% 50% at 48.2% 48.2%,
+				transparent 93%,
+				rgb($glow-rgb / 85%) 98%,
+				transparent 100%
+			),
+			radial-gradient(circle at 78% 86%, rgb($glow-rgb / 34%), transparent 30%),
+			radial-gradient(
+				ellipse 100% 100% at 30% 26%,
+				transparent 40%,
+				rgb(14 3 8 / 34%) 58%,
+				rgb(8 1 5 / 84%) 80%
+			),
+			radial-gradient(circle at 50% 50%, transparent 52%, rgb(12 2 8 / 62%) 70%);
+		box-shadow:
+			inset 0.5rem 0.5rem 1.2rem rgb(255 255 255 / 14%),
+			inset -1rem -1.2rem 2.4rem rgb(6 1 4 / 55%);
+
+		@include motion.motion-safe {
+			animation: disco-portrait-sweep 7s linear infinite;
+		}
+	}
+
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			animation: disco-portrait-lift linear both;
+			animation-timeline: --disco-giant-stage;
+			animation-range: exit 0% exit 80%;
+		}
+	}
+
+	// Each still turns the columns by a fraction of one tile, so the loop closes on itself.
+	@keyframes disco-portrait-turn {
+		@for $frame from 0 to $frames {
+			#{math.percentage(math.div($frame, $frames))} {
+				background-image: -ball-seams($rows, math.div($frame, $frames), $frame);
+			}
+		}
+	}
+
+	@keyframes disco-portrait-sweep {
+		// Only the band is wider than the ball, so the position moves it alone.
+		from {
+			background-position: 100% 0;
+		}
+
+		to {
+			background-position: 0 0;
+		}
+	}
+
+	@keyframes disco-portrait-lift {
+		to {
+			translate: 0 -14%;
+			scale: 0.86;
+		}
+	}
+}

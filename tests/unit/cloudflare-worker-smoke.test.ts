@@ -106,6 +106,14 @@ describe('Cloudflare Preview smoke', () => {
 							? ['invitation_failed:xv:mia-pintor']
 							: [];
 				expect(result.failureCodes).toEqual(expectedFailures);
+				expect(result.probes.pendingContentTargets).toEqual(
+					environment === 'production'
+						? [
+								'boda:daniela-y-martin',
+								...(unrelatedMissing ? ['xv:mia-pintor'] : []),
+							].sort()
+						: [],
+				);
 				const requestedPaths = fetchMock.mock.calls.map(([url]) => new URL(url).pathname);
 				expect(requestedPaths.includes('/boda/daniela-y-martin')).toBe(
 					environment === 'production',

@@ -41,8 +41,17 @@ export interface SmokePageRoute {
 	eventType: string;
 	slug: string;
 }
+/**
+ * `pending_content` is not a failure: a catalog invitation with no published row in the target
+ * yet. Content goes out after the Worker (`pnpm prod:apply`), so the smoke reports it apart.
+ */
 export type PostDeployProbeFailureClass =
-	'none' | 'network_error' | 'http_status' | 'json_invalid' | 'contract_mismatch';
+	| 'none'
+	| 'pending_content'
+	| 'network_error'
+	| 'http_status'
+	| 'json_invalid'
+	| 'contract_mismatch';
 
 export interface PostDeployProbeResult extends Record<string, OperationalAggregatePayloadValue> {
 	probe: PostDeployProbeId;
@@ -56,6 +65,8 @@ export interface PostDeployProbeResult extends Record<string, OperationalAggrega
 export interface PostDeployPayload extends OperationalAggregatePayload {
 	probe_count: number;
 	failed_probe_count: number;
+	/** Catalog invitations not yet published in the target; they do not fail the smoke. */
+	pending_content_count: number;
 	network_retry_count: number;
 	runtime_health_verified: boolean | null;
 	asset_verified: boolean | null;
@@ -75,6 +86,8 @@ export interface ProductionSmokeResult {
 	authBoundaryVerified: boolean;
 	headerPolicyVerified: boolean;
 	failureCodes: string[];
+	/** `{eventType}:{slug}` of catalog invitations not yet published in the target. */
+	pendingContentTargets: string[];
 	probeResults: PostDeployProbeResult[];
 }
 
@@ -131,15 +144,23 @@ const PAGE_TITLE_PATTERN = /<title>[^<]+<\/title>/i;
  * no published row yet (`prod:apply` publishes it after activation), not that its content is
  * invalid.
  */
-function isExpectedPageResponse(
+function classifyPageResponse(
 	route: SmokePageRoute,
 	status: number,
 	html: string,
 	pendingPublicationAllowed: boolean,
-): boolean {
-	if (status === 200) return PAGE_TITLE_PATTERN.test(html);
-	if (route.kind !== 'invitation') return false;
-	return status === 403 || (status === 404 && pendingPublicationAllowed);
+): 'passed' | 'pending_content' | 'failed' {
+	if (status === 200) return PAGE_TITLE_PATTERN.test(html) ? 'passed' : 'failed';
+	if (route.kind !== 'invitation') return 'failed';
+	if (status === 403) return 'passed';
+	return status === 404 && pendingPublicationAllowed ? 'pending_content' : 'failed';
+}
+
+/** Spanish owner action for a passing smoke, naming any invitation still to publish. */
+export function passedOwnerAction(pendingContentTargets: readonly string[]): string {
+	if (pendingContentTargets.length === 0)
+		return 'No se requiere acción; conserve el Job Summary como evidencia.';
+	return `Publique el contenido pendiente con \`pnpm prod:apply\` (después del Worker): ${pendingContentTargets.join(', ')}.`;
 }
 
 /** Options of one deployment smoke. */
@@ -201,6 +222,7 @@ function createPostDeployEvidence(input: {
 	environment: PostDeployEnvironment;
 	source?: string;
 	failureOwnerAction: string;
+	passedOwnerAction?: string;
 	runId: string;
 	startedAt: string;
 	completedAt: string | null;
@@ -222,7 +244,7 @@ function createPostDeployEvidence(input: {
 		source: input.source ?? 'github_actions',
 		ownerAction:
 			input.status === 'VERIFIED'
-				? 'No se requiere acción; conserve el Job Summary como evidencia.'
+				? (input.passedOwnerAction ?? passedOwnerAction([]))
 				: input.failureOwnerAction,
 		payload: input.payload,
 	};
@@ -300,6 +322,7 @@ export async function runDeploymentSmoke(
 		return fetchImpl(url, { ...init, headers, redirect: 'manual' });
 	};
 	const failures: string[] = [];
+	const pendingContentTargets: string[] = [];
 	let retries = 0;
 	let runtimeHealthVerified = false;
 	let assetVerified = false;
@@ -320,16 +343,23 @@ export async function runDeploymentSmoke(
 			statusCode: number | null;
 			failureClass: PostDeployProbeFailureClass;
 			retryCount: number;
+			pendingContent?: boolean;
 		}>,
 	): Promise<void> {
 		const startedAt = performance.now();
 		try {
 			const result = await action();
+			const pendingContent = result.passed && result.pendingContent === true;
+			if (pendingContent) pendingContentTargets.push(target);
 			probeResults.push({
 				probe: probeId,
 				target,
 				status_code: result.statusCode,
-				failure_class: result.passed ? 'none' : result.failureClass,
+				failure_class: pendingContent
+					? 'pending_content'
+					: result.passed
+						? 'none'
+						: result.failureClass,
 				retry_count: result.retryCount,
 				duration_ms: Math.round(performance.now() - startedAt),
 			});
@@ -413,13 +443,15 @@ export async function runDeploymentSmoke(
 				`${baseUrl}${visualPageRoute(route)}`,
 			);
 			const html = await response.text();
+			const outcome = classifyPageResponse(
+				route,
+				response.status,
+				html,
+				invitationsHealthVerified,
+			);
 			return {
-				passed: isExpectedPageResponse(
-					route,
-					response.status,
-					html,
-					invitationsHealthVerified,
-				),
+				passed: outcome !== 'failed',
+				pendingContent: outcome === 'pending_content',
 				statusCode: response.status,
 				failureClass: response.status === 200 ? 'contract_mismatch' : 'http_status',
 				retryCount,
@@ -521,6 +553,7 @@ export async function runDeploymentSmoke(
 		authBoundaryVerified,
 		headerPolicyVerified,
 		failureCodes: failures,
+		pendingContentTargets,
 		probeResults,
 	};
 }
@@ -529,6 +562,7 @@ export function toPostDeployPayload(result: ProductionSmokeResult): PostDeployPa
 	return {
 		probe_count: result.probeCount,
 		failed_probe_count: result.failedProbeCount,
+		pending_content_count: result.pendingContentTargets.length,
 		network_retry_count: result.networkRetryCount,
 		runtime_health_verified: result.runtimeHealthVerified,
 		asset_verified: result.assetVerified,
@@ -561,6 +595,15 @@ export function formatEvidenceSummary(evidence: PostDeployEvidence): string {
 					'',
 				]
 			: [];
+	const pendingTargets = evidence.payload.probe_results
+		.filter((result) => result.failure_class === 'pending_content')
+		.map((result) => `\`${result.target}\``);
+	const pendingLines =
+		pendingTargets.length > 0
+			? [
+					`- Pending content (not a failure; publish with \`pnpm prod:apply\`): ${pendingTargets.join(', ')}`,
+				]
+			: [];
 	return [
 		`## Post-deploy smoke — ${evidence.environment}`,
 		'',
@@ -569,6 +612,7 @@ export function formatEvidenceSummary(evidence: PostDeployEvidence): string {
 		`- Run: \`${evidence.runId}\``,
 		`- Observed at: \`${evidence.observedAt}\``,
 		`- Owner action: ${evidence.ownerAction}`,
+		...pendingLines,
 		'',
 		...tableRows,
 	].join('\n');
@@ -606,6 +650,7 @@ async function checkCommand(args: readonly string[]): Promise<void> {
 		source: process.env.GITHUB_ACTIONS === 'true' ? 'github_actions' : 'operator_cli',
 		failureOwnerAction:
 			'Revise el Job Summary y abra la página que falló en el host revisado; no ejecute rollback automático.',
+		passedOwnerAction: passedOwnerAction(result.pendingContentTargets),
 		runId: randomUUID(),
 		startedAt,
 		completedAt: new Date().toISOString(),
@@ -616,6 +661,9 @@ async function checkCommand(args: readonly string[]): Promise<void> {
 	emitEvidence(evidence, 'completed');
 	writeEvidenceSummary(evidence);
 	appendSummary(`\nChecked host: \`${hostname}\`\n`);
+	if (result.pendingContentTargets.length > 0) {
+		console.info(`POST_DEPLOY_PENDING_CONTENT=${result.pendingContentTargets.join(',')}`);
+	}
 	if (!passed) {
 		console.error(`POST_DEPLOY_FAILURE_CODES=${result.failureCodes.join(',')}`);
 		process.exitCode = 1;

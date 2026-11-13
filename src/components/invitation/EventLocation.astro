@@ -60,6 +60,8 @@ interface Props {
 	introLede?: string;
 	/** Decorative cutout printed after the intro. */
 	ornament?: ImageAsset;
+	/** Reference picture a button on the indications enclosure opens full screen. */
+	indicationsReference?: { image: ImageAsset; label: string; note?: string };
 }
 
 const {
@@ -87,7 +89,14 @@ const {
 	introHeading,
 	introLede,
 	ornament,
+	indicationsReference,
 } = Astro.props;
+
+const referenceImage = indicationsReference?.image.src;
+const referenceSize =
+	referenceImage && typeof referenceImage !== 'string'
+		? { width: referenceImage.width, height: referenceImage.height }
+		: {};
 
 const displayVenues = groupVenues(venueEntries);
 
@@ -108,8 +117,12 @@ const headerLede = isStarRoute ? undefined : introLede;
 // A route scene pins the intro and the program together; it needs two stops to travel.
 const isRouteScene = scene !== undefined && isProgramSheet && !isLocked && displayVenues.length >= 2;
 const isButterflyRoute = isRouteScene && scene === 'butterfly-route';
-const SceneWrapper = isRouteScene ? ScrollScene : Fragment;
-const sceneProps = isRouteScene ? { length: 3 as const, class: 'location-route' } : {};
+const isMirrorBallRoute = isRouteScene && scene === 'mirror-ball-route';
+// The mirror ball does not pin: its stops stand one below the other on a lit dance floor, so the
+// guest sees both venues, and it leaves the scene budget to the album.
+const isPinnedRoute = isRouteScene && !isMirrorBallRoute;
+const SceneWrapper = isPinnedRoute ? ScrollScene : Fragment;
+const sceneProps = isPinnedRoute ? { length: 3 as const, class: 'location-route' } : {};
 // Route between the first and the last stop, drawn in a 390 × 500 box; the traveler's offset-path
 // in _lantern-route.scss repeats it.
 const ROUTE_PATH = 'M 70 40 C 330 90, 40 210, 250 270 S 300 430, 120 470';
@@ -123,7 +136,7 @@ const venueType = (venue: GroupedVenue) =>
 <section class="event-location" id="event-location" data-screenshot-section="location" data-variant={variant} data-presentation={presentation} data-location-scene={isRouteScene ? scene : undefined}>
 	<span class="event-location__anchor" id="location" aria-hidden="true"></span>
 	<SceneWrapper {...sceneProps}>
-	{isRouteScene && <div class="location-route__sky" aria-hidden="true"></div>}
+	{isPinnedRoute && <div class="location-route__sky" aria-hidden="true"></div>}
 	{(introEyebrow || introHeading || headerLede) && (
 		<header class="event-location__intro">
 			{introEyebrow && <p class="event-location__eyebrow" data-reveal-role="label">{introEyebrow}</p>}
@@ -155,7 +168,7 @@ const venueType = (venue: GroupedVenue) =>
 	) : (
 		isProgramSheet ? (
 		<>
-		{isRouteScene && (
+		{isPinnedRoute && (
 			<div class="location-route__map">
 			<div class="location-route__map-plane">
 			<svg class="location-route__drawing" viewBox="0 0 390 500" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
@@ -184,7 +197,7 @@ const venueType = (venue: GroupedVenue) =>
 		)}
 		<div class={`event-location__program ${isSingleVenue ? 'event-location__program--single' : ''}`}>
 			{displayVenues.map((venue: GroupedVenue) => (
-				<VenueProgramEntry venue={venue} type={venueType(venue)} calendar={calendarFor(venue)} reveal={!isRouteScene} />
+				<VenueProgramEntry venue={venue} type={venueType(venue)} calendar={calendarFor(venue)} reveal={!isPinnedRoute} />
 			))}
 		</div>
 		</>
@@ -215,7 +228,7 @@ const venueType = (venue: GroupedVenue) =>
 		</div>
 		)
 	)}
-	{isRouteScene && (
+	{isPinnedRoute && (
 		<p class="location-route__continuation">
 			{isButterflyRoute ? (
 			<svg class="location-route__continuation-mark" width="24" height="44" viewBox="0 0 24 44" fill="none" aria-hidden="true" focusable="false">
@@ -257,7 +270,7 @@ const venueType = (venue: GroupedVenue) =>
 		<div class="event-location__indications-container" data-indications-layout="enclosure">
 			<div class="event-location__enclosure" data-reveal-role="item">
 				{indicationsHeading && <h2 class="event-location__indications-heading">{indicationsHeading}</h2>}
-				{indications.map((indication) => {
+				{indications.map((indication, index) => {
 					const isReserved = indication.styleVariant === 'reserved';
 					return (
 						<div class={`event-location__enclosure-note ${isReserved ? 'event-location__enclosure-note--reserved' : ''}`}>
@@ -266,6 +279,17 @@ const venueType = (venue: GroupedVenue) =>
 								{indication.title && <p class="event-location__enclosure-title">{indication.title}</p>}
 								<p class="event-location__enclosure-text" set:html={sanitizeIndicationHtml(indication.text)} />
 							</div>
+							{index === 0 && indicationsReference && (
+								<button
+									type="button"
+									class="event-location__reference-trigger"
+									aria-haspopup="dialog"
+									aria-controls="event-location-reference"
+									data-location-reference-open
+								>
+									{indicationsReference.label}
+								</button>
+							)}
 						</div>
 					);
 				})}
@@ -329,6 +353,30 @@ const venueType = (venue: GroupedVenue) =>
 		</div>
 	)}
 
+	{indicationsReference && isIndicationsEnclosure && !isStarRoute && (
+		<dialog
+			id="event-location-reference"
+			class="event-location__reference-dialog"
+			aria-label={indicationsReference.label}
+		>
+			<figure class="event-location__reference-figure">
+				<img
+					class="event-location__reference-image"
+					src={plainImgSrc(indicationsReference.image.src)}
+					alt={indicationsReference.image.alt}
+					loading="lazy"
+					decoding="async"
+					{...referenceSize}
+				/>
+				{indicationsReference.note && (
+					<figcaption class="event-location__reference-note">{indicationsReference.note}</figcaption>
+				)}
+			</figure>
+			<button type="button" class="event-location__reference-close" data-location-reference-close>
+				Cerrar
+			</button>
+		</dialog>
+	)}
 </section>
 <script>
 	import { initCopyButtons, revealIOSOnly } from '@/utils/ui';
@@ -339,6 +387,22 @@ const venueType = (venue: GroupedVenue) =>
 		initCopyButtons('.copy-button', 'data-address');
 		revealIOSOnly('[data-apple-link]');
 		initCalendarMenus();
+		initReferenceDialog();
+	}
+
+	// The reference picture opens in a native modal <dialog>: Escape closes it and focus returns
+	// to the button. A press on the backdrop or on the close button closes it too.
+	function initReferenceDialog() {
+		document.querySelectorAll<HTMLElement>('[data-location-reference-open]').forEach((trigger) => {
+			const dialog = document.getElementById(trigger.getAttribute('aria-controls') ?? '');
+			if (!(dialog instanceof HTMLDialogElement)) return;
+			trigger.addEventListener('click', () => dialog.showModal());
+			dialog.addEventListener('click', (event) => {
+				const target = event.target;
+				if (!(target instanceof Element)) return;
+				if (target === dialog || target.closest('[data-location-reference-close]')) dialog.close();
+			});
+		});
 	}
 
 	// The calendar menu is a native <details> (it works without JavaScript), which only closes

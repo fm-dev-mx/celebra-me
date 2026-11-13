@@ -126,12 +126,19 @@
 	.event-location__program-entry {
 		display: flex;
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: var(--location-program-entry-align, flex-start);
 		gap: var(--location-program-entry-gap, 0.3rem);
-		padding-top: clamp(1.5rem, 5vw, 2rem);
-		border-top: 1px solid var(--location-program-rule);
+		padding: var(--location-program-entry-padding, clamp(1.5rem, 5vw, 2rem) 0 0);
+		border: var(--location-program-entry-border, 0);
+		border-top: var(
+			--location-program-entry-border-top,
+			1px solid var(--location-program-rule)
+		);
+		border-radius: var(--location-program-entry-radius, 0);
+		background: var(--location-program-entry-bg, none);
+		box-shadow: var(--location-program-entry-shadow, none);
 		color: var(--location-program-ink);
-		text-align: left;
+		text-align: var(--location-program-entry-text-align, left);
 	}
 
 	.event-location__program-drawing {
@@ -173,9 +180,20 @@
 		margin: 0;
 		padding: 0;
 		list-style: none;
-		font-family: var(--font-display);
-		font-size: 1.3rem;
-		font-style: italic;
+		font-family: var(--location-program-schedule-font, var(--font-display));
+		font-size: var(--location-program-schedule-size, 1.3rem);
+		font-style: var(--location-program-schedule-style, italic);
+		line-height: var(--location-program-schedule-line-height, inherit);
+		color: var(--location-program-schedule-color, inherit);
+
+		// A pass-style card can keep only the first moment's time; the itinerary lists the rest.
+		li + li {
+			display: var(--location-program-schedule-rest-display, list-item);
+		}
+
+		li > :first-child {
+			display: var(--location-program-schedule-name-display, inline);
+		}
 	}
 
 	.event-location__program-place {
@@ -200,8 +218,11 @@
 		display: flex;
 		flex-wrap: wrap;
 		align-items: flex-start;
+		align-self: var(--location-program-actions-align, auto);
 		gap: var(--location-program-links-row-gap, 0) var(--location-program-links-gap, 1.35rem);
-		margin-top: 0.25rem;
+		margin-top: var(--location-program-actions-margin, 0.25rem);
+		padding-top: var(--location-program-actions-padding, 0);
+		border-top: var(--location-program-actions-rule, 0);
 
 		> * {
 			flex: var(--location-program-action-flex, 0 1 auto);
@@ -329,8 +350,8 @@
 
 		.event-location__program-entry {
 			align-items: center;
-			padding: 0 clamp(1.5rem, 4vw, 4rem);
-			border-top: 0;
+			padding: var(--location-program-entry-padding, 0 clamp(1.5rem, 4vw, 4rem));
+			border-top: var(--location-program-entry-border-top, 0);
 			text-align: center;
 		}
 

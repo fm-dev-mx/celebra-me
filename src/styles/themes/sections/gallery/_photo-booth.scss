@@ -1,0 +1,551 @@
+@use '../../../tools/motion';
+
+// Gallery photo-booth: eight prints as two black film strips of four, with sprocket holes, strip
+// caps and a booth stamp at each foot. With scroll timelines the section is a pinned scene one
+// screen tall in a dark room: the booth window, framed by a marquee of chasing bulbs, opens as it
+// arrives; both strips run through it like rolls of film while it stays pinned (the first winds
+// up, the second winds down, prints hiding at one end and showing at the other) under two
+// spotlights, mirror-ball spots and three more flashes; the lights go down as it leaves. Under
+// reduced motion or without scroll timelines the strips rest side by side, whole.
+// Profiles map `--photo-booth-glow-rgb`, `--photo-booth-film-rgb`, `--photo-booth-pale-rgb`,
+// `--photo-booth-ink`, `--photo-booth-cabinet`, `--photo-booth-sign-font` and the stamp texts
+// `--photo-booth-stamp` / `--photo-booth-stamp-alt` (quoted strings).
+.event-theme-wrapper .gallery-section[data-variant='photo-booth'] {
+	--photo-booth-glow: var(--photo-booth-glow-rgb, var(--color-action-accent-rgb));
+	--photo-booth-film: var(--photo-booth-film-rgb, 11 7 16);
+	--photo-booth-pale: var(--photo-booth-pale-rgb, 255 238 246);
+	--photo-booth-sign-ink: var(--photo-booth-ink, rgb(255 240 245));
+	--gallery-item-aspect-ratio: 1;
+	--gallery-item-aspect-ratio-feature: 1;
+	--gallery-item-aspect-ratio-wide: 1;
+	--gallery-item-aspect-ratio-standard: 1;
+	--gallery-item-radius: 0;
+	--gallery-item-image-radius: 0;
+	--gallery-item-border: 0;
+	--photo-booth-strip: rgb(var(--photo-booth-film));
+
+	// The black bleeds past each print so no hairline opens between the prints of a strip.
+	--photo-booth-seam: 0 0.3rem 0 var(--photo-booth-strip), 0 -0.3rem 0 var(--photo-booth-strip);
+	--gallery-item-shadow: var(--photo-booth-seam);
+	--gallery-item-hover-shadow: var(--photo-booth-seam);
+	--gallery-item-emphasis-shadow: var(--photo-booth-seam);
+	--gallery-item-backdrop-filter: none;
+	--gallery-item-image-fit: cover;
+	--photo-booth-hole: rgb(255 255 255 / 26%);
+	--photo-booth-gutter: 0.6rem;
+	--photo-booth-gap: 1.5rem;
+
+	// Height of the booth window, in widths of the pair of strips (the strips are about two).
+	--photo-booth-window: 1.5;
+
+	overflow: clip;
+
+	.gallery-section__title {
+		font-family: var(--photo-booth-sign-font, var(--font-calligraphy, var(--font-display)));
+		font-size: var(--photo-booth-sign-size, clamp(2.4rem, 11vw, 3.25rem));
+		color: var(--photo-booth-sign-ink);
+		text-shadow:
+			0 0 0.35rem rgb(var(--photo-booth-glow) / 85%),
+			0 0 1.1rem rgb(var(--photo-booth-glow) / 55%);
+	}
+
+	.gallery-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-rows: repeat(4, max-content);
+		grid-auto-flow: column;
+		position: relative;
+		gap: 0 var(--photo-booth-gap);
+		align-content: start;
+		width: min(100% - 2rem, 24rem);
+		margin-inline: auto;
+		padding-block: 0;
+		container-type: inline-size;
+	}
+
+	.gallery-grid__item {
+		padding: 0.4rem var(--photo-booth-gutter) 0;
+
+		// Sprocket holes run down both edges of the strip, like a roll of film.
+		background:
+			radial-gradient(circle, var(--photo-booth-hole) 0.11rem, transparent 0.13rem) left
+				0.18rem top 0 / 0.26rem 0.7rem repeat-y,
+			radial-gradient(circle, var(--photo-booth-hole) 0.11rem, transparent 0.13rem) right
+				0.18rem top 0 / 0.26rem 0.7rem repeat-y,
+			var(--photo-booth-strip);
+		aspect-ratio: auto;
+		backface-visibility: hidden;
+
+		img {
+			height: auto;
+			aspect-ratio: 1;
+			outline: 1px solid rgb(255 255 255 / 10%);
+			filter: saturate(0.9) contrast(1.05);
+		}
+
+		// Strip caps: a thicker black band closes each strip, and the foot carries the booth stamp.
+		&:nth-child(4n + 1) {
+			padding-top: 0.75rem;
+		}
+
+		&:nth-child(4n) {
+			padding-bottom: 2.4rem;
+
+			&::before {
+				position: absolute;
+				inset: auto 0 0.85rem;
+				font-family: var(--font-label);
+				font-size: var(--photo-booth-caption-size, 0.62rem);
+				letter-spacing: 0.32em;
+				text-align: center;
+				color: var(--photo-booth-sign-ink);
+				text-shadow: 0 0 0.4rem rgb(var(--photo-booth-glow) / 70%);
+				content: var(--photo-booth-stamp, '');
+			}
+		}
+
+		&:nth-child(8)::before {
+			content: var(--photo-booth-stamp-alt, var(--photo-booth-stamp, ''));
+		}
+
+		&::after {
+			position: absolute;
+			inset: 0;
+			background: radial-gradient(
+				circle at 50% 40%,
+				rgb(255 255 255 / 95%),
+				rgb(255 255 255 / 55%) 55%,
+				transparent 85%
+			);
+			opacity: 0%;
+			pointer-events: none;
+			content: '';
+		}
+	}
+
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			// Scroll runway: one screen of stage plus the distance the rolls take to run.
+			min-block-size: 320svh;
+			padding-block: 0;
+			view-timeline-name: --photo-booth;
+
+			// Mirror-ball light: two fields of spots drift across the whole stage, over the booth too,
+			// each its own way. The layer pins with the stage and only shows while the room is dark.
+			&::before {
+				--photo-booth-spot: rgb(var(--photo-booth-pale) / 34%);
+				--photo-booth-spot-rose: rgb(var(--photo-booth-glow) / 42%);
+
+				display: block;
+				position: sticky;
+				inset-block-start: 0;
+				z-index: 2;
+				block-size: 100svh;
+				margin-block-end: -100svh;
+				background:
+					radial-gradient(
+							circle at 18% 22%,
+							var(--photo-booth-spot) 0.22rem,
+							transparent 0.5rem
+						)
+						0 0 / 9rem 11rem,
+					radial-gradient(
+							circle at 72% 64%,
+							var(--photo-booth-spot-rose) 0.3rem,
+							transparent 0.7rem
+						)
+						0 0 / 13rem 9rem,
+					radial-gradient(
+							circle at 44% 86%,
+							var(--photo-booth-spot) 0.16rem,
+							transparent 0.4rem
+						)
+						0 0 / 7rem 8rem;
+				pointer-events: none;
+				content: '';
+				animation: photo-booth-spots linear both;
+				animation-timeline: --photo-booth;
+				mix-blend-mode: screen;
+			}
+
+			// The stage pins for the whole runway and dims as the section leaves.
+			.gallery-section__container {
+				--photo-booth-frame: 1.2rem;
+				--photo-booth-w: min(
+					100% - 2 * var(--photo-booth-frame),
+					22rem,
+					(100svh - 15rem) / var(--photo-booth-window)
+				);
+
+				display: grid;
+				position: sticky;
+				inset-block-start: 0;
+				gap: 2.4rem;
+				align-content: center;
+				block-size: 100svh;
+				padding-block: 4.5rem 2rem;
+				animation: photo-booth-lights-out linear both;
+				animation-timeline: --photo-booth;
+				animation-range: exit 0% exit 65%;
+
+				// The room goes dark around the booth, with a pool of club light under it.
+				&::before {
+					position: absolute;
+					inset: 0 calc(50% - 50vw);
+					z-index: -2;
+					background:
+						radial-gradient(
+							ellipse 75% 42% at 50% 60%,
+							rgb(var(--photo-booth-glow) / 30%),
+							rgb(var(--photo-booth-glow) / 0%)
+						),
+						rgb(var(--photo-booth-film) / 82%);
+					pointer-events: none;
+					content: '';
+					mask-image: linear-gradient(
+						to bottom,
+						rgb(0 0 0 / 0%),
+						rgb(0 0 0) 14%,
+						rgb(0 0 0) 86%,
+						rgb(0 0 0 / 0%)
+					);
+				}
+
+				// The booth front: a dark cabinet with a neon edge and a marquee of bulbs that chase
+				// around the window while the rolls run. It powers on with a flicker as the stage arrives.
+				&::after {
+					--photo-booth-bulb: radial-gradient(
+						circle,
+						rgb(255 244 230) 0.13rem,
+						rgb(var(--photo-booth-glow) / 75%) 0.2rem,
+						rgb(var(--photo-booth-glow) / 0%) 0.42rem
+					);
+
+					grid-area: 2 / 1;
+					justify-self: center;
+					box-sizing: border-box;
+					inline-size: calc(var(--photo-booth-w) + 2 * var(--photo-booth-frame));
+					margin-block: calc(var(--photo-booth-frame) * -1);
+					border: 1px solid rgb(var(--photo-booth-glow) / 75%);
+					border-radius: var(--photo-booth-window-radius, 1rem);
+					background:
+						var(--photo-booth-bulb) 0 0 / 1.1rem var(--photo-booth-frame) repeat-x,
+						var(--photo-booth-bulb) 100% 0 / var(--photo-booth-frame) 1.1rem repeat-y,
+						var(--photo-booth-bulb) 0 100% / 1.1rem var(--photo-booth-frame) repeat-x,
+						var(--photo-booth-bulb) 0 0 / var(--photo-booth-frame) 1.1rem repeat-y,
+						linear-gradient(
+							160deg,
+							var(--photo-booth-cabinet, rgb(44 18 48)),
+							var(--photo-booth-strip) 62%
+						);
+					box-shadow:
+						0 0 0.5rem rgb(var(--photo-booth-glow) / 85%),
+						0 0 2.4rem rgb(var(--photo-booth-glow) / 45%),
+						0 1.6rem 3rem rgb(0 0 0 / 55%);
+					pointer-events: none;
+					content: '';
+					animation:
+						photo-booth-marquee linear both,
+						photo-booth-power-on linear both;
+					animation-timeline: --photo-booth, --photo-booth;
+					animation-range:
+						contain 0% contain 100%,
+						entry 45% contain 3%;
+				}
+			}
+
+			// Two unlike spotlights swing across the room for the whole pass: a wide rose one from high
+			// on the left and a thin pale one from lower on the right. Each fades in from its lamp, so
+			// where they cross there are no hard edges.
+			.gallery-section__header {
+				grid-area: 1 / 1;
+				margin: 0;
+
+				&::before,
+				&::after {
+					--photo-booth-beam-from: -48deg;
+					--photo-booth-beam-to: -6deg;
+					--photo-booth-beam-light: rgb(var(--photo-booth-glow) / 50%);
+
+					position: absolute;
+					inset: -12% auto auto -30%;
+					z-index: -1;
+					inline-size: 14rem;
+					block-size: 124%;
+					background: linear-gradient(
+						to bottom,
+						var(--photo-booth-beam-light),
+						transparent 88%
+					);
+					filter: blur(0.6rem);
+					transform-origin: 50% 0;
+					pointer-events: none;
+					content: '';
+					animation: photo-booth-beam linear both;
+					animation-timeline: --photo-booth;
+					animation-range: entry 20% exit 80%;
+					clip-path: polygon(47% 0, 53% 0, 100% 100%, 0 100%);
+					mask-image: linear-gradient(to bottom, transparent 4%, black 26%);
+					mix-blend-mode: screen;
+				}
+
+				&::after {
+					--photo-booth-beam-from: 58deg;
+					--photo-booth-beam-to: 16deg;
+					--photo-booth-beam-light: rgb(var(--photo-booth-pale) / 34%);
+
+					inset: 3% -14% auto auto;
+					inline-size: 7.5rem;
+					block-size: 98%;
+					filter: blur(0.35rem);
+					animation-range: entry 35% exit 60%;
+				}
+			}
+
+			.gallery-section__title {
+				margin: 0;
+			}
+
+			// The grid becomes the booth window: shorter than the strips, it hides the prints that have
+			// rolled past its edges. It shrinks on short screens so the stage always fits, and opens
+			// from its middle as the section comes in.
+			.gallery-grid {
+				grid-area: 2 / 1;
+				z-index: 1;
+				width: var(--photo-booth-w);
+				min-block-size: 0;
+				aspect-ratio: 1 / var(--photo-booth-window);
+				border-radius: var(--photo-booth-strip-radius, 0.3rem);
+				overflow: clip;
+				animation:
+					photo-booth-open linear both,
+					photo-booth-shots linear both;
+				animation-timeline: --photo-booth, --photo-booth;
+				animation-range:
+					entry 45% contain 3%,
+					contain 0% contain 100%;
+
+				// Both ends of each strip fall into shadow, where the film curls around its roller.
+				&::after {
+					--photo-booth-curl: linear-gradient(
+						to bottom,
+						var(--photo-booth-strip) 0%,
+						rgb(var(--photo-booth-film) / 0%) 16%,
+						rgb(var(--photo-booth-film) / 0%) 84%,
+						var(--photo-booth-strip) 100%
+					);
+
+					position: absolute;
+					inset: 0;
+					z-index: 2;
+					background:
+						var(--photo-booth-curl) left / calc((100% - var(--photo-booth-gap)) / 2)
+							100% no-repeat,
+						var(--photo-booth-curl) right / calc((100% - var(--photo-booth-gap)) / 2)
+							100% no-repeat;
+					pointer-events: none;
+					content: '';
+				}
+			}
+
+			// Both rolls run while the stage is pinned: the left one winds up, the right one winds
+			// down. The ID in `:is()` outranks the editorial item entrance, which they replace.
+			&:is(#invitation-sections-container *)
+				.gallery-grid
+				.gallery-grid__item[data-gallery-item] {
+				// How far a strip is taller than the window: four prints and their caps, less the window.
+				--photo-booth-roll: calc(
+					(2 - var(--photo-booth-window)) * 100cqw - 2 * var(--photo-booth-gap) - 0.45rem
+				);
+
+				animation: photo-booth-wind-up linear both;
+				animation-timeline: --photo-booth;
+				animation-range: contain 4% contain 96%;
+
+				&:nth-child(n + 5) {
+					animation-name: photo-booth-wind-down;
+				}
+			}
+
+			// One camera flash over every print, right as the window finishes opening.
+			.gallery-grid__item::after {
+				animation: photo-booth-flash linear both;
+				animation-timeline: --photo-booth;
+				animation-range: entry 80% contain 8%;
+			}
+		}
+	}
+}
+
+@keyframes photo-booth-open {
+	from {
+		opacity: 0%;
+		clip-path: inset(50% 0);
+		scale: 0.9;
+	}
+
+	to {
+		opacity: 100%;
+		clip-path: inset(0 0);
+		scale: 1;
+	}
+}
+
+@keyframes photo-booth-lights-out {
+	from {
+		opacity: 100%;
+		filter: brightness(1) blur(0);
+		scale: 1;
+	}
+
+	to {
+		opacity: 0%;
+		filter: brightness(0.35) blur(0.25rem);
+		scale: 0.94;
+	}
+}
+
+@keyframes photo-booth-marquee {
+	from {
+		background-position:
+			0 0,
+			100% 0,
+			0 100%,
+			0 0,
+			0 0;
+	}
+
+	to {
+		background-position:
+			17.6rem 0,
+			100% 17.6rem,
+			-17.6rem 100%,
+			0 -17.6rem,
+			0 0;
+	}
+}
+
+@keyframes photo-booth-power-on {
+	0% {
+		opacity: 0%;
+	}
+
+	35% {
+		opacity: 100%;
+	}
+
+	50% {
+		opacity: 30%;
+	}
+
+	68% {
+		opacity: 100%;
+	}
+
+	80% {
+		opacity: 55%;
+	}
+
+	100% {
+		opacity: 100%;
+	}
+}
+
+// Runs on the section's whole pass; the stage is pinned from about 24% to 76% of it.
+@keyframes photo-booth-spots {
+	0% {
+		background-position:
+			0 0,
+			0 0,
+			0 0;
+		opacity: 0%;
+	}
+
+	18% {
+		opacity: 0%;
+	}
+
+	27% {
+		opacity: 100%;
+	}
+
+	73% {
+		opacity: 100%;
+	}
+
+	82% {
+		opacity: 0%;
+	}
+
+	100% {
+		background-position:
+			27rem 22rem,
+			-26rem 18rem,
+			14rem -32rem;
+		opacity: 0%;
+	}
+}
+
+// The booth takes three more pictures while the rolls run: the whole window flares white.
+@keyframes photo-booth-shots {
+	0%,
+	22%,
+	30%,
+	47%,
+	55%,
+	72%,
+	80%,
+	100% {
+		filter: brightness(1);
+	}
+
+	25%,
+	50%,
+	75% {
+		filter: brightness(2.1) saturate(0.7);
+	}
+}
+
+@keyframes photo-booth-beam {
+	from {
+		rotate: var(--photo-booth-beam-from);
+	}
+
+	to {
+		rotate: var(--photo-booth-beam-to);
+	}
+}
+
+@keyframes photo-booth-wind-up {
+	from {
+		translate: 0 0;
+	}
+
+	to {
+		translate: 0 calc(var(--photo-booth-roll) * -1);
+	}
+}
+
+@keyframes photo-booth-wind-down {
+	from {
+		translate: 0 calc(var(--photo-booth-roll) * -1);
+	}
+
+	to {
+		translate: 0 0;
+	}
+}
+
+@keyframes photo-booth-flash {
+	0%,
+	55% {
+		opacity: 0%;
+	}
+
+	70% {
+		opacity: 90%;
+	}
+
+	100% {
+		opacity: 0%;
+	}
+}
