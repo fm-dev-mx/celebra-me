@@ -373,8 +373,8 @@ export function checkSweep(
 			kind: 'folder',
 			subject: displayPath(path),
 			detail: registered
-				? `${name} es un worktree fuera de los carriles de tablero.config.json; revíselo antes de quitarlo.`
-				: `${name} no es un carril de tablero.config.json ni un worktree registrado; revísela y bórrela a mano.`,
+				? `${name} es un worktree fuera de los carriles de .agent/carriles.json; revíselo antes de quitarlo.`
+				: `${name} no es un carril de .agent/carriles.json ni un worktree registrado; revísela y bórrela a mano.`,
 			command: registered
 				? `git -C "${root}" worktree remove "${displayPath(path)}"`
 				: undefined,

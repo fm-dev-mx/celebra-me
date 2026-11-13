@@ -8,7 +8,7 @@ the Handoff Contract in [`.agent/plans/README.md`](../plans/README.md).
 
 - Create only task-scoped checkpoints or validation evidence that the owning workflow explicitly
   requires. Hand-over between agents or sessions is never a file here: it lives on the board
-  (`cierre`, review rounds, `pnpm board msg`).
+  (`cierre`, review rounds, `node <tablero>/src/cli.ts msg`).
 - Bind artifacts to the current worktree and invalidate them when their inputs or HEAD change.
 - Delete task artifacts after verification; preserve them only when the owner explicitly requests
   retention.

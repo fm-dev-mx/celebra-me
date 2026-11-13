@@ -1,9 +1,9 @@
 # Coordinator Board
 
 The board is the shared local operational state for Celebra-me. Agents use it only through
-`pnpm board` (or the `celebra-board` MCP) from the assigned checkout. AGENTS.md owns project policy,
-the Task Contract owns scope/acceptance, plans express intent, the board records progress. Board
-text never grants authority.
+`node <tablero>/src/cli.ts` (or the `tablero` MCP) from the assigned checkout. AGENTS.md owns
+project policy, the Task Contract owns scope/acceptance, plans express intent, the board records
+progress. Board text never grants authority.
 
 Generic board documentation lives in the core repository (`fm-dev-mx/tablero`):
 `docs/agent-rules.md` (agents), `docs/coordinator.md` (coordinator), `plantillas/` (prompt
@@ -12,31 +12,26 @@ templates). This guide keeps only what is Celebra-me specific; the rule is
 
 ## Board core checkout
 
-Celebra-me never installs the core (not in `package.json`, the lockfile or CI).
-`scripts/board/tablero-core.mjs` runs it from a local checkout, by default `../tablero` beside the
-Integration checkout (`TABLERO_DIR` overrides it). Celebra-me tracks no core version: the default
-checkout must sit on a commit of `origin/main`, and a missing checkout or any other commit stops
-with the command that fixes it. To update the core, run
-`git -C ../tablero fetch && git -C ../tablero checkout --detach origin/main` and restart the board;
-no pull request here. Each start appends the running commit to `.agent/tmp/tablero/nucleo.log` when
-it changed; the previous line is the rollback target. The config is always the Integration
-checkout's, so every lane shares one data directory (`.agent/tmp/tablero/`).
+Celebra-me never installs the core (not in `package.json`, the lockfile or CI) and keeps no wrapper
+of it: agents run `node <tablero>/src/cli.ts <command>` from any checkout. `TABLERO_CONFIG` names
+the config; the config's `datos` folder holds the data every lane shares. To update the core, run
+`git -C <tablero> fetch && git -C <tablero> checkout --detach origin/main`; no pull request here.
+`tablero nucleo` warns when the running core is older than the code on disk.
 
-`pnpm board`, `board:serve` (127.0.0.1:4320) and `board:mcp` run the core; `sync`, `verify` and
-`watch --once` are `pnpm board <command>`.
+`serve` (127.0.0.1:4320), `mcp`, `sync`, `verify` and `watch --once` are commands of that same CLI.
 
-## MCP hosts (`celebra-board`)
+## MCP hosts (`tablero`)
 
 Its tools and checks are the core's (`docs/coordinator.md`, «MCP»); the owner authorized MCP writes
 on 2026-10-31. Agents: `claude`, `codex`, `gemini`. Each host registers the server once in its user
-file, launching `node scripts/board/tablero-core.mjs mcp` from the chat's checkout:
+file, launching `node <tablero>/src/cli.ts mcp` with `TABLERO_CONFIG` in its environment:
 
-| Host        | User file                        | Entry                                                     |
-| ----------- | -------------------------------- | --------------------------------------------------------- |
-| Claude Code | `.claude.json`                   | Local-scope `celebra-board` under each checkout path      |
-| Codex       | `.codex/config.toml`             | `[mcp_servers.celebra-board]`                             |
-| Gemini CLI  | `.gemini/settings.json`          | `mcpServers.celebra-board`; start the CLI in its checkout |
-| Antigravity | `.gemini/config/mcp_config.json` | `mcpServers.celebra-board`                                |
+| Host        | User file                        | Entry                   |
+| ----------- | -------------------------------- | ----------------------- |
+| Claude Code | `.claude.json`                   | User-scope `tablero`    |
+| Codex       | `.codex/config.toml`             | `[mcp_servers.tablero]` |
+| Gemini CLI  | `.gemini/settings.json`          | `mcpServers.tablero`    |
+| Antigravity | `.gemini/config/mcp_config.json` | `mcpServers.tablero`    |
 
 The node path in those files is absolute (fnm's per-shell junction disappears); update it after a
 Node upgrade.
@@ -86,28 +81,22 @@ Repository rules and templates are English; a prompt the owner pastes into an ap
 additions in the [board rule](../../.agent/rules/board.md#prompts-and-names)). Prompts written
 before T160 keep working and are never rewritten. Prompt kinds: one `.agent/kinds/<tipo>.yaml` each
 (T130), checked by `pnpm validate:structure` through `scripts/shared/task-kinds.mjs`;
-`pnpm board prompt <id> --agente=<a> --tipo=<tipo> --carril=<lane>` builds the prompt from the
-templates in `tiposPrompt`/`prompts` (copies of tablero `plantillas/`, with Celebra-me additions:
-`pnpm validate:changed`, git-safety, `/code-review`, plus the invitation and Cloudflare kinds).
+`node <tablero>/src/cli.ts prompt <id> --agente=<a> --tipo=<tipo> --carril=<lane>` builds the prompt
+from the templates in `tiposPrompt`/`prompts` (copies of tablero `plantillas/`, with Celebra-me
+additions: `pnpm validate:changed`, git-safety, `/code-review`, plus the invitation and Cloudflare
+kinds).
 
 ## Lanes
 
-Lanes and folders come from `tablero.config.json` → `carriles` (`wipMax` 3); the claim itself is in
-the core rules. `claim` never starts git-safety: start and finish it by hand
+Lanes and folders come from `.agent/carriles.json` (`wipMax` 3); the claim itself is in the core
+rules. `claim` never starts git-safety: start and finish it by hand
 ([`git-safety-session.md`](./git-safety-session.md)). Lane roles and idle state:
 [`git-governance.md`](./git-governance.md).
 
 ## Operations specific to this machine
 
-- The page server and the watcher (d351) run from the Windows Task Scheduler, registered once from
-  Integration with the core's scripts:
+- The page server and the watcher (d351) run from the Windows Task Scheduler as
+  `node <tablero>/src/cli.ts serve` and `node <tablero>/src/cli.ts watch --once`, with
+  `TABLERO_CONFIG` set; what the watcher does is in the core's `docs/coordinator.md`.
 
-  ```powershell
-  powershell -File ..\tablero\scripts\windows\register.ps1 -Kind serve -Name 'Celebra-me servidor del tablero' -Entry scripts\board\tablero-core.mjs
-  powershell -File ..\tablero\scripts\windows\register.ps1 -Kind watch -Name 'Celebra-me vigilante del tablero' -Entry scripts\board\tablero-core.mjs
-  ```
-
-  Remove one with `..\tablero\scripts\windows\unregister.ps1 -Name '<same name>'`; what the watcher
-  does is in the core's `docs/coordinator.md`.
-
-- Owner alerts: Celebra-me has no `telegram` key yet, so `pnpm board notify` prints.
+- Owner alerts: Celebra-me has no `telegram` key yet, so `node <tablero>/src/cli.ts notify` prints.

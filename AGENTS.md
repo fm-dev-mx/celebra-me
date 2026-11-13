@@ -77,7 +77,7 @@ These are **non-overridable** unless a cited owning rule explicitly marks a narr
 - Read `.agent/rules/gatekeeper.md` for review/remediation tiers and `.agent/rules/git-safety.md`
   for Git rules.
 - Load only the smallest relevant rule, skill, or domain doc.
-- Task board: every agent reads and writes it only with `pnpm board` and follows
+- Task board: every agent reads and writes it only with `node <tablero>/src/cli.ts` and follows
   `.agent/rules/board.md`.
 - Search scope: never run a recursive search (`rg`, `grep -r`, `Select-String`,
   `Get-ChildItem -Recurse`, an editor or agent search tool) rooted at the user profile (`~`,
