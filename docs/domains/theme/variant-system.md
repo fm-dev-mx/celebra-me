@@ -72,6 +72,7 @@ audit tooling (`pnpm invitation:published-audit`).
   `thankYou.image`.
 - **Countdown:** `standard`, `editorial-folio`, `magazine-folio`, `clock-face`, `written-days`,
   `mirror-ball`.
+- **Quote:** `standard`, `neon-sign`.
 - **Memories:** `card`; requires `memories.publicSlug`. It has no default variant, because the
   section exists only for invitations with a memory space.
 
@@ -267,6 +268,12 @@ invitation profiles.
 - thankYou.last-song: portrait-keepsake markup as the last dance — the closing portrait in a lit
   frame on a night ground, with the ambient video and sequin light over it. Requires
   `thankYou.image`. `--last-song-*` (dusk-rgb, glow-rgb, ground, ink, ink-rgb).
+- quote.neon-sign: the quote as a neon sign on a dark wall — the lines in small caps, the last line
+  as a large script neon tube, a glowing frame with a crown star hung on two clipped cables, two
+  stage beams entering from past the section edges, twinkling sparkles, and the closing line as a
+  silver label between stars. Each line flickers on, then the tube breathes, the beams sweep and the
+  sparkles twinkle; static under reduced motion. `--neon-sign-*` (glow-rgb, silver-rgb, wall, seam,
+  ink, tube); `seam` is the ground the wall fades from at its top edge.
 - countdown.written-days: one composed fact — small-caps lead, a light display day count with an
   italic "días", and the date in lowercase with old-style numerals; no tiles, the timer updates once
   a minute. `--countdown-written-*`.

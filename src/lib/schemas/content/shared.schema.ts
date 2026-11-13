@@ -15,7 +15,11 @@ import {
 import { COLOR_TOKENS } from '@/lib/theme/color-tokens';
 import { UUID_PATTERN } from '@/lib/intake/constants';
 import { invitationCompositionSchema } from '@/lib/invitation/composition-contract';
-import { THANK_YOU_VARIANTS, COUNTDOWN_VARIANTS } from '@/lib/invitation/section-variants';
+import {
+	THANK_YOU_VARIANTS,
+	COUNTDOWN_VARIANTS,
+	QUOTE_VARIANTS,
+} from '@/lib/invitation/section-variants';
 
 const secureUrlSchema = z
 	.url()
@@ -123,6 +127,7 @@ export const quoteSchema = z
 		author: z.string().optional(),
 		/** Final line set apart from the text, entering after it. */
 		closingLine: z.string().trim().min(1).optional(),
+		variant: z.enum(QUOTE_VARIANTS).optional(),
 	})
 	.strict();
 

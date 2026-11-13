@@ -332,7 +332,7 @@ function buildQuoteSectionData(context: AdaptationContext) {
 	if (!data.quote) return undefined;
 	return {
 		...data.quote,
-		variant: 'standard' as const,
+		variant: data.quote.variant ?? 'standard',
 	};
 }
 

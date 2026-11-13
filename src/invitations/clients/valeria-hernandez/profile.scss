@@ -80,6 +80,18 @@
 	--last-song-ink-rgb: var(--color-night-blush-rgb);
 	--disco-night-deep: var(--color-rose-deep);
 	--disco-night-deep-rgb: var(--color-rose-deep-rgb);
+	--neon-sign-glow-rgb: var(--color-rose-glow-rgb);
+	--neon-sign-silver-rgb: var(--color-leaf-silver-rgb);
+	--neon-sign-wall:
+		radial-gradient(
+			ellipse 80% 55% at 50% 50%,
+			rgb(var(--color-rose-dusk-rgb) / 28%),
+			transparent 75%
+		),
+		rgb(24 3 9);
+	--neon-sign-seam: var(--color-rose-midnight);
+	--neon-sign-ink: var(--color-night-blush);
+	--neon-sign-tube: var(--color-night-blush);
 
 	// The closing keepsake keeps an even night above and below, not the preset's tall bottom band.
 	--thank-you-keepsake-padding-block-lg: clamp(4.5rem, 10svh, 6rem);

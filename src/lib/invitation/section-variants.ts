@@ -17,7 +17,8 @@ export type CanonicalVariantSection =
 	| 'personalizedAccess'
 	| 'thankYou'
 	| 'countdown'
-	| 'memories';
+	| 'memories'
+	| 'quote';
 
 export type CanonicalVariantCssOwner =
 	`src/styles/themes/sections/${string}` | `section-base:${string}`;
@@ -468,6 +469,20 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		cssOwner: 'src/styles/themes/sections/family/_ceremonial-family.scss',
 	},
 	{
+		section: 'quote',
+		variant: 'standard',
+		default: true,
+		prerequisites: ['quote.text'],
+		cssOwner: 'section-base:quote',
+	},
+	{
+		section: 'quote',
+		variant: 'neon-sign',
+		default: false,
+		prerequisites: ['quote.text'],
+		cssOwner: 'src/styles/themes/sections/quote/_neon-sign.scss',
+	},
+	{
 		section: 'memories',
 		variant: 'card',
 		default: false,
@@ -508,8 +523,9 @@ export const COUNTDOWN_VARIANTS = variantsFor('countdown');
 export type CountdownVariant = (typeof COUNTDOWN_VARIANTS)[number];
 export const MEMORIES_VARIANTS = variantsFor('memories');
 export type MemoriesVariant = (typeof MEMORIES_VARIANTS)[number];
+export const QUOTE_VARIANTS = variantsFor('quote');
+export type QuoteVariant = (typeof QUOTE_VARIANTS)[number];
 
 /** Sections without a layout/skin choice emit this closed value. */ type StandardSectionVariant =
 	'standard';
-export type QuoteVariant = StandardSectionVariant;
 export type SharedSectionVariant = StandardSectionVariant;

@@ -22,10 +22,24 @@ const lineOffsets = lines.map((_, index) =>
 const wordCount = countWords(text);
 // The closing line starts 400 ms after the last word of the text has started.
 const closingLineDelay = `${80 + 60 * Math.max(wordCount - 1, 0) + 400}ms`;
+// The neon sign hangs the text from two cables and lights it line by line, the last line as the
+// neon itself; the closing line becomes a label under the sign.
+const isNeonSign = variant === 'neon-sign';
+const neonLineIndex = isNeonSign && lines.length > 1 ? lines.length - 1 : -1;
+const sectionStyle = isNeonSign ? `--neon-sign-lines:${lines.length}` : undefined;
 ---
 
-<section id="quote-section" class="quote-section" data-screenshot-section="quote" data-variant={variant}>
+<section id="quote-section" class="quote-section" data-screenshot-section="quote" data-variant={variant} style={sectionStyle}>
 	<div class="quote-texture" aria-hidden="true"></div>
+	{isNeonSign && (
+		<>
+			<span class="neon-sign__specks" aria-hidden="true"></span>
+			<span class="neon-sign__beams" aria-hidden="true"></span>
+			<span class="neon-sign__sparkles" aria-hidden="true">
+				{[0, 1, 2, 3, 4, 5].map(() => <span class="neon-sign__sparkle"></span>)}
+			</span>
+		</>
+	)}
 	<div class="quote-container">
 		<svg class="quote-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
 			<path d="M14 5C7 6 3 11 3 18v9h11V16H8c0-4 2-7 6-8V5Zm15 0c-7 1-11 6-11 13v9h11V16h-6c0-4 2-7 6-8V5Z"/>
@@ -39,16 +53,41 @@ const closingLineDelay = `${80 + 60 * Math.max(wordCount - 1, 0) + 400}ms`;
 			</svg>
 		</div>
 
-		<blockquote class="quote-content">
-			{lines.map((line, index) => (
-				<SplitWords as="p" class="quote-line" text={line} offset={lineOffsets[index]} />
-			))}
-			{closingLine && (
-				<p class="quote-closing-line" data-reveal-role="lede" style={`--reveal-delay:${closingLineDelay}`}>
-					{closingLine}
-				</p>
-			)}
-		</blockquote>
+		{isNeonSign ? (
+			<>
+				<div class="neon-sign__sign">
+					<span class="neon-sign__cable" aria-hidden="true"></span>
+					<span class="neon-sign__cable" aria-hidden="true"></span>
+					<span class="neon-sign__crown" aria-hidden="true"></span>
+					<blockquote class="quote-content">
+						{lines.map((line, index) => (
+							<SplitWords
+								as="p"
+								class={index === neonLineIndex ? 'quote-line quote-line--neon' : 'quote-line'}
+								text={line}
+								offset={lineOffsets[index]}
+							/>
+						))}
+					</blockquote>
+				</div>
+				{closingLine && (
+					<p class="quote-closing-line" data-reveal-role="lede" style={`--reveal-delay:${closingLineDelay}`}>
+						{closingLine}
+					</p>
+				)}
+			</>
+		) : (
+			<blockquote class="quote-content">
+				{lines.map((line, index) => (
+					<SplitWords as="p" class="quote-line" text={line} offset={lineOffsets[index]} />
+				))}
+				{closingLine && (
+					<p class="quote-closing-line" data-reveal-role="lede" style={`--reveal-delay:${closingLineDelay}`}>
+						{closingLine}
+					</p>
+				)}
+			</blockquote>
+		)}
 
 		{author && (
 			<div class="quote-author-container">

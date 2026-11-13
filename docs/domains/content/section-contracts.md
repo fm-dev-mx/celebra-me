@@ -106,8 +106,8 @@ Footer remains a visual theme surface and has no independent section variant.
 - **Purpose**: Emotional, spiritual, or inspirational text quote from celebrant or family.
 - **Required Inputs**: `text`.
 - **Optional Inputs**: `author`.
-- **Variant**: none; the schema rejects a `variant` key and the renderer emits the fixed `standard`
-  marker.
+- **Variant**: `standard` (default) or `neon-sign` (the last line of `text` becomes the neon tube,
+  so a multi-line `text` reads best).
 - **Rendering & Omission**: Rendered when listed in `sectionOrder` and `quote` data exists.
 
 ---

@@ -82,7 +82,8 @@ const content: CanonicalEventContentInput = {
 		},
 	},
 	quote: {
-		text: 'Quince años, una noche y una pista llena de luces.',
+		variant: 'neon-sign',
+		text: 'Quince años,\nuna noche\ny una pista llena de luces.',
 		closingLine: 'Me haría muy feliz que usted estuviera ahí.',
 	},
 	family: {

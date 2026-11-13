@@ -33,88 +33,9 @@ $valeria-night-ground:
 	@include valeria-night-inks;
 }
 
-// The words scene: the same night, a silver sparkle rule drawn open from its centre, and the
-// words lit like neon in cherry light. Less padding so the words fill the scene.
+// The words scene: the shared neon sign (palette in profile.scss) on the same night inks.
 .event--valeria-hernandez.event-theme-wrapper .quote-section {
 	@include valeria-night-inks;
-
-	--quote-bg: #{$valeria-night-ground};
-	--quote-text-color: var(--color-night-blush);
-	--quote-divider-color: rgb(var(--color-leaf-silver-rgb) / 70%);
-	--quote-closing-line-color: rgb(233 234 238);
-	--quote-padding-block: clamp(3rem, 7vh, 4.5rem);
-
-	.quote-line {
-		text-shadow: 0 0 0.9rem rgb(var(--color-rose-glow-rgb) / 50%);
-	}
-
-	// «pista llena de luces» is the neon sign: white-hot tubes in a cherry halo.
-	.quote-line .word:nth-of-type(n + 7) {
-		color: rgb(255 240 244);
-		text-shadow:
-			0 0 0.2rem rgb(255 255 255 / 80%),
-			0 0 0.7rem rgb(var(--color-rose-glow-rgb) / 90%),
-			0 0 1.6rem rgb(var(--color-rose-glow-rgb) / 60%);
-	}
-
-	// Each tube flickers on in turn once the line shows, then hums.
-	@include motion.motion-safe {
-		.quote-line.is-visible .word:nth-of-type(n + 7) {
-			animation:
-				valeria-neon-on 0.9s steps(1, end) calc((var(--i) - 6) * 260ms + 400ms) both,
-				valeria-neon-hum 3.4s ease-in-out calc((var(--i) - 6) * 260ms + 1.3s) infinite
-					alternate;
-		}
-	}
-
-	@keyframes valeria-neon-on {
-		0%,
-		30%,
-		55% {
-			color: rgb(var(--color-night-blush-rgb) / 55%);
-			text-shadow: none;
-		}
-
-		20%,
-		45%,
-		100% {
-			color: rgb(255 240 244);
-		}
-	}
-
-	@keyframes valeria-neon-hum {
-		to {
-			opacity: 86%;
-		}
-	}
-}
-
-// The opening words hang from the same sparkle rule that closes the page, in silver.
-.event--valeria-hernandez.event-theme-wrapper .quote-section .quote-top-art {
-	display: block;
-	width: 9rem;
-	aspect-ratio: 104 / 16;
-	margin: 0 auto 1.75rem;
-	background: rgb(233 234 238);
-	mask: disco.$sparkle-rule center / contain no-repeat;
-
-	@include motion.motion-safe {
-		@supports (animation-timeline: view()) {
-			animation: valeria-rule-open linear both;
-			animation-timeline: view();
-			animation-range: entry 20% cover 35%;
-		}
-	}
-
-	@keyframes valeria-rule-open {
-		from {
-			clip-path: inset(0 50%);
-		}
-
-		to {
-			clip-path: inset(0);
-		}
-	}
 }
 
 // The family scene: the same night, a faceted mirror ball turning behind the parents, the names
