@@ -1,5 +1,6 @@
 @use '../../../styles/tools/motion';
 @use '../../../styles/tools/disco-motifs' as disco;
+@use '../../../styles/tools/disco-scenes' as scenes;
 
 // Valeria's cherry disco night. The opening, the countdown, the closing and the envelope come from
 // the shared disco-stage, mirror-ball, last-song and disco-night variants (palette in
@@ -235,6 +236,11 @@ $valeria-night-ground:
 			transform: rotate(4deg);
 		}
 	}
+}
+
+// The cue to the next scene: a small mirror ball that comes down on its thread with the scroll.
+.event--valeria-hernandez.event-theme-wrapper .section-nav-button--event-location {
+	@include scenes.mirror-ball-cue;
 }
 
 // The pass and the reply are one admission ticket to the disco night: die-cut corners, a mirror
