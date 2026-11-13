@@ -225,11 +225,16 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 										{ key: 'g2', image: 'gallery02', layoutRole: 'standard' },
 										{ key: 'g3', image: 'gallery03', layoutRole: 'wide' },
 									]
-								: [
-										{ key: 'g1', image: 'gallery01', caption: 'Foto 1' },
-										{ key: 'g2', image: 'gallery02', caption: 'Foto 2' },
-										{ key: 'g3', image: 'gallery03', caption: 'Foto 3' },
-									],
+								: section === 'gallery' && variant === 'photo-booth'
+									? Array.from({ length: 8 }, (_, index) => ({
+											key: `g${index + 1}`,
+											image: `gallery0${(index % 3) + 1}`,
+										}))
+									: [
+											{ key: 'g1', image: 'gallery01', caption: 'Foto 1' },
+											{ key: 'g2', image: 'gallery02', caption: 'Foto 2' },
+											{ key: 'g3', image: 'gallery03', caption: 'Foto 3' },
+										],
 		},
 		gifts: {
 			variant: variantFor('gifts'),
@@ -306,6 +311,7 @@ const TWO_ITEM_INCOMPATIBLE_GALLERIES = new Set([
 	'mirrored-mosaic',
 	'album-assemble',
 	'pinned-track',
+	'photo-booth',
 ]);
 
 /** Thank-you variants that require a photo. */
@@ -500,6 +506,12 @@ export function getIncompatiblePrerequisiteExpectation(
 					expectedPath: ['gallery', 'items'],
 					expectedMessageSubstring:
 						'album-assemble requires three to eight gallery items',
+				};
+			}
+			if (entry.variant === 'photo-booth') {
+				return {
+					expectedPath: ['gallery', 'items'],
+					expectedMessageSubstring: 'photo-booth requires exactly eight gallery items',
 				};
 			}
 			if (entry.variant === 'feature-stack') {

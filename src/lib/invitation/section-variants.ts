@@ -280,6 +280,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		cssOwner: 'src/styles/themes/sections/gallery/_single-keepsake.scss',
 	},
 	{
+		section: 'gallery',
+		variant: 'photo-booth',
+		default: false,
+		prerequisites: ['gallery.items with exactly eight images'],
+		cssOwner: 'src/styles/themes/sections/gallery/_photo-booth.scss',
+	},
+	{
 		section: 'gifts',
 		variant: 'standard',
 		default: true,

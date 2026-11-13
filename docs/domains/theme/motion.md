@@ -195,21 +195,23 @@ only; elsewhere the same markup renders as a normal section.
 - **Budget.** At most two scenes per invitation and no more than 35 % of the page's scroll height
   pinned at a 390 × 844 viewport. Two scenes are never adjacent; a normal section sits between them.
   A scene never traps scrolling: no scroll snapping, no wheel or touch interception.
-- **Scenes in use.** `gallery.album-assemble` (prints drop onto the album page, with a counter) and
-  `location.program-sheet` with `presentationOptions.scene: 'lantern-route'`, `'butterfly-route'` or
-  `'mirror-ball-route'` (two or more venues: the route draws itself, a traveler follows it and the
-  entries take turns; the next entry settles from above so its links stay under the visible one).
-  The lantern walks under a starry night; the butterfly flies, facing its way, over the section's
-  own day grounds; the mirror ball turns along the route under a spotlight that opens over a
-  dance-floor night, and pins two screens instead of three so it can share the budget with an album.
-  The album takes an optional `--gallery-album-dusk` ground that darkens in while the prints
-  assemble (motion-safe only). `itinerary.scene: 'ribbon-route'` (standard variant, two or more
-  moments) pins the program: a ribbon draws itself down the list, each moment comes forward as the
-  ribbon reaches it, and the ribbon ties off in a bow (drawn, or the profile's
-  `--itinerary-ribbon-bow-art`). Resting, it is a list along a finished ribbon.
-  `hero.presentation.scene: 'cover-approach'` (standard cover) pins the cover: its picture closes in
-  on the profile's `--hero-approach-focus` (with `--hero-approach-focus-mobile` below md and
-  `--hero-approach-scale`) while the cover text leaves. Resting, it is the cover as usual.
+- **Scenes in use.** `gallery.album-assemble` (prints drop onto the album page, with a counter),
+  `gallery.photo-booth` (two film strips run through a pinned booth window; CSS scroll timelines
+  only, 3.2 screens tall) and `location.program-sheet` with
+  `presentationOptions.scene: 'lantern-route'`, `'butterfly-route'` or `'mirror-ball-route'` (two or
+  more venues: the route draws itself, a traveler follows it and the entries take turns; the next
+  entry settles from above so its links stay under the visible one). The lantern walks under a
+  starry night; the butterfly flies, facing its way, over the section's own day grounds; the mirror
+  ball turns along the route under a spotlight that opens over a dance-floor night, and pins two
+  screens instead of three so it can share the budget with an album. The album takes an optional
+  `--gallery-album-dusk` ground that darkens in while the prints assemble (motion-safe only).
+  `itinerary.scene: 'ribbon-route'` (standard variant, two or more moments) pins the program: a
+  ribbon draws itself down the list, each moment comes forward as the ribbon reaches it, and the
+  ribbon ties off in a bow (drawn, or the profile's `--itinerary-ribbon-bow-art`). Resting, it is a
+  list along a finished ribbon. `hero.presentation.scene: 'cover-approach'` (standard cover) pins
+  the cover: its picture closes in on the profile's `--hero-approach-focus` (with
+  `--hero-approach-focus-mobile` below md and `--hero-approach-scale`) while the cover text leaves.
+  Resting, it is the cover as usual.
 - **Not scenes.** `rsvp.flow: 'steps'` (one question per step, a lantern on the progress track and
   one rising over a confirmed answer) uses short CSS transitions on interaction only; under reduced
   motion it keeps the progress and drops the movement.

@@ -54,11 +54,11 @@ audit tooling (`pnpm invitation:published-audit`).
   visible venues and accept `venueCard: 'compact'`; `star-route` also needs two visible venues.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
   `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`,
-  `narrative-stack`, `mirrored-mosaic`, `paired-portraits`, `album-assemble`, `pinned-track` (a
-  scroll scene: the photos travel sideways under a counter while the stage is pinned; the scene is
-  one screen plus `--gallery-track-pace` (0.2) screens per photo; at rest, a two-column grid).
-  `single-keepsake` requires exactly one item; `album-assemble` three to eight; feature layouts and
-  `pinned-track` enforce their item requirements.
+  `narrative-stack`, `mirrored-mosaic`, `paired-portraits`, `album-assemble`, `photo-booth`,
+  `pinned-track` (a scroll scene: the photos travel sideways under a counter while the stage is
+  pinned; the scene is one screen plus `--gallery-track-pace` (0.2) screens per photo; at rest, a
+  two-column grid). `single-keepsake` requires exactly one item; `album-assemble` three to eight;
+  `photo-booth` exactly eight; feature layouts and `pinned-track` enforce their item requirements.
 - **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`, `editorial-program`,
   `stacked-cards` (one sticky card per moment that recedes as the next arrives, using scroll-driven
   CSS where supported, otherwise a plain list; requires `itinerary.items`).
@@ -286,6 +286,12 @@ invitation profiles.
   drops onto the page in its own slice of the scroll, turned slightly by hand, with a 01 / NN
   counter and a progress line; otherwise the prints rest in a two- or three-column grid. Three to
   eight items. `--gallery-album-*`.
+- gallery.photo-booth: eight square prints as two black film strips of four, with sprocket holes and
+  a booth stamp at each foot. With scroll timelines the section pins one screen tall in a dark room:
+  a booth window framed by a marquee of chasing bulbs opens, the strips run through it in opposite
+  directions under two spotlights, mirror-ball spots and camera flashes, and the lights go down as
+  it leaves. Under reduced motion the strips rest side by side. Exactly eight items.
+  `--photo-booth-*` (glow, film, pale light, ink, cabinet, sign font and the two stamp strings).
 - rsvp.reply-card + personalizedAccess.reply-card: a printed reply card split across both sections
   and joined into one surface — seats written out above, then the heading, two 56 px answers in the
   stationery formula ("Con gusto asistiré" / "Lamento no poder asistir"), message and one button; no

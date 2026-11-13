@@ -165,8 +165,8 @@ const content: CanonicalEventContentInput = {
 		],
 	},
 	gallery: {
-		// An album page that assembles itself: from the baby photographs to the night of fifteen.
-		variant: 'album-assemble',
+		// Two film strips of four prints that run through a pinned photo-booth window.
+		variant: 'photo-booth',
 		eyebrow: '',
 		title: 'De niña a mis quince',
 		items: [

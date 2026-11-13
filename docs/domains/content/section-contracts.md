@@ -351,6 +351,7 @@ validated by the schemas; the second table is **authoring guidance, not validate
 | `gallery.feature-stack`         | At least three items                                                                                      |
 | `gallery.paired-feature-band`   | At least three items and one item with `layoutRole: feature`                                              |
 | `gallery.pinned-track`          | At least three items                                                                                      |
+| `gallery.photo-booth`           | Exactly eight items                                                                                       |
 | `thankYou.full-bleed-photo`     | `image`                                                                                                   |
 | `thankYou.portrait-letter`      | `image`                                                                                                   |
 | `thankYou.portrait-keepsake`    | `image`                                                                                                   |
