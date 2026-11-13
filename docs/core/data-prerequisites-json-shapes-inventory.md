@@ -73,7 +73,7 @@ schema defaults; no runtime code assumes an internal JSON shape).
   - **Confidence:** traced
 - **#:** 6
   - **Table.column:** `meta_ads_insights_daily.raw`, `meta_organic_insights_daily.raw`
-  - **Migration:** `supabase/migrations/20261025040000_meta_insights_daily.sql:6,21`
+  - **Migration:** `supabase/migrations/20261025040000_meta_insights_daily.sql:12,28`
   - **Reader (file:line):**
     - `src/lib/meta/insights-dashboard.server.ts:21,25` (selects `raw`), evaluated in
       `src/lib/meta/insights-dashboard.ts:69-76` (`raw.spend`, `raw.clicks`,
