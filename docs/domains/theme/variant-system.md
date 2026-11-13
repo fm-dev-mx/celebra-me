@@ -263,8 +263,10 @@ invitation profiles.
   live in `hero/_disco-stage.scss`; a profile supplies only `--disco-stage-*` tokens (glow-rgb,
   silver-rgb, ground, ball-centre, ball-width), each with a neutral night fallback. Requires
   `hero.backgroundImage`.
-- countdown.mirror-ball: the countdown as a mirror ball turning over the numbers; the tiles read as
-  pale ink on the night band with a sparkle rule. `--mirror-ball-*` (glow-rgb, silver-rgb, ink).
+- countdown.mirror-ball: a faceted mirror ball drops on its cable as the section enters, turns and
+  throws beams over the night; the numbers glow large, without boxes, over a lit dance floor in
+  perspective. `--mirror-ball-*` (glow-rgb, silver-rgb, ink, seam: the ground the section above ends
+  on, so the top edge fades instead of cutting).
 - thankYou.last-song: portrait-keepsake markup as the last dance — the closing portrait in a lit
   frame on a night ground, with the ambient video and sequin light over it. Requires
   `thankYou.image`. `--last-song-*` (dusk-rgb, glow-rgb, ground, ink, ink-rgb).
