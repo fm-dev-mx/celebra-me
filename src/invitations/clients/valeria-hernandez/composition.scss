@@ -2,13 +2,11 @@
 @use '../../../styles/tools/disco-motifs' as disco;
 @use '../../../styles/tools/disco-scenes' as scenes;
 
-// Valeria's cherry disco night. The opening, the countdown, the closing and the envelope come from
-// the shared disco-stage, mirror-ball, last-song and disco-night variants (palette in
-// profile.scss); this file keeps her own scenes on the same night.
+// Valeria's cherry disco night. The shared disco-stage, mirror-ball, last-song and disco-night
+// variants carry the palette from profile.scss; this file keeps her own scenes on the same night.
 
 // The night scenes: the opening, the words and the family sit on the same wine night as the
-// countdown and the closing, so the invitation reads as one night on the dance floor. The night
-// inks replace the paper inks inside each scene.
+// countdown and the closing. The night inks replace the paper inks inside each scene.
 @mixin valeria-night-inks {
 	--color-surface-primary: var(--color-rose-midnight);
 	--color-surface-primary-rgb: var(--color-rose-midnight-rgb);
@@ -72,9 +70,59 @@ $valeria-night-ground:
 	}
 }
 
-// The family scene is the night's line-up: a left-aligned bill where the parents headline as
-// «01» and the godparents follow as «02», each name on its own line in large capitals, a silver
-// rule between the acts, and a sweep of silver light across each name as it rises.
+// The countdown is off-centre and each piece arrives and leaves with the scroll, ball included.
+.event--valeria-hernandez.event-theme-wrapper .countdown-section[data-variant='mirror-ball'] {
+	@include scenes.scene-pass-keyframes;
+
+	padding-top: calc(var(--mirror-ball-cable) + var(--mirror-ball-size) * 0.5 - 1rem);
+	view-timeline-name: --valeria-count;
+
+	.countdown-texture::before,
+	.countdown-texture::after {
+		left: max(26%, 50% - 16rem);
+	}
+
+	.countdown-texture::after {
+		@include scenes.mirror-ball-return(--valeria-count);
+	}
+
+	.countdown-title {
+		@include scenes.scene-pass(--valeria-count, entry 20% entry 55%, exit -2% exit 14%);
+
+		text-align: right;
+	}
+
+	.countdown-timer-wrapper {
+		@include scenes.scene-pass(--valeria-count, entry 30% entry 65%, exit 5% exit 28%);
+	}
+
+	.countdown-date {
+		@include scenes.scene-pass(--valeria-count, entry 50% entry 80%, exit 28% exit 52%);
+
+		justify-content: flex-end;
+
+		.subtitle-line:first-child {
+			display: none;
+		}
+
+		.event-date {
+			text-align: right;
+		}
+	}
+
+	.countdown-footer {
+		@include scenes.scene-pass(--valeria-count, entry 60% entry 95%, exit 42% exit 68%);
+
+		--scene-from-turn: 4deg;
+
+		margin-top: 1.25rem;
+		rotate: -3deg;
+		text-align: left;
+	}
+}
+
+// The family scene is the night's line-up: a left-aligned bill, parents «01», godparents «02»,
+// names in large capitals, a silver rule between the acts and a sweep of light as each rises.
 .event--valeria-hernandez.event-theme-wrapper .family {
 	@include valeria-night-inks;
 
@@ -135,9 +183,17 @@ $valeria-night-ground:
 	--family-shine-glow: rgb(var(--color-rose-glow-rgb) / 45%);
 	--family-divider-draw: family-divider-draw;
 
-	// The poster: a framed bill with a neon double edge, a spotlight and halftone dots behind the
-	// type, and a mirror ball hanging from the top corner.
+	// The poster: a neon double edge, a spotlight, halftone dots and a mirror ball in the corner.
+	view-timeline-name: --valeria-family-stage;
+
 	.family__container {
+		@include scenes.scene-pass(--valeria-family-stage, entry 10% entry 55%, exit 55% exit 98%);
+
+		--scene-from-shift: 0 3rem;
+		--scene-from-turn: -1.5deg;
+		--scene-to-shift: 0 -2.5rem;
+		--scene-to-scale: 0.96;
+
 		position: relative;
 		isolation: isolate;
 		width: calc(100% - 2rem);
@@ -276,14 +332,12 @@ $valeria-night-ground:
 	}
 }
 
-// The cue to the next scene: a small mirror ball that comes down on its thread with the scroll.
 .event--valeria-hernandez.event-theme-wrapper .section-nav-button--event-location {
 	@include scenes.mirror-ball-cue;
 }
 
-// The pass and the reply are one admission ticket to the disco night: die-cut corners, a mirror
-// ball beside the heading, a holographic foil strip, the guest written in neon, the seats in a
-// neon ring beside a barcode. The reply is its tear-off stub: punched sides and a tear line.
+// The pass and the reply are one admission ticket: die-cut corners, a mirror ball by the heading,
+// a foil strip, the guest in neon, the seats in a neon ring by a barcode; the reply tears off.
 .event--valeria-hernandez.event-theme-wrapper .personalized-access[data-variant='reply-card'],
 .event--valeria-hernandez.event-theme-wrapper .rsvp-section {
 	--valeria-pass-edge: clamp(0.6rem, 2.4vw, 0.85rem);
@@ -500,8 +554,11 @@ $valeria-night-ground:
 	}
 }
 
-// Dress code: the card reads as a VIP pass, a holographic foil strip along its top edge and the
-// colour swatches as sequins.
+.event--valeria-hernandez.event-theme-wrapper .event-location .event-location__intro {
+	text-align: left;
+}
+
+// Dress code: a VIP pass with a foil strip along its top edge and the swatches as sequins.
 .event--valeria-hernandez.event-theme-wrapper
 	.event-location
 	.event-location__enclosure.event-location__enclosure {

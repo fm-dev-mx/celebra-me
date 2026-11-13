@@ -423,6 +423,65 @@
 }
 
 // --------------------------------------------------------------------------
+// Scenes that arrive and leave. The host section declares `view-timeline-name: $timeline`; a
+// piece takes its place as the section arrives and gives it up as the section goes. The poses
+// come from `--scene-from-*` and `--scene-to-*` on the piece. Without scroll timelines, or with
+// reduced motion, the piece simply rests in place. Include `scene-pass-keyframes` once.
+//   $arrive  Stretch of the section's crossing that brings the piece in.
+//   $leave   Stretch that takes it away.
+// --------------------------------------------------------------------------
+@mixin scene-pass($timeline, $arrive: entry 20% entry 80%, $leave: exit 30% exit 85%) {
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			animation:
+				disco-scene-arrive linear both,
+				disco-scene-leave linear both;
+			animation-timeline: $timeline;
+			animation-range: $arrive, $leave;
+		}
+	}
+}
+
+// The countdown ball on a named stage: it drops as the section arrives and goes back up its cable
+// as the section leaves. Include on `.countdown-texture::after` of the mirror-ball countdown.
+@mixin mirror-ball-return($timeline, $drop: entry 10% entry 80%, $raise: exit -2% exit 16%) {
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			animation:
+				mirror-ball-drop linear both,
+				mirror-ball-spin 3.2s linear infinite,
+				disco-ball-return linear both;
+			animation-timeline: $timeline, auto, $timeline;
+			animation-range: $drop, normal, $raise;
+		}
+	}
+}
+
+@mixin scene-pass-keyframes {
+	@keyframes disco-ball-return {
+		to {
+			translate: -50% calc(-1 * (var(--mirror-ball-cable) + var(--mirror-ball-size)));
+		}
+	}
+
+	@keyframes disco-scene-arrive {
+		from {
+			opacity: var(--scene-from-opacity, 0%);
+			translate: var(--scene-from-shift, 0 2rem);
+			rotate: var(--scene-from-turn, 0deg);
+		}
+	}
+
+	@keyframes disco-scene-leave {
+		to {
+			opacity: var(--scene-to-opacity, 0%);
+			translate: var(--scene-to-shift, 0 -1.5rem);
+			scale: var(--scene-to-scale, 1);
+		}
+	}
+}
+
+// --------------------------------------------------------------------------
 // The portrait as a giant mirror ball: a round picture under a skin of mirror tiles laid on the
 // sphere (rows along the parallels, columns along the meridians), so the tiles narrow toward
 // the rim. The columns step sideways to turn the ball, a band of light sweeps across it and
