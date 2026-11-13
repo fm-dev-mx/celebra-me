@@ -348,11 +348,12 @@ ${statement}
 		expect(patchCallsOnlyBuiltinFunctions(authPatch('auth.users', call))).toBe(false);
 	});
 
-	it('treats the Worker-independent production patches as builtin-only', () => {
+	it('treats the reviewed pre-deploy production patches as builtin-only', () => {
 		for (const file of [
 			'scripts/manual/production-patches/20261109_auth_login_alias_app_metadata_backfill.sql',
 			'scripts/manual/production-patches/20261112_tracking_events_blank_lead_code.sql',
 			'scripts/manual/production-patches/20261112_auth_users_without_app_role.sql',
+			'scripts/manual/production-patches/20261112_itinerary_presentation_removal.sql',
 		]) {
 			const sql = readFileSync(file, 'utf8');
 			expect(lintProductionPatchSql(sql).errors).toEqual([]);

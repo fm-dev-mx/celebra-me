@@ -95,14 +95,43 @@ const REVIEWED_WORKER_INDEPENDENT_PATCHES: Readonly<Record<string, string>> = {
 		'739692fa39f758f5a0494c9bc877baca4653bfabddf6febc508435c2d63ae056',
 };
 
+/**
+ * The owner patches reviewed as repairing invitation content into a form both the serving Worker
+ * and the release Worker resolve, pinned the same way. They write content tables, so the table
+ * allowlist cannot clear them; they exist for content the serving Worker already fails to resolve,
+ * where waiting for the release Worker would keep those invitations down (the release cannot
+ * activate while its upload smoke finds them failing). Add an entry only after checking the
+ * result against the content schema of both Workers.
+ */
+const REVIEWED_WORKER_COMPATIBLE_CONTENT_PATCHES: Readonly<Record<string, string>> = {
+	'20261112_itinerary_presentation_removal':
+		'ce125351d82faf5810e01793664b84f3bfa143ddb8ea76c2cb843f09fb7d86c5',
+};
+
+function patchMatchesPin(
+	pins: Readonly<Record<string, string>>,
+	scriptId: string | undefined,
+	sql: string,
+): boolean {
+	if (!scriptId || !Object.hasOwn(pins, scriptId)) return false;
+	const digest = createHash('sha256').update(sql.replace(/\r\n/g, '\n')).digest('hex');
+	return digest === pins[scriptId];
+}
+
 /** True when the patch text is byte-identical (up to CRLF) to a reviewed entry for its id. */
 export function patchIsReviewedWorkerIndependent(
 	scriptId: string | undefined,
 	sql: string,
 ): boolean {
-	if (!scriptId || !Object.hasOwn(REVIEWED_WORKER_INDEPENDENT_PATCHES, scriptId)) return false;
-	const digest = createHash('sha256').update(sql.replace(/\r\n/g, '\n')).digest('hex');
-	return digest === REVIEWED_WORKER_INDEPENDENT_PATCHES[scriptId];
+	return patchMatchesPin(REVIEWED_WORKER_INDEPENDENT_PATCHES, scriptId, sql);
+}
+
+/** True when the patch is a reviewed, byte-identical content repair both Workers resolve. */
+export function patchIsReviewedWorkerCompatibleContent(
+	scriptId: string | undefined,
+	sql: string,
+): boolean {
+	return patchMatchesPin(REVIEWED_WORKER_COMPATIBLE_CONTENT_PATCHES, scriptId, sql);
 }
 
 /** Decided from the reviewed plan; the apply step refuses a patch whose file changed since. */
@@ -117,11 +146,15 @@ export function patchTablesAreWorkerIndependent(tables: readonly string[] | unde
 /**
  * Content the serving Worker cannot resolve breaks every visit until the deploy catches up. Owner
  * patches are arbitrary SQL that may write invitation content, so they are gated too unless they
- * write only Worker-independent tables; schema migrations are expand-first and precede the Worker
- * that uses them.
+ * write only Worker-independent tables or are a reviewed Worker-compatible content repair; schema
+ * migrations are expand-first and precede the Worker that uses them.
  */
 export async function assertServingWorkerFirst(
-	mutations: readonly { domain: string; patchTables?: readonly string[] }[],
+	mutations: readonly {
+		domain: string;
+		patchTables?: readonly string[];
+		patchWorkerCompatible?: boolean;
+	}[],
 	releaseSha: string,
 	assertWorkerServesRelease: (input: { releaseSha: string }) => Promise<unknown> = (input) =>
 		assertProductionWorkerServesRelease(input),
@@ -129,7 +162,9 @@ export async function assertServingWorkerFirst(
 	const gated = mutations.some(
 		(item) =>
 			item.domain === 'invitation' ||
-			(item.domain === 'patch' && !patchTablesAreWorkerIndependent(item.patchTables)),
+			(item.domain === 'patch' &&
+				item.patchWorkerCompatible !== true &&
+				!patchTablesAreWorkerIndependent(item.patchTables)),
 	);
 	if (gated) await assertWorkerServesRelease({ releaseSha });
 }
