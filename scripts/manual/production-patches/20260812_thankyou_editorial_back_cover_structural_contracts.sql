@@ -15,6 +15,17 @@
 
 begin;
 
+-- Superseded. The owner-approved designs of all three invitations were reconciled with Production
+-- on 2026-09-07 and keep explicit portrait-keepsake / portrait-letter Thank You variants, and
+-- `sectionStyles.*.structuralVariant` is no longer canonical input. Applying this patch would
+-- overwrite approved content, so it refuses to run. The data prerequisite
+-- 20260812-thankyou-editorial-back-cover now verifies the approved variants instead
+-- (scripts/manual/data-prerequisites/20260812_thankyou.sql).
+do $$
+begin
+  raise exception 'THANKYOU_CONTRACT_ABORT: superseded; the approved Thank You variants are verified by scripts/manual/data-prerequisites/20260812_thankyou.sql';
+end $$;
+
 do $$
 declare
   expected_xv text[] := array['ana-sofia-cota-guillen','ayrin-samantha-lerma-castro'];

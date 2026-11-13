@@ -82,7 +82,7 @@
         },
         {
             "id": "20260812-thankyou-editorial-back-cover",
-            "summary": "The three targeted invitations have explicit editorial-back-cover Thank You contracts in published content and every active draft.",
+            "summary": "The three targeted invitations keep their owner-approved explicit Thank You variant (ana-sofia-cota-guillen and leah-lexa portrait-keepsake, ayrin-samantha-lerma-castro portrait-letter) in published content and every active draft; the editorial-back-cover patch is superseded.",
             "introducedBy": "scripts/manual/production-patches/20260812_thankyou_editorial_back_cover_structural_contracts.sql",
             "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20260812_thankyou.sql",
             "environments": {
