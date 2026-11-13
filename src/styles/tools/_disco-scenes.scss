@@ -545,9 +545,9 @@
 	$glow-rgb: var(--color-rose-glow-rgb)
 ) {
 	box-shadow:
-		0 0 0 1px rgb(255 255 255 / 18%),
-		0 0 3rem rgb($glow-rgb / 38%),
-		0 1.4rem 2.6rem rgb(0 0 0 / 55%);
+		0 0 3.4rem rgb($glow-rgb / 42%),
+		0.5rem 1.8rem 2.8rem rgb(0 0 0 / 62%);
+	outline: 0;
 
 	&::before,
 	&::after {
@@ -569,15 +569,11 @@
 		}
 	}
 
-	// The sphere: sparks on single mirrors, a sweeping band of light, the specular highlight, a
-	// rose bounce from below and a dark limb.
+	// The sphere, lit from the upper left: a sweeping band of light, a flare and sparks on single
+	// mirrors, the specular highlight, a white rim towards the lamp, a rose rim and bounce on the
+	// far side, the core shadow away from the lamp and a dark limb all round.
 	&::after {
 		background:
-			radial-gradient(circle at 17% 33%, rgb(255 255 255 / 95%) 0 0.7%, transparent 2.6%),
-			radial-gradient(circle at 81% 24%, rgb(255 255 255 / 90%) 0 0.6%, transparent 2.2%),
-			radial-gradient(circle at 88% 61%, rgb($glow-rgb / 95%) 0 0.7%, transparent 2.8%),
-			radial-gradient(circle at 24% 80%, rgb(255 255 255 / 85%) 0 0.5%, transparent 2%),
-			radial-gradient(circle at 62% 92%, rgb($glow-rgb / 90%) 0 0.6%, transparent 2.4%),
 			linear-gradient(
 					100deg,
 					transparent 42%,
@@ -586,22 +582,43 @@
 					transparent 58%
 				)
 				0 0 / 300% 100%,
+			radial-gradient(ellipse 17% 0.45% at 27% 19%, rgb(255 255 255), transparent),
+			radial-gradient(ellipse 0.45% 17% at 27% 19%, rgb(255 255 255), transparent),
+			radial-gradient(circle at 27% 19%, rgb(255 255 255) 0 1%, transparent 4.5%),
+			radial-gradient(circle at 14% 41%, rgb(255 255 255 / 95%) 0 0.7%, transparent 2.6%),
+			radial-gradient(circle at 81% 24%, rgb(255 255 255 / 90%) 0 0.6%, transparent 2.2%),
+			radial-gradient(circle at 88% 61%, rgb($glow-rgb / 95%) 0 0.7%, transparent 2.8%),
+			radial-gradient(circle at 24% 80%, rgb(255 255 255 / 85%) 0 0.5%, transparent 2%),
+			radial-gradient(circle at 62% 92%, rgb($glow-rgb / 90%) 0 0.6%, transparent 2.4%),
 			radial-gradient(
-				ellipse 26% 20% at 27% 17%,
-				rgb(255 255 255 / 62%),
-				rgb(255 255 255 / 12%) 60%,
+				ellipse 34% 26% at 29% 20%,
+				rgb(255 255 255 / 58%),
+				rgb(255 255 255 / 14%) 55%,
 				transparent
 			),
-			radial-gradient(circle at 74% 90%, rgb($glow-rgb / 40%), transparent 34%),
 			radial-gradient(
-				circle at 46% 42%,
-				transparent 46%,
-				rgb(20 4 10 / 34%) 60%,
-				rgb(12 2 8 / 82%) 71%
-			);
+				ellipse 50% 50% at 51.6% 51.6%,
+				transparent 94%,
+				rgb(255 255 255 / 70%) 98%,
+				transparent 100%
+			),
+			radial-gradient(
+				ellipse 50% 50% at 48.2% 48.2%,
+				transparent 93%,
+				rgb($glow-rgb / 85%) 98%,
+				transparent 100%
+			),
+			radial-gradient(circle at 78% 86%, rgb($glow-rgb / 34%), transparent 30%),
+			radial-gradient(
+				ellipse 100% 100% at 30% 26%,
+				transparent 40%,
+				rgb(14 3 8 / 34%) 58%,
+				rgb(8 1 5 / 84%) 80%
+			),
+			radial-gradient(circle at 50% 50%, transparent 52%, rgb(12 2 8 / 62%) 70%);
 		box-shadow:
-			inset 0 0 0 1px rgb(255 255 255 / 20%),
-			inset 0 -0.6rem 1.6rem rgb($glow-rgb / 22%);
+			inset 0.5rem 0.5rem 1.2rem rgb(255 255 255 / 14%),
+			inset -1rem -1.2rem 2.4rem rgb(6 1 4 / 55%);
 
 		@include motion.motion-safe {
 			animation: disco-portrait-sweep 7s linear infinite;
@@ -626,30 +643,13 @@
 	}
 
 	@keyframes disco-portrait-sweep {
+		// Only the band is wider than the ball, so the position moves it alone.
 		from {
-			background-position:
-				0 0,
-				0 0,
-				0 0,
-				0 0,
-				0 0,
-				100% 0,
-				0 0,
-				0 0,
-				0 0;
+			background-position: 100% 0;
 		}
 
 		to {
-			background-position:
-				0 0,
-				0 0,
-				0 0,
-				0 0,
-				0 0,
-				0 0,
-				0 0,
-				0 0,
-				0 0;
+			background-position: 0 0;
 		}
 	}
 
