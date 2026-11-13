@@ -237,80 +237,305 @@ $valeria-night-ground:
 	}
 }
 
-// The reply card is a ticket to the dance floor: a sequin edge with a glint that runs around it,
-// the invitation in the marquee script, and a perforated stub (notched sides, dashed tear line)
-// holding the note about the personal pass. Reduced motion keeps the edge without the glint.
-@property --valeria-glint-angle {
-	syntax: '<angle>';
-	inherits: false;
-	initial-value: 0deg;
+// The pass and the reply are one admission ticket to the disco night: die-cut corners, a mirror
+// ball over the heading, a holographic foil strip, the guest written in neon, the seats in a neon
+// ring and a barcode. The reply is its tear-off stub: punched sides and a dashed tear line.
+.event--valeria-hernandez.event-theme-wrapper
+	:is(.personalized-access[data-variant='reply-card'], .rsvp-section) {
+	--valeria-pass-edge: clamp(0.6rem, 2.4vw, 0.85rem);
+	--valeria-pass-cut: 1.05rem;
+	--valeria-pass-foil: linear-gradient(
+		100deg,
+		rgb(214 170 180),
+		rgb(232 232 240),
+		rgb(var(--color-rose-glow-rgb)),
+		rgb(214 196 150),
+		rgb(214 170 180)
+	);
+	--valeria-pass-neon:
+		0 0 0.2rem rgb(255 255 255 / 55%), 0 0 0.7rem rgb(var(--color-rose-glow-rgb) / 90%),
+		0 0 1.8rem rgb(var(--color-rose-glow-rgb) / 55%);
 }
 
-.event--valeria-hernandez.event-theme-wrapper .rsvp {
-	// Level with the tear line: top padding + one line of title + the stub's margin.
-	--valeria-stub-y: 6.6rem;
+.event--valeria-hernandez.event-theme-wrapper .personalized-access[data-variant='reply-card'] {
+	.access-card {
+		// Every measure also yields to the screen height, so the whole ticket fits on one screen.
+		padding-top: min(clamp(3.6rem, 14vw, 4.4rem), 8svh);
+		background:
+			linear-gradient(
+				118deg,
+				transparent 0 38%,
+				rgb(255 255 255 / 7%) 46%,
+				transparent 54% 100%
+			),
+			radial-gradient(
+				120% 70% at 50% 0%,
+				rgb(var(--color-rose-dusk-rgb) / 55%),
+				transparent 70%
+			),
+			var(--reply-card-bg);
 
-	box-shadow: none;
-	mask:
-		radial-gradient(circle 0.8rem at 0 var(--valeria-stub-y), transparent 96%, rgb(0 0 0))
-			left / 51% 100% no-repeat,
-		radial-gradient(circle 0.8rem at 100% var(--valeria-stub-y), transparent 96%, rgb(0 0 0))
-			right / 51% 100% no-repeat;
-
-	// Sequin edge: round silver-cherry dots on the inner frame.
-	&::before {
-		border: 3px dotted rgb(var(--color-rose-deep-rgb) / 60%);
-	}
-
-	// The glint: a short bright arc on the same ring, turning around the ticket.
-	&::after {
-		position: absolute;
-		inset: 0.6rem;
-		width: auto;
-		height: auto;
-		padding: 3px;
-		background: conic-gradient(
-			from var(--valeria-glint-angle),
-			transparent 0deg 330deg,
-			rgb(255 255 255 / 0%) 330deg,
-			rgb(var(--color-rose-glow-rgb)) 348deg,
-			rgb(255 250 252) 354deg,
-			transparent 360deg
-		);
-		transform: none;
+		// Die-cut corners, like a printed admission ticket; the lower pair meets the stub's.
 		mask:
-			linear-gradient(rgb(0 0 0) 0 0) content-box exclude,
-			linear-gradient(rgb(0 0 0) 0 0);
-		opacity: 0%;
-		pointer-events: none;
-	}
+			radial-gradient(circle var(--valeria-pass-cut) at 0 0, transparent 96%, rgb(0 0 0)) left
+				top / 51% 51% no-repeat,
+			radial-gradient(circle var(--valeria-pass-cut) at 100% 0, transparent 96%, rgb(0 0 0))
+				right top / 51% 51% no-repeat,
+			radial-gradient(circle var(--valeria-pass-cut) at 0 100%, transparent 96%, rgb(0 0 0))
+				left bottom / 51% 51% no-repeat,
+			radial-gradient(
+					circle var(--valeria-pass-cut) at 100% 100%,
+					transparent 96%,
+					rgb(0 0 0)
+				)
+				right bottom / 51% 51% no-repeat;
 
-	.rsvp__title {
-		color: var(--color-rose-deep);
-		font: 400 clamp(3rem, 14vw, 3.75rem) / 1 var(--font-calligraphy);
-		letter-spacing: 0;
-		text-shadow:
-			0 0 1.1rem rgb(var(--color-rose-glow-rgb) / 45%),
-			0 0 0.2rem rgb(var(--color-rose-glow-rgb) / 35%);
-	}
+		&::before {
+			border-color: transparent;
+		}
 
-	// The stub: a dashed tear line between the notches.
-	.rsvp__locked-card {
-		margin-top: 1.5rem;
-		padding-top: 1.25rem;
-		border-top: 2px dashed rgb(var(--color-rose-deep-rgb) / 35%);
-	}
-
-	@include motion.motion-safe {
+		// The ticket's printed header line.
 		&::after {
-			opacity: 100%;
-			animation: valeria-ticket-glint 4.8s linear infinite;
+			position: absolute;
+			top: min(1.5rem, 3svh);
+			right: 0;
+			left: 0;
+			display: block;
+			color: rgb(var(--color-night-blush-rgb) / 80%);
+			font: 600 0.6875rem / 1 var(--font-body);
+			letter-spacing: 0.34em;
+			text-align: center;
+			text-indent: 0.34em;
+			text-transform: uppercase;
+			content: '★ Entrada · Noche disco ★';
 		}
 	}
 
-	@keyframes valeria-ticket-glint {
-		to {
-			--valeria-glint-angle: 360deg;
+	// A mirror ball hangs over the heading.
+	.access-card__header::before {
+		width: min(clamp(4rem, 18vw, 4.75rem), 8svh);
+		margin-bottom: min(0.9rem, 1.4svh);
+		border-radius: 50%;
+		background:
+			radial-gradient(circle at 32% 28%, rgb(255 255 255 / 95%), transparent 22%),
+			radial-gradient(
+				circle at 70% 76%,
+				rgb(var(--color-rose-glow-rgb) / 75%),
+				transparent 42%
+			),
+			repeating-linear-gradient(0deg, rgb(40 42 54 / 55%) 0 1px, transparent 1px 0.5rem),
+			repeating-linear-gradient(90deg, rgb(40 42 54 / 55%) 0 1px, transparent 1px 0.5rem),
+			radial-gradient(
+				circle at 38% 34%,
+				rgb(244 244 248),
+				rgb(168 170 182) 55%,
+				rgb(74 76 90)
+			);
+		box-shadow:
+			0 0 1.4rem rgb(var(--color-rose-glow-rgb) / 70%),
+			0 0 3.2rem rgb(var(--color-rose-glow-rgb) / 35%);
+		aspect-ratio: 1;
+		content: '';
+	}
+
+	.access-card__guest {
+		font: 400 min(clamp(2.6rem, 12vw, 3.4rem), 6.5svh) / 1.1 var(--font-calligraphy);
+		color: rgb(255 244 246);
+		text-shadow: var(--valeria-pass-neon);
+	}
+
+	// Holographic foil strip, edge to edge.
+	.access-card__divider {
+		width: calc(100% + 2 * clamp(1.5rem, 6vw, 2.75rem) - 2 * var(--valeria-pass-edge) - 2px);
+		height: 0.5rem;
+		margin: min(1.4rem, 2.2svh) 0 min(1.2rem, 2svh);
+		background: var(--valeria-pass-foil) 0 0 / 200% 100%;
+	}
+
+	.access-card__quota {
+		gap: 0.55rem;
+	}
+
+	.access-card__quota .access-card__label {
+		display: block;
+	}
+
+	.access-card__count-frame {
+		border-radius: 50%;
+		box-shadow:
+			0 0 0.2rem rgb(255 255 255 / 60%),
+			0 0 1rem rgb(var(--color-rose-glow-rgb) / 80%),
+			inset 0 0 0.9rem rgb(var(--color-rose-glow-rgb) / 45%);
+	}
+
+	.access-card__count {
+		color: rgb(255 244 246);
+		text-shadow: var(--valeria-pass-neon);
+	}
+
+	// Barcode along the foot of the ticket.
+	.access-card__body::after {
+		display: block;
+		width: min(11rem, 62%);
+		height: min(1.9rem, 4svh);
+		margin: min(1.5rem, 2svh) auto 0;
+		background: repeating-linear-gradient(
+			90deg,
+			rgb(var(--color-night-blush-rgb) / 85%) 0 2px,
+			transparent 2px 5px,
+			rgb(var(--color-night-blush-rgb) / 85%) 5px 6px,
+			transparent 6px 8px,
+			rgb(var(--color-night-blush-rgb) / 85%) 8px 11px,
+			transparent 11px 13px
+		);
+		content: '';
+	}
+
+	@include motion.motion-safe {
+		.access-card__divider {
+			animation: valeria-foil-sheen 5s ease-in-out infinite alternate;
+		}
+	}
+}
+
+.event--valeria-hernandez.event-theme-wrapper .rsvp[data-variant='reply-card'] {
+	background:
+		radial-gradient(
+			120% 60% at 50% 100%,
+			rgb(var(--color-rose-dusk-rgb) / 40%),
+			transparent 70%
+		),
+		var(--reply-card-bg);
+
+	// The stub is punched where it meets the pass.
+	mask:
+		radial-gradient(circle var(--valeria-pass-cut) at 0 0, transparent 96%, rgb(0 0 0)) left /
+			51% 100% no-repeat,
+		radial-gradient(circle var(--valeria-pass-cut) at 100% 0, transparent 96%, rgb(0 0 0))
+			right / 51% 100% no-repeat;
+
+	&::before {
+		border-color: transparent;
+	}
+
+	// The stub yields to the screen height too, so each reply step fits on one screen.
+	padding-bottom: min(3rem, 5svh);
+
+	.rsvp__header {
+		margin-bottom: min(1.5rem, 2.5svh);
+	}
+
+	// On short screens the later steps drop the lede, tighten their gaps and set the actions on
+	// one row, so the fields and the buttons stay on screen together.
+	@media (height <= 760px) {
+		&:has(.rsvp-steps:not([data-step-index='0'])) .rsvp__subcopy {
+			display: none;
+		}
+
+		.rsvp-steps__progress {
+			margin-bottom: 0.75rem;
+		}
+
+		.rsvp-steps__heading {
+			margin-bottom: 0.6rem;
+			font-size: 1.15rem;
+		}
+
+		.rsvp__guest-hint {
+			margin-bottom: 0;
+		}
+
+		textarea {
+			height: 3.5rem;
+			min-height: 3.5rem;
+		}
+
+		.rsvp__actions {
+			flex-flow: row-reverse nowrap;
+			align-items: center;
+			gap: 0.75rem;
+		}
+
+		.rsvp__button {
+			flex: 1 1 auto;
+			width: auto;
+			min-width: 0;
+			padding-inline: 0.9rem;
+			font-size: 0.8rem;
+			letter-spacing: 0.1em;
+			white-space: nowrap;
+		}
+
+		.rsvp__demo-footer {
+			margin-top: 0.75rem;
+		}
+	}
+
+	.rsvp__title {
+		color: rgb(255 244 246);
+		font: 400 min(clamp(2.25rem, 11.5vw, 3.75rem), 7.5svh) / 1 var(--font-calligraphy);
+		text-shadow: var(--valeria-pass-neon);
+	}
+
+	.rsvp__radio-card {
+		border-radius: 0.6rem;
+
+		&:has(input:checked) {
+			background: rgb(var(--color-rose-glow-rgb) / 16%);
+			box-shadow:
+				0 0 0.9rem rgb(var(--color-rose-glow-rgb) / 55%),
+				inset 0 0 0.6rem rgb(var(--color-rose-glow-rgb) / 25%);
+		}
+	}
+
+	.rsvp__radio-label {
+		color: var(--reply-card-ink);
+	}
+
+	input:not([type='radio']),
+	textarea {
+		border-color: rgb(var(--color-night-blush-rgb) / 30%);
+		border-radius: 0.6rem;
+		background: rgb(255 255 255 / 6%);
+		color: var(--reply-card-ink);
+	}
+
+	.rsvp__button {
+		--rsvp-button-bg-hover: var(--color-rose-glow);
+		--rsvp-button-border-hover: var(--color-rose-glow);
+
+		border-color: transparent;
+		border-radius: 2rem;
+		background: linear-gradient(180deg, var(--color-rose-glow), var(--color-rose-deep));
+		box-shadow: 0 0 1.1rem rgb(var(--color-rose-glow-rgb) / 60%);
+	}
+
+	// Alone on the public link the stub is a whole ticket: rounded, punched at the tear line.
+	&[data-state='locked'] {
+		--valeria-stub-y: 6.6rem;
+
+		mask:
+			radial-gradient(
+					circle var(--valeria-pass-cut) at 0 var(--valeria-stub-y),
+					transparent 96%,
+					rgb(0 0 0)
+				)
+				left / 51% 100% no-repeat,
+			radial-gradient(
+					circle var(--valeria-pass-cut) at 100% var(--valeria-stub-y),
+					transparent 96%,
+					rgb(0 0 0)
+				)
+				right / 51% 100% no-repeat;
+
+		&::before {
+			border-radius: 0.7rem;
+		}
+
+		.rsvp__locked-card {
+			margin-top: 1.5rem;
+			padding-top: 1.25rem;
+			border-top: 2px dashed rgb(var(--color-night-blush-rgb) / 35%);
 		}
 	}
 }

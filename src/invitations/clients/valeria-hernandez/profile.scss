@@ -170,9 +170,38 @@
 		--night-envelope-card-label-ink: var(--color-rose-deep);
 	}
 
+	// The pass and its reply stub are a dark disco-night ticket: night-blush type, cherry neon.
+	:is(.personalized-access, .rsvp-section) {
+		--reply-card-bg: rgb(30 5 13);
+		--reply-card-ink: var(--color-night-blush);
+		--reply-card-muted: rgb(var(--color-night-blush-rgb) / 74%);
+		--reply-card-accent: var(--color-rose-glow);
+		--reply-card-rule: rgb(var(--color-night-blush-rgb) / 24%);
+		--reply-card-shadow-upper: none;
+		--reply-card-shadow-lower: none;
+		--reply-card-edge-shadow: drop-shadow(0 1.2rem 1.6rem rgb(0 0 0 / 45%));
+		--reply-card-option-bg: rgb(255 255 255 / 6%);
+		--reply-card-option-rule: rgb(var(--color-night-blush-rgb) / 30%);
+		--reply-card-option-hover-rule: rgb(var(--color-night-blush-rgb) / 60%);
+		--reply-card-option-checked-rule: var(--color-rose-glow);
+		--reply-card-seam: repeating-linear-gradient(
+			90deg,
+			rgb(var(--color-night-blush-rgb) / 45%) 0 0.45rem,
+			transparent 0.45rem 0.8rem
+		);
+		--reply-card-seam-width: calc(100% - 3rem);
+		--reply-card-seam-height: 2px;
+		--reply-card-count-frame-size: min(6.5rem, 13svh);
+		--reply-card-count-frame-ratio: 1;
+		--reply-card-count-frame-border: 2px solid rgb(255 236 240);
+		--reply-card-count-size: min(3.4rem, 7svh);
+		--color-text-primary: var(--color-night-blush);
+		--color-text-secondary: rgb(var(--color-night-blush-rgb) / 74%);
+	}
+
 	// The reply steps are marked in cherry red with a soft cherry light instead of the amber lantern.
 	[data-rsvp-flow='steps'] {
-		--rsvp-steps-track: rgb(var(--color-plum-ink-rgb) / 14%);
+		--rsvp-steps-track: rgb(var(--color-night-blush-rgb) / 22%);
 		--rsvp-steps-lantern: var(--color-rose-glow);
 		--rsvp-steps-glow: rgb(var(--color-rose-glow-rgb) / 35%);
 	}
@@ -188,6 +217,9 @@
 		--location-route-glow: var(--color-rose-glow);
 		--location-route-floor: var(--color-rose-deep);
 		--location-route-note-ink: var(--color-night-blush);
+
+		// The hour stays on one line down to the narrowest phone.
+		--mirror-ball-route-time-size: clamp(3.2rem, 26.6vw - 1.9rem, 5.5rem);
 	}
 
 	// The album darkens into the night while it assembles; the heading and the footer keep their
