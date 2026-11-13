@@ -267,9 +267,13 @@ invitation profiles.
   throws beams over the night; the numbers glow large, without boxes, over a lit dance floor in
   perspective. `--mirror-ball-*` (glow-rgb, silver-rgb, ink, seam: the ground the section above ends
   on, so the top edge fades instead of cutting).
-- thankYou.last-song: portrait-keepsake markup as the last dance — the closing portrait in a lit
-  frame on a night ground, with the ambient video and sequin light over it. Requires
-  `thankYou.image`. `--last-song-*` (dusk-rgb, glow-rgb, ground, ink, ink-rgb).
+- thankYou.last-song: portrait-keepsake markup as the last song — the closing portrait is the label
+  of a vinyl record with a tonearm, on a night ground. Where scroll timelines are supported the
+  section is a pinned scene (260svh runway, 100svh sticky stage): the record rolls in, the needle
+  drops, mirror-ball spots and two beams come on, the copy rises and the closing name lights up as
+  neon; elsewhere a timed entrance plays, and reduced motion shows the still layout. Requires
+  `thankYou.image`. `--last-song-*` (dusk-rgb, glow-rgb, ground, ink, ink-rgb, credit, credit-size,
+  record-size, message-size, name-size).
 - quote.neon-sign: the quote as a neon sign on a dark wall — the lines in small caps, the last line
   as a large script neon tube, a glowing frame with a crown star hung on two clipped cables, two
   stage beams entering from past the section edges, twinkling sparkles, and the closing line as a

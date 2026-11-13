@@ -240,8 +240,8 @@ $valeria-night-ground:
 // The pass and the reply are one admission ticket to the disco night: die-cut corners, a mirror
 // ball over the heading, a holographic foil strip, the guest written in neon, the seats in a neon
 // ring and a barcode. The reply is its tear-off stub: punched sides and a dashed tear line.
-.event--valeria-hernandez.event-theme-wrapper
-	:is(.personalized-access[data-variant='reply-card'], .rsvp-section) {
+.event--valeria-hernandez.event-theme-wrapper .personalized-access[data-variant='reply-card'],
+.event--valeria-hernandez.event-theme-wrapper .rsvp-section {
 	--valeria-pass-edge: clamp(0.6rem, 2.4vw, 0.85rem);
 	--valeria-pass-cut: 1.05rem;
 	--valeria-pass-foil: linear-gradient(
