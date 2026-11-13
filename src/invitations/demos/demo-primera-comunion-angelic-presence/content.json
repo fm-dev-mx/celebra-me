@@ -184,6 +184,7 @@
     "rsvp": {
         "title": "Confirme su asistencia",
         "guestCap": 4,
+        "demoMaxChildren": 2,
         "confirmationMessage": "Gracias por confirmar. Su compañía hará de esta celebración un momento más cercano al corazón de Dios.",
         "confirmationMode": "api",
         "variant": "standard",
@@ -242,6 +243,7 @@
     ],
     "envelope": {
         "disabled": false,
+        "revealVariant": "celestial-letter",
         "sealStyle": "wax",
         "sealInitials": "C·A",
         "microcopy": "Primera Comunión de Camila Aurora"

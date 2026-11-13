@@ -80,10 +80,10 @@ describe('buildInvitationRenderPlan', () => {
 
 		expect(plan.map((item) => (item.type === 'section' ? item.section : item.type))).toEqual([
 			'quote',
-			'location',
 			'countdown',
 			'family',
 			'interlude',
+			'location',
 			'itinerary',
 			'gallery',
 			'interlude',
@@ -197,7 +197,7 @@ describe('buildInvitationRenderPlan', () => {
 });
 
 describe('published demo interlude placement', () => {
-	it.each(['demo-bautizo-angelic-presence', 'demo-primera-comunion-angelic-presence'])(
+	it.each(['demo-primera-comunion-angelic-presence'])(
 		'keeps the first interlude after personalized access in %s',
 		(fixture) => {
 			const event = {
@@ -223,6 +223,23 @@ describe('published demo interlude placement', () => {
 		},
 	);
 
+	it('places the bautizo demo verse interlude right after the quote', () => {
+		const event = {
+			id: 'demo-bautizo-angelic-presence',
+			data: loadFixture('src/invitations/demos/demo-bautizo-angelic-presence/content.json'),
+		} as EventContentEntry;
+		const plan = buildInvitationRenderPlan(adaptEvent(contentDocumentFromEntry(event)));
+		expect(
+			plan.slice(0, 3).map((item) => (item.type === 'section' ? item.section : item.type)),
+		).toEqual(['quote', 'interlude', 'countdown']);
+		expect(plan[1]).toEqual(
+			expect.objectContaining({
+				type: 'interlude',
+				afterSection: 'quote',
+				intersection: { family: 'overlap', source: 'quote' },
+			}),
+		);
+	});
 	it('places the wedding demo interludes after countdown and family', () => {
 		const event = {
 			id: 'demo-brisa',

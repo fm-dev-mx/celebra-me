@@ -8,6 +8,8 @@ interface Props {
 	maxAllowedAttendees: number;
 	/** Passes reserved for children; the breakdown shows only when > 0. */
 	maxAllowedChildren?: number;
+	/** Says «Pase solo para adultos» when no place is for children. */
+	adultsOnlyLabel?: boolean;
 	guestName: string;
 	eventYear?: string;
 	/** Short edition mark of the event type for the pass serial. */
@@ -27,6 +29,7 @@ const {
 	ticket,
 	maxAllowedAttendees,
 	maxAllowedChildren = 0,
+	adultsOnlyLabel = false,
 	guestName,
 	eventYear,
 	editionMark = 'XV',
@@ -51,7 +54,11 @@ const formattedNoteText = noteText
 	: undefined;
 
 const partyBreakdown =
-	maxAllowedChildren > 0 ? formatParty(maxAllowedAttendees, { children: maxAllowedChildren }) : undefined;
+	maxAllowedChildren > 0
+		? formatParty(maxAllowedAttendees, { children: maxAllowedChildren })
+		: adultsOnlyLabel
+			? 'Pase solo para adultos'
+			: undefined;
 
 const accessAriaLabel = `Pase de acceso para ${guestName}. ${maxAllowedAttendees} ${seatsLabel.toLowerCase()}${partyBreakdown ? `: ${partyBreakdown}` : ''}.`;
 

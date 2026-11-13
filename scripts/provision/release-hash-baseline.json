@@ -4,22 +4,23 @@
         "aithan-darell": "60f851458180064d8ef98542b146d5f560549e400ac4453f962e8e956ecb2c65",
         "alba-rosa-quinonez": "a409a9b70acc49364a3db5abab08333d59d1f3b9f88c3df6ff519f1ea8762b48",
         "allison-scarlett": "275f7b7fe9579ca05e2c9b5e0efd87c3b41c6c061edf98c15776192eee5bd7c3",
-        "america": "1fedb431c1341e97f220bd8204788f054932849384dea1364b4038e52055401b",
-        "andrea": "037b40290cc196692073cd949112d1e3b4fa70cc785f9880e1482697b83f6dd3",
+        "america": "40d20f1d4642dd79b06f30eb3eb847b1fb661318d65953300607c6e700d5374f",
+        "andrea": "fd4a68dbf09319a63da690c74b78e88c033de3ab12107d2a9a88123bdfcaea05",
         "daniela-y-martin": "3da281f47a8a5c316bd2cd8cd1422f856dade0de13f74fcd80c70d4033774ad7",
         "destenid-sofia": "406b910f2da11b66aa1bba28e5246e82ca7d76b54cc2b54f6be61f9dc8f557db",
         "leslie-perez": "8d028e1664247b4768bb63c6a62b7a4d5b4a6ae11e124ba72d03c4f2c5e8a8da",
         "melissa-y-luis-osmar": "1f4de6dde6a34346621516c4bed7fba9bf266b63bef29523bb4fce8a08b4219e",
         "mia-pintor": "ad32849c19f69b9471edaee2ac746ff14ccd87d38a65c71c8d0a13595c2a8813",
-        "naomi-huerta": "abba7daba5350e4823a89f348f286646332f81ad078be8fc60990cb7125c8bbc",
+        "naomi-huerta": "94d95b0b4c7f358ff9f20d252d21db3916350c618be12a2df7aaa217ff23ee50",
         "naydelin-paredes": "90235bcac3a24f8df0d8fa21dd6f03c2dc96200fab921546316b4867e4ef1c02",
         "norma-hernandez": "340e8089576ead591b49c6c0da3461d752928a979f18c8f5eae9df83e9cf4aa7",
         "olivia-y-antonio": "523b3ff54d1e13878571633785986877a34f3906f941c58e1775a66a20b75d81",
         "renata": "6b5015f2494643f4c972978b504e79bbd284fd6ba1895b51d815baa4c15b5f39",
         "romina-rios-chaparro": "4dbb1c368563f63d2c4e4629c37ab339816412b1debb478a0d4dceada035d052",
         "valentina-hernandez": "5be85546c75890f68643863cf5379941cb7c89670a77d4890b665b14017ab28a",
+        "valeria-hernandez": "a686169b67d970b2cb9e69c4a3f822a2562ba40d2f5c18cb4461465e0725bed2",
         "victoria-y-roberto": "13c7a90ae70773d4772a447649b43d770aa8fd12e20e22ed0a78463f3f16efd0",
-        "yireh-ana": "799363abd4ac3b5a639a62b564a384f6106cc1588915d3c3008f09f664b8746c"
+        "yireh-ana": "4ddffaf613dba886a2bc70a7192ce1aefc2bde3abb6461b6054c5ea045c7d541"
     },
     "validUntil": {
         "abril-michelle-becerra-rea": "2027-09-13T05:59:59.999Z",
@@ -40,6 +41,7 @@
         "renata": "2027-09-06T06:59:59.999Z",
         "romina-rios-chaparro": "2027-08-15T05:59:59.999Z",
         "valentina-hernandez": "2027-08-30T05:59:59.999Z",
+        "valeria-hernandez": "2028-01-10T05:59:59.999Z",
         "victoria-y-roberto": "2027-10-31T06:59:59.999Z",
         "yireh-ana": "2028-10-24T05:59:59.999Z"
     }

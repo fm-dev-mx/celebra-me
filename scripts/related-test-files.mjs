@@ -108,7 +108,8 @@ export function buildRelatedTestArgs(changedFiles, pathExists = existsSync) {
 			(/\.(?:json|ya?ml)$/u.test(file) &&
 				!/^\.agent\/kinds\/.*\.yaml$/u.test(file) &&
 				!file.startsWith('docs/') &&
-				file !== 'tests/e2e/visual-baselines/manifest.json') ||
+				file !== 'tests/e2e/visual-baselines/manifest.json' &&
+				!/^tests\/e2e\/visual-baselines\/demos\/[^/]+\.json$/u.test(file)) ||
 			(SOURCE_PATTERN.test(file) && !file.startsWith('tests/e2e/') && !pathExists(file)),
 	);
 	if (needsFullSuite) return ['exec', 'jest'];

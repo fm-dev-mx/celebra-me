@@ -1,18 +1,18 @@
 {
     "version": 1,
     "authAppMetadataKeys": {
-        "login_alias": { "prerequisite": "auth-login-alias-app-metadata" },
+        "login_alias": {
+            "prerequisite": "auth-login-alias-app-metadata"
+        },
         "login_alias_operation_id": {
             "migration": "none",
             "reason": "Written together with a new alias by the admin alias update; an absent value only means no update is in flight."
         },
         "role": {
-            "migration": "none",
-            "reason": "Maintained by the app_user_roles trigger since migration 20260215000800. Synchronization of rows older than the trigger is not verified by any command."
+            "prerequisite": "auth-role-app-metadata"
         },
         "must_change_password": {
-            "migration": "none",
-            "reason": "An absent value reads as false; accounts without a temporary password need no data."
+            "prerequisite": "auth-must-change-password"
         },
         "temp_password_expires_at": {
             "migration": "none",
@@ -20,6 +20,22 @@
         }
     },
     "prerequisites": [
+        {
+            "id": "auth-role-app-metadata",
+            "summary": "Every Auth account has a valid app_user_roles.role matching app_metadata.role, with no orphan application roles.",
+            "introducedBy": "scripts/auth/check-role-app-metadata.mjs",
+            "verify": "pnpm auth:check-role-app-metadata",
+            "environments": {
+                "production": {
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Owner patch 20261112_auth_users_without_app_role.sql (PR #945) applied with DELETE 2 (APPLIED_AND_VERIFIED), then pnpm auth:check-role-app-metadata: accounts=32, matching=32, differing=0, orphanRoles=0, ok=true."
+                },
+                "preview": {
+                    "status": "pending"
+                }
+            }
+        },
         {
             "id": "auth-login-alias-app-metadata",
             "summary": "Every account that logs in by alias has the alias in app_metadata.login_alias; login never reads user_metadata.",
@@ -32,8 +48,137 @@
                     "evidence": "Owner patch 20261109_auth_login_alias_app_metadata_backfill.sql (PR #880) applied on release 5716c7c24 with UPDATE 28."
                 },
                 "preview": {
-                    "status": "pending",
-                    "evidence": "No backfill run is recorded for Preview."
+                    "status": "verified",
+                    "verifiedAt": "2026-11-09",
+                    "evidence": "pnpm auth:migrate-login-alias --dry-run (planned 18, duplicates 0, written 0), then --apply (planned 18, written 18, duplicates 0); pnpm auth:check-login-alias afterwards: target preview, accounts 19, protectedAliases 19, legacyOnly 0, duplicates 0, ok true."
+                }
+            }
+        },
+        {
+            "id": "auth-must-change-password",
+            "summary": "Accounts with must_change_password open are reported before release so authentication changes do not leave them locked out.",
+            "introducedBy": "https://github.com/fm-dev-mx/celebra-me/pull/884",
+            "verify": "pnpm auth:check-pending-passwords",
+            "environments": {
+                "production": {
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): pnpm auth:check-pending-passwords: accounts=32, pendingPasswords=0, active=0, expired=0, unknown=0, ok=true, clean=true."
+                },
+                "preview": {
+                    "status": "pending"
+                }
+            }
+        },
+        {
+            "id": "20260812-itinerary-gallery-structural-contracts",
+            "summary": "The four targeted XV invitations have explicit timeline-paper itinerary contracts and the three celestial targets have index-choreography galleries in published content and every active draft; every live published content and active draft is an object whose rsvp, eventTiming and hero paths are objects when present, and every client published content resolves an event date.",
+            "introducedBy": "scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql",
+            "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20260812_itinerary_gallery.sql",
+            "environments": {
+                "production": {
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Owner patch 20260812_p0_itinerary_gallery_structural_contracts.sql applied (APPLIED_AND_VERIFIED), then the verifier: invalid_published_targets=0, checked_rows=8, mismatched_rows=0, shape_checked_rows=70, content/rsvp/eventTiming/hero not object=0, client_published_without_event_date=0, ok=t."
+                },
+                "preview": {
+                    "status": "pending"
+                }
+            }
+        },
+        {
+            "id": "20260812-thankyou-editorial-back-cover",
+            "summary": "The three targeted invitations keep their owner-approved explicit Thank You variant (ana-sofia-cota-guillen and leah-lexa portrait-keepsake, ayrin-samantha-lerma-castro portrait-letter) in published content and every active draft; the editorial-back-cover patch is superseded.",
+            "introducedBy": "scripts/manual/production-patches/20260812_thankyou_editorial_back_cover_structural_contracts.sql",
+            "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20260812_thankyou.sql",
+            "environments": {
+                "production": {
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Verifier of the approved variants (PR #947): invalid_published_targets=0, checked_rows=6, mismatched_rows=0, ok=t. No write needed."
+                },
+                "preview": {
+                    "status": "pending"
+                }
+            }
+        },
+        {
+            "id": "20260812-guest-invitation-phone-objects",
+            "summary": "Guest invitation phone objects have the canonical btree(phone) index, no legacy or unexpected equivalent index, and the validated phone/country-code pair CHECK.",
+            "introducedBy": "supabase/migrations/20260812210000_reconcile_guest_invitation_phone_objects.sql",
+            "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20260812_guest_phone.sql",
+            "environments": {
+                "production": {
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Verifier: target_tables=1, canonical_indexes=1, unexpected_indexes=0, validated_pair_checks=1, ok=t."
+                },
+                "preview": {
+                    "status": "pending"
+                }
+            }
+        },
+        {
+            "id": "invitation-assets-storage-objects",
+            "summary": "Every live Supabase-hosted invitation_assets row has a non-blank storage_path and a matching storage.objects row in its bucket.",
+            "introducedBy": "docs/core/data-prerequisites-json-shapes-inventory.md",
+            "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20261111_invitation_asset_objects.sql",
+            "environments": {
+                "production": {
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Verifier: checked_assets=0, unexpected_bucket=0, missing_storage_path=0, missing_objects=0, ok=t."
+                },
+                "preview": {
+                    "status": "pending"
+                }
+            }
+        },
+        {
+            "id": "tracking-event-lead-code",
+            "summary": "Every non-internal tracking event has object event_properties, any lead_code is a non-blank string, every lead_created event carries one, and lead source events agree with their lead.",
+            "introducedBy": "docs/core/data-prerequisites-json-shapes-inventory.md",
+            "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20261111_tracking_event_lead_code.sql",
+            "environments": {
+                "production": {
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Owner patch 20261112_tracking_events_blank_lead_code.sql (PR #943) applied with UPDATE 533 (APPLIED_AND_VERIFIED), then the verifier: checked_events=19410, event_properties_not_object=0, lead_code_not_text_or_blank=0, lead_created_without_lead_code=0, source_event_lead_code_mismatch=0, quoted_leads_without_events=0, ok=t."
+                },
+                "preview": {
+                    "status": "pending"
+                }
+            }
+        },
+        {
+            "id": "invitation-data-request-answers-object",
+            "summary": "Every invitation_data_requests.answers value is a JSON object.",
+            "introducedBy": "docs/core/data-prerequisites-json-shapes-inventory.md",
+            "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20261111_invitation_data_request_answers.sql",
+            "environments": {
+                "production": {
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Verifier: checked_rows=0, answers_not_object=0, ok=t."
+                },
+                "preview": {
+                    "status": "pending"
+                }
+            }
+        },
+        {
+            "id": "event-memory-object-keys",
+            "summary": "Every event_memory_items row whose object is not deleted has an original key with the extension its MIME type requires and, when present, a thumbnail key that follows the memories key contract.",
+            "introducedBy": "docs/core/data-prerequisites-json-shapes-inventory.md",
+            "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20261111_event_memory_object_keys.sql",
+            "environments": {
+                "production": {
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Verifier: checked_items=91, unsupported_mime=0, invalid_original_keys=0, invalid_thumbnail_keys=0, event_id_mismatch=0, ok=t."
+                },
+                "preview": {
+                    "status": "pending"
                 }
             }
         }

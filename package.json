@@ -1,7 +1,7 @@
 {
     "name": "celebra-me.com",
     "type": "module",
-    "version": "0.69.2-beta.1",
+    "version": "0.70.0",
     "engines": {
         "node": ">=22.23.4 <25"
     },
@@ -17,6 +17,8 @@
         "test": "jest",
         "auth:migrate-login-alias": "node scripts/auth/migrate-login-alias.mjs",
         "auth:check-login-alias": "node scripts/auth/migrate-login-alias.mjs --check",
+        "auth:check-pending-passwords": "node scripts/auth/check-pending-passwords.mjs",
+        "auth:check-role-app-metadata": "node scripts/auth/check-role-app-metadata.mjs",
         "test:changed": "node scripts/run-related-tests.mjs",
         "test:e2e": "playwright test",
         "test:workerd": "tsx scripts/ops/cloudflare-worker-local-check.ts",
@@ -54,6 +56,7 @@
         "db:migrate:new": "supabase migration new",
         "db:migrate": "tsx scripts/db/migrate-cli.ts",
         "prod:apply": "tsx scripts/db/production-apply-cli.ts",
+        "prod:window": "pwsh -NoProfile -File scripts/ops/production-daily-window.ps1",
         "ship:preview": "tsx scripts/db/ship-preview-cli.ts",
         "db:push": "node scripts/db/blocked-db-push.mjs",
         "db:local:reset": "echo 'BLOCKED: Use db:disposable:reset for destructive tests.' && exit 1",
@@ -80,6 +83,7 @@
         "db:integrity:snapshot": "tsx scripts/db/capture-data-integrity-snapshot.ts",
         "db:contract:verify": "tsx scripts/db/verify-mutation-schema-contract.ts",
         "db:prod:audit": "tsx scripts/db/db-guard.ts check --target production --operation audit && tsx scripts/db/audit-db.ts --target production",
+        "db:preview:bootstrap-admin": "tsx scripts/db/bootstrap-preview-admin.ts",
         "db:preview:audit": "tsx scripts/db/db-guard.ts check --target preview --operation audit && tsx scripts/db/audit-db.ts --target preview",
         "db:preview:sync-invitations": "tsx scripts/db/db-guard.ts check --target preview --operation sync-invitations --db-url \"${PREVIEW_DB_URL}\" && tsx scripts/db/preview-sync-invitations.ts",
         "db:local:audit": "tsx scripts/db/db-guard.ts check --target persistent-local --operation audit && tsx scripts/db/audit-db.ts --target persistent-local",
@@ -132,6 +136,7 @@
         "invitation:registry": "tsx scripts/provision/invitations/generate-client-registry.ts",
         "invitation:reconcile": "tsx scripts/provision/invitation-reconcile-cli.ts",
         "invitation:content-parity": "tsx scripts/provision/content-parity-cli.ts",
+        "preview:admin:session": "tsx scripts/playwright/preview-admin-session.ts",
         "invitation:preview-fixture": "tsx scripts/provision/preview-e2e-fixture-cli.ts",
         "invitation:inventory-audit": "tsx scripts/provision/inventory-audit-cli.ts",
         "invitation:legacy-storage-audit": "tsx scripts/provision/legacy-storage-audit-cli.ts",

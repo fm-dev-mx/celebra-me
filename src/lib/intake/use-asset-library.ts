@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { goToLoginAfterSessionEnded } from '@/lib/dashboard/session-ended';
 
 export interface AssetItem {
 	id: string;
@@ -36,6 +37,10 @@ async function fetchAssets(
 	signal?: { cancelled: boolean },
 ): Promise<{ assets: AssetItem[] } | null> {
 	const response = await fetch(assetUrl(invitationId, filter));
+	if (response.status === 401) {
+		goToLoginAfterSessionEnded();
+		return null;
+	}
 	const result = await response.json();
 	if (!response.ok) {
 		throw new Error(result?.error?.message || 'Error al cargar la biblioteca.');

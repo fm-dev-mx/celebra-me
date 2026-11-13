@@ -233,8 +233,12 @@
                 "--datos={datos}",
                 "--cli=C:/Users/fmdevmx/AppData/Local/agy/bin/agy.exe",
                 "--",
+                "--settings",
+                "{\"permissions\":{\"allow\":[\"command(git status)\",\"command(git diff)\",\"command(git log)\",\"command(git show)\",\"command(git rev-parse)\",\"command(git branch --show-current)\",\"command(git ls-files)\",\"command(git merge-base)\",\"command(git worktree list)\",\"command(gh pr view)\",\"command(gh pr diff)\",\"command(gh pr checks)\",\"command(gh pr list)\",\"command(gh run view)\",\"command(gh run list)\",\"mcp(celebra-board/messages)\",\"mcp(celebra-board/msg)\",\"mcp(celebra-board/atendido)\",\"mcp(celebra-board/inbox)\",\"mcp(celebra-board/show)\",\"mcp(celebra-board/list)\",\"mcp(celebra-board/timeline)\",\"mcp(celebra-board/prompt)\",\"mcp(celebra-board/asignar)\",\"mcp(celebra-board/siguiente)\"]}}",
                 "--model",
-                "gemini-3.8-flash-medium"
+                "gemini-3.8-flash-medium",
+                "--add-dir",
+                "{datos}/salida"
             ],
             "despacho": [
                 "node",
@@ -249,8 +253,12 @@
                 "--",
                 "--mode",
                 "plan",
+                "--settings",
+                "{\"permissions\":{\"allow\":[\"command(git status)\",\"command(git diff)\",\"command(git log)\",\"command(git show)\",\"command(git rev-parse)\",\"command(git branch --show-current)\",\"command(git ls-files)\",\"command(git merge-base)\",\"command(git worktree list)\",\"command(gh pr view)\",\"command(gh pr diff)\",\"command(gh pr checks)\",\"command(gh pr list)\",\"command(gh run view)\",\"command(gh run list)\",\"mcp(celebra-board/messages)\",\"mcp(celebra-board/msg)\",\"mcp(celebra-board/atendido)\",\"mcp(celebra-board/inbox)\",\"mcp(celebra-board/show)\",\"mcp(celebra-board/list)\",\"mcp(celebra-board/timeline)\",\"mcp(celebra-board/prompt)\",\"mcp(celebra-board/asignar)\",\"mcp(celebra-board/siguiente)\"]}}",
                 "--model",
-                "gemini-3.8-flash-medium"
+                "gemini-3.8-flash-medium",
+                "--add-dir",
+                "{datos}/salida"
             ]
         }
     ],
@@ -260,6 +268,14 @@
     "zonaHoraria": "America/Mexico_City",
     "ordenan": ["coordinador", "dueno"],
     "carriles": [
+        {
+            "id": "f05-plataforma",
+            "carpeta": "../celebra-me-worktrees/f05-plataforma",
+            "puerto": 4325,
+            "tecla": 3,
+            "nombre": "F5 Plataforma",
+            "entorno": "local"
+        },
         {
             "id": "f06-landing",
             "carpeta": "../celebra-me-worktrees/f06-landing",
@@ -293,6 +309,14 @@
             "entorno": "local"
         },
         {
+            "id": "f10-libre",
+            "carpeta": "../celebra-me-worktrees/f10-libre",
+            "puerto": 4330,
+            "tecla": 10,
+            "nombre": "F10 Libre",
+            "entorno": "local"
+        },
+        {
             "id": "f11-preview",
             "carpeta": "../celebra-me-worktrees/f11-preview",
             "puerto": 4331,
@@ -306,6 +330,14 @@
             "puerto": 4332,
             "tecla": 12,
             "nombre": "F12 Release",
+            "entorno": "preview"
+        },
+        {
+            "id": "f13-prod-release",
+            "carpeta": "../celebra-me-worktrees/f13-prod-release",
+            "puerto": 4336,
+            "tecla": 13,
+            "nombre": "F13 Prod Release",
             "entorno": "preview"
         },
         {
@@ -330,7 +362,7 @@
             "entorno": "local"
         }
     ],
-    "carrilesRetirados": ["f05-plataforma", "f10-libre"],
+    "carrilesRetirados": [],
     "sesiones": { "sinTarea": "^Despachador\\b" },
     "tiposPrompt": ["codigo", "docs", "operacion", "revision"],
     "github": {

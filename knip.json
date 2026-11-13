@@ -35,7 +35,7 @@
     "ignore": [".agent/tmp/**"],
     "ignoreExportsUsedInFile": false,
     "ignoreDependencies": ["markdownlint-cli2", "markdownlint"],
-    "ignoreBinaries": ["psql", "pg_dump", "where.exe"],
+    "ignoreBinaries": ["psql", "pg_dump", "where.exe", "pwsh"],
     "rules": {
         "files": "error",
         "dependencies": "error",

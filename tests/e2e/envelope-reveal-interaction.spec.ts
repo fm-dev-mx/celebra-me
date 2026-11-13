@@ -263,9 +263,12 @@ test.describe('shared envelope reveal interaction', () => {
 		);
 	});
 
-	test('plays music only on a tap and pauses it from the same control', async ({ page }) => {
-		// The demo's track has autoPlay false. Headless Chromium may lack the codec, so the media
-		// element reports its calls and fires the events a real playback would.
+	test('starts music on opening the envelope and toggles it from the same control', async ({
+		page,
+	}) => {
+		// The demo's track has autoPlay true: opening the envelope is the gesture that starts it.
+		// Headless Chromium may lack the codec, so the media element reports its calls and fires
+		// the events a real playback would.
 		await page.route('**/*.mp3', (route) => route.fulfill({ status: 204, body: '' }));
 		await page.addInitScript(() => {
 			// Keep the cookie banner from covering the player.
@@ -300,21 +303,23 @@ test.describe('shared envelope reveal interaction', () => {
 		await page.goto('/xv/demo-xv-enchanted-rose?forceEnvelope=true', {
 			waitUntil: 'domcontentloaded',
 		});
+		expect(await musicCalls()).toEqual({ play: 0, pause: 0 });
 		await page.getByRole('button', { name: 'Abrir sobre de la invitación' }).click();
 		await expectRevealed(page);
 		const toggle = page.locator('[data-music-toggle]');
+
+		// Autoplay at opening: one play, no pause.
+		await expect(toggle).toHaveAttribute('aria-label', 'Pausar música');
+		expect(await musicCalls()).toEqual({ play: 1, pause: 0 });
+
+		// Manual pause, then manual play from the same control.
+		await toggle.click();
 		await expect(toggle).toHaveAttribute('aria-label', 'Reproducir música');
-		expect(await musicCalls()).toEqual({ play: 0, pause: 0 });
+		expect(await musicCalls()).toEqual({ play: 1, pause: 1 });
 
 		await toggle.click();
 		await expect(toggle).toHaveAttribute('aria-label', 'Pausar música');
-		await expect(toggle.locator('[data-icon-pause]')).toBeVisible();
-		expect(await musicCalls()).toEqual({ play: 1, pause: 0 });
-
-		await toggle.click();
-		await expect(toggle).toHaveAttribute('aria-label', 'Reproducir música');
-		await expect(toggle.locator('[data-icon-play]')).toBeVisible();
-		expect(await musicCalls()).toEqual({ play: 1, pause: 1 });
+		expect(await musicCalls()).toEqual({ play: 2, pause: 1 });
 	});
 
 	for (const route of representativeRoutes) {

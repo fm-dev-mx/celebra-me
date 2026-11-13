@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import AssetUploader from '@/components/dashboard/intake/editor/AssetUploader';
 import { useAssetLibrary } from '@/lib/intake/use-asset-library';
 import { getCsrfToken } from '@/lib/csrf';
+import { goToLoginAfterSessionEnded } from '@/lib/dashboard/session-ended';
 import {
 	getAssetUsageLabel,
 	EMPTY_ASSET_LIBRARY_COPY,
@@ -67,6 +68,10 @@ export default function AssetPicker({ invitationId, onSelect, onClose }: Props) 
 						body: JSON.stringify({ bundledKey: asset.bundledKey }),
 					},
 				);
+				if (response.status === 401) {
+					goToLoginAfterSessionEnded();
+					return;
+				}
 				const result = await response.json();
 				if (!response.ok) {
 					throw new Error(result?.error?.message || 'Error al importar imagen incluida.');

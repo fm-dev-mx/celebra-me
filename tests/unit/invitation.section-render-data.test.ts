@@ -409,10 +409,10 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 
 		expect(descriptorComponents).toEqual([
 			'quote',
-			'location',
 			'countdown',
 			'family',
 			'interlude',
+			'location',
 			'itinerary',
 			'gallery',
 			'interlude',
@@ -509,6 +509,60 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		expect(personalizedAccessDescriptor).toBeDefined();
 		expect(personalizedAccessDescriptor?.props.isDemoPreview).toBe(true);
 		expect(personalizedAccessDescriptor?.props.guestName).toBe(DEMO_GUEST_NAME);
+	});
+
+	it('gives one demo per event type a pass with children', () => {
+		const passOf = (slug: string) =>
+			buildInvitationSectionRenderDescriptors(setupDemoPageContext(slug)).find(
+				isPersonalizedAccessDescriptor,
+			)?.props;
+		for (const slug of [
+			'demo-xv-editorial',
+			'demo-bautizo-angelic-presence',
+			'demo-primera-comunion-angelic-presence',
+		]) {
+			expect(passOf(slug)).toMatchObject({ maxAllowedAttendees: 4, maxAllowedChildren: 2 });
+		}
+		expect(passOf('demo-brisa')).toMatchObject({
+			maxAllowedAttendees: 2,
+			maxAllowedChildren: 1,
+		});
+		expect(passOf('demo-cumple-luxury-hacienda')).toMatchObject({
+			maxAllowedAttendees: 8,
+			maxAllowedChildren: 2,
+		});
+	});
+
+	it('shows the adults-only line on childless demo passes', () => {
+		const base = setupDemoPageContext('demo-xv-editorial');
+		const childless = {
+			...base,
+			viewModel: {
+				...base.viewModel,
+				sections: {
+					...base.viewModel.sections,
+					rsvp: { ...base.viewModel.sections.rsvp, demoMaxChildren: 0 },
+				},
+			},
+		} as typeof base;
+		const props = buildInvitationSectionRenderDescriptors(childless).find(
+			isPersonalizedAccessDescriptor,
+		)?.props;
+		expect(props).toMatchObject({ maxAllowedChildren: 0, adultsOnlyLabel: true });
+	});
+
+	it('keeps the original pass text on published invitations', () => {
+		const base = setupDemoPageContext();
+		const labelFor = (id: string) =>
+			buildInvitationSectionRenderDescriptors({
+				...base,
+				viewModel: { ...base.viewModel, id, isDemo: false },
+			}).find(isPersonalizedAccessDescriptor)?.props.adultsOnlyLabel;
+		expect(labelFor('andrea')).toBe(false);
+		expect(labelFor('destenid-sofia')).toBe(false);
+		expect(labelFor('naomi-huerta')).toBe(false);
+		expect(labelFor('valeria-hernandez')).toBe(false);
+		expect(labelFor('a-new-client')).toBe(true);
 	});
 
 	it('renders RSVP form for demo preview regardless of accessMode', () => {

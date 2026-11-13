@@ -12,6 +12,7 @@ function createTestHarness(
 		accessMode: 'personalized-only' | 'hybrid';
 		prefersReducedMotion: boolean;
 		isDemoPreview: boolean;
+		demoMaxChildren: number;
 		initialGuestData: {
 			fullName?: string;
 			maxAllowedAttendees?: number;
@@ -174,6 +175,35 @@ describe('RSVP guest count behavior', () => {
 			initialGuestData: { maxAllowedAttendees: 1 },
 		});
 		expect(getHook()?.attendeeCount).toBe(1);
+	});
+
+	it('lets a demo preview offer children when its config sets them', () => {
+		expect(
+			createTestHarness({ isDemoPreview: true, guestCap: 4, demoMaxChildren: 2 }).getHook()
+				?.maxChildren,
+		).toBe(2);
+		expect(createTestHarness({ isDemoPreview: true, guestCap: 4 }).getHook()?.maxChildren).toBe(
+			0,
+		);
+		// Children never exceed the passes, and a single pass never asks for them.
+		expect(
+			createTestHarness({ isDemoPreview: true, guestCap: 2, demoMaxChildren: 5 }).getHook()
+				?.maxChildren,
+		).toBe(2);
+		expect(
+			createTestHarness({ isDemoPreview: true, guestCap: 1, demoMaxChildren: 1 }).getHook()
+				?.maxChildren,
+		).toBe(0);
+	});
+
+	it('ignores demoMaxChildren outside demo previews', () => {
+		expect(
+			createTestHarness({
+				guestCap: 4,
+				demoMaxChildren: 2,
+				initialGuestData: { maxAllowedAttendees: 4, maxAllowedChildren: 1 },
+			}).getHook()?.maxChildren,
+		).toBe(1);
 	});
 
 	it('initializes to guestCap in demo preview mode', () => {

@@ -24,6 +24,15 @@ implementing these skills is never a live-release invocation.
   `prod:apply` enforces this for invitation content and owner patches before any backup, prompt or
   write: it refuses unless the `build.commitSha` reported by `/api/health` on the Production alias
   equals or contains the commit it publishes from.
+- **Owner-only.** Running `deploy-production.yml`, activating the Production Worker version and
+  `prod:apply --apply` are the owner's steps, in that order. Agents prepare the release and hand the
+  owner the exact commands with their verification and rollback; they never run them. Read-only
+  inspection (`ops:release-status`, dry runs with zero mutations) is fine.
+- **Daily window = one command.** The owner runs `pnpm prod:window`
+  (`scripts/ops/production-daily-window.ps1`): upload, activation, health and smoke checks, then
+  `pnpm prod:apply -- --schema --all-ready`. It skips none of the deploy's or `prod:apply`'s
+  interactive confirmations. This is the single place the window is defined; other docs and skills
+  point here instead of listing the steps.
 - `Post-deploy Smoke` validates the correlated deployment, SHA, approved host and critical HTTP
   behavior. The scheduled/manual `Production Image Audit` separately reports published-media drift
   and never determines deployment health.
@@ -67,11 +76,12 @@ implementing these skills is never a live-release invocation.
   SHA, changed lockfile, baseline, matrix or runtime invalidates affected evidence.
 - Repository CI owns exact-SHA visual certification on the `develop` push; the optional local
   `pnpm validate:prepush` preview and its cache are evidence, never authorization or a substitute
-  for remote CI. Coverage changes or visual modifications require a complete new candidate and exact
-  hash-bound human acceptance, as
+  for remote CI. Coverage changes or visual modifications require a complete new candidate and
+  hash-bound acceptance, as
   [visual certification](validation-procedures.md#visual-certification-and-candidates) defines.
-  Candidate generation is diagnostic preparation; acceptance stays outside automated invocation.
-  Never edit a manifest to manufacture coverage or relax comparison thresholds.
+  Candidate generation is diagnostic preparation; acceptance follows
+  [Local and Preview autonomy](../../.agent/rules/git-safety.md#local-and-preview-autonomy). Never
+  edit a manifest to manufacture coverage or relax comparison thresholds.
 
 ## Preview integration
 

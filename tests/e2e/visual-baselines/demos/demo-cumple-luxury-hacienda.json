@@ -1,0 +1,57 @@
+{
+    "version": 1,
+    "slug": "demo-cumple-luxury-hacienda",
+    "eventType": "cumple",
+    "captures": [
+        {
+            "kind": "demo",
+            "slug": "demo-cumple-luxury-hacienda",
+            "eventType": "cumple",
+            "preset": "luxury-hacienda",
+            "viewport": "mobile",
+            "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
+            "sha256": "d777ea60710ec645254b99f2c5c49b8f8cf3151563b99367e2cd3fe7856534ea",
+            "contentHash": "6bcb33133eea329fe27f6fc69c1a7664bc5e31f069e1cdedb35e4d309f775df1",
+            "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-cumple-luxury-hacienda",
+            "eventType": "cumple",
+            "preset": "luxury-hacienda",
+            "viewport": "desktop",
+            "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
+            "sha256": "68e61be365f976e30768f4f41814a2b5b1f47886b61865f08d59e3ec9fa160ea",
+            "contentHash": "6bcb33133eea329fe27f6fc69c1a7664bc5e31f069e1cdedb35e4d309f775df1",
+            "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
+            "comparisonResult": "ACCEPTED"
+        }
+    ],
+    "pageCaptures": [
+        {
+            "kind": "demo",
+            "slug": "demo-cumple-luxury-hacienda",
+            "eventType": "cumple",
+            "preset": "luxury-hacienda",
+            "viewport": "mobile",
+            "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
+            "sha256": "d777ea60710ec645254b99f2c5c49b8f8cf3151563b99367e2cd3fe7856534ea",
+            "contentHash": "6bcb33133eea329fe27f6fc69c1a7664bc5e31f069e1cdedb35e4d309f775df1",
+            "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
+            "comparisonResult": "CANDIDATE"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-cumple-luxury-hacienda",
+            "eventType": "cumple",
+            "preset": "luxury-hacienda",
+            "viewport": "desktop",
+            "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
+            "sha256": "68e61be365f976e30768f4f41814a2b5b1f47886b61865f08d59e3ec9fa160ea",
+            "contentHash": "6bcb33133eea329fe27f6fc69c1a7664bc5e31f069e1cdedb35e4d309f775df1",
+            "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
+            "comparisonResult": "CANDIDATE"
+        }
+    ]
+}

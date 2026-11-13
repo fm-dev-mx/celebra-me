@@ -34,8 +34,10 @@ Diagnosis never authorizes mutation. `CURRENT`, green CI, an accessible deployme
   smoke; schema evidence remains separate.
 - **Preview invitation update:** diagnose with
   `pnpm invitation:release -- --slug <slug> --targets preview --dry-run`; use `--apply` instead of
-  `--dry-run` only with scoped Preview authorization. Require canonical package, lifecycle,
-  provenance, asset namespace, three-way plan and hosted approval bound to current hashes.
+  `--dry-run` in Preview
+  ([Local and Preview autonomy](../../.agent/rules/git-safety.md#local-and-preview-autonomy)).
+  Require canonical package, lifecycle, provenance, asset namespace, three-way plan and hosted
+  approval bound to current hashes.
 - **Production invitation publication:** use `pnpm prod:apply -- --slug <slug>` for preflight and
   the same owner-only entrypoint with `--apply`. Require `published`, current hash-bound approval,
   provenance/baseline, resolved conflicts, assets, backup and owner permit.
@@ -229,15 +231,16 @@ a candidate branch.
 Before the promotion, when the release range changes anything inside the CSS visual-parity gate
 scope ("Profile LAYOUT deletion or move" in
 [`../domains/theme/css-visual-parity.md`](../domains/theme/css-visual-parity.md#scope-of-this-gate),
-or a `published` lifecycle change that adds a route to the canonical matrix), obtain the owner's
-release-time visual confirmation. The confirmation reviews the candidate produced with the pinned
-runtime and identifies the exact source SHA, matrix hash, and candidate-manifest SHA-256. Record
-that acceptance through `pnpm visual:parity:accept` before cutting the candidate, land the accepted
-references on `develop` through the same integration as step 4, and cut the candidate at a SHA that
-contains them. The commit that changes the matrix (for example the `published` flip) is committed
-first with normal hooks; the matrix pin is a branch gate (`validate:changed`, CI), so the accepted
-references land in the following commit of the same task branch. This is a human release decision,
-not an automatic action performed by CI or a deployment.
+or a `published` lifecycle change that adds a route to the canonical matrix), confirm it visually at
+release time. The confirmation reviews the candidate produced with the pinned runtime and identifies
+the exact source SHA, matrix hash, and candidate-manifest SHA-256. Record that acceptance through
+`pnpm visual:parity:accept` (allowed with the evidence in
+[Local and Preview autonomy](../../.agent/rules/git-safety.md#local-and-preview-autonomy)) before
+cutting the candidate, land the accepted references on `develop` through the same integration as
+step 4, and cut the candidate at a SHA that contains them. The commit that changes the matrix (for
+example the `published` flip) is committed first with normal hooks; the matrix pin is a branch gate
+(`validate:changed`, CI), so the accepted references land in the following commit of the same task
+branch. CI and deployments never accept references on their own.
 
 If visual confirmation is missing or rejected, the candidate is not eligible for promotion or
 deployment. Do not reduce visual coverage, relax comparison, or treat a Preview build as approval.
@@ -278,13 +281,24 @@ migration or capability check sees it, and unit tests feed the code synthetic da
 be correct and still lock real accounts out. `supabase/data-prerequisites.json` is where those facts
 are declared and where the evidence that each environment satisfies them is recorded.
 
-Three checks read the manifest or produce its evidence:
+These checks read the manifest or produce its evidence:
 
-| Check                                   | When it runs                                          | What it refuses                                                                                        |
-| --------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `tests/unit/data-prerequisites.test.ts` | Every CI run                                          | Code under `src/` that reads an `app_metadata` key the manifest does not declare; an invalid manifest. |
-| `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA   | A release whose manifest has a prerequisite without evidence for Production.                           |
-| `pnpm auth:check-login-alias`           | By hand, against one environment, to produce evidence | Nothing by itself: it reports whether the alias prerequisite holds (exit code 0) or not (exit code 1). |
+| Check                                   | When it runs                                             | What it refuses                                                                                          |
+| --------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `tests/unit/data-prerequisites.test.ts` | Every CI run                                             | Undeclared `app_metadata` key reads in `src/`, `scripts/` or `supabase/functions/`; an invalid manifest. |
+| `pnpm ops:release-checks`               | Before promoting or activating an exact release SHA      | A release whose manifest has a prerequisite without evidence for Production.                             |
+| `pnpm auth:check-login-alias`           | Every Preview and Production release upload, and by hand | A release while `legacyOnly` or `duplicates` is not 0, or the directory is empty (exit code 1).          |
+| `pnpm auth:check-pending-passwords`     | By hand, against one environment, to produce evidence    | Nothing by default: reports open password changes and age in days; fails with `--strict` when pending.   |
+| `pnpm auth:check-role-app-metadata`     | By hand, against one environment, to produce evidence    | Reports whether Auth metadata matches application roles (exit code 0) or not (exit code 1).              |
+
+The `auth-role-app-metadata` prerequisite compares every Auth account's `app_metadata.role` with
+`public.app_user_roles.role`, joined by `user_id`. The table is authoritative; its insert/update
+trigger copies the role to Auth. Missing or invalid roles, differences, orphan table rows, or an
+empty Auth directory fail the read-only check. It prints only the environment and totals; see
+[`scripts/auth/README.md`](../../scripts/auth/README.md) for output and execution details. Preview
+and Production remain `pending` until their own successful check is recorded. Do not mark them
+verified based on the trigger's existence or unit tests. The command does not repair differences;
+any repair needs separate authorization and the guarded workflow for that environment.
 
 The release gate reads the manifest from GitHub at the exact SHA being released, so the evidence
 must be merged before the release, not typed during it. A change to the manifest also adds the gate
@@ -293,8 +307,9 @@ release category.
 
 #### Declare an `app_metadata` key
 
-Every key that code under `src/` reads from Auth `app_metadata` needs one entry under
-`authAppMetadataKeys`, in the same pull request that adds the read:
+Every key that code under `src/`, `scripts/`, or `supabase/functions/` reads from Auth
+`app_metadata` needs one entry under `authAppMetadataKeys`, in the same pull request that adds the
+read:
 
 ```json
 "new_flag": { "migration": "none", "reason": "An absent value reads as false." }
@@ -325,13 +340,54 @@ Add an entry to `prerequisites` in the pull request that introduces the dependen
 `pending` (or has no entry) for Production blocks the release on purpose: that is the state in which
 the code must not be activated.
 
+#### August 12, 2026 patch prerequisites
+
+The manifest also declares these historical dependencies, initially `pending` for Production and
+Preview. A historical patch or migration file is not evidence that its result exists in either
+environment. Do not activate a release until the target's evidence has been reviewed and recorded.
+
+| Prerequisite                                      | Source                                                                                              | Read-only verification file                                        |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `20260812-itinerary-gallery-structural-contracts` | `scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql`          | `scripts/manual/data-prerequisites/20260812_itinerary_gallery.sql` |
+| `20260812-thankyou-editorial-back-cover`          | `scripts/manual/production-patches/20260812_thankyou_editorial_back_cover_structural_contracts.sql` | `scripts/manual/data-prerequisites/20260812_thankyou.sql`          |
+| `20260812-guest-invitation-phone-objects`         | `supabase/migrations/20260812210000_reconcile_guest_invitation_phone_objects.sql`                   | `scripts/manual/data-prerequisites/20260812_guest_phone.sql`       |
+
+After the required-database availability preflight and target identity check in
+`.agent/rules/database.md`, an authorized operator runs the manifest's `psql` command from the
+repository root with the target connection supplied externally through PostgreSQL connection
+variables. Use a role that can read all relevant rows without RLS filtering. Do not put credentials
+in the command, evidence, or repository. Each SQL file starts a read-only transaction, returns one
+row of totals and `ok`, then rolls back. Exit code 0 alone is insufficient: require `ok = true`. An
+SQL error, missing result, unavailable connection, or `ok = false` leaves the entry `pending`.
+
+The content queries require exactly one active published row per original target (four itinerary
+targets and three Thank You targets). They check every active published row and every existing
+active draft for the explicit variants set by the source patch; the itinerary query requires a
+gallery variant only for the three celestial targets. Missing or ambiguous published targets fail
+instead of silently passing an empty query. Drafts are optional, matching the original patches.
+Share only `invalid_published_targets`, `checked_rows`, `mismatched_rows`, and `ok` as evidence.
+
+The phone query checks the actual canonical nonunique, valid, nonpartial, single-column
+`btree(phone)` index without included columns, absence of the legacy or unexpected equivalent index,
+and the validated pair CHECK's normalized expression. Migration history alone cannot prove these
+objects still exist or have the right definition. This is a schema postcondition rather than a data
+backfill; it is declared here to cover the historical reconciliation explicitly. Share only
+`target_tables`, `canonical_indexes`, `unexpected_indexes`, `validated_pair_checks`, and `ok`.
+
+Do not rerun these historical content patches automatically. Resolve a mismatch through the current
+guarded workflow (managed content or schema as appropriate), then verify again. If targets are
+absent intentionally in an environment, keep the prerequisite pending until a reviewer accepts
+specific `not-applicable` evidence; absence alone never proves the patch is applied.
+
 #### Record evidence
 
-1. Run the backfill for the environment through its guarded workflow (Production: the owner patch
-   workflow below).
-2. Run the `verify` command against that environment and confirm it exits with code 0 and, for
-   `pnpm auth:check-login-alias`, that `target` names that environment. Its output contains totals
-   only, so paste it into the pull request that records the evidence.
+1. Verify the current state first; a read-only check may already pass without repair. If a repair or
+   backfill is needed, run it for the environment through its authorized guarded workflow
+   (Production: the owner patch workflow below).
+2. Run the `verify` command against that environment and confirm it exits with code 0 and, for the
+   Auth checks, that `target` names that environment. For the SQL verifications, also require
+   `ok = true` as described above. Its output contains totals only, so paste it into the pull
+   request that records the evidence.
 3. Set the environment to `verified` with the date and what was done:
 
    ```json
@@ -376,6 +432,11 @@ gate like `verified`, so do not use it to mean "not checked yet": that is `pendi
   - **Unblock:** Run the backfill for that environment (see "Protected login aliases"); resolve
     duplicates by hand first; with `accounts: 0`, check `SUPABASE_URL` and the key. Until then,
     affected hosts can log in with the account email, not the alias.
+- **Message starts with:** `Pending password check failed:` (from `auth:check-pending-passwords`)
+  - **Meaning:** With `--strict`, accounts have `must_change_password` open, or the target returned
+    no accounts.
+  - **Unblock:** Review the open changes and their age; ensure affected users complete their
+    password change or re-issue credentials. In advisory mode, verify totals and record evidence.
 
 A gate that blocks is reporting missing evidence, never a judgment about the code. Do not unblock by
 deleting an entry, marking `verified` without running the command, or bypassing
@@ -383,9 +444,23 @@ deleting an entry, marking `verified` without running the command, or bypassing
 
 #### What these checks do not see
 
-- The key scanner matches `app_metadata.key`, `app_metadata?.key` and `app_metadata['key']`. It does
-  not see a key held in a constant (`temp_password_expires_at` is declared by hand for that reason),
-  destructuring, or a helper that receives the metadata object. Reviewers still own those.
+- The key scanner uses TypeScript AST across `src/`, `scripts/` and `supabase/functions/` to detect
+  property access, bracket access, local constants, imports using relative paths or `@/*` aliases,
+  destructuring, and intra-file helpers or methods receiving or returning the metadata object. It
+  enforces a fail-closed policy: unresolvable bracket accesses emit an `<unknown>` key read that
+  blocks release until declared or resolved. Real boundaries that require reviewer attention:
+  - **Cross-module helpers:** Helpers defined in another file detect reads only if their parameter
+    or local variable uses canonical metadata naming (`app_metadata`, `appMetadata`,
+    `raw_app_meta_data`); inter-module argument tracking is not performed across file boundaries.
+  - **Cross-module methods and dynamic dispatch:** Method calls on objects or instances imported
+    from other modules are not tracked across module boundaries.
+  - **Custom path aliases:** Only the repository's canonical `@/*` alias (mapped to `src/*`) and
+    relative paths are resolved; arbitrary external path aliases are not supported.
+  - **Astro files:** Only the frontmatter script block (`--- ... ---`) is scanned; template markup
+    is excluded.
+  - **Runtime dynamic keys:** Keys computed dynamically at runtime from external data or string
+    concatenation cannot be statically resolved and emit `<unknown>` if accessed via brackets.
+    Reviewers still own those.
 - Only Auth `app_metadata` is scanned. A new dependency on the shape of stored JSON anywhere else
   (invitation content, `user_metadata`, settings columns) must be declared as a prerequisite by its
   author; nothing detects it.
@@ -424,6 +499,16 @@ critical backup stores the previous `auth.users` metadata. After apply the plan 
 target rows and `pnpm auth:check-login-alias` must exit with code 0 and report `legacyOnly: 0`;
 alias login returns within 30 seconds, once each Worker instance reloads its alias directory. Keep
 administrative alias changes paused between plan and apply.
+
+The check also runs on every release, so an account created later with its alias only in
+`user_metadata` is caught: `.github/workflows/deploy.yml` (Preview) and
+`.github/workflows/deploy-production.yml` (Production upload) run `pnpm auth:check-login-alias`
+before publishing the Worker version and fail while `legacyOnly` or `duplicates` is not 0. The step
+is read-only and prints totals only. Preview reads `vars.PUBLIC_SUPABASE_URL` with the
+`PREVIEW_SUPABASE_SERVICE_ROLE_KEY` secret; Production derives its URL from
+`PRODUCTION_SUPABASE_REF` and uses the `PRODUCTION_SUPABASE_SERVICE_ROLE_KEY` secret. Both secrets
+must exist before the workflow runs. Account creation (`createAdminUser`) already writes
+`app_metadata.login_alias`.
 
 If the backfill evidence is unavailable, keep activation blocked. Record the target, successful
 migration verification and ordering in both the application PR and release handoff. There is no

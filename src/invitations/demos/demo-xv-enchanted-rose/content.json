@@ -3,17 +3,19 @@
     "isDemo": true,
     "templateId": "xv-enchanted-rose",
     "_assetSlug": "demo-xv-enchanted-rose",
+    "visualProfileId": "demo-xv-enchanted-rose",
     "title": "XV Años — Isabella Rose",
-    "description": "Una invitación de gala con rosas, luz de velas y un ritmo visual más selectivo para celebrar XV años con atmósfera de palacio.",
+    "description": "Una invitación de jardín en rosa palo, con luz de atardecer y acabados de joyero para celebrar XV años en una hacienda.",
     "theme": {
         "fontFamily": "serif",
-        "preset": "enchanted-rose"
+        "preset": "enchanted-rose",
+        "motion": "editorial"
     },
     "sectionOrder": [
         "quote",
-        "location",
         "countdown",
         "family",
+        "location",
         "itinerary",
         "gallery",
         "gifts",
@@ -22,23 +24,54 @@
         "thankYou"
     ],
     "composition": {
-        "intersections": {}
+        "intersections": {
+            "quote": {
+                "family": "atmospheric-blend",
+                "source": "hero"
+            },
+            "family": {
+                "family": "folio",
+                "source": "countdown"
+            },
+            "interlude-after-family": {
+                "family": "overlap",
+                "source": "family"
+            },
+            "gallery": {
+                "family": "atmospheric-blend",
+                "source": "itinerary"
+            },
+            "gifts": {
+                "family": "folio",
+                "source": "gallery"
+            },
+            "personalized-access": {
+                "family": "stack",
+                "source": "gifts"
+            },
+            "thankYou": {
+                "family": "atmospheric-blend",
+                "source": "rsvp"
+            }
+        }
     },
     "hero": {
+        "scrollCue": "chevron",
         "presentation": {
-            "venueIndex": 1
+            "venueIndex": 1,
+            "nameLeadWords": 2
         },
         "name": "Isabella Rose Valenzuela",
         "label": "Mis XV Años",
-        "date": "2027-11-20T20:00:00.000Z",
+        "date": "2027-11-20T19:00:00.000Z",
         "scrollLabel": "Deslice para descubrir",
         "backgroundImage": "hero",
         "portrait": "portrait",
-        "focalPoint": "50% 32%",
-        "focalPointMobile": "50% 32%",
-        "focalPointTablet": "50% 24%",
-        "focalPointDesktop": "50% 21%",
-        "variant": "standard"
+        "focalPoint": "50% 30%",
+        "focalPointMobile": "50% 30%",
+        "focalPointTablet": "50% 28%",
+        "focalPointDesktop": "50% 26%",
+        "variant": "cased-portrait"
     },
     "location": {
         "accessPolicy": {
@@ -46,12 +79,12 @@
         },
         "introEyebrow": "Querétaro",
         "introHeading": "Ubicación",
-        "introLede": "Isabella Rose celebrará sus XV años en una noche de ceremonia, cena y baile entre rosas, música y luz de velas.",
+        "introLede": "Isabella Rose celebrará sus XV años en una hacienda queretana, entre rosales, fuentes de cantera y la luz dorada del atardecer.",
         "indications": [
             {
                 "iconName": "DressCode",
                 "styleVariant": "reserved",
-                "text": "Código de vestimenta <strong>formal de gala</strong>. Los tonos <strong>rosa satín y blush</strong> están reservados para la quinceañera."
+                "text": "Código de vestimenta <strong>formal</strong>. Los tonos <strong>rosa palo y blush</strong> están reservados para la quinceañera."
             },
             {
                 "iconName": "Calendar",
@@ -59,31 +92,31 @@
                 "text": "Favor de confirmar asistencia <strong>antes del 6 de noviembre de 2027</strong>."
             }
         ],
-        "variant": "standard",
+        "variant": "stacked-venue-plates",
         "presentationOptions": {
             "showFlourishes": true
         },
         "venues": [
             {
                 "venueEvent": "Ceremonia religiosa",
-                "venueName": "Parroquia del Sagrado Corazón",
-                "address": "Av. de las Rosas 240, Centro Histórico, 76000 Querétaro, Qro.",
-                "city": "Querétaro",
+                "venueName": "Capilla de San José",
+                "address": "Camino Real a la Cañada km 4, Hacienda San José, 76246 El Marqués, Qro.",
+                "city": "El Marqués",
                 "date": "20 de noviembre de 2027",
-                "time": "18:00",
-                "mapUrl": "https://maps.app.goo.gl/example-sagrado-corazon",
+                "time": "5:30 p. m.",
+                "mapUrl": "https://maps.app.goo.gl/example-capilla-san-jose",
                 "image": "mapCeremony",
                 "type": "ceremony",
                 "isVisible": true
             },
             {
                 "venueEvent": "Recepción",
-                "venueName": "Salón Imperial",
-                "address": "Paseo del Palacio 18, Jardines del Acueducto, 76020 Querétaro, Qro.",
-                "city": "Querétaro",
+                "venueName": "Hacienda Jardín de las Rosas",
+                "address": "Camino Real a la Cañada km 4, Hacienda San José, 76246 El Marqués, Qro.",
+                "city": "El Marqués",
                 "date": "20 de noviembre de 2027",
-                "time": "20:00",
-                "mapUrl": "https://maps.app.goo.gl/example-salon-imperial",
+                "time": "7:00 p. m.",
+                "mapUrl": "https://maps.app.goo.gl/example-jardin-de-las-rosas",
                 "image": "mapReception",
                 "type": "reception",
                 "isVisible": true
@@ -101,7 +134,7 @@
             "sectionSubtitle": "Con amor y gratitud",
             "parentsTitle": "Con la bendición de",
             "godparentsTitle": "Padrinos",
-            "sectionMessage": "Esta noche honra el amor, la guía y la presencia de quienes han acompañado mi historia con cariño y elegancia."
+            "sectionMessage": "Esta tarde honra el amor, la guía y la presencia de quienes han acompañado mi historia con cariño."
         },
         "godparents": [
             {
@@ -123,27 +156,31 @@
         "variant": "feature-mosaic",
         "eyebrow": "Galería",
         "title": "Instantes de Isabella",
-        "subtitle": "Una selección breve entre rosas, luz de velas y detalles dorados.",
+        "subtitle": "Una selección breve entre rosales, cantera y la luz tibia del atardecer.",
         "items": [
             {
                 "image": "gallery01",
-                "caption": "Luz de velas"
+                "layoutRole": "wide",
+                "caption": "Rosas de jardín"
             },
             {
                 "image": "gallery02",
-                "caption": "Acentos dorados"
+                "layoutRole": "wide",
+                "caption": "Los detalles del día"
             },
             {
                 "image": "gallery06",
-                "caption": "Rosas de gala"
+                "layoutRole": "wide",
+                "caption": "El vals con papá"
             },
             {
                 "image": "gallery03",
-                "caption": "Una noche de palacio"
+                "layoutRole": "wide",
+                "caption": "Entre setos y cantera"
             },
             {
                 "image": "gallery04",
-                "caption": "Mármol y terciopelo"
+                "caption": "Con mamá"
             }
         ]
     },
@@ -151,6 +188,12 @@
         "title": "Un detalle especial",
         "subtitle": "Su presencia será el regalo más valioso. Para quienes deseen compartir un detalle adicional, habrá un espacio reservado durante la recepción.",
         "items": [
+            {
+                "type": "store",
+                "title": "Mesa de regalos",
+                "description": "Isabella eligió algunos detalles para su nueva etapa.",
+                "url": "https://www.elpalaciodehierro.com/mesa-de-regalos"
+            },
             {
                 "type": "cash",
                 "title": "Sobre de felicitación",
@@ -161,10 +204,10 @@
     },
     "rsvp": {
         "title": "Confirme su asistencia",
-        "subcopy": "Les pedimos confirmar desde esta invitación para preparar cada lugar con cuidado.",
+        "subcopy": "Le pedimos confirmar desde esta invitación para preparar cada lugar con cuidado.",
         "guestCap": 4,
         "accessMode": "hybrid",
-        "confirmationMessage": "Gracias por confirmar. Será una alegría recibirles en esta noche especial.",
+        "confirmationMessage": "Gracias por confirmar. Será una alegría recibirle en esta tarde especial.",
         "confirmationMode": "api",
         "personalizedAccess": {
             "title": "Pase de acceso",
@@ -190,78 +233,87 @@
         }
     },
     "quote": {
-        "text": "Entre rosas y luz de velas, comienza una noche que guardaré para siempre.",
+        "text": "Entre rosales y luz de atardecer, comienza una tarde que guardaré para siempre.",
         "author": "Isabella Rose"
     },
     "thankYou": {
-        "message": "Gracias por compartir esta noche. Su presencia hará que mis XV años florezcan como un recuerdo lleno de amor y gratitud.",
+        "message": "Gracias por acompañarme. Su presencia hará que mis XV años florezcan como un recuerdo lleno de amor y gratitud.",
         "closingName": "Isabella Rose Valenzuela",
         "image": "thankYouPortrait",
-        "focalPoint": "50% 30%",
-        "variant": "portrait-letter"
+        "focalPoint": "50% 34%",
+        "variant": "portrait-keepsake",
+        "closingNameLeadWords": 1
     },
     "itinerary": {
-        "title": "Programa de la gala",
+        "title": "Programa de la tarde",
         "items": [
             {
                 "iconName": "Church",
-                "label": "Ceremonia religiosa",
-                "time": "18:00",
-                "description": "Parroquia del Sagrado Corazón."
+                "label": "Misa de acción de gracias",
+                "time": "5:30 p. m.",
+                "description": "Capilla de San José."
             },
             {
                 "iconName": "Reception",
                 "label": "Recepción",
-                "time": "20:00",
-                "description": "Bienvenida en el Salón Imperial."
+                "time": "7:00 p. m.",
+                "description": "Bienvenida en el jardín de las rosas."
             },
             {
                 "iconName": "Waltz",
                 "label": "Vals",
-                "time": "21:00",
-                "description": "Momento de gala bajo luz de velas."
+                "time": "8:00 p. m.",
+                "description": "Bajo las luces del jardín, al caer la tarde."
             },
             {
                 "iconName": "Party",
                 "label": "Celebración",
-                "time": "22:00",
-                "description": "Cena, baile y cierre de la noche."
+                "time": "9:00 p. m.",
+                "description": "Cena, baile y brindis."
             }
         ],
-        "variant": "standard"
+        "variant": "timeline-paper"
     },
     "countdown": {
-        "variant": "standard",
-        "title": "La gala comienza en",
-        "footerText": "20 de noviembre de 2027, Querétaro"
+        "variant": "clock-face",
+        "title": "Faltan",
+        "footerText": "Sábado 20 de noviembre de 2027 · El Marqués, Querétaro",
+        "presentationOptions": {
+            "visibleUnits": ["days", "hours", "minutes"]
+        }
     },
     "interludes": [
         {
             "image": "interlude02",
             "afterSection": "family",
-            "alt": "Detalle de palacio con espejo antiguo y rosas rojas",
+            "alt": "Isabella Rose con su mamá, que le acomoda el cabello en el jardín de la hacienda",
             "height": "screen",
-            "focalPoint": "50% 25%",
+            "focalPoint": "50% 30%",
             "lightX": "54%",
             "lightY": "34%"
         },
         {
             "image": "interlude03",
             "afterSection": "gallery",
-            "alt": "Mesa de gala con velas, detalles dorados y rosas",
+            "alt": "Mesas redondas con flores y luces colgantes en el jardín de la hacienda",
             "height": "screen",
-            "focalPoint": "54% 22%",
-            "lightX": "68%",
-            "lightY": "44%",
-            "overlayOpacity": "18%"
+            "focalPoint": "50% 60%",
+            "lightX": "62%",
+            "lightY": "30%",
+            "overlayOpacity": "14%"
         }
     ],
     "envelope": {
         "disabled": false,
+        "revealVariant": "storybook-butterflies",
         "sealStyle": "wax",
-        "sealIcon": "flower",
+        "sealIcon": "wax-organic",
         "sealInitials": "I·R",
-        "microcopy": "Abrir invitación",
+        "envelopeName": "Isabella Rose",
+        "teaserDetails": "20 de noviembre · Querétaro",
+        "stampText": "XV",
+        "stampYear": "2027",
+        "microcopy": "Abra su invitación",
         "closedPalette": {
             "primary": "surfacePrimary",
             "accent": "actionAccent",
@@ -275,9 +327,17 @@
             "reminder": "Hola {{invitado}},\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\n{{enlace}}"
         }
     },
+    "eventTiming": {
+        "localDateTime": "2027-11-20T19:00",
+        "timeZone": "America/Mexico_City",
+        "startsAtUtc": "2027-11-21T01:00:00.000Z"
+    },
     "music": {
         "url": "https://media.celebra-me.com/shared/music/nuvole-bianche-24611cb040e2779c681d7b14bc9423d8e058d477f2c4368c216a1373cf2b3f59.mp3",
-        "autoPlay": false,
-        "title": "Música de fondo"
+        "autoPlay": true,
+        "title": "Nuvole Bianche",
+        "artist": "Ludovico Einaudi",
+        "control": "equalizer",
+        "fadeInSeconds": 2
     }
 }

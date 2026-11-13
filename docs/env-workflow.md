@@ -432,6 +432,28 @@ repository secrets `PLAYWRIGHT_HOST_LOGIN`, `PLAYWRIGHT_HOST_PASSWORD` and
 `PLAYWRIGHT_PREVIEW_INVITATION_ID`; while any of them is missing, the step is skipped and the run
 summary says so.
 
+### Preview admin sign-in for agents
+
+Agents never read `.env.e2e.local` or see the Preview admin password. The owner keeps
+`PLAYWRIGHT_HOST_LOGIN=preview@preview.com` and `PLAYWRIGHT_HOST_PASSWORD` in that file; scripts
+load it internally.
+
+1. `pnpm db:preview:bootstrap-admin` checks (read-only) that the Preview Auth password matches
+   `PLAYWRIGHT_HOST_PASSWORD` and that the account is a confirmed `super_admin`. If not, the owner
+   runs `pnpm db:preview:bootstrap-admin --apply` (see `docs/database-workflow.md`).
+2. `pnpm preview:admin:session` signs in to the hosted Preview dashboard with the Cloudflare Access
+   service token, checks `/api/auth/session` (email and `super_admin` role) and saves a Playwright
+   storage state at `output/playwright/preview-admin-session/storage-state.json`. It prints only
+   non-secret facts (base URL, email, role, file path).
+3. Agents reuse it with `browser.newContext({ storageState })`, adding the Access headers on
+   same-origin requests. The file holds live session cookies: never print, copy or commit it, and
+   remove it with `pnpm preview:admin:session --clear` when the task ends. This explicit,
+   short-lived file is the only exception to the no-`storageState` rule below; Preview test projects
+   still never persist it.
+
+The built-in browser pane cannot receive the password; the owner signs in there by hand when a
+visual check is needed.
+
 `PLAYWRIGHT_ALLOW_PREVIEW_FIXTURE_PROVISIONING=true` authorizes the Playwright fixture reconcile
 command (`pnpm test:e2e:preview:provision`): verify slug `e2e-preview-publication`, copy
 demo-derived content, and run publication preflight. It does **not** publish and does **not** create

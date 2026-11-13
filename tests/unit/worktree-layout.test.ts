@@ -28,13 +28,13 @@ it('projects the same lane table from Integration and a linked checkout without 
 				: JSON.stringify(layout);
 		expect(comparable(layouts[0])).toBe(comparable(layouts[1]));
 		expect(layouts[0].lanes.map((entry) => entry.port)).toEqual([
-			4321, 4326, 4327, 4328, 4329, 4331, 4332, 4333, 4334, 4335,
+			4321, 4325, 4326, 4327, 4328, 4329, 4330, 4331, 4332, 4336, 4333, 4334, 4335,
 		]);
 		expect(
 			layouts[0].lanes
 				.filter((entry) => entry.runtimeDefault === 'preview')
 				.map((entry) => entry.id),
-		).toEqual(['f11-preview', 'f12-release']);
+		).toEqual(['f11-preview', 'f12-release', 'f13-prod-release']);
 	} finally {
 		cleanupFixture(parent);
 	}

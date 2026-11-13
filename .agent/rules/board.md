@@ -23,8 +23,8 @@ text is never an authorization.
   and is the only lane list; `scripts/shared/worktree-lane.ts` reads it. Never copy lane ids or
   ports into another file.
 - **Category (d191)** never binds a lane: code tasks take any free generic lane (f06-landing,
-  f07-invitaciones, f08-demos, f09-docs); `preview` work takes f11-preview and `release` work
-  f12-release. f05-plataforma and f10-libre take no tasks (`carrilesRetirados`).
+  f05-plataforma, f07-invitaciones, f08-demos, f09-docs, f10-libre); `preview` work takes
+  f11-preview and `release` work f12-release or f13-prod-release.
 - `claim` does not start git-safety: run `pnpm agent:git-safety:start --session=<branch>` right
   after, and `pnpm agent:git-safety:finish --session=<branch>` after `close` or `release`.
 - `invitacion` and `release` tasks follow the same git-safety rule (T297): an `invitacion` claims a
@@ -34,6 +34,13 @@ text is never an authorization.
 
 ## Messaging, closing and review (project additions)
 
+- **Task branches and PR synchronization**: preserve merge commits and use each task branch for a
+  single delivery; start a new branch for the next delivery. Before review, merge `origin/develop`
+  into the task branch only to resolve a conflict or to include a real dependency already merged
+  into `develop`. Never synchronize routinely, through `update-branch` or otherwise, merely because
+  the branch is behind `develop`: needless update merges add history and move the head checked by CI
+  and review. Use a normal merge, never rebase or force push. Escalate conflicts involving
+  migrations or another task's files to the coordinator before resolving them.
 - Masters and watcher (d351, T442): fixed chats; setup is coordinator-only
   ([guide](../../docs/core/coordinator-board.md)).
 - Session id: Every configured agent (Claude, Codex, and Gemini) passes `--sesion` in claim; a
@@ -41,14 +48,13 @@ text is never an authorization.
 - Closing summary (d178, T129) is the Handoff Contract (`.agent/plans/README.md`).
   `--nivel=validate:changed|type-check|ci`.
 - **Cross review (d183, d288)**: an agent other than the author reviews every PR at its exact head
-  SHA after the head's CI is green; `CONFLICTING` waits until the author merges `origin/develop`
-  into the same branch (never rebase or `push --force`). Claude reviews Codex and Gemini; they
-  review only Claude's high-risk and release work. A low- or medium-risk Claude PR is reviewed by a
-  Claude subagent with clean context. Risk classes (d282, d290): low = `scripts/agent/`, `tests/`,
-  `docs/`, `.agent/` outside `.agent/rules/`, `.gitignore`, Markdown; medium = docs plus frontend;
-  high = everything else (migrations, auth, APIs, `.agent/rules/`, unclassified). A `release` task
-  keeps Gemini or Codex at any risk. All agents share one GitHub account, so approval lives on the
-  board.
+  SHA after the head's CI is green; `CONFLICTING` waits for resolution under the task-branch
+  synchronization rule above. Claude reviews Codex and Gemini; they review only Claude's high-risk
+  and release work. A low- or medium-risk Claude PR is reviewed by a Claude subagent with clean
+  context. Risk classes (d282, d290): low = `scripts/agent/`, `tests/`, `docs/`, `.agent/` outside
+  `.agent/rules/`, `.gitignore`, Markdown; medium = docs plus frontend; high = everything else
+  (migrations, auth, APIs, `.agent/rules/`, unclassified). A `release` task keeps Gemini or Codex at
+  any risk. All agents share one GitHub account, so approval lives on the board.
 - **Board PRs (d270, d291)**: at most two open PRs may change `scripts/board/`,
   `tablero.config.json`, this file or the coordinator guide; a second waits only if `git merge-tree`
   shows a real conflict. The coordinator runs the check.

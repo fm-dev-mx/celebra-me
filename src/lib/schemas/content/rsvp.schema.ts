@@ -1,7 +1,7 @@
 import { RSVP_FLOWS } from '@/lib/invitation/rsvp-flow';
 import { z } from 'zod';
 import { rsvpResponseMessagesSchema } from '@/lib/schemas/content/shared.schema';
-import { rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
+import { guestChildrenCapSchema, rsvpGuestCapSchema } from '@/lib/rsvp/guest-cap';
 import { PERSONALIZED_ACCESS_VARIANTS, RSVP_VARIANTS } from '@/lib/invitation/section-variants';
 import {
 	PASS_STYLE_VARIANTS,
@@ -33,6 +33,8 @@ export const rsvpSchema = z
 		lockedMessage: z.string().trim().min(1).optional(),
 		title: z.string().default('¿Vienes a celebrar conmigo?'),
 		guestCap: rsvpGuestCapSchema.default(1),
+		/** Demo previews only: children among the guestCap passes, so the demo shows the child field. */
+		demoMaxChildren: guestChildrenCapSchema.optional(),
 		accessMode: z.enum(['personalized-only', 'hybrid']).default('personalized-only'),
 		confirmationMessage: z
 			.string()

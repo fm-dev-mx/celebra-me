@@ -76,4 +76,105 @@
 	&__form {
 		padding: var(--spacing-lg);
 	}
+
+	&__views {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-sm);
+
+		button[aria-pressed='true'] {
+			font-weight: 700;
+			border-color: var(--color-text-primary);
+		}
+	}
+
+	// One column per stage; the board scrolls sideways inside its own box on narrow screens.
+	&__board {
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: minmax(12rem, 1fr);
+		gap: var(--spacing-md);
+		overflow-x: auto;
+		padding-bottom: var(--spacing-sm);
+	}
+
+	&__column {
+		display: grid;
+		align-content: start;
+		gap: var(--spacing-sm);
+		min-width: 0;
+	}
+
+	&__agenda {
+		display: grid;
+		gap: var(--spacing-sm);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	&__card {
+		display: grid;
+		gap: var(--spacing-xs);
+		padding: var(--spacing-sm);
+		border: 1px solid var(--color-border-subtle);
+		border-radius: var(--spacing-xs);
+		overflow-wrap: anywhere;
+
+		&[data-urgent='true'] {
+			border-color: var(--color-text-primary);
+			border-width: 2px;
+		}
+	}
+
+	// Words carry the urgency; the heavier border only reinforces it.
+	&__flag {
+		font-weight: 700;
+	}
+
+	&__detail {
+		display: grid;
+		gap: var(--spacing-md);
+		min-width: 0;
+		padding-block: var(--spacing-md);
+	}
+
+	// Seven stages in one line; wraps on narrow screens. Done is marked by a filled dot and the
+	// current one by weight, never by colour alone (screen readers also get the sr-only text).
+	&__stages {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-sm) var(--spacing-md);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+
+		li {
+			display: inline-flex;
+			align-items: center;
+			gap: var(--spacing-xs);
+			color: var(--color-text-secondary);
+
+			&::before {
+				content: '';
+				width: 0.75rem;
+				height: 0.75rem;
+				border: 2px solid var(--color-border-control);
+				border-radius: 50%;
+			}
+
+			&[data-done='true'] {
+				color: var(--color-text-primary);
+			}
+
+			&[data-done='true']::before {
+				background: var(--color-text-primary);
+				border-color: var(--color-text-primary);
+			}
+
+			&[aria-current='step'] {
+				font-weight: 700;
+			}
+		}
+	}
 }

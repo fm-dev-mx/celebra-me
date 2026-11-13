@@ -56,6 +56,90 @@ Resetting a password from the admin panel keeps an alias that is already in `app
 not copy one from `user_metadata`: a reset is not a repair for a legacy-only alias. Run the
 backfill.
 
+## Pending password change report
+
+`check-pending-passwords.mjs` checks accounts with `must_change_password` open in `app_metadata`. It
+is read-only and prints anonymous totals and age distributions without user IDs or emails.
+
+```sh
+pnpm auth:check-pending-passwords
+```
+
+Example output:
+
+```json
+{
+  "target": "preview",
+  "accounts": 120,
+  "pendingPasswords": 2,
+  "active": 1,
+  "expired": 1,
+  "estimated": 0,
+  "unknown": 0,
+  "ageDays": {
+    "0-1": 1,
+    "2-7": 0,
+    "8-30": 0,
+    ">30": 1,
+    "unknown": 0
+  },
+  "oldestDays": 35,
+  "newestDays": 0,
+  "ok": true,
+  "clean": false
+}
+```
+
+- `target`: environment detected from `SUPABASE_URL`.
+- `accounts`: total accounts found in the directory.
+- `pendingPasswords`: accounts with `must_change_password: true`.
+- `active`: accounts whose temporary password has not expired.
+- `expired`: accounts whose temporary password has passed its 24h window.
+- `estimated`: accounts lacking `temp_password_expires_at` whose age was estimated from
+  `created_at`.
+- `unknown`: accounts lacking both `temp_password_expires_at` and `created_at` (`updated_at` is
+  never used to prevent unrelated updates from rejuvenating age).
+- `ageDays`: distribution of pending changes grouped by age (0-1 days, 2-7 days, 8-30 days, >30
+  days, unknown).
+- `oldestDays` / `newestDays`: age range in days across open changes with known/estimated age.
+- `ok`: true if directory returned accounts in advisory mode; requires 0 pending in strict mode.
+- `clean`: true only when `pendingPasswords === 0` and `accounts > 0`.
+
+Use `--strict` to make the check fail with exit code 1 if any account has `must_change_password`
+open:
+
+```sh
+pnpm auth:check-pending-passwords --strict
+```
+
+Its output is evidence for the `auth-must-change-password` prerequisite in
+`supabase/data-prerequisites.json`.
+
+## Read-only role synchronization check
+
+```sh
+pnpm auth:check-role-app-metadata
+```
+
+Uses only `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` from the process environment, without
+loading environment files. It performs GET requests only, paginating Auth accounts and
+`public.app_user_roles` (`user_id`, `role`). That table is authoritative: migration `20260215000800`
+copies its role into Auth metadata after inserts and updates; middleware reads `app_metadata.role`
+and account-access verification requires equality.
+
+Output contains only `target`, `accounts`, `matching`, `differing`, `orphanRoles`, and `ok`.
+`differing` includes accounts missing a table role or a valid matching metadata role; two missing
+roles do not count as a match. Only `super_admin` and `host_client` are valid. Orphan table rows
+also fail. Exit code is 0 only for a nonempty directory with no differences or orphans; otherwise
+
+1. Request, pagination, configuration, and malformed-response errors also exit 1 with a sanitized
+   message. No emails, account IDs, credentials, or upstream bodies are printed.
+
+Record evidence for `auth-role-app-metadata` only when `target` names the intended environment and
+`ok` is true. Preview and Production start pending. This audit does not repair data or authorize any
+writes. Because the two directories are read separately, pause administrative account and role
+changes during the check and rerun after any concurrent changes before recording evidence.
+
 ## Migration
 
 The default is dry-run. Review the target and existing alias ownership before applying: legacy user

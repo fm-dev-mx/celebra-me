@@ -3,13 +3,26 @@ import {
 	findSalesOrderByIdempotencyKey,
 	redeemCustomerReferralCredit,
 	registerSalesOrderDepositPurchase,
+	findOrderProductionSources,
+	findSalesOrderById,
+	listSalesOrderPayments,
+	registerSalesOrderPayment,
+	setSalesOrderEventDate,
 	type MetaConversionEvent,
 	type SalesOrder,
+	type SalesOrderPayment,
 	type SalesOrderStatus,
 } from '@/lib/commercial/orders.repository';
+import {
+	deriveOrderStages,
+	type InvitationDataRequestStatus,
+	type LinkedInvitationStatus,
+	type OrderStageProgress,
+} from '@/lib/commercial/order-stages';
 import { ApiError } from '@/lib/rsvp/core/errors';
 import { randomUUID } from 'node:crypto';
 import { deliverMetaConversionEvent } from '@/lib/commercial/meta-capi/service';
+import { enqueueOrderSettledEvent } from '@/lib/commercial/meta-capi/order-settled';
 import { emitCommercialTrackingEvent } from '@/lib/commercial/commercial-tracking';
 import { runAfterResponse, type AfterResponseContext } from '@/lib/server/platform-request';
 import { safeErr } from '@/lib/server/safe-error';
@@ -54,6 +67,7 @@ export interface CreateCommercialSalesOrderInput {
 	discountAmount?: number;
 	applyReferralDiscount?: boolean;
 	applyReferrerCredit?: boolean;
+	eventDate?: string;
 }
 
 export interface MarkCommercialOrderDepositPaidInput {
@@ -307,6 +321,7 @@ export async function createCommercialSalesOrder(
 		referralCodeUsed,
 		discountAmount: pricing.discountAmount,
 		referrerCreditRedeemed: pricing.referrerCreditRedeemed,
+		eventDate: input.eventDate,
 	}).catch((error: unknown) => {
 		if (error instanceof Error && error.message.includes('ORDER_IDEMPOTENCY_CONFLICT')) {
 			throw new ApiError(409, 'conflict', ORDER_IDEMPOTENCY_CONFLICT_MESSAGE);
@@ -340,6 +355,27 @@ function mapDepositTransitionError(error: unknown): never {
 		throw new ApiError(400, 'validation_error', databaseMessage);
 	}
 	throw error;
+}
+
+/**
+ * A fully paid order (the deposit covers the total, or a payment settles the balance) queues its
+ * own event: no value, the Purchase already carried the total. Idempotent by order, so a re-run
+ * never sends it twice.
+ */
+function queueOrderSettledEvent(order: SalesOrder, options: CommercialOrderServiceOptions): void {
+	if (order.amountPaid < order.totalAmount || order.isPastSale) return;
+	runAfterResponse(
+		options.after,
+		async () => {
+			const settledId = await enqueueOrderSettledEvent({
+				orderId: order.id,
+				customerId: order.customerId,
+				leadId: order.leadId ?? null,
+			});
+			if (settledId) await deliverMetaConversionEvent(settledId);
+		},
+		{ label: `orders-service:order-settled:${order.id}` },
+	);
 }
 
 export async function markCommercialOrderDepositPaid(
@@ -385,6 +421,7 @@ export async function markCommercialOrderDepositPaid(
 			{ label: 'orders-service:deposit_paid' },
 		);
 	}
+	queueOrderSettledEvent(order, options);
 	const leadId = order.leadId;
 	if (leadId && !order.isPastSale) {
 		runAfterResponse(
@@ -395,4 +432,92 @@ export async function markCommercialOrderDepositPaid(
 	}
 
 	return { order, conversionEvent };
+}
+
+export interface RegisterCommercialOrderPaymentInput {
+	orderId: string;
+	amount: number;
+	paidAt?: string;
+	actorId: string;
+	idempotencyKey: string;
+}
+
+function mapPaymentError(error: unknown): never {
+	const message = error instanceof Error ? error.message : String(error);
+	const databaseMessage = message.match(/"message"\s*:\s*"([^"]+)"/i)?.[1] ?? message;
+	if (message.includes('No se encontró la orden de venta')) {
+		throw new ApiError(404, 'not_found', 'No se encontró la orden de venta.');
+	}
+	if (message.includes('datos diferentes')) {
+		throw new ApiError(409, 'conflict', databaseMessage);
+	}
+	if (
+		message.includes('No se puede registrar un pago') ||
+		message.includes('El pago no puede superar') ||
+		message.includes('El monto del pago') ||
+		message.includes('clave de idempotencia')
+	) {
+		throw new ApiError(400, 'validation_error', databaseMessage);
+	}
+	throw error;
+}
+
+/**
+ * Records an installment, or the settlement that covers the balance and moves the order to paid.
+ * No new Purchase (it went out with the deposit); the settlement queues OrderSettled.
+ */
+export async function registerCommercialOrderPayment(
+	input: RegisterCommercialOrderPaymentInput,
+	options: CommercialOrderServiceOptions = {},
+): Promise<{ order: SalesOrder; payment: SalesOrderPayment }> {
+	assertPositiveAmount(input.amount, 'El monto del pago debe ser mayor a cero.');
+	let result: Awaited<ReturnType<typeof registerSalesOrderPayment>>;
+	try {
+		result = await registerSalesOrderPayment({
+			orderId: input.orderId,
+			amount: input.amount,
+			paidAt: input.paidAt ?? new Date().toISOString(),
+			actorId: input.actorId,
+			idempotencyKey: input.idempotencyKey,
+		});
+	} catch (error) {
+		mapPaymentError(error);
+	}
+	const { order, payment } = result;
+	queueOrderSettledEvent(order, options);
+	return { order, payment };
+}
+
+export interface CommercialOrderDetail {
+	order: SalesOrder;
+	payments: SalesOrderPayment[];
+	stages: OrderStageProgress;
+}
+
+export async function getCommercialOrderDetail(orderId: string): Promise<CommercialOrderDetail> {
+	const [order, payments, sources] = await Promise.all([
+		findSalesOrderById(orderId),
+		listSalesOrderPayments(orderId),
+		findOrderProductionSources(orderId),
+	]);
+	if (!order) throw new ApiError(404, 'not_found', 'No se encontró la orden de venta.');
+	return {
+		order,
+		payments,
+		stages: deriveOrderStages({
+			status: order.status,
+			amountPaid: order.amountPaid,
+			dataRequestStatus: sources.dataRequestStatus as InvitationDataRequestStatus | null,
+			invitationStatus: sources.invitationStatus as LinkedInvitationStatus | null,
+		}),
+	};
+}
+
+export async function updateCommercialOrderEventDate(
+	orderId: string,
+	eventDate: string | null,
+): Promise<SalesOrder> {
+	const order = await setSalesOrderEventDate(orderId, eventDate);
+	if (!order) throw new ApiError(404, 'not_found', 'No se encontró la orden de venta.');
+	return order;
 }

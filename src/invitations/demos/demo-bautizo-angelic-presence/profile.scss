@@ -1,26 +1,56 @@
-// Angelic Presence bautismo demo — the hero photograph is a pale ivory christening portrait, so the
-// preset's translucent champagne title disappears into it on mobile. A deeper ivory veil rises under
-// the name block and the title gradient stays opaque ink with an antique-gold sheen.
-
+// Angelic Presence bautismo: a sacred linen-and-ivory page. The arched portrait opens the story,
+// the verse reads as quiet prose, and the family sits on the page without a boxed panel. Gold is a
+// hairline, never a fill. Tokens only; layout stays with the variants.
 .event--demo-bautizo-angelic-presence.theme-preset--angelic-presence {
-	--hero-title-gradient: linear-gradient(
-		115deg,
-		var(--color-eternal-ink) 0%,
-		color-mix(in srgb, var(--color-sacred-gold) 62%, var(--color-eternal-ink)) 50%,
-		var(--color-eternal-ink) 100%
-	);
-	--hero-angelic-mobile-veil:
-		linear-gradient(
-			90deg,
-			rgb(var(--color-pure-ivory-rgb) / 44%) 0%,
-			rgb(var(--color-pure-ivory-rgb) / 18%) 52%,
-			transparent 78%
-		),
-		linear-gradient(
-			to top,
-			rgb(var(--color-ivory-warm-rgb) / 92%) 0%,
-			rgb(var(--color-ivory-warm-rgb) / 80%) 30%,
-			rgb(var(--color-angelic-mist-rgb) / 46%) 44%,
-			transparent 60%
+	// Linen paper under the arch and the family.
+	--bautizo-linen: rgb(246 241 232);
+	--bautizo-linen-deep: rgb(236 228 214);
+
+	// Hero: the portrait arch keeps a thin gold outline and the name stays ink.
+	.invitation-hero[data-variant='framed-portrait'] {
+		--hero-arc-opacity: 0.55;
+	}
+
+	// The verse is read slowly as upright serif prose instead of script.
+	.quote-section {
+		--quote-content-font: var(--font-display);
+		--quote-content-style: normal;
+	}
+
+	// Family: one page with the portrait, no card, no shadow.
+	.family {
+		--family-panel-border: 0;
+		--family-panel-bg: transparent;
+		--family-panel-shadow: none;
+	}
+
+	.gifts-section {
+		--gifts-title-color: var(--color-eternal-ink);
+	}
+
+	// The envelope is a letter from heaven: a dusk sky where the preset's ink meets a whisper of
+	// angelic blue, ink-and-gold paper with a sacred-gold hairline and stars, and the card inside on
+	// pure ivory with eternal ink.
+	.envelope-wrapper[data-variant='celestial-letter'] {
+		--celestial-letter-field: color-mix(
+			in srgb,
+			rgb(var(--color-angelic-blue-rgb)) 18%,
+			var(--color-eternal-ink)
 		);
+		--celestial-letter-paper: color-mix(
+			in srgb,
+			var(--color-eternal-ink) 78%,
+			var(--color-sacred-gold)
+		);
+		--celestial-letter-liner: color-mix(
+			in srgb,
+			var(--color-eternal-ink) 90%,
+			var(--color-sacred-gold)
+		);
+		--celestial-letter-ink: var(--color-sacred-gold);
+		--celestial-letter-star: var(--color-pure-ivory);
+		--celestial-letter-card: var(--color-pure-ivory);
+		--celestial-letter-card-ink: var(--color-eternal-ink);
+		--celestial-letter-card-accent: var(--color-sacred-gold-readable);
+	}
 }

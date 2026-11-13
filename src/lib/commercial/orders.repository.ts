@@ -1,5 +1,11 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { getOrderPaymentStatus } from './order-payment-status';
+import {
+	deriveOrderStages,
+	type InvitationDataRequestStatus,
+	type LinkedInvitationStatus,
+	type OrderStageKey,
+} from './order-stages';
 
 export type SalesOrderStatus =
 	'draft' | 'quoted' | 'confirmed' | 'deposit_paid' | 'paid' | 'cancelled' | 'lost';
@@ -28,6 +34,7 @@ export interface SalesOrderInput {
 	referralCodeUsed?: string;
 	discountAmount?: number;
 	referrerCreditRedeemed?: number;
+	eventDate?: string;
 }
 
 export interface SalesOrder {
@@ -57,6 +64,7 @@ export interface SalesOrder {
 	discountAmount: number;
 	referrerCreditAwarded: number;
 	referrerCreditRedeemed: number;
+	eventDate?: string | null;
 }
 
 export interface MetaConversionEvent {
@@ -95,6 +103,8 @@ interface SalesOrderRow {
 	discount_amount?: number | string | null;
 	referrer_credit_awarded?: number | string | null;
 	referrer_credit_redeemed?: number | string | null;
+	event_date?: string | null;
+	invitations?: { status: string } | null;
 }
 
 interface MetaConversionEventRow {
@@ -108,7 +118,7 @@ interface MetaConversionEventRow {
 }
 
 const ORDER_SELECT =
-	'id,order_number,customer_id,lead_id,session_id,source_event_id,status,event_type,package_id,package_name,currency,total_amount,deposit_amount,amount_paid,deposit_paid_at,paid_at,idempotency_key,deposit_idempotency_key,is_past_sale,sold_at,referred_by_customer_id,referral_code_used,discount_amount,referrer_credit_awarded,referrer_credit_redeemed';
+	'id,order_number,customer_id,lead_id,session_id,source_event_id,status,event_type,package_id,package_name,currency,total_amount,deposit_amount,amount_paid,deposit_paid_at,paid_at,idempotency_key,deposit_idempotency_key,is_past_sale,sold_at,referred_by_customer_id,referral_code_used,discount_amount,referrer_credit_awarded,referrer_credit_redeemed,event_date';
 
 function emptyToUndefined(value: string | undefined | null): string | undefined {
 	const trimmed = value?.trim();
@@ -148,6 +158,7 @@ function toSalesOrder(row: SalesOrderRow): SalesOrder {
 		discountAmount: toNumber(row.discount_amount),
 		referrerCreditAwarded: toNumber(row.referrer_credit_awarded),
 		referrerCreditRedeemed: toNumber(row.referrer_credit_redeemed),
+		eventDate: row.event_date ?? null,
 	};
 }
 
@@ -216,6 +227,7 @@ export async function createSalesOrder(input: SalesOrderInput): Promise<SalesOrd
 			referral_code_used: emptyToUndefined(input.referralCodeUsed),
 			discount_amount: input.discountAmount ?? 0,
 			referrer_credit_redeemed: input.referrerCreditRedeemed ?? 0,
+			event_date: emptyToUndefined(input.eventDate),
 		},
 	});
 	const wasCreated = Boolean(rows[0]);
@@ -253,26 +265,78 @@ export async function findSalesOrdersByCustomerId(customerId: string): Promise<S
 	return rows.map(toSalesOrder);
 }
 
+export interface CommercialOrderListFilters {
+	/** Raw order status (stage): draft, quoted, confirmed, deposit_paid, paid, cancelled, lost. */
+	stage?: string;
+	/** Inclusive event date range (YYYY-MM-DD), on the order's own event date. */
+	eventFrom?: string;
+	eventTo?: string;
+	/** `pending` keeps orders with an outstanding balance; `settled` those fully paid. */
+	balance?: 'pending' | 'settled';
+}
+
+/** A listed order with the furthest of the seven stages it has reached (null once closed). */
+export interface SalesOrderListItem extends SalesOrder {
+	stage: OrderStageKey | null;
+}
+
+/** Derives the stage of each listed order from one batched read of its production signals. */
+async function withOrderStages(
+	kept: Array<{ row: SalesOrderRow; order: SalesOrder }>,
+): Promise<SalesOrderListItem[]> {
+	if (!kept.length) return [];
+	const ids = kept.map(({ order }) => encodeURIComponent(order.id)).join(',');
+	const requests = await supabaseRestRequest<Array<{ order_id?: string; status?: string }>>({
+		pathWithQuery: `invitation_data_requests?order_id=in.(${ids})&select=order_id,status`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	const requestStatus = new Map<string, string>();
+	for (const request of Array.isArray(requests) ? requests : [])
+		if (request.order_id && request.status) requestStatus.set(request.order_id, request.status);
+	return kept.map(({ row, order }) => ({
+		...order,
+		stage: deriveOrderStages({
+			status: order.status,
+			amountPaid: order.amountPaid,
+			dataRequestStatus: (requestStatus.get(order.id) ??
+				null) as InvitationDataRequestStatus | null,
+			invitationStatus: (row.invitations?.status ?? null) as LinkedInvitationStatus | null,
+		}).current,
+	}));
+}
+
 export async function listCommercialSalesOrders(
 	offset: number,
 	status?: string,
-): Promise<{ items: SalesOrder[]; nextOffset: number | null }> {
+	filters: CommercialOrderListFilters = {},
+): Promise<{ items: SalesOrderListItem[]; nextOffset: number | null }> {
 	const statuses: Record<string, string> = {
 		quoted: 'draft,quoted,confirmed',
 		partial: 'deposit_paid,paid',
 		paid: 'deposit_paid,paid',
 		lost: 'lost,cancelled',
 	};
-	const filter = status && statuses[status] ? `&status=in.(${statuses[status]})` : '';
+	const { stage, eventFrom, eventTo, balance } = filters;
+	let filter = status && statuses[status] ? `&status=in.(${statuses[status]})` : '';
+	if (stage) filter += `&status=eq.${encodeURIComponent(stage)}`;
+	if (eventFrom) filter += `&event_date=gte.${encodeURIComponent(eventFrom)}`;
+	if (eventTo) filter += `&event_date=lte.${encodeURIComponent(eventTo)}`;
 	const rows = await supabaseRestRequest<SalesOrderRow[]>({
-		pathWithQuery: `sales_orders?select=${ORDER_SELECT}&order=created_at.desc,id.desc&limit=50&offset=${offset}${filter}`,
+		pathWithQuery: `sales_orders?select=${ORDER_SELECT},invitations(status)&order=created_at.desc,id.desc&limit=50&offset=${offset}${filter}`,
 		method: 'GET',
 		useServiceRole: true,
 	});
+	const kept = rows
+		.map((row) => ({ row, order: toSalesOrder(row) }))
+		.filter(({ order }) => !status || getOrderPaymentStatus(order) === status)
+		.filter(({ order }) => {
+			if (!balance) return true;
+			const pending = order.totalAmount - order.amountPaid > 0;
+			return balance === 'pending' ? pending : !pending;
+		});
 	return {
-		items: rows
-			.map(toSalesOrder)
-			.filter((order) => !status || getOrderPaymentStatus(order) === status),
+		items: await withOrderStages(kept),
 		nextOffset: rows.length === 50 ? offset + rows.length : null,
 	};
 }
@@ -313,6 +377,123 @@ export async function registerSalesOrderDepositPurchase(input: {
 		conversionEvent: result.conversion_event
 			? toMetaConversionEvent(result.conversion_event)
 			: null,
+		idempotent: result.idempotent,
+	};
+}
+
+export type SalesOrderPaymentKind = 'deposit' | 'installment' | 'settlement';
+
+export interface SalesOrderPayment {
+	id: string;
+	orderId: string;
+	kind: SalesOrderPaymentKind;
+	amount: number;
+	paidAt: string;
+}
+
+interface SalesOrderPaymentRow {
+	id: string;
+	order_id: string;
+	kind: SalesOrderPaymentKind;
+	amount: number | string;
+	paid_at: string;
+}
+
+function toSalesOrderPayment(row: SalesOrderPaymentRow): SalesOrderPayment {
+	return {
+		id: row.id,
+		orderId: row.order_id,
+		kind: row.kind,
+		amount: toNumber(row.amount),
+		paidAt: row.paid_at,
+	};
+}
+
+export async function findSalesOrderById(orderId: string): Promise<SalesOrder | null> {
+	const rows = await supabaseRestRequest<SalesOrderRow[]>({
+		pathWithQuery: `sales_orders?id=eq.${encodeURIComponent(orderId)}&select=${ORDER_SELECT}&limit=1`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	return rows[0] ? toSalesOrder(rows[0]) : null;
+}
+
+export async function listSalesOrderPayments(orderId: string): Promise<SalesOrderPayment[]> {
+	const rows = await supabaseRestRequest<SalesOrderPaymentRow[]>({
+		pathWithQuery: `sales_order_payments?order_id=eq.${encodeURIComponent(orderId)}&select=id,order_id,kind,amount,paid_at&order=paid_at.asc,created_at.asc`,
+		method: 'GET',
+		useServiceRole: true,
+	});
+	return rows.map(toSalesOrderPayment);
+}
+
+/** Sets or clears the event date of an order; null when the order does not exist. */
+export async function setSalesOrderEventDate(
+	orderId: string,
+	eventDate: string | null,
+): Promise<SalesOrder | null> {
+	const rows = await supabaseRestRequest<SalesOrderRow[]>({
+		pathWithQuery: `sales_orders?id=eq.${encodeURIComponent(orderId)}&select=${ORDER_SELECT}`,
+		method: 'PATCH',
+		useServiceRole: true,
+		prefer: 'return=representation',
+		body: { event_date: eventDate },
+	});
+	return rows[0] ? toSalesOrder(rows[0]) : null;
+}
+
+/** The invitation production signals the order line derives its late stages from. */
+export async function findOrderProductionSources(orderId: string): Promise<{
+	dataRequestStatus: string | null;
+	invitationStatus: string | null;
+}> {
+	const [requests, orders] = await Promise.all([
+		supabaseRestRequest<Array<{ status: string }>>({
+			pathWithQuery: `invitation_data_requests?order_id=eq.${encodeURIComponent(orderId)}&select=status&limit=1`,
+			method: 'GET',
+			useServiceRole: true,
+		}),
+		supabaseRestRequest<Array<{ invitations: { status: string } | null }>>({
+			pathWithQuery: `sales_orders?id=eq.${encodeURIComponent(orderId)}&select=invitations(status)&limit=1`,
+			method: 'GET',
+			useServiceRole: true,
+		}),
+	]);
+	return {
+		dataRequestStatus: requests[0]?.status ?? null,
+		invitationStatus: orders[0]?.invitations?.status ?? null,
+	};
+}
+
+export async function registerSalesOrderPayment(input: {
+	orderId: string;
+	amount: number;
+	paidAt: string;
+	actorId: string;
+	idempotencyKey: string;
+}): Promise<{ order: SalesOrder; payment: SalesOrderPayment; idempotent: boolean }> {
+	const result = await supabaseRestRequest<{
+		order: SalesOrderRow;
+		payment: SalesOrderPaymentRow;
+		idempotent: boolean;
+	}>({
+		pathWithQuery: 'rpc/register_commercial_order_payment',
+		method: 'POST',
+		useServiceRole: true,
+		body: {
+			p_order_id: input.orderId,
+			p_amount: input.amount,
+			p_actor_id: input.actorId,
+			p_paid_at: input.paidAt,
+			p_idempotency_key: input.idempotencyKey,
+		},
+	});
+	if (!result?.order || !result.payment) {
+		throw new Error('Order payment transaction did not return its authoritative result.');
+	}
+	return {
+		order: toSalesOrder(result.order),
+		payment: toSalesOrderPayment(result.payment),
 		idempotent: result.idempotent,
 	};
 }

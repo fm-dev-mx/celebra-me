@@ -148,6 +148,7 @@
         "variant": "formal-register",
         "title": "Confirme su asistencia",
         "guestCap": 2,
+        "demoMaxChildren": 1,
         "subcopy": "Le pedimos registrar su respuesta a más tardar el sábado 7 de noviembre. El número de lugares corresponde al pase asignado.",
         "lockedMessage": "Esta invitación es personal. Abra su pase para confirmar su asistencia.",
         "accessMode": "personalized-only",

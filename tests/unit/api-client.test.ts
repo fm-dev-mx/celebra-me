@@ -107,6 +107,31 @@ describe('DashboardApiClient', () => {
 		expect(callHeaders['X-CSRF-Token']).toBeUndefined();
 	});
 
+	it('sends the person to the login page when the panel API answers 401', async () => {
+		const onSessionEnded = jest.fn();
+		const panelApi = new DashboardApiClient('', onSessionEnded);
+
+		mockFetch({ ok: false, status: 401 }, { error: { code: 'unauthorized', message: 'x' } });
+		const result = await panelApi.post('/api/dashboard/guests', { name: 'test' });
+
+		expect(result).toMatchObject({ ok: false, status: 401 });
+		expect(onSessionEnded).toHaveBeenCalledTimes(1);
+	});
+
+	it('stays on the page for a 401 outside the panel API or another error', async () => {
+		const onSessionEnded = jest.fn();
+		const panelApi = new DashboardApiClient('', onSessionEnded);
+
+		mockFetch({ ok: false, status: 401 }, {});
+		await panelApi.post('/api/auth/change-password', {});
+		mockFetch({ ok: false, status: 403 }, {});
+		await panelApi.get('/api/dashboard/guests');
+		mockFetch({ status: 200 }, {});
+		await panelApi.get('/api/dashboard/guests');
+
+		expect(onSessionEnded).not.toHaveBeenCalled();
+	});
+
 	it('omits body for falsy values like 0 or empty string', async () => {
 		mockFetch({ status: 200 }, {});
 		await api.post('/test', '');
