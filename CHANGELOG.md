@@ -49,10 +49,17 @@ event); the two `20261110100000`/`20261110120000` migrations only release archiv
   panel fetch redirects to login (#904); a failed login alias check names the HTTP status (#929).
 - Database: the order payments migration passes the initial-revoke proof and is registered as expand
   (#923, #926).
+- Invitations: the timeline-paper itinerary shows times in Spanish ("5:30 p. m.") (#937).
 - Demos: the floating quote keeps its room and uses palette tokens (#885).
 - Release: historical invitation patches require verification (#897); the active package hash
   baseline is updated (#894); invitation note deletions compare from the merge base (#913); the
-  deploy check accepts an inactive no-traffic smoke when the same SHA has a successful run (#920).
+  deploy check accepts an inactive no-traffic smoke when the same SHA has a successful run (#920);
+  the Worker-first guard exempts only reviewed Auth and tracking patches that do not depend on the
+  Worker, while invitation content patches stay guarded (#946).
+- Tracking: a blank `lead_code` is dropped before an event is stored (#943).
+- Production data: blank tracking lead codes are cleared and Auth accounts without an application
+  role are removed (#943, #945); the Thank You prerequisite verifies the approved variants (#947);
+  the nine Production data prerequisites are marked verified (#948).
 - Preview data: the archived wedding slug, identity constraints and asset paths are released (#892,
   #900); the login alias backfill is marked verified (#895).
 - Visual: capture images decode synchronously so full-page frames match (#918).
