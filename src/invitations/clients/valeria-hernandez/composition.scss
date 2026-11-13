@@ -34,6 +34,34 @@ $valeria-night-ground:
 	@include valeria-night-inks;
 }
 
+// The portrait is the giant mirror ball of the opening: no arch, a round photograph under mirror
+// tiles that turn slowly and stay thin over her face. It replaces the small hanging ball.
+.event--valeria-hernandez.event-theme-wrapper
+	.invitation-hero.framed-portrait-hero[data-variant='disco-stage'] {
+	--valeria-ball: clamp(10rem, min(76vw, 46svh, calc(100svh - 28rem)), 28rem);
+	--valeria-ball-desktop: min(72svh, 30vw, 42rem);
+	--hero-portrait-radius: 50%;
+	--hero-portrait-width-mobile: var(--valeria-ball);
+	--hero-portrait-height-mobile: var(--valeria-ball);
+	--hero-portrait-width-desktop: var(--valeria-ball-desktop);
+	--hero-portrait-height-desktop: var(--valeria-ball-desktop);
+
+	view-timeline-name: --disco-giant-stage;
+
+	&::before {
+		content: none;
+	}
+
+	.framed-portrait-hero__photograph {
+		@include scenes.mirror-ball-portrait;
+
+		img {
+			object-fit: cover;
+			object-position: 50% 24%;
+		}
+	}
+}
+
 // The words scene: the shared neon sign (palette in profile.scss) on the same night inks.
 .event--valeria-hernandez.event-theme-wrapper .quote-section {
 	@include valeria-night-inks;

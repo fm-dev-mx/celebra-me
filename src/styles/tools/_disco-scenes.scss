@@ -1,3 +1,4 @@
+@use 'sass:math';
 @use './motion';
 @use './disco-motifs' as disco;
 
@@ -417,6 +418,186 @@
 	@keyframes disco-ball-lower {
 		from {
 			translate: 0 -7rem;
+		}
+	}
+}
+
+// --------------------------------------------------------------------------
+// The portrait as a giant mirror ball: a round picture under a skin of mirror tiles laid on the
+// sphere (rows along the parallels, columns along the meridians), so the tiles narrow toward
+// the rim. The columns step sideways to turn the ball, a band of light sweeps across it and
+// the tiles thin out over `$keep-clear` (the face).
+// The host section declares `view-timeline-name: --disco-giant-stage`; the ball lifts and
+// shrinks a little as that section scrolls away.
+// --------------------------------------------------------------------------
+@function -ball-round($value) {
+	@return math.div(math.round($value * 100), 100);
+}
+
+// One corner of a tile on the sphere, as seen from the front.
+@function -ball-point($turn, $tilt) {
+	@return '#{-ball-round(50 + 50 * math.sin($turn) * math.cos($tilt))} #{-ball-round(50 - 50 * math.sin($tilt))}';
+}
+
+// One still of the ball, turned by `$shift` of a tile: the seams between the mirrors plus a
+// scatter of mirrors that catch the light or fall dark. `$still` reshuffles that scatter, so
+// the sparkle jumps from still to still the way it does on a turning ball.
+@function -ball-seams($rows, $shift, $still: 0) {
+	$step: math.div(180deg, $rows);
+	$path: '';
+	$lit: '';
+	$dim: '';
+
+	@for $i from 1 to $rows {
+		$path: $path + 'M0 #{-ball-round(50 - 50 * math.sin(-90deg + $i * $step))}H100';
+	}
+
+	@for $i from 0 to $rows {
+		$turn: -90deg + ($i + $shift) * $step;
+		$path: $path +
+			'M50 0A#{-ball-round(math.abs(50 * math.sin($turn)))} 50 0 0 #{if($turn < 0deg, 0, 1)} 50 100';
+	}
+
+	@for $i from 1 to $rows - 1 {
+		@for $j from 0 to $rows - 1 {
+			$pick: ($i * 7 + $j * 13 + $still * 5) % 9;
+
+			@if $pick < 2 {
+				$west: -90deg + ($j + $shift) * $step;
+				$south: -90deg + $i * $step;
+				$tile: 'M#{-ball-point($west, $south)}L#{-ball-point($west + $step, $south)}L#{-ball-point($west + $step, $south + $step)}L#{-ball-point($west, $south + $step)}Z';
+
+				@if $pick == 0 {
+					$lit: $lit + $tile;
+				} @else {
+					$dim: $dim + $tile;
+				}
+			}
+		}
+	}
+
+	@return url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'><defs><path id='s' d='#{$path}'/></defs><path d='#{$lit}' fill='white' fill-opacity='.24'/><path d='#{$dim}' fill='rgb(18,4,10)' fill-opacity='.26'/><use href='%23s' stroke='rgb(18,4,10)' stroke-opacity='.62' stroke-width='.5'/><use href='%23s' x='.42' y='.42' stroke='white' stroke-opacity='.34' stroke-width='.28'/></svg>");
+}
+
+@mixin mirror-ball-portrait(
+	$rows: 18,
+	$frames: 6,
+	$keep-clear: 50% 38%,
+	$glow-rgb: var(--color-rose-glow-rgb)
+) {
+	box-shadow:
+		0 0 0 1px rgb(255 255 255 / 18%),
+		0 0 3rem rgb($glow-rgb / 38%),
+		0 1.4rem 2.6rem rgb(0 0 0 / 55%);
+
+	&::before,
+	&::after {
+		position: absolute;
+		z-index: 1;
+		inset: 0;
+		border-radius: inherit;
+		content: '';
+		pointer-events: none;
+	}
+
+	// The seams between the mirrors.
+	&::before {
+		background: -ball-seams($rows, 0) center / 100% 100% no-repeat;
+		mask: radial-gradient(ellipse 40% 38% at $keep-clear, rgb(0 0 0 / 22%) 55%, rgb(0 0 0));
+
+		@include motion.motion-safe {
+			animation: disco-portrait-turn 2.4s step-end infinite;
+		}
+	}
+
+	// The sphere: sparks on single mirrors, a sweeping band of light, the specular highlight, a
+	// rose bounce from below and a dark limb.
+	&::after {
+		background:
+			radial-gradient(circle at 17% 33%, rgb(255 255 255 / 95%) 0 0.7%, transparent 2.6%),
+			radial-gradient(circle at 81% 24%, rgb(255 255 255 / 90%) 0 0.6%, transparent 2.2%),
+			radial-gradient(circle at 88% 61%, rgb($glow-rgb / 95%) 0 0.7%, transparent 2.8%),
+			radial-gradient(circle at 24% 80%, rgb(255 255 255 / 85%) 0 0.5%, transparent 2%),
+			radial-gradient(circle at 62% 92%, rgb($glow-rgb / 90%) 0 0.6%, transparent 2.4%),
+			linear-gradient(
+					100deg,
+					transparent 42%,
+					rgb(255 255 255 / 20%) 49%,
+					rgb(255 255 255 / 4%) 53%,
+					transparent 58%
+				)
+				0 0 / 300% 100%,
+			radial-gradient(
+				ellipse 26% 20% at 27% 17%,
+				rgb(255 255 255 / 62%),
+				rgb(255 255 255 / 12%) 60%,
+				transparent
+			),
+			radial-gradient(circle at 74% 90%, rgb($glow-rgb / 40%), transparent 34%),
+			radial-gradient(
+				circle at 46% 42%,
+				transparent 46%,
+				rgb(20 4 10 / 34%) 60%,
+				rgb(12 2 8 / 82%) 71%
+			);
+		box-shadow:
+			inset 0 0 0 1px rgb(255 255 255 / 20%),
+			inset 0 -0.6rem 1.6rem rgb($glow-rgb / 22%);
+
+		@include motion.motion-safe {
+			animation: disco-portrait-sweep 7s linear infinite;
+		}
+	}
+
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			animation: disco-portrait-lift linear both;
+			animation-timeline: --disco-giant-stage;
+			animation-range: exit 0% exit 80%;
+		}
+	}
+
+	// Each still turns the columns by a fraction of one tile, so the loop closes on itself.
+	@keyframes disco-portrait-turn {
+		@for $frame from 0 to $frames {
+			#{math.percentage(math.div($frame, $frames))} {
+				background-image: -ball-seams($rows, math.div($frame, $frames), $frame);
+			}
+		}
+	}
+
+	@keyframes disco-portrait-sweep {
+		from {
+			background-position:
+				0 0,
+				0 0,
+				0 0,
+				0 0,
+				0 0,
+				100% 0,
+				0 0,
+				0 0,
+				0 0;
+		}
+
+		to {
+			background-position:
+				0 0,
+				0 0,
+				0 0,
+				0 0,
+				0 0,
+				0 0,
+				0 0,
+				0 0,
+				0 0;
+		}
+	}
+
+	@keyframes disco-portrait-lift {
+		to {
+			translate: 0 -14%;
+			scale: 0.86;
 		}
 	}
 }
