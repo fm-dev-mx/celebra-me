@@ -9,14 +9,18 @@ $repo = 'fm-dev-mx/celebra-me'
 Set-Location (Resolve-Path (Join-Path $PSScriptRoot '..\..'))
 fnm env --shell powershell | Out-String | Invoke-Expression
 
-function Nuevo-Run([string]$antes) {
-    # Devuelve el id del run del workflow creado después de $antes.
+function Nuevo-Run([datetimeoffset]$antes, [string]$headSha) {
+    # Returns the id of the workflow_dispatch run for $headSha created after $antes.
+    # Both instants are compared as DateTimeOffset: GitHub's createdAt is UTC, and a [datetime]
+    # cast of a UTC ISO string becomes local time, so plain [datetime] comparisons are off by
+    # the machine's UTC offset and match older runs.
     for ($i = 0; $i -lt 30; $i++) {
-        $run = gh run list --repo $repo --workflow deploy-production.yml --branch main --limit 1 --json databaseId,createdAt --jq '.[0]' | ConvertFrom-Json
-        if ($run -and [datetime]$run.createdAt -gt [datetime]$antes) { return [string]$run.databaseId }
+        $runs = @(gh run list --repo $repo --workflow deploy-production.yml --branch main --event workflow_dispatch --limit 10 --json databaseId,createdAt,headSha | ConvertFrom-Json)
+        $run = $runs | Where-Object { $_.headSha -eq $headSha -and [datetimeoffset]$_.createdAt -gt $antes } | Select-Object -First 1
+        if ($run) { return [string]$run.databaseId }
         Start-Sleep 5
     }
-    throw 'No apareció el run del workflow.'
+    throw "No apareció el run del workflow para $headSha."
 }
 
 function Esperar-Run([string]$id) {
@@ -42,9 +46,9 @@ if (git status --porcelain) { throw 'El checkout no quedó limpio.' }
 
 # 2. Subir el Worker (o seguir el run de upload ya lanzado).
 if (-not $UploadRunId) {
-    $antes = (Get-Date).ToUniversalTime().ToString('o')
+    $antes = [datetimeoffset]::UtcNow
     gh workflow run deploy-production.yml --repo $repo --ref main -f step=upload
-    $UploadRunId = Nuevo-Run $antes
+    $UploadRunId = Nuevo-Run $antes $sha
 }
 Esperar-Run $UploadRunId
 $linea = gh run view $UploadRunId --repo $repo --log | Select-String 'Worker Version ID: ([0-9a-f-]{36})' | Select-Object -First 1
@@ -65,9 +69,9 @@ if ($h.build.commitSha -ne $sha) { throw "El dominio sirve $($h.build.commitSha)
 Write-Host 'El dominio ya sirve la main nueva.'
 
 # 4. Smoke del dominio en GitHub y estado del release.
-$antes = (Get-Date).ToUniversalTime().ToString('o')
+$antes = [datetimeoffset]::UtcNow
 gh workflow run deploy-production.yml --repo $repo --ref main -f step=domain-smoke
-Esperar-Run (Nuevo-Run $antes)
+Esperar-Run (Nuevo-Run $antes $sha)
 pnpm ops:release-status --target production --sha $sha --wait
 if ($LASTEXITCODE) { throw 'ops:release-status no quedó en verde.' }
 Write-Host 'Worker verificado. Sigue prod:apply (te pedirá tus confirmaciones).'
