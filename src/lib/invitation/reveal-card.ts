@@ -76,6 +76,7 @@ export interface EnvelopeSealInput {
  */
 const STANDALONE_REVEAL_VARIANTS = [
 	'celestial-letter',
+	'disco-night',
 	'night-envelope',
 	'satin-filigree',
 	'seaside-lineart',

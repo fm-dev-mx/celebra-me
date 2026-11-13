@@ -17,6 +17,8 @@ interface Props {
 	image?: string | ImageAsset;
 	/** Decorative cutout printed below the signature. */
 	ornament?: ImageAsset;
+	/** Muted loop layered over the editorial portrait; shown only while it plays. */
+	ambientVideo?: { webm: string; mp4?: string; poster: string };
 	variant: ThankYouVariant;
 	focalPoint?: string;
 	overlayAnchor?: 'left' | 'right' | 'top' | 'bottom';
@@ -35,6 +37,7 @@ const {
 	date,
 	image,
 	ornament,
+	ambientVideo,
 	variant,
 	focalPoint,
 	overlayAnchor,
@@ -42,7 +45,7 @@ const {
 } = Astro.props;
 // Optional split into a display line and a secondary line; profiles style the two spans.
 const closingNameSplit = splitLeadWords(closingName, closingNameLeadWords);
-const usesEditorialLayout = variant === 'editorial-back-cover' || variant === 'portrait-letter' || variant === 'portrait-keepsake';
+const usesEditorialLayout = variant === 'editorial-back-cover' || variant === 'portrait-letter' || variant === 'portrait-keepsake' || variant === 'last-song';
 const hasSubjectAwareOverlay = Boolean(overlayAnchor || overlaySafeArea);
 
 const firstLetter = message.charAt(0);
@@ -99,6 +102,12 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 								alt={closingName}
 								{...imageConfig}
 							/>
+							{ambientVideo && (
+								<video class="thank-you-editorial__ambient-video" poster={ambientVideo.poster} muted loop playsinline preload="none" aria-hidden="true" data-thank-you-ambient-video>
+									<source src={ambientVideo.webm} type="video/webm" />
+									{ambientVideo.mp4 && <source src={ambientVideo.mp4} type="video/mp4" />}
+								</video>
+							)}
 						</div>
 					</figure>
 				)}
@@ -156,6 +165,32 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 	)
 }
 </section>
+
+<script>
+	import { getMotionPreference } from '@/lib/invitation/reveal-manager';
+
+	// The closing loop waits for the envelope, plays only while the portrait is on screen, and
+	// stays hidden under reduced motion or in captures, so the still portrait is the fallback.
+	const video = document.querySelector<HTMLVideoElement>('[data-thank-you-ambient-video]');
+	const isCapture = new URLSearchParams(window.location.search).get('screenshot') === '1';
+	if (video && !isCapture && !getMotionPreference()) {
+		let started = false;
+		const start = () => {
+			if (started) return;
+			started = true;
+			video.addEventListener('playing', () => video.classList.add('is-playing'));
+			new IntersectionObserver(([entry]) => {
+				if (entry?.isIntersecting) {
+					video.preload = 'auto';
+					video.play().catch(() => {});
+				} else video.pause();
+			}).observe(video);
+		};
+		const envelope = document.querySelector<HTMLElement>('ds-envelope-reveal');
+		if (!envelope || envelope.hidden) start();
+		window.addEventListener('envelope:opened', start, { once: true });
+	}
+</script>
 
 <style define:vars={{
 	safeX: overlaySafeArea ? `${overlaySafeArea.x * 100}%` : '0%',

@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { AssetSchema, focalPointSchema } from '@/lib/schemas/content/shared.schema';
+import {
+	AssetSchema,
+	ambientVideoSchema,
+	focalPointSchema,
+} from '@/lib/schemas/content/shared.schema';
 import { HERO_TIME_FORMATS } from '@/lib/invitation/hero-presentation';
 import { HERO_VARIANTS } from '@/lib/invitation/section-variants';
 
@@ -16,6 +20,8 @@ export const heroSchema = z
 		scrollLabel: z.string().max(80).optional(),
 		/** Scroll cue drawn under the label: the bouncing chevron (default) or a constellation. */
 		scrollCue: z.enum(['chevron', 'constellation']).optional(),
+		/** A muted, seamless loop played behind the framed portrait once the invitation opens. */
+		ambientVideo: ambientVideoSchema.optional(),
 		// Editorial-cover copy; each renders only when provided.
 		tagline: z.string().max(160).optional(),
 		photoCredit: z.string().max(80).optional(),

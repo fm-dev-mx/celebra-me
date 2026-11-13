@@ -203,6 +203,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		focalPointDesktop: data.hero.focalPointDesktop,
 		scrollLabel: data.hero.scrollLabel,
 		scrollCue: data.hero.scrollCue,
+		ambientVideo: data.hero.ambientVideo,
 		tagline: data.hero.tagline,
 		photoCredit: data.hero.photoCredit,
 	};
@@ -251,6 +252,7 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			teaserDetails,
 			sealStyle: data.envelope.sealStyle,
 			backdropImage: resolveAsset(eventSlug, data.envelope.backdropImage, ''),
+			openingVideo: data.envelope.openingVideo,
 			sealIcon: data.envelope.sealIcon,
 			sealInitials: data.envelope.sealInitials,
 			sealVariant: data.envelope.sealVariant,
@@ -330,7 +332,7 @@ function buildQuoteSectionData(context: AdaptationContext) {
 	if (!data.quote) return undefined;
 	return {
 		...data.quote,
-		variant: 'standard' as const,
+		variant: data.quote.variant ?? 'standard',
 	};
 }
 
@@ -413,6 +415,21 @@ function toVenueEntry(v: VenueEntryInput, eventSlug: string, eventTitle: string)
 	};
 }
 
+function resolveIndicationsReference(
+	eventSlug: string,
+	reference:
+		{ image: AssetSource | string; label: string; alt: string; note?: string } | undefined,
+) {
+	if (!reference) return undefined;
+	const asset = resolveAsset(eventSlug, reference.image, reference.alt);
+	if (!asset) return undefined;
+	return {
+		image: { ...asset, alt: reference.alt },
+		label: reference.label,
+		note: reference.note,
+	};
+}
+
 function buildLocationSectionData(context: AdaptationContext) {
 	const { data, eventSlug } = context;
 	if (!data.location) return undefined;
@@ -445,6 +462,10 @@ function buildLocationSectionData(context: AdaptationContext) {
 			? resolveAsset(eventSlug, data.location.ornament, data.title)
 			: undefined,
 		indicationsHeading: data.location.indicationsHeading ?? '',
+		indicationsReference: resolveIndicationsReference(
+			eventSlug,
+			data.location.indicationsReference,
+		),
 		indicationsLayout: data.location.presentationOptions?.indicationsLayout ?? 'list',
 		showCalendarLinks: data.location.presentationOptions?.showCalendarLinks ?? false,
 		scene: data.location.presentationOptions?.scene,

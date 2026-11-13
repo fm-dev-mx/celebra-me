@@ -167,6 +167,15 @@ export const gallerySchema = z
 			});
 		}
 
+		// Two film strips of four prints each.
+		if (gallery.variant === 'photo-booth' && gallery.items.length !== 8) {
+			context.addIssue({
+				code: 'custom',
+				path: ['items'],
+				message: 'gallery.variant=photo-booth requires exactly eight gallery items',
+			});
+		}
+
 		if (MIN_THREE_ITEM_VARIANTS.has(gallery.variant) && gallery.items.length < 3) {
 			context.addIssue({
 				code: 'custom',

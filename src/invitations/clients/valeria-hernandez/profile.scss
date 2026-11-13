@@ -48,7 +48,9 @@
 	// Flat grounds: the paper carries no grain, so the disco motifs stay the only texture.
 	--storybook-paper: var(--color-blush-paper);
 	--storybook-paper-mist: var(--color-rose-mist);
-	--invitation-paper: var(--color-blush-paper);
+
+	// Under every scene lies the night, so no pale ground shows while a scene moves into place.
+	--invitation-paper: var(--color-rose-night);
 
 	// The «Continúe» labels read at full ink on the cherry paper.
 	--section-nav-label-opacity: 100%;
@@ -57,8 +59,115 @@
 	--location-program-lede-font: 'EB Garamond Variable', 'EB Garamond', georgia, serif;
 	--location-program-lede-size: 1.125rem;
 
-	// The «Vino» swatch shows the wine reserved for the quinceañera, not the cherry accent.
-	--location-enclosure-swatch: rgb(110 14 36);
+	// The dress code is a dark club tag in the language of the pass: the theme in cherry neon, the
+	// three allowed colors as mirror balls, and the wine kept for the quinceañera as a glowing one.
+	--location-enclosure-bg:
+		radial-gradient(120% 70% at 50% 0%, rgb(var(--color-rose-dusk-rgb) / 55%), transparent 70%),
+		rgb(30 5 13);
+	--location-enclosure-ink: var(--color-night-blush);
+	--location-enclosure-muted: rgb(var(--color-night-blush-rgb) / 74%);
+	--location-enclosure-rule: rgb(var(--color-night-blush-rgb) / 24%);
+	--location-enclosure-shadow: none;
+	--location-enclosure-edge-shadow: drop-shadow(0 1.2rem 1.6rem rgb(0 0 0 / 45%));
+	--location-enclosure-max-width: 22rem;
+	--location-enclosure-heading-font: var(--font-calligraphy);
+	--location-enclosure-heading-size: clamp(3rem, 14vw, 3.75rem);
+	--location-enclosure-heading-line-height: 1;
+	--location-enclosure-heading-color: rgb(255 244 246);
+	--location-enclosure-heading-shadow:
+		0 0 0.2rem rgb(255 255 255 / 55%), 0 0 0.7rem rgb(var(--color-rose-glow-rgb) / 90%),
+		0 0 1.8rem rgb(var(--color-rose-glow-rgb) / 55%);
+	--location-enclosure-note-padding: 0.9rem;
+	--location-enclosure-note-rule-width: 3rem;
+	--location-enclosure-reserved-title-color: var(--color-rose-glow);
+
+	// Each color is a small mirror ball: a facet grid, a round shade and one hot spot.
+	--location-enclosure-ball-facets:
+		repeating-linear-gradient(0deg, rgb(0 0 0 / 26%) 0 1px, transparent 1px 0.34rem),
+		repeating-linear-gradient(90deg, rgb(0 0 0 / 26%) 0 1px, transparent 1px 0.34rem);
+	--location-enclosure-ball-light: radial-gradient(
+		circle 1.5rem at 34% 28%,
+		rgb(255 255 255 / 70%),
+		rgb(255 255 255 / 8%) 30%,
+		transparent 45%,
+		rgb(0 0 0 / 55%)
+	);
+	--location-enclosure-palette-display: block;
+	--location-enclosure-palette-width: 7.6rem;
+	--location-enclosure-palette-height: 2rem;
+	--location-enclosure-palette-mask:
+		radial-gradient(circle 1rem, rgb(0 0 0) 96%, transparent) 0 0 / 2rem 2rem no-repeat,
+		radial-gradient(circle 1rem, rgb(0 0 0) 96%, transparent) 2.8rem 0 / 2rem 2rem no-repeat,
+		radial-gradient(circle 1rem, rgb(0 0 0) 96%, transparent) 5.6rem 0 / 2rem 2rem no-repeat;
+	--location-enclosure-palette:
+		var(--location-enclosure-ball-light) 0 0 / 2rem 2rem no-repeat,
+		var(--location-enclosure-ball-light) 2.8rem 0 / 2rem 2rem no-repeat,
+		var(--location-enclosure-ball-light) 5.6rem 0 / 2rem 2rem no-repeat,
+		var(--location-enclosure-ball-facets),
+		linear-gradient(
+			90deg,
+			rgb(44 40 44) 0 2.4rem,
+			rgb(206 208 216) 2.4rem 5.2rem,
+			rgb(204 164 86) 5.2rem
+		);
+
+	// The «Vino» ball is the wine kept for the quinceañera, not the cherry accent.
+	--location-enclosure-swatch:
+		var(--location-enclosure-ball-light) center / 100% 100% no-repeat,
+		var(--location-enclosure-ball-facets), rgb(122 16 40);
+	--location-enclosure-swatch-size: 2rem;
+	--location-reference-trigger-border: rgb(var(--color-night-blush-rgb) / 55%);
+	--location-reference-trigger-shadow: 0 0 0.9rem rgb(var(--color-rose-glow-rgb) / 35%);
+	--location-reference-bg: rgb(18 12 20);
+	--location-reference-ink: var(--color-night-blush);
+	--location-reference-border: rgb(var(--color-night-blush-rgb) / 28%);
+	--location-reference-backdrop: rgb(6 3 8 / 86%);
+	--location-enclosure-swatch-ring:
+		0 0 0 1px rgb(var(--color-night-blush-rgb) / 45%),
+		0 0 0.9rem rgb(var(--color-rose-glow-rgb) / 70%);
+
+	// The disco variants read the cherry night: cherry light, silver sequins, blush ink on wine.
+	--disco-stage-glow-rgb: var(--color-rose-glow-rgb);
+	--disco-stage-silver-rgb: var(--color-leaf-silver-rgb);
+	--disco-stage-ground:
+		radial-gradient(
+			ellipse 90% 60% at 50% 18%,
+			rgb(var(--color-rose-dusk-rgb) / 50%),
+			transparent 70%
+		),
+		var(--color-rose-midnight);
+	--mirror-ball-glow-rgb: var(--color-rose-glow-rgb);
+	--mirror-ball-silver-rgb: var(--color-leaf-silver-rgb);
+	--mirror-ball-ink: var(--color-night-blush);
+
+	// The countdown opens on the neon sign's dark wall.
+	--mirror-ball-seam: rgb(24 3 9);
+	--last-song-glow-rgb: var(--color-rose-glow-rgb);
+	--last-song-dusk-rgb: var(--color-rose-dusk-rgb);
+	--last-song-ground: var(--color-rose-night);
+	--last-song-ink: var(--color-night-blush);
+	--last-song-ink-rgb: var(--color-night-blush-rgb);
+	--last-song-message-size: 1.0625rem;
+	--last-song-name-size: min(clamp(5.5rem, 27vw, 8rem), 13svh);
+	--disco-night-deep: var(--color-rose-deep);
+	--disco-night-deep-rgb: var(--color-rose-deep-rgb);
+	--photo-booth-glow-rgb: var(--color-rose-glow-rgb);
+	--photo-booth-ink: var(--color-night-blush);
+	--photo-booth-stamp: 'VALERIA';
+	--photo-booth-stamp-alt: 'MIS XV';
+	--neon-sign-glow-rgb: var(--color-rose-glow-rgb);
+	--neon-sign-silver-rgb: var(--color-leaf-silver-rgb);
+	--neon-sign-wall:
+		radial-gradient(
+			ellipse 80% 55% at 50% 50%,
+			rgb(var(--color-rose-dusk-rgb) / 28%),
+			transparent 75%
+		),
+		rgb(24 3 9);
+	--neon-sign-seam: var(--color-rose-midnight);
+	--neon-sign-ink: var(--color-night-blush);
+	--neon-sign-tube: var(--color-night-blush);
+	--neon-sign-closing-size: 1.0625rem;
 
 	// The closing keepsake keeps an even night above and below, not the preset's tall bottom band.
 	--thank-you-keepsake-padding-block-lg: clamp(4.5rem, 10svh, 6rem);
@@ -109,11 +218,46 @@
 
 	.invitation-footer {
 		--invitation-footer-reveal: held;
+
+		// The floor after the last song: the night deepens under a pool of light, the hosts' line
+		// leads, and the platform signs smaller below a silver rule.
+		--footer-bg: var(--color-rose-midnight);
+		--footer-border-color: transparent;
+		--footer-sky:
+			radial-gradient(
+				ellipse 85% 9rem at 50% 0,
+				rgb(var(--color-rose-glow-rgb) / 24%),
+				transparent 72%
+			),
+			linear-gradient(to bottom, var(--color-rose-night), transparent 12rem);
+		--footer-padding-bottom: 2.75rem;
+		--footer-closing-size: 1.3rem;
+		--footer-closing-color: rgb(var(--color-night-blush-rgb));
+		--footer-divider-line: linear-gradient(
+			to right,
+			transparent,
+			rgb(233 234 238 / 75%),
+			transparent
+		);
+		--footer-divider-glow: 0 0 0.5rem rgb(233 234 238 / 70%);
+		--footer-content-gap: 0.9rem;
+		--footer-replay-order: -1;
+		--footer-replay-font-size: 0.72rem;
+		--footer-platform-rule: linear-gradient(
+			to right,
+			transparent,
+			rgb(233 234 238 / 32%),
+			transparent
+		);
+		--footer-platform-rule-space: 1.5rem;
+		--footer-logo-width: 104px;
+		--footer-contact-border: 1px solid rgb(233 234 238 / 45%);
+		--footer-contact-bg: rgb(233 234 238 / 6%);
 	}
 
 	// The night envelope turns into the cherry disco night: a deep wine field and paper, a silver
 	// mirror-ball seal, cherry sparks, and a cherry-paper letter.
-	.envelope-wrapper[data-variant='night-envelope'] {
+	.envelope-wrapper[data-variant='disco-night'] {
 		--night-envelope-field: var(--color-rose-midnight);
 		--night-envelope-field-deep: rgb(32 4 12);
 		--night-envelope-ink: var(--color-leaf-silver);
@@ -130,10 +274,129 @@
 		--night-envelope-card-label-ink: var(--color-rose-deep);
 	}
 
+	// The pass and its reply stub are a dark disco-night ticket: night-blush type, cherry neon.
+	:is(.personalized-access, .rsvp-section) {
+		--reply-card-bg: rgb(30 5 13);
+		--reply-card-ink: var(--color-night-blush);
+		--reply-card-muted: rgb(var(--color-night-blush-rgb) / 74%);
+		--reply-card-accent: var(--color-rose-glow);
+		--reply-card-rule: rgb(var(--color-night-blush-rgb) / 24%);
+		--reply-card-shadow-upper: none;
+		--reply-card-shadow-lower: none;
+		--reply-card-edge-shadow: drop-shadow(0 1.2rem 1.6rem rgb(0 0 0 / 45%));
+		--reply-card-option-bg: rgb(255 255 255 / 6%);
+		--reply-card-option-rule: rgb(var(--color-night-blush-rgb) / 30%);
+		--reply-card-option-hover-rule: rgb(var(--color-night-blush-rgb) / 60%);
+		--reply-card-option-checked-rule: var(--color-rose-glow);
+		--reply-card-seam: repeating-linear-gradient(
+			90deg,
+			rgb(var(--color-night-blush-rgb) / 45%) 0 0.45rem,
+			transparent 0.45rem 0.8rem
+		);
+		--reply-card-seam-width: calc(100% - 3rem);
+		--reply-card-seam-height: 2px;
+		--reply-card-padding-block: min(2.5rem, 1svh);
+		--reply-card-count-frame-size: min(6.5rem, 11svh);
+		--reply-card-count-frame-ratio: 1;
+		--reply-card-count-frame-border: 2px solid rgb(255 236 240);
+		--reply-card-count-size: min(3.4rem, 7svh);
+		--color-text-primary: var(--color-night-blush);
+		--color-text-secondary: rgb(var(--color-night-blush-rgb) / 74%);
+	}
+
 	// The reply steps are marked in cherry red with a soft cherry light instead of the amber lantern.
 	[data-rsvp-flow='steps'] {
-		--rsvp-steps-track: rgb(var(--color-plum-ink-rgb) / 14%);
+		--rsvp-steps-track: rgb(var(--color-night-blush-rgb) / 22%);
 		--rsvp-steps-lantern: var(--color-rose-glow);
 		--rsvp-steps-glow: rgb(var(--color-rose-glow-rgb) / 35%);
+	}
+
+	// The unit labels shrink on the narrowest phones so «Minutos» and «Segundos» keep a gap.
+	.countdown-section[data-variant='mirror-ball'] {
+		--countdown-type-label-size: clamp(0.62rem, 3.4vw, 0.95rem);
+		--mirror-ball-invitation-size: clamp(2.4rem, 10.5vw, 3.1rem);
+	}
+
+	// The route scene runs on the same wine night: a silver mirror ball, a cherry dance floor and
+	// the route copy in night blush.
+	.event-location[data-location-scene='mirror-ball-route'] {
+		--location-route-night: var(--color-rose-night);
+		--location-route-night-deep: var(--color-rose-midnight);
+		--location-route-ink: var(--color-night-blush);
+		--location-route-muted: rgb(var(--color-night-blush-rgb) / 78%);
+		--location-route-trail: rgb(var(--color-night-blush-rgb) / 26%);
+		--location-route-glow: var(--color-rose-glow);
+		--location-route-floor: var(--color-rose-deep);
+		--location-route-note-ink: var(--color-night-blush);
+
+		// The hour stays on one line down to the narrowest phone.
+		--mirror-ball-route-time-size: clamp(2.8rem, 23vw - 1.6rem, 4.5rem);
+
+		// The passes are kept compact, so two of them read as a pair of tickets, not two posters.
+		--mirror-ball-route-pass-height: 24.5rem;
+		--mirror-ball-route-pass-padding: 1.25rem 1.25rem 1.35rem;
+		--mirror-ball-route-notch-y: 8.1rem;
+		--mirror-ball-route-place-gap: 1.4rem;
+		--mirror-ball-route-place-size: clamp(1.8rem, 7.8vw, 2.25rem);
+		--mirror-ball-route-address-size: 0.975rem;
+		--mirror-ball-route-label-size: 0.85rem;
+	}
+
+	// Seams. No two neighbouring boundaries join the same way, and none is a straight cut.
+	// The countdown's night runs down into the route on a slant, under a cherry glow.
+	.invitation-section-wrapper[data-section-kind='location'][data-intersection='atmospheric-blend'] {
+		--intersection-depth: clamp(9rem, 36vw, 17rem);
+		--intersection-blend:
+			radial-gradient(
+				ellipse 90% 100% at 20% 0%,
+				rgb(var(--color-rose-glow-rgb) / 26%),
+				transparent 72%
+			),
+			linear-gradient(173deg, var(--color-rose-night) 6%, transparent 62%);
+		--intersection-blend-layer: 2;
+	}
+
+	// The family page and the pass are pages with a turned silver corner, on opposite sides.
+	.invitation-section-wrapper[data-intersection='folio'] {
+		--intersection-z: 1;
+		--intersection-folio-ink: rgb(var(--color-pale-silver-rgb) / 55%);
+		--intersection-folio-back: rgb(232 232 240);
+		--intersection-folio-back-shade: rgb(150 152 166);
+		--intersection-folio-shadow: 0 0.5rem 0.9rem rgb(0 0 0 / 45%);
+		--intersection-folio-lift: 70deg;
+
+		&[data-section-kind='family'] {
+			--intersection-surface-fill: var(--color-rose-midnight);
+		}
+
+		&[data-section-kind='personalized-access'] {
+			--intersection-folio-flip: -1;
+			--intersection-folio-rise: clamp(1.75rem, 6vw, 3.5rem);
+
+			// Over the album's night the pale corner read as a white patch: here it turns in wine.
+			--intersection-folio-back: rgb(142 34 62);
+			--intersection-folio-back-shade: rgb(58 10 24);
+		}
+	}
+
+	// The album climbs a slope out of the family page, edged in silver.
+	.invitation-section-wrapper[data-section-kind='gallery'][data-intersection='arch'] {
+		--intersection-z: 1;
+		--intersection-arch-height: clamp(3rem, 12vw, 6.5rem);
+		--intersection-arch-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='%23fff' d='M0 24V21C28 20.5 62 15 100 3V24Z'/%3E%3C/svg%3E");
+		--intersection-arch-ink: rgb(var(--color-pale-silver-rgb) / 55%);
+		--intersection-arch-ink-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 24' preserveAspectRatio='none'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='1.25' vector-effect='non-scaling-stroke' d='M0 21C28 20.5 62 15 100 3'/%3E%3C/svg%3E");
+	}
+
+	// The album darkens into the night while it assembles; the heading and the footer keep their
+	// paper ground.
+	.gallery-section[data-variant='album-assemble'] {
+		--gallery-album-dusk: linear-gradient(
+			180deg,
+			transparent 0 18%,
+			rgb(var(--color-rose-night-rgb) / 55%) 34%,
+			rgb(var(--color-rose-midnight-rgb) / 70%) 90%,
+			transparent 100%
+		);
 	}
 }

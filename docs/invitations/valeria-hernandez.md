@@ -134,6 +134,7 @@ Release scope: up to develop + Preview; Production waits for the owner's package
 | motifs | Silver disco balls, small red stars and one bow, drawn in the slug composition    | client-references | applied |
 | photos | Current portrait framed on the cover; childhood photos as an album «de niña a XV» | ten photos        | applied |
 | pass   | «Pase personal e intransferible» on the reply card                                | per-guest passes  | applied |
+| scenes | Mirror ball route over the two venues; the album darkens into the night           | client-references | applied |
 
 ---
 

@@ -1,0 +1,297 @@
+@use '../../../tools/motion';
+
+// Mirror ball: a faceted ball drops on its cable over the countdown, turns and throws beams of
+// light across the night, while the numbers glow over a lit dance floor. Profiles map
+// `--mirror-ball-*` to their palette.
+.event-theme-wrapper .countdown-section[data-variant='mirror-ball'] {
+	--mirror-ball-size: clamp(6.5rem, 22vw, 8.5rem);
+	--mirror-ball-cable: clamp(3rem, 9vw, 4.5rem);
+	--mirror-ball-facet: calc(var(--mirror-ball-size) / 9);
+	--mirror-ball-glow: var(--mirror-ball-glow-rgb, var(--color-action-accent-rgb));
+	--mirror-ball-silver: var(--mirror-ball-silver-rgb, 233 234 238);
+
+	// Large night type: the numbers are the show.
+	--countdown-type-title-size: clamp(1.9rem, 8vw, 2.4rem);
+	--countdown-type-value-size: clamp(2.8rem, 12vw, 4.2rem);
+	--countdown-type-label-size: clamp(0.8rem, 3.2vw, 0.95rem);
+	--countdown-type-label-opacity: 95%;
+	--countdown-date-size: clamp(1rem, 4.2vw, 1.2rem);
+
+	padding-top: calc(var(--mirror-ball-cable) + var(--mirror-ball-size) + 2.5rem);
+
+	.countdown-texture {
+		overflow: hidden;
+
+		// The night opens on the ground the section above ends on (`--mirror-ball-seam`), so the
+		// cable hangs out of the dark instead of from a flat edge.
+		background: linear-gradient(
+			to bottom,
+			var(--mirror-ball-seam, transparent) 0 3rem,
+			transparent calc(var(--mirror-ball-cable) + var(--mirror-ball-size) * 1.2)
+		);
+
+		// Beams thrown by the ball: thin cherry and silver rays from its center, fading with
+		// distance.
+		&::before {
+			position: absolute;
+			top: calc(var(--mirror-ball-cable) + var(--mirror-ball-size) / 2);
+			left: 50%;
+			width: 220vmax;
+			aspect-ratio: 1;
+			background:
+				repeating-conic-gradient(
+					from 4deg,
+					rgb(var(--mirror-ball-glow) / 22%) 0 1.2deg,
+					transparent 1.2deg 26deg
+				),
+				repeating-conic-gradient(
+					from 17deg,
+					rgb(var(--mirror-ball-silver) / 16%) 0 0.8deg,
+					transparent 0.8deg 34deg
+				);
+			content: '';
+			mask: radial-gradient(circle, rgb(0 0 0) 0 2%, rgb(0 0 0 / 60%) 10%, transparent 26%);
+			translate: -50% -50%;
+		}
+
+		// The ball on its cable: silver facets lit from the upper left, shaded at the rim.
+		&::after {
+			position: absolute;
+			top: 0;
+			left: 50%;
+			width: var(--mirror-ball-size);
+			height: calc(var(--mirror-ball-cable) + var(--mirror-ball-size));
+			background:
+				linear-gradient(rgb(var(--mirror-ball-silver) / 85%) 0 0) 50% 0 / 1px
+					var(--mirror-ball-cable) no-repeat,
+				radial-gradient(
+						circle at 34% 30%,
+						rgb(255 255 255 / 95%) 0 3%,
+						rgb(255 255 255 / 35%) 9%,
+						transparent 24%
+					)
+					0 100% / 100% var(--mirror-ball-size) no-repeat,
+				radial-gradient(circle, transparent 52%, rgb(30 6 14 / 60%) 74%) 0 100% / 100%
+					var(--mirror-ball-size) no-repeat,
+				repeating-linear-gradient(0deg, rgb(40 10 20 / 50%) 0 1px, transparent 1px 100%) 0
+					100% / var(--mirror-ball-facet) var(--mirror-ball-facet),
+				repeating-linear-gradient(90deg, rgb(40 10 20 / 50%) 0 1px, transparent 1px 100%) 0
+					100% / var(--mirror-ball-facet) var(--mirror-ball-facet),
+				conic-gradient(
+						rgb(255 255 255 / 38%) 25%,
+						transparent 0 50%,
+						rgb(var(--mirror-ball-glow) / 30%) 0 75%,
+						transparent 0
+					)
+					0 100% / calc(var(--mirror-ball-facet) * 2) calc(var(--mirror-ball-facet) * 2),
+				radial-gradient(
+						circle at 40% 34%,
+						rgb(250 250 252),
+						rgb(196 198 206) 42%,
+						rgb(96 98 110) 82%
+					)
+					0 100% / 100% var(--mirror-ball-size) no-repeat;
+			content: '';
+			filter: drop-shadow(0 0 1.4rem rgb(var(--mirror-ball-glow) / 45%));
+			mask:
+				radial-gradient(
+					circle calc(var(--mirror-ball-size) / 2) at 50%
+						calc(100% - var(--mirror-ball-size) / 2),
+					rgb(0 0 0) 98%,
+					transparent 100%
+				),
+				linear-gradient(rgb(0 0 0) 0 0) 50% 0 / 2px calc(var(--mirror-ball-cable) + 2px)
+					no-repeat;
+			translate: -50% 0;
+		}
+	}
+
+	// Light flecks thrown by the ball, drifting across the night.
+	&::before {
+		position: absolute;
+		inset: 0;
+		background:
+			radial-gradient(circle, rgb(244 244 248 / 55%) 0 1.5px, transparent 2.5px) 0 0 / 4.5rem
+				4.5rem,
+			radial-gradient(circle, rgb(var(--mirror-ball-glow) / 50%) 0 1.5px, transparent 2.5px)
+				2.2rem 1.6rem / 6rem 6rem;
+		content: '';
+		mask: radial-gradient(ellipse 80% 60% at 50% 35%, rgb(0 0 0), transparent 80%);
+		pointer-events: none;
+	}
+
+	// The dance floor: a tiled floor in perspective under the numbers, its tiles lit in turn.
+	.countdown-timer-wrapper {
+		position: relative;
+		isolation: isolate;
+
+		&::before {
+			position: absolute;
+			bottom: -1.5rem;
+			left: 50%;
+			z-index: -1;
+			width: min(160%, 56rem);
+			height: 150%;
+			background:
+				repeating-linear-gradient(
+					90deg,
+					rgb(var(--mirror-ball-glow) / 45%) 0 1px,
+					transparent 1px 3rem
+				),
+				repeating-linear-gradient(
+					0deg,
+					rgb(var(--mirror-ball-glow) / 45%) 0 1px,
+					transparent 1px 3rem
+				),
+				conic-gradient(
+						rgb(var(--mirror-ball-glow) / 30%) 25%,
+						transparent 0 50%,
+						rgb(var(--mirror-ball-silver) / 12%) 0 75%,
+						transparent 0
+					)
+					0 0 / 6rem 6rem;
+			content: '';
+			mask: radial-gradient(ellipse 50% 70% at 50% 100%, rgb(0 0 0) 20%, transparent 75%);
+			transform: translateX(-50%) perspective(22rem) rotateX(64deg);
+			transform-origin: 50% 100%;
+		}
+	}
+
+	// The numbers stand in pools of light on the floor, without boxes.
+	.countdown__segment {
+		position: relative;
+		border: 0;
+		background: radial-gradient(
+			ellipse 60% 22% at 50% 92%,
+			rgb(var(--mirror-ball-glow) / 38%),
+			transparent 100%
+		);
+		box-shadow: none;
+	}
+
+	.countdown__value {
+		color: rgb(250 250 252);
+		text-shadow:
+			0 0 0.5rem rgb(255 255 255 / 45%),
+			0 0 1.4rem rgb(var(--mirror-ball-glow) / 75%);
+	}
+
+	.countdown__label,
+	.countdown__unit {
+		color: rgb(var(--mirror-ball-silver) / 90%);
+	}
+
+	// The preset inks the title in the night tone; on the wine sky it reads in pale cherry.
+	.countdown-title {
+		color: var(--mirror-ball-ink, var(--color-text-primary));
+	}
+
+	.countdown-date {
+		.subtitle-line {
+			background-color: rgb(var(--mirror-ball-silver) / 70%);
+		}
+
+		.event-date {
+			color: var(--mirror-ball-ink, var(--color-text-primary));
+		}
+	}
+
+	.countdown-invitation-text {
+		color: var(--mirror-ball-ink, var(--color-text-primary));
+		font-family: var(--font-calligraphy, var(--font-display));
+		font-size: var(--mirror-ball-invitation-size, clamp(2.8rem, 12vw, 3.6rem));
+		font-style: normal;
+		line-height: 1.1;
+		opacity: 100%;
+	}
+
+	@include motion.motion-safe {
+		// The ball drops on its cable as the section enters, with a small settle.
+		// The ball turns: its facets slide past the light.
+		@supports (animation-timeline: view()) {
+			.countdown-texture::after {
+				animation:
+					mirror-ball-drop linear both,
+					mirror-ball-spin 3.2s linear infinite;
+				animation-timeline: view(), auto;
+				animation-range:
+					entry 10% cover 45%,
+					normal;
+			}
+		}
+
+		@supports not (animation-timeline: view()) {
+			.countdown-texture::after {
+				animation: mirror-ball-spin 3.2s linear infinite;
+			}
+		}
+
+		// The beams sweep the night slowly as the ball turns.
+		.countdown-texture::before {
+			animation: mirror-ball-beams 48s linear infinite;
+		}
+
+		&::before {
+			animation: mirror-ball-dots-drift 18s linear infinite;
+		}
+
+		.countdown__segment[data-unit='seconds'] .countdown__value {
+			animation: mirror-ball-beat 1s ease-out infinite;
+		}
+	}
+
+	@keyframes mirror-ball-drop {
+		0% {
+			translate: -50% calc(-1 * (var(--mirror-ball-cable) + var(--mirror-ball-size)));
+		}
+
+		75% {
+			translate: -50% 0.4rem;
+		}
+
+		100% {
+			translate: -50% 0;
+		}
+	}
+
+	@keyframes mirror-ball-spin {
+		to {
+			background-position:
+				50% 0,
+				0 100%,
+				0 100%,
+				0 100%,
+				var(--mirror-ball-facet) 100%,
+				calc(var(--mirror-ball-facet) * 2) 100%,
+				0 100%;
+		}
+	}
+
+	@keyframes mirror-ball-beams {
+		to {
+			rotate: 1turn;
+		}
+	}
+
+	@keyframes mirror-ball-dots-drift {
+		to {
+			background-position:
+				4.5rem 2.25rem,
+				-3.8rem 4.6rem;
+		}
+	}
+
+	@keyframes mirror-ball-beat {
+		0% {
+			text-shadow:
+				0 0 0.8rem rgb(255 255 255 / 70%),
+				0 0 2rem rgb(var(--mirror-ball-glow) / 95%);
+		}
+
+		100% {
+			text-shadow:
+				0 0 0.5rem rgb(255 255 255 / 45%),
+				0 0 1.4rem rgb(var(--mirror-ball-glow) / 75%);
+		}
+	}
+}

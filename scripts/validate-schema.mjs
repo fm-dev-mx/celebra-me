@@ -65,7 +65,7 @@ function extractThemePresets() {
 const THEME_PRESET_SKINS = extractThemePresets();
 
 /** In-scope dirs scanned for forbidden theme-as-data-variant beyond the canonical registry. */
-const EXTRA_IN_SCOPE_VARIANT_DIRS = ['header', 'quote', 'music-player', 'footer'];
+const EXTRA_IN_SCOPE_VARIANT_DIRS = ['header', 'music-player', 'footer'];
 
 function extractCSSVariants(contracts) {
 	const themesDir = path.join(__dirname, '..', 'src', 'styles', 'themes', 'sections');
