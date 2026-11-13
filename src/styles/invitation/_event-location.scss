@@ -1528,7 +1528,7 @@
 //   --location-enclosure-swing             Scroll-linked keyframes as the card arrives
 //                                          (`location-enclosure-swing`), around -swing-origin
 //   --location-enclosure-heading-{transform,tracking,color,shadow}
-//   --location-enclosure-palette / -palette-display / -palette-width / -palette-height
+//   --location-enclosure-palette / -palette-display / -palette-width / -palette-height / -palette-mask
 //                                          A strip under the first note (the allowed colors)
 //   --location-enclosure-lead-title-{font,size,caps,tracking,color}  First note's title
 //   --location-enclosure-swatch-size / -swatch-ring
@@ -1631,6 +1631,7 @@
 		height: var(--location-enclosure-palette-height, 1.5rem);
 		margin-top: 0.5rem;
 		background: var(--location-enclosure-palette, none);
+		mask: var(--location-enclosure-palette-mask, none);
 	}
 
 	.event-location__enclosure-note:first-of-type .event-location__enclosure-title {

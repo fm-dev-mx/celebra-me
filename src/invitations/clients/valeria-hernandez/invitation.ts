@@ -129,7 +129,7 @@ const content: CanonicalEventContentInput = {
 				iconName: 'DressCode',
 				styleVariant: 'default',
 				title: 'Código de vestimenta',
-				text: 'Lentejuelas en negro, plata, dorado o vino',
+				text: 'Lentejuelas en negro, plata o dorado',
 			},
 			{
 				iconName: 'DressCode',

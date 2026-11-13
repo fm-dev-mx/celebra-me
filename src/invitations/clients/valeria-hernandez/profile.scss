@@ -58,7 +58,7 @@
 	--location-program-lede-size: 1.125rem;
 
 	// The dress code is a dark club tag in the language of the pass: the theme in cherry neon, the
-	// four allowed colors as sequins, and the wine reserved for the quinceañera as a larger sequin.
+	// three allowed colors as mirror balls, and the wine kept for the quinceañera as a glowing one.
 	--location-enclosure-bg:
 		radial-gradient(120% 70% at 50% 0%, rgb(var(--color-rose-dusk-rgb) / 55%), transparent 70%),
 		rgb(30 5 13);
@@ -78,53 +78,42 @@
 	--location-enclosure-note-padding: 0.9rem;
 	--location-enclosure-note-rule-width: 3rem;
 	--location-enclosure-reserved-title-color: var(--color-rose-glow);
-	--location-enclosure-sequin-light: radial-gradient(
-		circle 0.5rem at 36% 30%,
-		rgb(255 255 255 / 60%),
-		transparent
-	);
-	--location-enclosure-sequin-ring: rgb(var(--color-night-blush-rgb) / 45%) 88% 96%;
-	--location-enclosure-palette-display: block;
-	--location-enclosure-palette-width: 10.4rem;
-	--location-enclosure-palette-height: 2rem;
-	--location-enclosure-palette:
-		var(--location-enclosure-sequin-light) 0 0 / 2rem 2rem no-repeat,
-		var(--location-enclosure-sequin-light) 2.8rem 0 / 2rem 2rem no-repeat,
-		var(--location-enclosure-sequin-light) 5.6rem 0 / 2rem 2rem no-repeat,
-		var(--location-enclosure-sequin-light) 8.4rem 0 / 2rem 2rem no-repeat,
-		radial-gradient(
-				circle 1rem,
-				rgb(20 18 20) 0 86%,
-				var(--location-enclosure-sequin-ring),
-				transparent 98%
-			)
-			0 0 / 2rem 2rem no-repeat,
-		radial-gradient(
-				circle 1rem,
-				rgb(206 208 216) 0 86%,
-				var(--location-enclosure-sequin-ring),
-				transparent 98%
-			)
-			2.8rem 0 / 2rem 2rem no-repeat,
-		radial-gradient(
-				circle 1rem,
-				rgb(204 164 86) 0 86%,
-				var(--location-enclosure-sequin-ring),
-				transparent 98%
-			)
-			5.6rem 0 / 2rem 2rem no-repeat,
-		radial-gradient(
-				circle 1rem,
-				rgb(110 14 36) 0 86%,
-				var(--location-enclosure-sequin-ring),
-				transparent 98%
-			)
-			8.4rem 0 / 2rem 2rem no-repeat;
 
-	// The «Vino» swatch shows the wine reserved for the quinceañera, not the cherry accent.
+	// Each color is a small mirror ball: a facet grid, a round shade and one hot spot.
+	--location-enclosure-ball-facets:
+		repeating-linear-gradient(0deg, rgb(0 0 0 / 26%) 0 1px, transparent 1px 0.34rem),
+		repeating-linear-gradient(90deg, rgb(0 0 0 / 26%) 0 1px, transparent 1px 0.34rem);
+	--location-enclosure-ball-light: radial-gradient(
+		circle 1.5rem at 34% 28%,
+		rgb(255 255 255 / 70%),
+		rgb(255 255 255 / 8%) 30%,
+		transparent 45%,
+		rgb(0 0 0 / 55%)
+	);
+	--location-enclosure-palette-display: block;
+	--location-enclosure-palette-width: 7.6rem;
+	--location-enclosure-palette-height: 2rem;
+	--location-enclosure-palette-mask:
+		radial-gradient(circle 1rem, rgb(0 0 0) 96%, transparent) 0 0 / 2rem 2rem no-repeat,
+		radial-gradient(circle 1rem, rgb(0 0 0) 96%, transparent) 2.8rem 0 / 2rem 2rem no-repeat,
+		radial-gradient(circle 1rem, rgb(0 0 0) 96%, transparent) 5.6rem 0 / 2rem 2rem no-repeat;
+	--location-enclosure-palette:
+		var(--location-enclosure-ball-light) 0 0 / 2rem 2rem no-repeat,
+		var(--location-enclosure-ball-light) 2.8rem 0 / 2rem 2rem no-repeat,
+		var(--location-enclosure-ball-light) 5.6rem 0 / 2rem 2rem no-repeat,
+		var(--location-enclosure-ball-facets),
+		linear-gradient(
+			90deg,
+			rgb(44 40 44) 0 2.4rem,
+			rgb(206 208 216) 2.4rem 5.2rem,
+			rgb(204 164 86) 5.2rem
+		);
+
+	// The «Vino» ball is the wine kept for the quinceañera, not the cherry accent.
 	--location-enclosure-swatch:
-		radial-gradient(circle at 36% 30%, rgb(255 255 255 / 60%), transparent 45%), rgb(110 14 36);
-	--location-enclosure-swatch-size: 1.5rem;
+		var(--location-enclosure-ball-light) center / 100% 100% no-repeat,
+		var(--location-enclosure-ball-facets), rgb(122 16 40);
+	--location-enclosure-swatch-size: 2rem;
 	--location-enclosure-swatch-ring:
 		0 0 0 1px rgb(var(--color-night-blush-rgb) / 45%),
 		0 0 0.9rem rgb(var(--color-rose-glow-rgb) / 70%);
