@@ -516,15 +516,27 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 								: Math.round(parsedFade * 1000);
 
 					const settleScroll = () => {
-						// Land exactly on the hero's top edge: a page whose hero sits near the top lands on 0,
-						// so the name is never left a few pixels under the fold.
-						let target = 0;
 						if (hero instanceof HTMLElement) {
-							const heroTop = hero.getBoundingClientRect().top + window.scrollY;
-							if (heroTop > window.innerHeight * 0.35) target = Math.round(heroTop);
+							const rect = hero.getBoundingClientRect();
+							// A hero further down the page is brought into view, honouring scroll padding.
+							if (rect.top + window.scrollY > window.innerHeight * 0.35) {
+								const inView =
+									rect.top >= -8 &&
+									rect.top <= window.innerHeight * 0.35 &&
+									rect.bottom > 0;
+								if (!inView) {
+									hero.scrollIntoView({
+										block: 'start',
+										inline: 'nearest',
+										behavior: scrollBehavior,
+									});
+								}
+								return;
+							}
 						}
-						if (Math.abs(window.scrollY - target) > 1) {
-							window.scrollTo({ top: target, left: 0, behavior: scrollBehavior });
+						// A hero near the top lands on 0, so the name is never left a few pixels under the fold.
+						if (window.scrollY > 1) {
+							window.scrollTo({ top: 0, left: 0, behavior: scrollBehavior });
 						}
 					};
 
