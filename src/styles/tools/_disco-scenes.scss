@@ -121,3 +121,213 @@
 		}
 	}
 }
+
+// --------------------------------------------------------------------------
+// Ticket pieces. A pass and its reply stub read as one printed admission ticket.
+// --------------------------------------------------------------------------
+
+// A mirror ball drawn with gradients: a round face, a grid of facets, a hot spot and a glow.
+@mixin mirror-ball-surface($glow-rgb: var(--color-rose-glow-rgb)) {
+	border-radius: 50%;
+	background:
+		radial-gradient(circle at 32% 28%, rgb(255 255 255 / 95%), transparent 22%),
+		radial-gradient(circle at 70% 76%, rgb($glow-rgb / 75%), transparent 42%),
+		repeating-linear-gradient(0deg, rgb(40 42 54 / 55%) 0 1px, transparent 1px 0.5rem),
+		repeating-linear-gradient(90deg, rgb(40 42 54 / 55%) 0 1px, transparent 1px 0.5rem),
+		radial-gradient(circle at 38% 34%, rgb(244 244 248), rgb(168 170 182) 55%, rgb(74 76 90));
+	box-shadow:
+		0 0 1.4rem rgb($glow-rgb / 70%),
+		0 0 3.2rem rgb($glow-rgb / 35%);
+	aspect-ratio: 1;
+}
+
+// Holographic foil, twice as wide as its box so a sheen can slide across it.
+@mixin foil-strip($glow-rgb: var(--color-rose-glow-rgb)) {
+	background: linear-gradient(
+			100deg,
+			rgb(214 170 180),
+			rgb(232 232 240),
+			rgb($glow-rgb),
+			rgb(214 196 150),
+			rgb(214 170 180)
+		)
+		0 0 / 200% 100%;
+}
+
+// Four die-cut corners.
+@mixin ticket-corners($cut) {
+	mask:
+		radial-gradient(circle $cut at 0 0, transparent 96%, rgb(0 0 0)) left top / 51% 51%
+			no-repeat,
+		radial-gradient(circle $cut at 100% 0, transparent 96%, rgb(0 0 0)) right top / 51% 51%
+			no-repeat,
+		radial-gradient(circle $cut at 0 100%, transparent 96%, rgb(0 0 0)) left bottom / 51% 51%
+			no-repeat,
+		radial-gradient(circle $cut at 100% 100%, transparent 96%, rgb(0 0 0)) right bottom / 51%
+			51% no-repeat;
+}
+
+// A pair of side punches at height `$y` (0 = the top edge, where a stub meets its pass).
+@mixin ticket-notches($cut, $y: 0) {
+	mask:
+		radial-gradient(circle $cut at 0 $y, transparent 96%, rgb(0 0 0)) left / 51% 100% no-repeat,
+		radial-gradient(circle $cut at 100% $y, transparent 96%, rgb(0 0 0)) right / 51% 100%
+			no-repeat;
+}
+
+@mixin barcode($ink) {
+	background: repeating-linear-gradient(
+		90deg,
+		$ink 0 2px,
+		transparent 2px 5px,
+		$ink 5px 6px,
+		transparent 6px 8px,
+		$ink 8px 11px,
+		transparent 11px 13px
+	);
+}
+
+// --------------------------------------------------------------------------
+// One-screen ticket. Include the first on a `reply-card` pass and the second on its `reply-card`
+// reply: the pass turns into a horizontal ticket (emblem beside the heading, seat ring beside the
+// barcode) and every measure also yields to the small viewport height, so the pass and the first
+// reply step share one screen under a fixed header on any phone or desktop.
+//   $barcode-ink  Barcode colour.
+// --------------------------------------------------------------------------
+@mixin ticket-pass-one-screen($barcode-ink: currentcolor) {
+	.access-card {
+		padding-top: min(clamp(3.6rem, 14vw, 4.4rem), 5svh);
+		padding-bottom: min(1.5rem, 2svh);
+	}
+
+	.access-card__header {
+		display: grid;
+		grid-template-columns: auto minmax(0, auto);
+		align-items: center;
+		justify-content: center;
+		gap: 0.15rem min(0.9rem, 3.5vw);
+		text-align: left;
+
+		> * {
+			grid-column: 2;
+		}
+
+		&::before {
+			grid-area: 1 / 1 / span 3;
+			width: min(4.75rem, 7svh);
+			margin: 0;
+		}
+	}
+
+	.access-card__subtitle {
+		margin-top: 0;
+
+		@media (height <= 600px) {
+			display: none;
+		}
+	}
+
+	.access-card__field {
+		margin-top: min(1rem, 1.2svh);
+	}
+
+	.access-card__divider {
+		height: 0.35rem;
+		margin: min(1.2rem, 1.4svh) 0;
+	}
+
+	.access-card__quota {
+		display: grid;
+		grid-template-columns: auto minmax(0, auto);
+		place-items: center start;
+		justify-content: center;
+		gap: 0.2rem min(1.1rem, 4vw);
+		text-align: left;
+
+		> * {
+			grid-column: 2;
+		}
+
+		> .access-card__count-frame {
+			grid-area: 1 / 1 / span 3;
+		}
+
+		> .access-card__label {
+			display: block;
+		}
+
+		@media (height <= 600px) {
+			> .access-card__count-words {
+				display: none;
+			}
+		}
+
+		// Barcode under the seats.
+		&::after {
+			@include barcode($barcode-ink);
+
+			grid-column: 2;
+			width: min(8.5rem, 36vw);
+			height: min(1.9rem, 3svh);
+			margin-top: 0.2rem;
+			content: '';
+		}
+	}
+}
+
+@mixin ticket-stub-one-screen {
+	padding-block: min(1.75rem, 2.5svh) min(3rem, 2.4svh);
+
+	.rsvp__header {
+		margin-bottom: min(1.5rem, 1.6svh);
+	}
+
+	.rsvp__subcopy {
+		margin-top: min(0.6rem, 1svh);
+
+		@media (height <= 600px) {
+			display: none;
+		}
+	}
+
+	.rsvp-steps__progress {
+		margin-bottom: min(1.25rem, 1.6svh);
+	}
+
+	.rsvp-steps__heading {
+		margin-bottom: min(1rem, 1.2svh);
+	}
+
+	.rsvp-steps__panel {
+		gap: min(1rem, 1.4svh);
+	}
+
+	// The first step is one tap: its two answers sit side by side as buttons, the radio mark
+	// hidden (the chosen card lights up) but still focusable.
+	.rsvp-steps[data-step-index='0'] {
+		.rsvp__radio-group {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 0.6rem;
+			margin-block: 0;
+		}
+
+		.rsvp__radio-card {
+			justify-content: center;
+			min-height: max(44px, min(56px, 8svh));
+			padding: 0.25rem 0.5rem;
+			font-size: min(1.05rem, 2.7svh);
+			line-height: 1.15;
+			text-align: center;
+			text-wrap: balance;
+		}
+
+		.rsvp__radio-indicator {
+			display: none;
+		}
+	}
+
+	.rsvp__demo-footer {
+		margin-top: min(1.5rem, 1.4svh);
+		font-size: min(0.95rem, 2.3svh);
+	}
+}

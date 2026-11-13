@@ -249,7 +249,8 @@
 		);
 		--reply-card-seam-width: calc(100% - 3rem);
 		--reply-card-seam-height: 2px;
-		--reply-card-count-frame-size: min(6.5rem, 13svh);
+		--reply-card-padding-block: min(2.5rem, 1svh);
+		--reply-card-count-frame-size: min(6.5rem, 11svh);
 		--reply-card-count-frame-ratio: 1;
 		--reply-card-count-frame-border: 2px solid rgb(255 236 240);
 		--reply-card-count-size: min(3.4rem, 7svh);

@@ -244,20 +244,12 @@ $valeria-night-ground:
 }
 
 // The pass and the reply are one admission ticket to the disco night: die-cut corners, a mirror
-// ball over the heading, a holographic foil strip, the guest written in neon, the seats in a neon
-// ring and a barcode. The reply is its tear-off stub: punched sides and a dashed tear line.
+// ball beside the heading, a holographic foil strip, the guest written in neon, the seats in a
+// neon ring beside a barcode. The reply is its tear-off stub: punched sides and a tear line.
 .event--valeria-hernandez.event-theme-wrapper .personalized-access[data-variant='reply-card'],
 .event--valeria-hernandez.event-theme-wrapper .rsvp-section {
 	--valeria-pass-edge: clamp(0.6rem, 2.4vw, 0.85rem);
 	--valeria-pass-cut: 1.05rem;
-	--valeria-pass-foil: linear-gradient(
-		100deg,
-		rgb(214 170 180),
-		rgb(232 232 240),
-		rgb(var(--color-rose-glow-rgb)),
-		rgb(214 196 150),
-		rgb(214 170 180)
-	);
 	--valeria-pass-neon:
 		0 0 0.2rem rgb(255 255 255 / 55%), 0 0 0.7rem rgb(var(--color-rose-glow-rgb) / 90%),
 		0 0 1.8rem rgb(var(--color-rose-glow-rgb) / 55%);
@@ -265,8 +257,6 @@ $valeria-night-ground:
 
 .event--valeria-hernandez.event-theme-wrapper .personalized-access[data-variant='reply-card'] {
 	.access-card {
-		// Every measure also yields to the screen height, so the whole ticket fits on one screen.
-		padding-top: min(clamp(3.6rem, 14vw, 4.4rem), 8svh);
 		background:
 			linear-gradient(
 				118deg,
@@ -282,19 +272,7 @@ $valeria-night-ground:
 			var(--reply-card-bg);
 
 		// Die-cut corners, like a printed admission ticket; the lower pair meets the stub's.
-		mask:
-			radial-gradient(circle var(--valeria-pass-cut) at 0 0, transparent 96%, rgb(0 0 0)) left
-				top / 51% 51% no-repeat,
-			radial-gradient(circle var(--valeria-pass-cut) at 100% 0, transparent 96%, rgb(0 0 0))
-				right top / 51% 51% no-repeat,
-			radial-gradient(circle var(--valeria-pass-cut) at 0 100%, transparent 96%, rgb(0 0 0))
-				left bottom / 51% 51% no-repeat,
-			radial-gradient(
-					circle var(--valeria-pass-cut) at 100% 100%,
-					transparent 96%,
-					rgb(0 0 0)
-				)
-				right bottom / 51% 51% no-repeat;
+		@include scenes.ticket-corners(var(--valeria-pass-cut));
 
 		&::before {
 			border-color: transparent;
@@ -303,7 +281,7 @@ $valeria-night-ground:
 		// The ticket's printed header line.
 		&::after {
 			position: absolute;
-			top: min(1.5rem, 3svh);
+			top: min(1.5rem, 2.2svh);
 			right: 0;
 			left: 0;
 			display: block;
@@ -317,53 +295,24 @@ $valeria-night-ground:
 		}
 	}
 
-	// A mirror ball hangs over the heading.
+	// A mirror ball hangs beside the heading.
 	.access-card__header::before {
-		width: min(clamp(4rem, 18vw, 4.75rem), 8svh);
-		margin-bottom: min(0.9rem, 1.4svh);
-		border-radius: 50%;
-		background:
-			radial-gradient(circle at 32% 28%, rgb(255 255 255 / 95%), transparent 22%),
-			radial-gradient(
-				circle at 70% 76%,
-				rgb(var(--color-rose-glow-rgb) / 75%),
-				transparent 42%
-			),
-			repeating-linear-gradient(0deg, rgb(40 42 54 / 55%) 0 1px, transparent 1px 0.5rem),
-			repeating-linear-gradient(90deg, rgb(40 42 54 / 55%) 0 1px, transparent 1px 0.5rem),
-			radial-gradient(
-				circle at 38% 34%,
-				rgb(244 244 248),
-				rgb(168 170 182) 55%,
-				rgb(74 76 90)
-			);
-		box-shadow:
-			0 0 1.4rem rgb(var(--color-rose-glow-rgb) / 70%),
-			0 0 3.2rem rgb(var(--color-rose-glow-rgb) / 35%);
-		aspect-ratio: 1;
+		@include scenes.mirror-ball-surface;
+
 		content: '';
 	}
 
 	.access-card__guest {
-		font: 400 min(clamp(2.6rem, 12vw, 3.4rem), 6.5svh) / 1.1 var(--font-calligraphy);
+		font: 400 min(clamp(2.6rem, 12vw, 3.4rem), 6svh) / 1.1 var(--font-calligraphy);
 		color: rgb(255 244 246);
 		text-shadow: var(--valeria-pass-neon);
 	}
 
 	// Holographic foil strip, edge to edge.
 	.access-card__divider {
+		@include scenes.foil-strip;
+
 		width: calc(100% + 2 * clamp(1.5rem, 6vw, 2.75rem) - 2 * var(--valeria-pass-edge) - 2px);
-		height: 0.5rem;
-		margin: min(1.4rem, 2.2svh) 0 min(1.2rem, 2svh);
-		background: var(--valeria-pass-foil) 0 0 / 200% 100%;
-	}
-
-	.access-card__quota {
-		gap: 0.55rem;
-	}
-
-	.access-card__quota .access-card__label {
-		display: block;
 	}
 
 	.access-card__count-frame {
@@ -379,23 +328,8 @@ $valeria-night-ground:
 		text-shadow: var(--valeria-pass-neon);
 	}
 
-	// Barcode along the foot of the ticket.
-	.access-card__body::after {
-		display: block;
-		width: min(11rem, 62%);
-		height: min(1.9rem, 4svh);
-		margin: min(1.5rem, 2svh) auto 0;
-		background: repeating-linear-gradient(
-			90deg,
-			rgb(var(--color-night-blush-rgb) / 85%) 0 2px,
-			transparent 2px 5px,
-			rgb(var(--color-night-blush-rgb) / 85%) 5px 6px,
-			transparent 6px 8px,
-			rgb(var(--color-night-blush-rgb) / 85%) 8px 11px,
-			transparent 11px 13px
-		);
-		content: '';
-	}
+	// The pass and the first reply step share one screen, whatever its size.
+	@include scenes.ticket-pass-one-screen(rgb(var(--color-night-blush-rgb) / 85%));
 
 	@include motion.motion-safe {
 		.access-card__divider {
@@ -414,22 +348,13 @@ $valeria-night-ground:
 		var(--reply-card-bg);
 
 	// The stub is punched where it meets the pass.
-	mask:
-		radial-gradient(circle var(--valeria-pass-cut) at 0 0, transparent 96%, rgb(0 0 0)) left /
-			51% 100% no-repeat,
-		radial-gradient(circle var(--valeria-pass-cut) at 100% 0, transparent 96%, rgb(0 0 0))
-			right / 51% 100% no-repeat;
+	@include scenes.ticket-notches(var(--valeria-pass-cut));
 
 	&::before {
 		border-color: transparent;
 	}
 
-	// The stub yields to the screen height too, so each reply step fits on one screen.
-	padding-bottom: min(3rem, 5svh);
-
-	.rsvp__header {
-		margin-bottom: min(1.5rem, 2.5svh);
-	}
+	@include scenes.ticket-stub-one-screen;
 
 	// On short screens the later steps drop the lede, tighten their gaps and set the actions on
 	// one row, so the fields and the buttons stay on screen together.
@@ -439,11 +364,11 @@ $valeria-night-ground:
 		}
 
 		.rsvp-steps__progress {
-			margin-bottom: 0.75rem;
+			margin-bottom: min(0.75rem, 1.6svh);
 		}
 
 		.rsvp-steps__heading {
-			margin-bottom: 0.6rem;
+			margin-bottom: min(0.6rem, 1.2svh);
 			font-size: 1.15rem;
 		}
 
@@ -473,13 +398,13 @@ $valeria-night-ground:
 		}
 
 		.rsvp__demo-footer {
-			margin-top: 0.75rem;
+			margin-top: min(0.75rem, 1.4svh);
 		}
 	}
 
 	.rsvp__title {
 		color: rgb(255 244 246);
-		font: 400 min(clamp(2.25rem, 11.5vw, 3.75rem), 7.5svh) / 1 var(--font-calligraphy);
+		font: 400 min(clamp(2.25rem, 11.5vw, 3.75rem), 5.5svh) / 1 var(--font-calligraphy);
 		text-shadow: var(--valeria-pass-neon);
 	}
 
@@ -518,21 +443,7 @@ $valeria-night-ground:
 
 	// Alone on the public link the stub is a whole ticket: rounded, punched at the tear line.
 	&[data-state='locked'] {
-		--valeria-stub-y: 6.6rem;
-
-		mask:
-			radial-gradient(
-					circle var(--valeria-pass-cut) at 0 var(--valeria-stub-y),
-					transparent 96%,
-					rgb(0 0 0)
-				)
-				left / 51% 100% no-repeat,
-			radial-gradient(
-					circle var(--valeria-pass-cut) at 100% var(--valeria-stub-y),
-					transparent 96%,
-					rgb(0 0 0)
-				)
-				right / 51% 100% no-repeat;
+		@include scenes.ticket-notches(var(--valeria-pass-cut), 6.6rem);
 
 		&::before {
 			border-radius: 0.7rem;
@@ -555,20 +466,13 @@ $valeria-night-ground:
 	overflow: hidden;
 
 	&::before {
+		@include scenes.foil-strip;
+
 		position: absolute;
 		inset: 0 0 auto;
 		display: block;
 		height: 0.45rem;
 		clip-path: none;
-		background: linear-gradient(
-				100deg,
-				rgb(214 170 180),
-				rgb(232 232 240),
-				rgb(var(--color-rose-glow-rgb)),
-				rgb(214 196 150),
-				rgb(214 170 180)
-			)
-			0 0 / 200% 100%;
 		content: '';
 		pointer-events: none;
 	}
