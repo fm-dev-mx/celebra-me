@@ -124,6 +124,18 @@ motifs and mixins shared with the other sets in `_ornament-sets.scss`). The earl
 (plait and paper lanterns) was removed with its last consumer; a drawn look returns as its own
 registered ornament set, never as a branch on an invitation class.
 
+### Ornament set `satin-ribbons`
+
+The set dresses whole sections (cover, quote, family, gifts, location, reply card, thank-you and
+footer) for the `storybook-lilac` palette
+(`src/styles/invitation/_ornament-set-satin-ribbons.scss`). It links no file and names no
+invitation: the page's profile hands it the art as `--ornament-art-<name>` and the words as
+`--ornament-monogram`, `--ornament-family-joiner` and `--ornament-signature`, and tunes it through
+the other `--ornament-*` tokens listed in the file header. Defaults sit in a zero-specificity
+`:where()` block so a profile wins whatever the sheet order. The envelope and its send-off stay in
+the invitation's own composition, because the send-off layer on `<body>` only carries the
+`event--<slug>` class (`tests/unit/ornament-set-satin-ribbons.test.ts`).
+
 ### Optional stationery treatments
 
 The `editorial-ledger` itinerary exposes optional stationery tokens for its existing container:
