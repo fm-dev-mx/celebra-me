@@ -27,7 +27,9 @@
             "verify": "pnpm auth:check-role-app-metadata",
             "environments": {
                 "production": {
-                    "status": "pending"
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Owner patch 20261112_auth_users_without_app_role.sql (PR #945) applied with DELETE 2 (APPLIED_AND_VERIFIED), then pnpm auth:check-role-app-metadata: accounts=32, matching=32, differing=0, orphanRoles=0, ok=true."
                 },
                 "preview": {
                     "status": "pending"
@@ -59,7 +61,9 @@
             "verify": "pnpm auth:check-pending-passwords",
             "environments": {
                 "production": {
-                    "status": "pending"
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): pnpm auth:check-pending-passwords: accounts=32, pendingPasswords=0, active=0, expired=0, unknown=0, ok=true, clean=true."
                 },
                 "preview": {
                     "status": "pending"
@@ -68,12 +72,14 @@
         },
         {
             "id": "20260812-itinerary-gallery-structural-contracts",
-            "summary": "The four targeted XV invitations have explicit timeline-paper itinerary contracts and the three celestial targets have index-choreography galleries in published content and every active draft; every live published content and active draft is an object whose rsvp, eventTiming and hero paths are objects when present, and every client published content resolves an event date.",
+            "summary": "The four targeted XV invitations have timeline-paper itinerary variants without the non-schema itinerary.presentation key, and the three celestial targets have index-choreography galleries in published content and every active draft; every live published content and active draft is an object whose rsvp, eventTiming and hero paths are objects when present, and every client published content resolves an event date.",
             "introducedBy": "scripts/manual/production-patches/20260812_p0_itinerary_gallery_structural_contracts.sql",
             "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20260812_itinerary_gallery.sql",
             "environments": {
                 "production": {
-                    "status": "pending"
+                    "status": "verified",
+                    "verifiedAt": "2026-11-13",
+                    "evidence": "Owner read-only Production check after applying 20261112_itinerary_presentation_removal (release c80acbee5, 2026-11-13): invalid_published_targets=0, checked_rows=8, mismatched_rows=0, shape_checked_rows=70, content/rsvp/event_timing/hero not-object=0, client_published_without_event_date=0, ok=t. /api/health/invitations: active=28, failing=0."
                 },
                 "preview": {
                     "status": "pending"
@@ -82,12 +88,14 @@
         },
         {
             "id": "20260812-thankyou-editorial-back-cover",
-            "summary": "The three targeted invitations have explicit editorial-back-cover Thank You contracts in published content and every active draft.",
+            "summary": "The three targeted invitations keep their owner-approved explicit Thank You variant (ana-sofia-cota-guillen and leah-lexa portrait-keepsake, ayrin-samantha-lerma-castro portrait-letter) in published content and every active draft; the editorial-back-cover patch is superseded.",
             "introducedBy": "scripts/manual/production-patches/20260812_thankyou_editorial_back_cover_structural_contracts.sql",
             "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20260812_thankyou.sql",
             "environments": {
                 "production": {
-                    "status": "pending"
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Verifier of the approved variants (PR #947): invalid_published_targets=0, checked_rows=6, mismatched_rows=0, ok=t. No write needed."
                 },
                 "preview": {
                     "status": "pending"
@@ -101,7 +109,9 @@
             "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20260812_guest_phone.sql",
             "environments": {
                 "production": {
-                    "status": "pending"
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Verifier: target_tables=1, canonical_indexes=1, unexpected_indexes=0, validated_pair_checks=1, ok=t."
                 },
                 "preview": {
                     "status": "pending"
@@ -115,7 +125,9 @@
             "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20261111_invitation_asset_objects.sql",
             "environments": {
                 "production": {
-                    "status": "pending"
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Verifier: checked_assets=0, unexpected_bucket=0, missing_storage_path=0, missing_objects=0, ok=t."
                 },
                 "preview": {
                     "status": "pending"
@@ -129,7 +141,9 @@
             "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20261111_tracking_event_lead_code.sql",
             "environments": {
                 "production": {
-                    "status": "pending"
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Owner patch 20261112_tracking_events_blank_lead_code.sql (PR #943) applied with UPDATE 533 (APPLIED_AND_VERIFIED), then the verifier: checked_events=19410, event_properties_not_object=0, lead_code_not_text_or_blank=0, lead_created_without_lead_code=0, source_event_lead_code_mismatch=0, quoted_leads_without_events=0, ok=t."
                 },
                 "preview": {
                     "status": "pending"
@@ -143,7 +157,9 @@
             "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20261111_invitation_data_request_answers.sql",
             "environments": {
                 "production": {
-                    "status": "pending"
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Verifier: checked_rows=0, answers_not_object=0, ok=t."
                 },
                 "preview": {
                     "status": "pending"
@@ -157,7 +173,9 @@
             "verify": "psql -X --set=ON_ERROR_STOP=1 --file=scripts/manual/data-prerequisites/20261111_event_memory_object_keys.sql",
             "environments": {
                 "production": {
-                    "status": "pending"
+                    "status": "verified",
+                    "verifiedAt": "2026-11-12",
+                    "evidence": "Owner read-only Production check on release e6bad9fbb (2026-11-12): Verifier: checked_items=91, unsupported_mime=0, invalid_original_keys=0, invalid_thumbnail_keys=0, event_id_mismatch=0, ok=t."
                 },
                 "preview": {
                     "status": "pending"

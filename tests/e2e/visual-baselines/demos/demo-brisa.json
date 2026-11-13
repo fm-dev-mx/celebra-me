@@ -1,0 +1,57 @@
+{
+    "version": 1,
+    "slug": "demo-brisa",
+    "eventType": "boda",
+    "captures": [
+        {
+            "kind": "demo",
+            "slug": "demo-brisa",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "mobile",
+            "file": "pages/demo-boda-demo-brisa-mobile.png",
+            "sha256": "18bb173b9f98fa5a0cc364e04355029180953905b8529017386180435e918d51",
+            "contentHash": "9bc76dfa55251e31bdba4b5f4f4f26c9d57beb3771cb2977cbe28e313c86f93f",
+            "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-brisa",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "desktop",
+            "file": "pages/demo-boda-demo-brisa-desktop.png",
+            "sha256": "bb0331a61995c45f1972727bf6543d6821ce58c8e1c2a178637619e980ff3d7b",
+            "contentHash": "9bc76dfa55251e31bdba4b5f4f4f26c9d57beb3771cb2977cbe28e313c86f93f",
+            "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
+            "comparisonResult": "ACCEPTED"
+        }
+    ],
+    "pageCaptures": [
+        {
+            "kind": "demo",
+            "slug": "demo-brisa",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "mobile",
+            "file": "pages/demo-boda-demo-brisa-mobile.png",
+            "sha256": "18bb173b9f98fa5a0cc364e04355029180953905b8529017386180435e918d51",
+            "contentHash": "9bc76dfa55251e31bdba4b5f4f4f26c9d57beb3771cb2977cbe28e313c86f93f",
+            "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
+            "comparisonResult": "CANDIDATE"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-brisa",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "desktop",
+            "file": "pages/demo-boda-demo-brisa-desktop.png",
+            "sha256": "bb0331a61995c45f1972727bf6543d6821ce58c8e1c2a178637619e980ff3d7b",
+            "contentHash": "9bc76dfa55251e31bdba4b5f4f4f26c9d57beb3771cb2977cbe28e313c86f93f",
+            "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
+            "comparisonResult": "CANDIDATE"
+        }
+    ]
+}

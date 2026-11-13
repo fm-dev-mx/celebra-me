@@ -349,6 +349,11 @@
 		filter: var(--itinerary-paper-ink-filter, url('#ink-bleed-filter')); // Subtle ink diffusion
 	}
 
+	// Spanish meridiem ("p. m.") stays lowercase; only the pending label keeps the caps transform.
+	time.itinerary__program-row-time {
+		text-transform: none;
+	}
+
 	// CALLIGRAPHY TITLE (Handwritten focus)
 	.itinerary__program-row-title {
 		font-family: var(--font-calligraphy);
