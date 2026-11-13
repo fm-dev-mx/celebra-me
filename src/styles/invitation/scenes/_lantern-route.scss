@@ -8,10 +8,9 @@
 // last stop draws itself, a traveler follows it, and the venue entries take turns — the first
 // until the traveler is halfway, then the last. `lantern-route` walks a lantern under a starry
 // night; `butterfly-route` flies a hairline butterfly, facing its way, over a sky taken from the
-// section's own grounds and inks; `mirror-ball-route` rolls a faceted mirror ball, with a twinkle,
-// under a spotlight that opens as the scene pins, over a dance-floor night (a two-screen pin).
-// Entries stay in the DOM and keep their links; the
-// one with focus always shows. The next entry settles from above, so while it waits its links stay
+// section's own grounds and inks. `mirror-ball-route` does not pin: over a glinting dance-floor
+// night its venues are club passes that stack as the page scrolls (see its own block below).
+// Entries stay in the DOM and keep their links; the one with focus always shows. The next entry settles from above, so while it waits its links stay
 // under the visible entry, which takes the taps. Unpinned, the program-sheet layout is untouched.
 // Included at the end of _program-sheet.scss so its pinned rules follow the program layout.
 // Tokens (all optional):
@@ -22,9 +21,10 @@
 //   --location-route-glow                  Drawn route, lantern light and butterfly line
 //   --location-route-note-ink / -shadow    The «Siga bajando» note riding the route
 //   --location-route-lantern               Lantern body (lantern-route)
-//   --location-route-ball / -ball-edge     Mirror ball face and facet lines (mirror-ball-route)
-//   --location-route-spot                  Spotlight beam (mirror-ball-route)
+//   --location-route-ball                  Silver glints in the night (mirror-ball-route)
 //   --location-route-floor                 Dance-floor light low in the sky (mirror-ball-route)
+//   --location-pass-silver-rgb / -glow-rgb Pass edge and type glow (mirror-ball-route)
+//   --location-pass-ink                    Pass text (mirror-ball-route)
 //   --location-route-lift                  How far the pinned night rises over the section's top
 //                                          padding (default 0); unpinned, the padding stays
 //   --location-route-cue-bottom / -cue-space  Cue offset and reserved space for floating controls
@@ -60,11 +60,13 @@ $mirror-ball-sky:
 		color-mix(in srgb, var(--location-route-floor) 26%, transparent),
 		transparent 62%
 	),
-	linear-gradient(180deg, var(--location-route-night-deep) 0%, var(--location-route-night) 100%);
-
-// Spotlight beam, closed to a pinpoint and fully open; both polygons share their vertices.
-$spot-closed: polygon(49.5% 0%, 50.5% 0%, 50.5% 0%, 49.5% 0%);
-$spot-open: polygon(44% 0%, 56% 0%, 100% 100%, 0% 100%);
+	// The night opens from the section ground above, so the top edge carries no seam.
+	linear-gradient(
+			180deg,
+			transparent 0,
+			var(--location-route-night-deep) 10rem,
+			var(--location-route-night) 100%
+		);
 
 @mixin styles {
 	.event-location:is(
@@ -84,7 +86,6 @@ $spot-open: polygon(44% 0%, 56% 0%, 100% 100%, 0% 100%);
 		overflow: clip;
 
 		.location-route__sky,
-		.location-route__spotlight,
 		.location-route__map {
 			display: none;
 		}
@@ -202,7 +203,6 @@ $spot-open: polygon(44% 0%, 56% 0%, 100% 100%, 0% 100%);
 				--route-t: clamp(0, (var(--scene-progress, 0) - 0.1) / 0.75, 1);
 				--route-out: clamp(0, (0.5 - var(--scene-progress, 0)) / 0.08, 1);
 				--route-in: clamp(0, (var(--scene-progress, 0) - 0.5) / 0.1, 1);
-				--route-spot: clamp(0, var(--scene-progress, 0) / 0.1, 1);
 			}
 
 			@include m.respond-to(lg) {
@@ -222,33 +222,6 @@ $spot-open: polygon(44% 0%, 56% 0%, 100% 100%, 0% 100%);
 				inset: 0;
 				display: block;
 				background: var(--location-route-sky);
-			}
-		}
-
-		// The beam opens from a pinpoint while the route waits to start.
-		.location-route__spotlight {
-			@include scene.pinned {
-				position: absolute;
-				inset: 0;
-				display: block;
-				background: linear-gradient(180deg, var(--location-route-spot) 0%, transparent 78%);
-				clip-path: #{$spot-open};
-				pointer-events: none;
-			}
-
-			@include scene.timeline {
-				animation: route-spot-open linear both;
-				animation-timeline: --scroll-scene;
-				animation-range: contain 0% contain $route-start;
-			}
-
-			@include scene.scripted {
-				clip-path: polygon(
-					calc(49.5% - var(--route-spot) * 5.5%) 0%,
-					calc(50.5% + var(--route-spot) * 5.5%) 0%,
-					calc(50.5% + var(--route-spot) * 49.5%) calc(var(--route-spot) * 100%),
-					calc(49.5% - var(--route-spot) * 49.5%) calc(var(--route-spot) * 100%)
-				);
 			}
 		}
 
@@ -451,8 +424,7 @@ $spot-open: polygon(44% 0%, 56% 0%, 100% 100%, 0% 100%);
 		}
 
 		.location-route__lantern,
-		.location-route__butterfly,
-		.location-route__mirror-ball {
+		.location-route__butterfly {
 			offset-path: path($route-path);
 			offset-rotate: 0deg;
 			offset-distance: 0%;
@@ -480,38 +452,6 @@ $spot-open: polygon(44% 0%, 56% 0%, 100% 100%, 0% 100%);
 
 		.location-route__lantern-cap {
 			fill: var(--location-route-glow);
-		}
-
-		// The mirror ball keeps upright; its glow breathes and one facet catches the light.
-		.location-route__mirror-ball-glow {
-			fill: var(--location-route-glow);
-			opacity: 22%;
-
-			@include m.motion-safe {
-				animation: route-ball-glow 2.6s ease-in-out infinite;
-			}
-		}
-
-		.location-route__mirror-ball-body {
-			fill: var(--location-route-ball);
-			stroke: var(--location-route-ball-edge);
-			stroke-width: 1;
-		}
-
-		.location-route__mirror-ball-facets {
-			fill: none;
-			stroke: var(--location-route-ball-edge);
-			stroke-width: 0.8;
-		}
-
-		.location-route__mirror-ball-spark {
-			fill: var(--location-route-ink);
-			transform-box: fill-box;
-			transform-origin: center;
-
-			@include m.motion-safe {
-				animation: route-ball-spark 1.8s ease-in-out infinite;
-			}
 		}
 
 		// The butterfly faces its way along the route and folds its wings now and then.
@@ -672,46 +612,247 @@ $spot-open: polygon(44% 0%, 56% 0%, 100% 100%, 0% 100%);
 		--location-route-sky: #{$lantern-sky};
 	}
 
+	// The mirror ball does not pin. Its venues are two club passes that stack as the guest scrolls:
+	// each pass sticks under the bar, and the next one slides up over it while it sinks back.
 	.event-location[data-location-scene='mirror-ball-route'] {
 		--location-route-ball: rgb(233 234 238);
-		--location-route-ball-edge: rgb(157 163 174);
-		--location-route-spot: rgb(244 244 246 / 18%);
 		--location-route-floor: var(--location-route-glow);
 		--location-route-sky: #{$mirror-ball-sky};
-	}
+		--location-pass-silver-rgb: var(--mirror-ball-silver-rgb, 214 214 222);
+		--location-pass-glow-rgb: var(--mirror-ball-glow-rgb, 243 217 164);
+		--location-pass-ink: var(--mirror-ball-ink, var(--location-route-ink));
+		--location-pass-top: calc(var(--header-height, 4rem) + 1rem);
+		--location-pass-notch-y: 9.5rem;
 
-	@keyframes route-spot-open {
-		from {
-			clip-path: #{$spot-closed};
+		background: var(--location-route-sky);
+		color: var(--location-route-ink);
+
+		.event-location__intro,
+		.event-location__heading,
+		.event-location__lede,
+		.event-location__eyebrow,
+		.event-location__shared-date {
+			color: var(--location-route-ink);
 		}
 
+		.event-location__program {
+			gap: 1.5rem;
+			counter-reset: location-pass;
+		}
+
+		.event-location__program-entry {
+			--location-program-ink: var(--location-pass-ink);
+			--location-program-muted: rgb(var(--location-pass-silver-rgb) / 82%);
+			--location-program-link: var(--location-pass-ink);
+			--location-program-links-gap: 0.6rem;
+			--location-program-links-row-gap: 0.6rem;
+			--location-program-link-padding: 0 1.1rem;
+			--location-program-link-radius: 999px;
+			--location-program-link-border: 1px solid rgb(var(--location-pass-silver-rgb) / 55%);
+			--location-program-link-bg: rgb(255 255 255 / 4%);
+			--location-program-link-decoration: none;
+			--location-program-link-tracking: 0.1em;
+			--location-program-link-primary-bg: rgb(var(--location-pass-silver-rgb));
+			--location-program-link-primary-color: var(--location-route-night-deep);
+			--location-program-link-primary-border: 1px solid transparent;
+
+			position: sticky;
+			top: calc(var(--location-pass-top) + (var(--location-pass-index, 0) * 0.85rem));
+			isolation: isolate;
+			overflow: hidden;
+			gap: 0;
+			min-height: min(30rem, calc(100svh - var(--location-pass-top) - 3rem));
+			padding: 1.5rem 1.4rem 1.6rem;
+			border: 0;
+			border-radius: 1.25rem;
+			background:
+				radial-gradient(
+					120% 70% at 100% 0%,
+					rgb(var(--location-pass-glow-rgb) / 26%),
+					transparent 60%
+				),
+				linear-gradient(
+					160deg,
+					color-mix(in srgb, var(--location-route-night) 88%, white) 0%,
+					var(--location-route-night-deep) 100%
+				);
+			box-shadow:
+				inset 0 0 0 1px rgb(var(--location-pass-silver-rgb) / 45%),
+				inset 0 1px 0 rgb(255 255 255 / 30%),
+				0 -0.75rem 2rem rgb(0 0 0 / 35%);
+			counter-increment: location-pass;
+
+			// The ticket notches, cut on both edges at the tear line.
+			mask:
+				radial-gradient(
+						circle 0.85rem at 0 var(--location-pass-notch-y),
+						transparent 98%,
+						black
+					)
+					left / 51% 100% no-repeat,
+				radial-gradient(
+						circle 0.85rem at 100% var(--location-pass-notch-y),
+						transparent 98%,
+						black
+					)
+					right / 51% 100% no-repeat;
+			transform-origin: 50% 0;
+
+			&:nth-child(2) {
+				--location-pass-index: 1;
+			}
+
+			&:nth-child(3) {
+				--location-pass-index: 2;
+			}
+
+			// Faceted silver sheen along the top edge, like the mirror ball's tiles.
+			&::before {
+				position: absolute;
+				inset: 0 0 auto;
+				z-index: -1;
+				height: 0.4rem;
+				background:
+					repeating-linear-gradient(
+						90deg,
+						rgb(255 255 255 / 0%) 0 0.55rem,
+						rgb(255 255 255 / 35%) 0.55rem 0.6rem
+					),
+					linear-gradient(
+						100deg,
+						rgb(var(--location-pass-silver-rgb)),
+						rgb(240 240 246),
+						rgb(var(--location-pass-glow-rgb)),
+						rgb(var(--location-pass-silver-rgb))
+					);
+				content: '';
+			}
+
+			// The tear line between the notches.
+			&::after {
+				position: absolute;
+				top: var(--location-pass-notch-y);
+				inset-inline: 1.4rem;
+				border-top: 1px dashed rgb(var(--location-pass-silver-rgb) / 40%);
+				content: '';
+			}
+		}
+
+		.event-location__program-drawing {
+			display: none;
+		}
+
+		.event-location__program-label {
+			display: flex;
+			align-items: baseline;
+			justify-content: space-between;
+			width: 100%;
+			font-family: var(--font-label, var(--font-body));
+			font-size: 0.95rem;
+			font-variant-caps: normal;
+			letter-spacing: 0.32em;
+			text-transform: uppercase;
+			color: rgb(var(--location-pass-silver-rgb));
+
+			&::before {
+				content: counter(location-pass, decimal-leading-zero);
+				font-family: var(--font-display);
+				font-size: 1.05rem;
+				letter-spacing: 0.08em;
+				color: rgb(var(--location-pass-glow-rgb));
+				order: 1;
+			}
+		}
+
+		.event-location__program-time {
+			margin: 0.5rem 0 0;
+			font-family: var(--font-display);
+			font-size: clamp(3.6rem, 19vw, 5.5rem);
+			font-weight: 500;
+			line-height: 0.95;
+			letter-spacing: -0.01em;
+			color: var(--location-pass-ink);
+			text-shadow: 0 0 1.5rem rgb(var(--location-pass-glow-rgb) / 45%);
+
+			// Space down to the tear line.
+			min-height: calc(var(--location-pass-notch-y) - 3.6rem);
+		}
+
+		.event-location__program-place {
+			margin: 1.75rem 0 0;
+			font-family: var(--font-calligraphy, var(--font-display));
+			font-size: clamp(2.1rem, 9vw, 2.6rem);
+			font-weight: 400;
+			line-height: 1.1;
+			color: var(--location-pass-ink);
+			text-shadow: 0 0 0.9rem rgb(var(--location-pass-glow-rgb) / 55%);
+		}
+
+		.event-location__program-address {
+			margin: 0.75rem 0 0;
+			font-size: 1.05rem;
+		}
+
+		.event-location__program-actions {
+			margin-top: auto;
+			padding-top: 1.5rem;
+		}
+
+		@include m.motion-safe {
+			@supports (animation-timeline: view()) {
+				// A pass sinks back and dims while the next one rises to cover it: a stuck pass stops
+				// moving, so each pass follows the timeline of the one after it.
+				.event-location__program {
+					timeline-scope: --location-pass-2, --location-pass-3;
+				}
+
+				.event-location__program-entry:nth-child(2) {
+					view-timeline-name: --location-pass-2;
+				}
+
+				.event-location__program-entry:nth-child(3) {
+					view-timeline-name: --location-pass-3;
+				}
+
+				.event-location__program-entry:nth-child(1):not(:last-child) {
+					--location-pass-next: --location-pass-2;
+				}
+
+				.event-location__program-entry:nth-child(2):not(:last-child) {
+					--location-pass-next: --location-pass-3;
+				}
+
+				// The passes are editorial reveal items, so the sink runs next to their entrance rise
+				// instead of replacing it.
+				#invitation-sections-container
+					&
+					.event-location__program-entry:not(:last-child):is(
+						:nth-child(1),
+						:nth-child(2)
+					) {
+					animation: location-pass-sink linear both;
+					animation-timeline: var(--location-pass-next);
+					animation-range: entry 0% entry 100%;
+
+					&.is-visible {
+						animation:
+							editorial-rise 600ms var(--editorial-ease) backwards,
+							location-pass-sink linear both;
+						animation-delay: calc(300ms + 70ms * var(--editorial-order, 0)), 0s;
+						animation-timeline: auto, var(--location-pass-next);
+						animation-range:
+							normal,
+							entry 0% entry 100%;
+					}
+				}
+			}
+		}
+	}
+
+	@keyframes location-pass-sink {
 		to {
-			clip-path: #{$spot-open};
-		}
-	}
-
-	@keyframes route-ball-glow {
-		0%,
-		100% {
-			opacity: 16%;
-		}
-
-		50% {
-			opacity: 34%;
-		}
-	}
-
-	@keyframes route-ball-spark {
-		0%,
-		60%,
-		100% {
-			opacity: 0%;
-			scale: 0.4;
-		}
-
-		75% {
-			opacity: 100%;
-			scale: 1;
+			filter: brightness(0.55);
+			scale: 0.94;
 		}
 	}
 
