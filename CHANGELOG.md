@@ -54,7 +54,9 @@ event); the two `20261110100000`/`20261110120000` migrations only release archiv
 - Release: historical invitation patches require verification (#897); the active package hash
   baseline is updated (#894); invitation note deletions compare from the merge base (#913); the
   deploy check accepts an inactive no-traffic smoke when the same SHA has a successful run (#920);
-  the Worker-first guard exempts only reviewed content patches (#946).
+  the Worker-first guard exempts only reviewed Auth and tracking patches that do not depend on the
+  Worker, while invitation content patches stay guarded (#946).
+- Tracking: a blank `lead_code` is dropped before an event is stored (#943).
 - Production data: blank tracking lead codes are cleared and Auth accounts without an application
   role are removed (#943, #945); the Thank You prerequisite verifies the approved variants (#947);
   the nine Production data prerequisites are marked verified (#948).
