@@ -558,9 +558,18 @@ $valeria-night-ground:
 	text-align: left;
 }
 
-// Dress code: a VIP pass with a foil strip, a sequin dress mark and the swatches as sequins.
+// Dress code: a VIP pass with a foil strip, a dress-and-jacket mark and the swatches as sequins.
 .event--valeria-hernandez.event-theme-wrapper
 	.event-location
 	.event-location__enclosure.event-location__enclosure {
 	@include scenes.dress-pass;
+}
+
+// Program and gift: a set list on a neon thread, and an envelope pass.
+.event--valeria-hernandez.event-theme-wrapper .itinerary.itinerary {
+	@include scenes.night-program;
+}
+
+.event--valeria-hernandez.event-theme-wrapper .gifts-section.gifts-section {
+	@include scenes.envelope-pass;
 }

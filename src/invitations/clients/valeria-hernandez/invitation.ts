@@ -6,8 +6,9 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
  * night: cherry paper and wine ink by day, a deep wine night for the countdown and the closing,
  * with a mirror ball, fine stars and a cherry pair as the only motifs. The photographs are the
  * client's WhatsApp deliveries, cropped per role and never upscaled. Every guest-facing line is a
- * draft for the client's approval; the program, menu, song file, reply deadline and photo-QR
- * space are pending and stay out of the page until the client confirms them.
+ * draft for the client's approval, except the program, the snacks note and the envelope gift,
+ * which the client confirmed; the song file, reply deadline and photo-QR space are pending and
+ * stay out of the page until the client confirms them.
  */
 const VALERIA_TIMING = {
 	localDateTime: '2027-01-09T17:45',
@@ -29,8 +30,10 @@ const content: CanonicalEventContentInput = {
 		'quote',
 		'countdown',
 		'location',
+		'itinerary',
 		'family',
 		'gallery',
+		'gifts',
 		'personalizedAccess',
 		'rsvp',
 		'thankYou',
@@ -42,9 +45,9 @@ const content: CanonicalEventContentInput = {
 			// the album climbs a slope, and the closing rises into the reply card.
 			countdown: { family: 'overlap', source: 'quote' },
 			location: { family: 'atmospheric-blend', source: 'countdown' },
-			family: { family: 'folio', source: 'location' },
+			family: { family: 'folio', source: 'itinerary' },
 			gallery: { family: 'arch', source: 'family' },
-			'personalized-access': { family: 'folio', source: 'gallery' },
+			'personalized-access': { family: 'folio', source: 'gifts' },
 			thankYou: { family: 'arch', source: 'rsvp' },
 		},
 	},
@@ -174,6 +177,41 @@ const content: CanonicalEventContentInput = {
 				googleMapsUrl:
 					'https://www.google.com/maps/search/?api=1&query=Sal%C3%B3n%20Las%20Barricas%2C%20Cto.%20Juan%20Pablo%20Segundo%202455%2C%20La%20Hacienda%2C%20Puebla%2C%20Pue.',
 				isVisible: true,
+			},
+		],
+	},
+	itinerary: {
+		// Program confirmed by the client; the night ends after midnight, on January 10.
+		variant: 'standard',
+		title: 'El programa de mi noche',
+		items: [
+			{ time: '17:45', iconName: 'Church', label: 'Ceremonia' },
+			{ time: '19:30', iconName: 'Reception', label: 'Recepción' },
+			{ time: '20:00', iconName: 'Crown', label: 'Entrada XV' },
+			{
+				time: '20:30',
+				iconName: 'Taco',
+				label: 'Snacks',
+				description: 'Habrá snacks; no se servirá cena.',
+			},
+			{ time: '21:30', iconName: 'Toast', label: 'Brindis' },
+			{ time: '22:00', iconName: 'Waltz', label: 'Vals familiar' },
+			{ time: '00:00', iconName: 'Cake', label: 'Pastel' },
+			{ time: '00:10', iconName: 'Sparkles', label: 'Sorpresa' },
+			{ time: '02:00', iconName: 'Party', label: 'Fin del evento' },
+		],
+	},
+	gifts: {
+		// The client asked for envelopes only.
+		variant: 'gift-tag',
+		title: 'Regalos',
+		presentation: 'catalog',
+		subtitle: 'Su presencia es mi mejor regalo.',
+		items: [
+			{
+				type: 'cash',
+				title: 'Lluvia de sobres',
+				text: 'Si desea tener un detalle conmigo, será bienvenido en sobre el día de la fiesta.',
 			},
 		],
 	},

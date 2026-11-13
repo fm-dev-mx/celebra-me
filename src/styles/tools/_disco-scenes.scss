@@ -157,7 +157,8 @@
 }
 
 // Dress-code pass. Include on an `.event-location__enclosure`: a foil strip runs along its top
-// edge, a sequin dress on its hanger opens the dress-code note, and the swatch reads as a sequin.
+// edge, a sequin dress beside a dinner jacket opens the dress-code note, and the swatch reads as a
+// sequin.
 @mixin dress-pass($glow-rgb: var(--color-rose-glow-rgb)) {
 	position: relative;
 	overflow: hidden;
@@ -176,10 +177,10 @@
 
 	.event-location__enclosure-note:first-of-type .event-location__enclosure-title::before {
 		display: block;
-		width: 3.4rem;
-		height: 3.85rem;
+		width: 5.6rem;
+		height: 4.05rem;
 		margin: 0 auto 0.7rem;
-		background: disco.$sequin-dress center / contain no-repeat;
+		background: disco.$glam-attire center / contain no-repeat;
 		filter: drop-shadow(0 0 0.4rem rgb($glow-rgb / 85%))
 			drop-shadow(0 0 1.1rem rgb($glow-rgb / 45%));
 		content: '';
@@ -204,6 +205,105 @@
 		to {
 			background-position-x: 100%;
 		}
+	}
+}
+
+// Night program. Include on an `.itinerary`: the timeline becomes a set list in silver ink, a
+// neon thread runs down its side and every act hangs from it on a dark glass bead.
+@mixin night-program($glow-rgb: var(--color-rose-glow-rgb), $ink: rgb(244 240 244)) {
+	--itinerary-line-color: rgb(#{$glow-rgb} / 90%);
+	--itinerary-item-time-color: rgb(var(--color-night-blush-rgb));
+	--itinerary-item-label-color: #{$ink};
+	--itinerary-item-desc-color: rgb(var(--color-night-blush-rgb) / 88%);
+	--itinerary-icon-bg: rgb(30 5 13 / 92%);
+	--itinerary-icon-border: 1px solid rgb(var(--color-night-blush-rgb) / 55%);
+	--itinerary-icon-shadow: 0 0 0.9rem rgb(#{$glow-rgb} / 55%);
+	--itinerary-icon-color: #{$ink};
+
+	padding-block: 4rem;
+
+	.itinerary__header {
+		margin-bottom: 2.25rem;
+	}
+
+	.itinerary__timeline {
+		padding-block: 0.5rem;
+	}
+
+	.itinerary__line-start,
+	.itinerary__line-end {
+		display: none;
+	}
+
+	.itinerary__items {
+		gap: 1.9rem;
+	}
+
+	.itinerary__item-time {
+		margin-bottom: 0.2rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+	}
+
+	.itinerary__item-label {
+		margin-bottom: 0;
+		font-weight: 500;
+	}
+
+	.itinerary__item-description {
+		margin-top: 0.3rem;
+		font-family: var(--font-display);
+		font-size: 1.05rem;
+		font-style: italic;
+	}
+
+	.itinerary__item-icon-wrapper::before {
+		border-color: rgb(#{$glow-rgb} / 80%);
+	}
+}
+
+// Envelope pass. Include on a `.gifts-section`: the gift card turns into a dark glass pass under
+// a foil strip, with its title lit in neon.
+@mixin envelope-pass($glow-rgb: var(--color-rose-glow-rgb), $ink: rgb(244 240 244)) {
+	min-height: 0;
+
+	.gift-card {
+		position: relative;
+		overflow: hidden;
+		border: 1px solid rgb(var(--color-night-blush-rgb) / 30%);
+		background:
+			radial-gradient(120% 70% at 50% 0%, rgb(152 30 52 / 55%), transparent 70%), rgb(30 5 13);
+		box-shadow: 0 1.2rem 2.4rem rgb(0 0 0 / 35%);
+		color: $ink;
+
+		&::before {
+			@include foil-strip($glow-rgb);
+
+			position: absolute;
+			inset: 0 0 auto;
+			display: block;
+			height: 0.45rem;
+			clip-path: none;
+			content: '';
+			pointer-events: none;
+		}
+	}
+
+	.gift-card__icon-medallion {
+		border: 1px solid rgb(var(--color-night-blush-rgb) / 55%);
+		background: rgb(30 5 13 / 92%);
+		box-shadow: 0 0 0.9rem rgb(#{$glow-rgb} / 55%);
+	}
+
+	.gift-card__title {
+		color: $ink;
+		text-shadow:
+			0 0 0.5rem rgb(#{$glow-rgb} / 90%),
+			0 0 1.2rem rgb(#{$glow-rgb} / 50%);
+	}
+
+	.gift-card__description {
+		color: rgb(var(--color-night-blush-rgb) / 92%);
 	}
 }
 
