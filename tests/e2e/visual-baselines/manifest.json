@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-12T17:45:16.568Z",
+    "generatedAt": "2026-11-12T20:08:44.290Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-        "cssSha256": "996d94c07892e1efe8bd902f0cd496c829ba65ee18495761b4ff3e2fd92c79ca",
+        "cssSha256": "ce4a00a9c667b52bcaa84f1721234323ba90847c4b4815ba14cd1883353c7c53",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2465,9 +2465,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "1f389db532572f61446805f857dac135987d3fea",
+    "referenceSha": "f56e5d86b1f9151fbdb8fccf56a4cd87570c34cc",
     "variantManifest": {
-        "generatedAt": "2026-11-12T17:45:16.568Z",
+        "generatedAt": "2026-11-12T20:08:44.290Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2480,7 +2480,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "996d94c07892e1efe8bd902f0cd496c829ba65ee18495761b4ff3e2fd92c79ca",
+            "cssSha256": "ce4a00a9c667b52bcaa84f1721234323ba90847c4b4815ba14cd1883353c7c53",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4453,10 +4453,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "1f389db532572f61446805f857dac135987d3fea"
+        "referenceSha": "f56e5d86b1f9151fbdb8fccf56a4cd87570c34cc"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-12T17:45:16.574Z",
+        "generatedAt": "2026-11-12T20:08:44.349Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4469,7 +4469,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "996d94c07892e1efe8bd902f0cd496c829ba65ee18495761b4ff3e2fd92c79ca",
+            "cssSha256": "ce4a00a9c667b52bcaa84f1721234323ba90847c4b4815ba14cd1883353c7c53",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4919,7 +4919,7 @@
                 "preset": "storybook-blush",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-valeria-hernandez-mobile.png",
-                "sha256": "127a5c848044d5ecb33457c5f9a4460e4ab3e90ec1027459f3692eef0f9cd422",
+                "sha256": "b56de9f01c79272b35d292f1f9d28e353462397dbe11d65ff94868bc7aee4d71",
                 "contentHash": "e46c29e18bd367ed0f658916adaf176f1b5749fc0c661f9f4ab2a6a62993f2ea",
                 "assetHash": "2ac2e3a33de7d1617a906ddbb3a8fa21d6e7237c21f80932e31cd97a29fb8df4",
                 "comparisonResult": "CANDIDATE"
@@ -4931,7 +4931,7 @@
                 "preset": "storybook-blush",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-valeria-hernandez-desktop.png",
-                "sha256": "919817cb7772949f1723018e1533fc8af21a5f83e8dcf81675fc7f8458d27374",
+                "sha256": "59007e8cbb26747ecfb805a4852804e5cc9cb4b59ea7e52630d40a8f6758c4a2",
                 "contentHash": "e46c29e18bd367ed0f658916adaf176f1b5749fc0c661f9f4ab2a6a62993f2ea",
                 "assetHash": "2ac2e3a33de7d1617a906ddbb3a8fa21d6e7237c21f80932e31cd97a29fb8df4",
                 "comparisonResult": "CANDIDATE"
@@ -4961,9 +4961,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "1f389db532572f61446805f857dac135987d3fea"
+        "referenceSha": "f56e5d86b1f9151fbdb8fccf56a4cd87570c34cc"
     },
-    "candidateManifestSha256": "f93d6c9aeeea7655336e10a0f1caa621da3e17280439a27faa69eab040dcbccd",
-    "acceptedFromCommit": "1f389db532572f61446805f857dac135987d3fea",
-    "acceptedAt": "2026-11-12T17:46:08.526Z"
+    "candidateManifestSha256": "fcd79bd9df97ee5a1dc1fe9cfa337040d33b88a368ad4cd48ea37673ce7a1bf4",
+    "acceptedFromCommit": "f56e5d86b1f9151fbdb8fccf56a4cd87570c34cc",
+    "acceptedAt": "2026-11-12T20:09:39.386Z"
 }
