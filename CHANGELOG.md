@@ -10,6 +10,25 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.72.0] - 2026-11-13
+
+Adds the background song, a gallery scroll cue and a new dress-code reference image to Valeria
+Hernández. No database migrations.
+
+### Added
+
+- Invitations: Valeria Hernández plays its background song and shows a subtle scroll cue in the
+  photo-booth gallery (#959).
+
+### Changed
+
+- Invitations: Valeria Hernández uses a new dress-code reference image (#959).
+- Governance: the Claude bridge may run `invitation:release` (#961).
+
+### Fixed
+
+- Invitations: the music-player equalizer stays steady during visual captures (#959).
+
 ## [0.71.0] - 2026-11-13
 
 Ships the third client round of Yireh Ana and the cherry disco redesign of Valeria Hernández. No
