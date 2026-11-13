@@ -27,7 +27,6 @@ $valeria-night-ground:
 	),
 	var(--color-rose-midnight);
 
-// The opening scene wears the night inks over the shared disco stage.
 .event--valeria-hernandez.event-theme-wrapper .invitation-hero[data-variant='disco-stage'] {
 	@include valeria-night-inks;
 }
@@ -60,11 +59,9 @@ $valeria-night-ground:
 	}
 }
 
-// The words scene: the shared neon sign (palette in profile.scss) on the same night inks.
 .event--valeria-hernandez.event-theme-wrapper .quote-section {
 	@include valeria-night-inks;
 
-	// The sign comes down on its cables and flickers on as the scene scrolls in.
 	.neon-sign__sign {
 		@include scenes.neon-power-on;
 	}
@@ -316,7 +313,6 @@ $valeria-night-ground:
 		}
 	}
 
-	// The ball is lowered over the bill with the scroll and keeps swaying.
 	.family__container::before {
 		@include scenes.mirror-ball-lower(valeria-ball-sway 6s ease-in-out infinite alternate);
 	}
@@ -370,10 +366,8 @@ $valeria-night-ground:
 			border-color: transparent;
 		}
 
-		// The ticket is fed out as the scene scrolls in.
 		@include scenes.ticket-feed;
 
-		// The ticket's printed header line.
 		&::after {
 			position: absolute;
 			top: min(1.5rem, 2.2svh);
@@ -390,7 +384,6 @@ $valeria-night-ground:
 		}
 	}
 
-	// A mirror ball rolls in beside the heading.
 	.access-card__header::before {
 		@include scenes.mirror-ball-surface;
 
@@ -405,7 +398,6 @@ $valeria-night-ground:
 		text-shadow: var(--valeria-pass-neon);
 	}
 
-	// Holographic foil strip, edge to edge.
 	.access-card__divider {
 		@include scenes.foil-strip;
 
@@ -444,7 +436,6 @@ $valeria-night-ground:
 		),
 		var(--reply-card-bg);
 
-	// The stub is punched where it meets the pass.
 	@include scenes.ticket-notches(var(--valeria-pass-cut));
 
 	&::before {
@@ -453,8 +444,7 @@ $valeria-night-ground:
 
 	@include scenes.ticket-stub-one-screen;
 
-	// On short screens the later steps drop the lede, tighten their gaps and set the actions on
-	// one row, so the fields and the buttons stay on screen together.
+	// Short screens: later steps drop the lede, tighten gaps and put the actions on one row.
 	@media (height <= 760px) {
 		&:has(.rsvp-steps:not([data-step-index='0'])) .rsvp__subcopy {
 			display: none;
@@ -499,6 +489,11 @@ $valeria-night-ground:
 		}
 	}
 
+	.rsvp__header > * {
+		margin-inline: 0;
+		text-align: start;
+	}
+
 	.rsvp__title {
 		color: rgb(255 244 246);
 		font: 400 min(clamp(2.25rem, 11.5vw, 3.75rem), 5.5svh) / 1 var(--font-calligraphy);
@@ -538,7 +533,6 @@ $valeria-night-ground:
 		box-shadow: 0 0 1.1rem rgb(var(--color-rose-glow-rgb) / 60%);
 	}
 
-	// Alone on the public link the stub is a whole ticket: rounded, punched at the tear line.
 	&[data-state='locked'] {
 		@include scenes.ticket-notches(var(--valeria-pass-cut), 6.6rem);
 
@@ -552,6 +546,12 @@ $valeria-night-ground:
 			border-top: 2px dashed rgb(var(--color-night-blush-rgb) / 35%);
 		}
 	}
+}
+
+.event--valeria-hernandez.event-theme-wrapper .thank-you-section .closing-name {
+	position: relative;
+	left: 14%;
+	rotate: -5deg;
 }
 
 .event--valeria-hernandez.event-theme-wrapper .event-location .event-location__intro {

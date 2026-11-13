@@ -139,6 +139,8 @@
 	--last-song-ground: var(--color-rose-night);
 	--last-song-ink: var(--color-night-blush);
 	--last-song-ink-rgb: var(--color-night-blush-rgb);
+	--last-song-message-size: 1.0625rem;
+	--last-song-name-size: min(clamp(5.5rem, 27vw, 8rem), 13svh);
 	--disco-night-deep: var(--color-rose-deep);
 	--disco-night-deep-rgb: var(--color-rose-deep-rgb);
 	--photo-booth-glow-rgb: var(--color-rose-glow-rgb);
@@ -157,6 +159,7 @@
 	--neon-sign-seam: var(--color-rose-midnight);
 	--neon-sign-ink: var(--color-night-blush);
 	--neon-sign-tube: var(--color-night-blush);
+	--neon-sign-closing-size: 1.0625rem;
 
 	// The closing keepsake keeps an even night above and below, not the preset's tall bottom band.
 	--thank-you-keepsake-padding-block-lg: clamp(4.5rem, 10svh, 6rem);
