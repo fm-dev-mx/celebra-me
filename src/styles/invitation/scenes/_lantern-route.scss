@@ -664,7 +664,7 @@ $mirror-ball-sky:
 			min-height: min(30rem, calc(100svh - var(--location-pass-top) - 3rem));
 			padding: 1.5rem 1.4rem 1.6rem;
 			border: 0;
-			border-radius: 1.25rem;
+			border-radius: var(--mirror-ball-route-pass-radius, 1.25rem);
 			background:
 				radial-gradient(
 					120% 70% at 100% 0%,
@@ -748,7 +748,7 @@ $mirror-ball-sky:
 			justify-content: space-between;
 			width: 100%;
 			font-family: var(--font-label, var(--font-body));
-			font-size: 0.95rem;
+			font-size: var(--mirror-ball-route-label-size, 0.95rem);
 			font-variant-caps: normal;
 			letter-spacing: 0.32em;
 			text-transform: uppercase;
@@ -757,7 +757,7 @@ $mirror-ball-sky:
 			&::before {
 				content: counter(location-pass, decimal-leading-zero);
 				font-family: var(--font-display);
-				font-size: 1.05rem;
+				font-size: var(--mirror-ball-route-label-mark-size, 1.05rem);
 				letter-spacing: 0.08em;
 				color: rgb(var(--location-pass-glow-rgb));
 				order: 1;
@@ -767,7 +767,7 @@ $mirror-ball-sky:
 		.event-location__program-time {
 			margin: 0.5rem 0 0;
 			font-family: var(--font-display);
-			font-size: clamp(3.6rem, 19vw, 5.5rem);
+			font-size: var(--mirror-ball-route-time-size, clamp(3.6rem, 19vw, 5.5rem));
 			font-weight: 500;
 			line-height: 0.95;
 			letter-spacing: -0.01em;
@@ -781,7 +781,7 @@ $mirror-ball-sky:
 		.event-location__program-place {
 			margin: 1.75rem 0 0;
 			font-family: var(--font-calligraphy, var(--font-display));
-			font-size: clamp(2.1rem, 9vw, 2.6rem);
+			font-size: var(--mirror-ball-route-place-size, clamp(2.1rem, 9vw, 2.6rem));
 			font-weight: 400;
 			line-height: 1.1;
 			color: var(--location-pass-ink);
@@ -790,7 +790,7 @@ $mirror-ball-sky:
 
 		.event-location__program-address {
 			margin: 0.75rem 0 0;
-			font-size: 1.05rem;
+			font-size: var(--mirror-ball-route-address-size, 1.05rem);
 		}
 
 		.event-location__program-actions {

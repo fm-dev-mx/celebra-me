@@ -151,7 +151,7 @@ $neon-sign-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 		width: min(100%, 34rem);
 		padding: clamp(2.25rem, 6vw, 3.25rem) clamp(1.25rem, 5vw, 2.75rem);
 		border: 1.5px solid rgb(var(--neon-sign-glow) / 70%);
-		border-radius: 1.25rem;
+		border-radius: var(--neon-sign-board-radius, 1.25rem);
 		box-shadow:
 			0 0 0.35rem rgb(var(--neon-sign-glow) / 55%),
 			0 0 1.5rem rgb(var(--neon-sign-glow) / 25%),
@@ -162,7 +162,7 @@ $neon-sign-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 			position: absolute;
 			inset: 0.45rem;
 			border: 1px solid rgb(var(--neon-sign-silver) / 28%);
-			border-radius: 0.85rem;
+			border-radius: var(--neon-sign-board-inner-radius, 0.85rem);
 			content: '';
 			pointer-events: none;
 		}
@@ -200,7 +200,7 @@ $neon-sign-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 			left: 50%;
 			width: 0.45rem;
 			height: 0.4rem;
-			border-radius: 0.1rem;
+			border-radius: var(--neon-sign-plug-radius, 0.1rem);
 			background: rgb(var(--neon-sign-silver) / 80%);
 			content: '';
 			transform: translateX(-50%);
@@ -229,7 +229,7 @@ $neon-sign-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 	.quote-line {
 		margin: 0 0 0.35em;
 		font-family: var(--neon-sign-caps-font, var(--font-display, var(--font-body, serif)));
-		font-size: clamp(1.125rem, 4.6vw, 1.5rem);
+		font-size: var(--neon-sign-line-size, clamp(1.125rem, 4.6vw, 1.5rem));
 		font-weight: 300;
 		font-variant-caps: all-small-caps;
 		letter-spacing: 0.22em;
@@ -244,7 +244,7 @@ $neon-sign-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 	.quote-line--neon {
 		margin: 0.15em 0 0;
 		font-family: var(--neon-sign-neon-font, var(--font-calligraphy, cursive));
-		font-size: clamp(2.25rem, 11vw, 5.25rem);
+		font-size: var(--neon-sign-neon-size, clamp(2.25rem, 11vw, 5.25rem));
 		font-weight: 400;
 		font-variant-caps: normal;
 		letter-spacing: 0;
@@ -266,7 +266,7 @@ $neon-sign-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 		gap: 0.75rem;
 		margin: clamp(1.75rem, 5svh, 2.5rem) 0 0;
 		font-family: var(--font-body, serif);
-		font-size: 0.9375rem;
+		font-size: var(--neon-sign-closing-size, 0.9375rem);
 		letter-spacing: 0.06em;
 		color: rgb(var(--neon-sign-silver) / 92%);
 		text-shadow: none;

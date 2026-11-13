@@ -199,7 +199,7 @@
 	.countdown-invitation-text {
 		color: var(--mirror-ball-ink, var(--color-text-primary));
 		font-family: var(--font-calligraphy, var(--font-display));
-		font-size: clamp(2.8rem, 12vw, 3.6rem);
+		font-size: var(--mirror-ball-invitation-size, clamp(2.8rem, 12vw, 3.6rem));
 		font-style: normal;
 		line-height: 1.1;
 		opacity: 100%;
