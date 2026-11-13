@@ -210,7 +210,10 @@ export function validateProductionPatchManifest(manifest: SqlManifest): string[]
 
 function consumeLineComment(sql: string, index: number): number {
 	let nextIndex = index + 2;
-	while (nextIndex < sql.length && sql[nextIndex] !== '\n') nextIndex += 1;
+	// PostgreSQL ends a line comment at either CR or LF.
+	while (nextIndex < sql.length && sql[nextIndex] !== '\n' && sql[nextIndex] !== '\r') {
+		nextIndex += 1;
+	}
 	return nextIndex;
 }
 
@@ -392,17 +395,26 @@ function declaredMutationTables(manifest: SqlManifest): Set<string> {
 	);
 }
 
+// Any schema-qualified target counts, so a mutation outside the patchable tables can never match
+// the validated @tables list.
+const MUTATION_TARGET_PATTERN =
+	/^\s*(?:update|insert\s+into|delete\s+from)\s+(?:only\s+)?([a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*)(?![a-z0-9_$".])/i;
+
 function mutationTargetTables(statements: ParsedSqlStatement[]): Set<string> {
 	const mutationTables = new Set<string>();
 	for (const statement of statements) {
-		const match = statement.inspection.match(
-			// Any schema-qualified target counts, so a mutation outside the patchable tables can never
-			// match the validated @tables list.
-			/^\s*(?:update|insert\s+into|delete\s+from)\s+(?:only\s+)?([a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*)\b/i,
-		);
+		const match = statement.inspection.match(MUTATION_TARGET_PATTERN);
 		if (match?.[1]) mutationTables.add(match[1].toLowerCase());
 	}
 	return mutationTables;
+}
+
+/** A target @tables cannot account for (quoted, unqualified) would hide a write from the checks. */
+function hasUnresolvedMutationTarget(statements: ParsedSqlStatement[]): boolean {
+	return statements.some(
+		(statement) =>
+			mutationVerb(statement) !== null && !MUTATION_TARGET_PATTERN.test(statement.inspection),
+	);
 }
 
 function checkMutationTables(declaredTables: Set<string>, mutationTables: Set<string>): string[] {
@@ -459,6 +471,11 @@ function checkPatchOperationAndTables(
 			'DML must be a top-level UPDATE, INSERT, or DELETE statement that can be verified.',
 		);
 	}
+	if (hasUnresolvedMutationTarget(statements)) {
+		errors.push(
+			'Every mutation must target an unquoted schema-qualified table (schema.table).',
+		);
+	}
 	errors.push(...checkDeclaredOperation(manifest, mutations));
 	const declaredTables = declaredMutationTables(manifest);
 	const mutationTables = mutationTargetTables(statements);
@@ -480,6 +497,132 @@ function checkWhereClauses(statements: ParsedSqlStatement[]): string[] {
 		}
 	}
 	return errors;
+}
+
+/** SQL keywords that may precede `(` and built-in functions that never write rows. */
+const BUILTIN_SQL_CALLS: ReadonlySet<string> = new Set([
+	'all',
+	'and',
+	'any',
+	'array',
+	'as',
+	'btrim',
+	'cast',
+	'char_length',
+	'coalesce',
+	'count',
+	'exists',
+	'format',
+	'from',
+	'greatest',
+	'if',
+	'in',
+	'is',
+	'jsonb_build_object',
+	'jsonb_typeof',
+	'least',
+	'length',
+	'lower',
+	'max',
+	'min',
+	'not',
+	'now',
+	'nullif',
+	'on',
+	'or',
+	'select',
+	'then',
+	'trim',
+	'upper',
+	'using',
+	'values',
+	'when',
+	'where',
+]);
+
+/**
+ * True when every `name(` in the patch, dollar bodies included, is a keyword or a built-in
+ * function, and the patch runs no SQL it builds at run time. A user function, a quoted name,
+ * `EXECUTE` of a concatenated string or a psql meta-command such as `\gexec` could write
+ * tables that `@tables` never lists.
+ */
+export function patchCallsOnlyBuiltinFunctions(sql: string): boolean {
+	let statements: ParsedSqlStatement[];
+	try {
+		statements = parseProductionPatchStatements(sql);
+	} catch {
+		return false;
+	}
+	if (statements.some((statement) => statement.inspection.includes('\\'))) return false;
+	// Scan string and dollar-quoted contents too: `DO '...'`, EXECUTE and string-built SQL
+	// all hide code inside literals, so any call-shaped text anywhere disqualifies the patch.
+	const code = sqlWithoutComments(sql);
+	// Code-point escapes (E'(', \x28, \050) and Unicode-escaped identifiers
+	// (U&"..." UESCAPE) can spell a call or EXECUTE that no pattern over the raw text sees, so
+	// they disqualify the patch. Whitespace, quote and backslash escapes cannot.
+	if (/\\[^tnrbf\\']/.test(code) || /\bu&|\buescape\b/i.test(code)) return false;
+	return (
+		!/\bexecute\b/i.test(code) &&
+		!/"\s*\(/.test(code) &&
+		[...code.matchAll(/([a-z_][a-z0-9_$.]*)\s*\(/gi)].every((match) =>
+			BUILTIN_SQL_CALLS.has(match[1]!.toLowerCase()),
+		)
+	);
+}
+
+/**
+ * The SQL with comments outside literals removed and every literal, quoted identifier and
+ * dollar-quoted body kept verbatim. A backslash extends a single-quoted literal, so a misread
+ * literal end only keeps more text, never less.
+ */
+function sqlWithoutComments(sql: string): string {
+	let code = '';
+	let index = 0;
+	while (index < sql.length) {
+		const char = sql[index]!;
+		const next = sql[index + 1];
+		if (char === '-' && next === '-') {
+			index = consumeLineComment(sql, index);
+			code += ' ';
+			continue;
+		}
+		if (char === '/' && next === '*') {
+			index = consumeBlockComment(sql, index).nextIndex;
+			code += ' ';
+			continue;
+		}
+		if (char === '$') {
+			const dollar = parseDollarBlock(sql, index);
+			if (dollar) {
+				code += sql.slice(index, dollar.nextIndex);
+				index = dollar.nextIndex;
+				continue;
+			}
+		}
+		if (char === "'" || char === '"') {
+			let end = index + 1;
+			while (end < sql.length) {
+				if (char === "'" && sql[end] === '\\') {
+					end += 2;
+					continue;
+				}
+				if (sql[end] === char) {
+					if (sql[end + 1] === char) {
+						end += 2;
+						continue;
+					}
+					break;
+				}
+				end += 1;
+			}
+			code += sql.slice(index, end + 1);
+			index = end + 1;
+			continue;
+		}
+		code += char;
+		index += 1;
+	}
+	return code;
 }
 
 export function lintProductionPatchSql(sql: string): LintResult {

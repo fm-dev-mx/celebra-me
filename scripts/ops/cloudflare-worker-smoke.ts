@@ -27,6 +27,7 @@ import {
 import {
 	formatEvidenceSummary,
 	listSmokePageRoutes,
+	passedOwnerAction,
 	runDeploymentSmoke,
 	toPostDeployPayload,
 	type PostDeployEnvironment,
@@ -144,6 +145,7 @@ export async function runCloudflareWorkerSmoke(
 		fetchImpl,
 		accessHeaders,
 		listSmokePageRoutes(new Date(), environment),
+		{ invitationsHealth: environment === 'production' },
 	);
 	const identity = await readBuildIdentity(origin, fetchImpl, accessHeaders);
 	const verified =
@@ -216,6 +218,7 @@ function createEvidence(input: {
 		: {
 				probe_count: 0,
 				failed_probe_count: 0,
+				pending_content_count: 0,
 				network_retry_count: 0,
 				runtime_health_verified: null,
 				asset_verified: null,
@@ -242,7 +245,7 @@ function createEvidence(input: {
 		source: 'github_actions',
 		ownerAction:
 			status === 'VERIFIED'
-				? 'No se requiere acción; conserve el Job Summary como evidencia.'
+				? passedOwnerAction(input.result?.probes.pendingContentTargets ?? [])
 				: 'Revise el Job Summary; la versión no se promueve hasta que el smoke pase.',
 		commitSha: input.sha,
 		deploymentId: sanitizeOperationalCorrelationId(input.versionId) ?? undefined,
@@ -318,6 +321,11 @@ async function main(): Promise<void> {
 	emit(evidence, 'completed');
 	const summaryPath = process.env.GITHUB_STEP_SUMMARY;
 	if (summaryPath) appendFileSync(summaryPath, formatEvidenceSummary(evidence), 'utf8');
+	if (result.probes.pendingContentTargets.length > 0) {
+		console.info(
+			`POST_DEPLOY_PENDING_CONTENT=${result.probes.pendingContentTargets.join(',')}`,
+		);
+	}
 	if (!result.passed) {
 		console.error(`POST_DEPLOY_FAILURE_CODES=${result.failureCodes.join(',')}`);
 		process.exitCode = 1;

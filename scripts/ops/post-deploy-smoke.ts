@@ -21,6 +21,7 @@ export type PostDeployProbeId =
 	| 'demo'
 	| 'auth_boundary'
 	| 'runtime_health'
+	| 'invitations_health'
 	| 'header_policy'
 	| 'asset';
 /** Page probes target `{eventType}:{slug}`; evidence tokens cannot carry a path. */
@@ -29,6 +30,7 @@ export type PostDeployProbeTarget =
 	| 'login'
 	| 'auth_session'
 	| 'health'
+	| 'invitations_health'
 	| 'root_headers'
 	| 'astro_asset'
 	| `${string}:${string}`;
@@ -39,8 +41,17 @@ export interface SmokePageRoute {
 	eventType: string;
 	slug: string;
 }
+/**
+ * `pending_content` is not a failure: a catalog invitation with no published row in the target
+ * yet. Content goes out after the Worker (`pnpm prod:apply`), so the smoke reports it apart.
+ */
 export type PostDeployProbeFailureClass =
-	'none' | 'network_error' | 'http_status' | 'json_invalid' | 'contract_mismatch';
+	| 'none'
+	| 'pending_content'
+	| 'network_error'
+	| 'http_status'
+	| 'json_invalid'
+	| 'contract_mismatch';
 
 export interface PostDeployProbeResult extends Record<string, OperationalAggregatePayloadValue> {
 	probe: PostDeployProbeId;
@@ -54,6 +65,8 @@ export interface PostDeployProbeResult extends Record<string, OperationalAggrega
 export interface PostDeployPayload extends OperationalAggregatePayload {
 	probe_count: number;
 	failed_probe_count: number;
+	/** Catalog invitations not yet published in the target; they do not fail the smoke. */
+	pending_content_count: number;
 	network_retry_count: number;
 	runtime_health_verified: boolean | null;
 	asset_verified: boolean | null;
@@ -73,6 +86,8 @@ export interface ProductionSmokeResult {
 	authBoundaryVerified: boolean;
 	headerPolicyVerified: boolean;
 	failureCodes: string[];
+	/** `{eventType}:{slug}` of catalog invitations not yet published in the target. */
+	pendingContentTargets: string[];
 	probeResults: PostDeployProbeResult[];
 }
 
@@ -123,10 +138,38 @@ const PAGE_TITLE_PATTERN = /<title>[^<]+<\/title>/i;
  * A rendered page is 200 with a non-empty title. An invitation may also answer 403: that is
  * the neutral page for an invitation the administrator disabled (for example /xv/mia-pintor),
  * a database state the catalog cannot know.
+ *
+ * An invitation may answer 404 only when `/api/health/invitations` reported zero failing
+ * invitations: every published row then resolves, so the 404 means the catalog invitation has
+ * no published row yet (`prod:apply` publishes it after activation), not that its content is
+ * invalid.
  */
-function isExpectedPageResponse(route: SmokePageRoute, status: number, html: string): boolean {
-	if (status === 200) return PAGE_TITLE_PATTERN.test(html);
-	return route.kind === 'invitation' && status === 403;
+function classifyPageResponse(
+	route: SmokePageRoute,
+	status: number,
+	html: string,
+	pendingPublicationAllowed: boolean,
+): 'passed' | 'pending_content' | 'failed' {
+	if (status === 200) return PAGE_TITLE_PATTERN.test(html) ? 'passed' : 'failed';
+	if (route.kind !== 'invitation') return 'failed';
+	if (status === 403) return 'passed';
+	return status === 404 && pendingPublicationAllowed ? 'pending_content' : 'failed';
+}
+
+/** Spanish owner action for a passing smoke, naming any invitation still to publish. */
+export function passedOwnerAction(pendingContentTargets: readonly string[]): string {
+	if (pendingContentTargets.length === 0)
+		return 'No se requiere acción; conserve el Job Summary como evidencia.';
+	return `Publique el contenido pendiente con \`pnpm prod:apply\` (después del Worker): ${pendingContentTargets.join(', ')}.`;
+}
+
+/** Options of one deployment smoke. */
+export interface DeploymentSmokeOptions {
+	/**
+	 * Probe `/api/health/invitations` before the pages: it must report zero failing
+	 * invitations. Production only; Preview data is not held to it.
+	 */
+	invitationsHealth?: boolean;
 }
 
 function requireValue(value: string, name: string): string {
@@ -179,6 +222,7 @@ function createPostDeployEvidence(input: {
 	environment: PostDeployEnvironment;
 	source?: string;
 	failureOwnerAction: string;
+	passedOwnerAction?: string;
 	runId: string;
 	startedAt: string;
 	completedAt: string | null;
@@ -200,7 +244,7 @@ function createPostDeployEvidence(input: {
 		source: input.source ?? 'github_actions',
 		ownerAction:
 			input.status === 'VERIFIED'
-				? 'No se requiere acción; conserve el Job Summary como evidencia.'
+				? (input.passedOwnerAction ?? passedOwnerAction([]))
 				: input.failureOwnerAction,
 		payload: input.payload,
 	};
@@ -255,7 +299,7 @@ export async function runProductionSmoke(
 ): Promise<ProductionSmokeResult> {
 	const origin = parseDeploymentOrigin(baseUrl);
 	// No credentials: the application session probe must remain anonymous.
-	return runDeploymentSmoke(origin, fetchImpl, {}, access.pages);
+	return runDeploymentSmoke(origin, fetchImpl, {}, access.pages, { invitationsHealth: true });
 }
 
 /**
@@ -267,6 +311,7 @@ export async function runDeploymentSmoke(
 	fetchImpl: FetchLike,
 	accessHeaders: Record<string, string>,
 	pages: readonly SmokePageRoute[] = listSmokePageRoutes(),
+	options: DeploymentSmokeOptions = {},
 ): Promise<ProductionSmokeResult> {
 	const baseUrl = origin.origin;
 	const request: FetchLike = (url, init) => {
@@ -277,11 +322,13 @@ export async function runDeploymentSmoke(
 		return fetchImpl(url, { ...init, headers, redirect: 'manual' });
 	};
 	const failures: string[] = [];
+	const pendingContentTargets: string[] = [];
 	let retries = 0;
 	let runtimeHealthVerified = false;
 	let assetVerified = false;
 	let authBoundaryVerified = false;
 	let headerPolicyVerified = false;
+	let invitationsHealthVerified = false;
 	let rootHtml: string | null = null;
 	let rootHeaders: Headers | null = null;
 	let rootStatusCode: number | null = null;
@@ -296,16 +343,23 @@ export async function runDeploymentSmoke(
 			statusCode: number | null;
 			failureClass: PostDeployProbeFailureClass;
 			retryCount: number;
+			pendingContent?: boolean;
 		}>,
 	): Promise<void> {
 		const startedAt = performance.now();
 		try {
 			const result = await action();
+			const pendingContent = result.passed && result.pendingContent === true;
+			if (pendingContent) pendingContentTargets.push(target);
 			probeResults.push({
 				probe: probeId,
 				target,
 				status_code: result.statusCode,
-				failure_class: result.passed ? 'none' : result.failureClass,
+				failure_class: pendingContent
+					? 'pending_content'
+					: result.passed
+						? 'none'
+						: result.failureClass,
 				retry_count: result.retryCount,
 				duration_ms: Math.round(performance.now() - startedAt),
 			});
@@ -346,6 +400,41 @@ export async function runDeploymentSmoke(
 			retryCount,
 		};
 	});
+	if (options.invitationsHealth) {
+		await probe(
+			'invitations_health_failed',
+			'invitations_health',
+			'invitations_health',
+			async () => {
+				const { response, retryCount } = await fetchWithOneRetry(
+					request,
+					`${baseUrl}/api/health/invitations`,
+				);
+				type InvitationsHealthPayload = {
+					checks?: { invitations?: { failing?: unknown } };
+				};
+				let payload: InvitationsHealthPayload | null;
+				try {
+					payload = (await response.json()) as InvitationsHealthPayload | null;
+				} catch {
+					return {
+						passed: false,
+						statusCode: response.status,
+						failureClass: 'json_invalid',
+						retryCount,
+					};
+				}
+				invitationsHealthVerified =
+					response.status === 200 && payload?.checks?.invitations?.failing === 0;
+				return {
+					passed: invitationsHealthVerified,
+					statusCode: response.status,
+					failureClass: response.status === 200 ? 'contract_mismatch' : 'http_status',
+					retryCount,
+				};
+			},
+		);
+	}
 	for (const route of pages) {
 		const target = `${route.eventType}:${route.slug}` as const;
 		await probe(`${route.kind}_failed:${target}`, route.kind, target, async () => {
@@ -354,8 +443,15 @@ export async function runDeploymentSmoke(
 				`${baseUrl}${visualPageRoute(route)}`,
 			);
 			const html = await response.text();
+			const outcome = classifyPageResponse(
+				route,
+				response.status,
+				html,
+				invitationsHealthVerified,
+			);
 			return {
-				passed: isExpectedPageResponse(route, response.status, html),
+				passed: outcome !== 'failed',
+				pendingContent: outcome === 'pending_content',
 				statusCode: response.status,
 				failureClass: response.status === 200 ? 'contract_mismatch' : 'http_status',
 				retryCount,
@@ -457,6 +553,7 @@ export async function runDeploymentSmoke(
 		authBoundaryVerified,
 		headerPolicyVerified,
 		failureCodes: failures,
+		pendingContentTargets,
 		probeResults,
 	};
 }
@@ -465,6 +562,7 @@ export function toPostDeployPayload(result: ProductionSmokeResult): PostDeployPa
 	return {
 		probe_count: result.probeCount,
 		failed_probe_count: result.failedProbeCount,
+		pending_content_count: result.pendingContentTargets.length,
 		network_retry_count: result.networkRetryCount,
 		runtime_health_verified: result.runtimeHealthVerified,
 		asset_verified: result.assetVerified,
@@ -497,6 +595,15 @@ export function formatEvidenceSummary(evidence: PostDeployEvidence): string {
 					'',
 				]
 			: [];
+	const pendingTargets = evidence.payload.probe_results
+		.filter((result) => result.failure_class === 'pending_content')
+		.map((result) => `\`${result.target}\``);
+	const pendingLines =
+		pendingTargets.length > 0
+			? [
+					`- Pending content (not a failure; publish with \`pnpm prod:apply\`): ${pendingTargets.join(', ')}`,
+				]
+			: [];
 	return [
 		`## Post-deploy smoke — ${evidence.environment}`,
 		'',
@@ -505,6 +612,7 @@ export function formatEvidenceSummary(evidence: PostDeployEvidence): string {
 		`- Run: \`${evidence.runId}\``,
 		`- Observed at: \`${evidence.observedAt}\``,
 		`- Owner action: ${evidence.ownerAction}`,
+		...pendingLines,
 		'',
 		...tableRows,
 	].join('\n');
@@ -542,6 +650,7 @@ async function checkCommand(args: readonly string[]): Promise<void> {
 		source: process.env.GITHUB_ACTIONS === 'true' ? 'github_actions' : 'operator_cli',
 		failureOwnerAction:
 			'Revise el Job Summary y abra la página que falló en el host revisado; no ejecute rollback automático.',
+		passedOwnerAction: passedOwnerAction(result.pendingContentTargets),
 		runId: randomUUID(),
 		startedAt,
 		completedAt: new Date().toISOString(),
@@ -552,6 +661,9 @@ async function checkCommand(args: readonly string[]): Promise<void> {
 	emitEvidence(evidence, 'completed');
 	writeEvidenceSummary(evidence);
 	appendSummary(`\nChecked host: \`${hostname}\`\n`);
+	if (result.pendingContentTargets.length > 0) {
+		console.info(`POST_DEPLOY_PENDING_CONTENT=${result.pendingContentTargets.join(',')}`);
+	}
 	if (!passed) {
 		console.error(`POST_DEPLOY_FAILURE_CODES=${result.failureCodes.join(',')}`);
 		process.exitCode = 1;

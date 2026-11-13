@@ -11,7 +11,7 @@ import {
 	assertReleaseReadinessFailFast,
 	type ReleaseReadiness,
 } from './production-release-readiness.ts';
-import { assertProductionWorkerServesRelease } from './production-worker-content-guard.ts';
+import { assertServingWorkerFirst } from './production-worker-content-guard.ts';
 import {
 	MigrateApplyError,
 	orchestrateMigrate,
@@ -717,20 +717,6 @@ async function applyPatchMutation(
 	}
 }
 
-/**
- * Content the serving Worker cannot resolve breaks every visit until the deploy catches up. Owner
- * patches are arbitrary SQL that may write invitation content, so they are gated too; schema
- * migrations are expand-first and precede the Worker that uses them.
- */
-async function assertWorkerFirst(
-	mutations: readonly ProductionApplyPlanItem[],
-	releaseSha: string,
-	deps: ProductionApplyExecuteDeps,
-): Promise<void> {
-	if (!mutations.some((item) => item.domain === 'invitation' || item.domain === 'patch')) return;
-	await (deps.assertWorkerServesRelease ?? assertProductionWorkerServesRelease)({ releaseSha });
-}
-
 export async function applyProductionApplyPlan(
 	args: ProductionApplyCliArgs,
 	deps: ProductionApplyExecuteDeps = {},
@@ -757,7 +743,7 @@ export async function applyProductionApplyPlan(
 	const release = (deps.assertReleaseReadiness ?? defaultAssertReleaseReadiness)({
 		remote: hasSchema,
 	});
-	await assertWorkerFirst(mutations, release.sha, deps);
+	await assertServingWorkerFirst(mutations, release.sha, deps.assertWorkerServesRelease);
 	const shouldPrepareSharedBackup =
 		(hasSchema || hasPatch) &&
 		Boolean(
