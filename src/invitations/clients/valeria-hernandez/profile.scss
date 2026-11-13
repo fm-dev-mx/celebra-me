@@ -206,6 +206,11 @@
 		--rsvp-steps-glow: rgb(var(--color-rose-glow-rgb) / 35%);
 	}
 
+	// The unit labels shrink on the narrowest phones so «Minutos» and «Segundos» keep a gap.
+	.countdown-section[data-variant='mirror-ball'] {
+		--countdown-type-label-size: clamp(0.62rem, 3.4vw, 0.95rem);
+	}
+
 	// The route scene runs on the same wine night: a silver mirror ball, a cherry dance floor and
 	// the route copy in night blush.
 	.event-location[data-location-scene='mirror-ball-route'] {
