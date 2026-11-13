@@ -60,6 +60,8 @@ interface Props {
 	introLede?: string;
 	/** Decorative cutout printed after the intro. */
 	ornament?: ImageAsset;
+	/** Reference picture a button on the indications enclosure opens full screen. */
+	indicationsReference?: { image: ImageAsset; label: string; note?: string };
 }
 
 const {
@@ -87,7 +89,14 @@ const {
 	introHeading,
 	introLede,
 	ornament,
+	indicationsReference,
 } = Astro.props;
+
+const referenceImage = indicationsReference?.image.src;
+const referenceSize =
+	referenceImage && typeof referenceImage !== 'string'
+		? { width: referenceImage.width, height: referenceImage.height }
+		: {};
 
 const displayVenues = groupVenues(venueEntries);
 
@@ -261,7 +270,7 @@ const venueType = (venue: GroupedVenue) =>
 		<div class="event-location__indications-container" data-indications-layout="enclosure">
 			<div class="event-location__enclosure" data-reveal-role="item">
 				{indicationsHeading && <h2 class="event-location__indications-heading">{indicationsHeading}</h2>}
-				{indications.map((indication) => {
+				{indications.map((indication, index) => {
 					const isReserved = indication.styleVariant === 'reserved';
 					return (
 						<div class={`event-location__enclosure-note ${isReserved ? 'event-location__enclosure-note--reserved' : ''}`}>
@@ -270,6 +279,17 @@ const venueType = (venue: GroupedVenue) =>
 								{indication.title && <p class="event-location__enclosure-title">{indication.title}</p>}
 								<p class="event-location__enclosure-text" set:html={sanitizeIndicationHtml(indication.text)} />
 							</div>
+							{index === 0 && indicationsReference && (
+								<button
+									type="button"
+									class="event-location__reference-trigger"
+									aria-haspopup="dialog"
+									aria-controls="event-location-reference"
+									data-location-reference-open
+								>
+									{indicationsReference.label}
+								</button>
+							)}
 						</div>
 					);
 				})}
@@ -333,6 +353,30 @@ const venueType = (venue: GroupedVenue) =>
 		</div>
 	)}
 
+	{indicationsReference && isIndicationsEnclosure && !isStarRoute && (
+		<dialog
+			id="event-location-reference"
+			class="event-location__reference-dialog"
+			aria-label={indicationsReference.label}
+		>
+			<figure class="event-location__reference-figure">
+				<img
+					class="event-location__reference-image"
+					src={plainImgSrc(indicationsReference.image.src)}
+					alt={indicationsReference.image.alt}
+					loading="lazy"
+					decoding="async"
+					{...referenceSize}
+				/>
+				{indicationsReference.note && (
+					<figcaption class="event-location__reference-note">{indicationsReference.note}</figcaption>
+				)}
+			</figure>
+			<button type="button" class="event-location__reference-close" data-location-reference-close>
+				Cerrar
+			</button>
+		</dialog>
+	)}
 </section>
 <script>
 	import { initCopyButtons, revealIOSOnly } from '@/utils/ui';
@@ -343,6 +387,22 @@ const venueType = (venue: GroupedVenue) =>
 		initCopyButtons('.copy-button', 'data-address');
 		revealIOSOnly('[data-apple-link]');
 		initCalendarMenus();
+		initReferenceDialog();
+	}
+
+	// The reference picture opens in a native modal <dialog>: Escape closes it and focus returns
+	// to the button. A press on the backdrop or on the close button closes it too.
+	function initReferenceDialog() {
+		document.querySelectorAll<HTMLElement>('[data-location-reference-open]').forEach((trigger) => {
+			const dialog = document.getElementById(trigger.getAttribute('aria-controls') ?? '');
+			if (!(dialog instanceof HTMLDialogElement)) return;
+			trigger.addEventListener('click', () => dialog.showModal());
+			dialog.addEventListener('click', (event) => {
+				const target = event.target;
+				if (!(target instanceof Element)) return;
+				if (target === dialog || target.closest('[data-location-reference-close]')) dialog.close();
+			});
+		});
 	}
 
 	// The calendar menu is a native <details> (it works without JavaScript), which only closes

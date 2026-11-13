@@ -415,6 +415,21 @@ function toVenueEntry(v: VenueEntryInput, eventSlug: string, eventTitle: string)
 	};
 }
 
+function resolveIndicationsReference(
+	eventSlug: string,
+	reference:
+		{ image: AssetSource | string; label: string; alt: string; note?: string } | undefined,
+) {
+	if (!reference) return undefined;
+	const asset = resolveAsset(eventSlug, reference.image, reference.alt);
+	if (!asset) return undefined;
+	return {
+		image: { ...asset, alt: reference.alt },
+		label: reference.label,
+		note: reference.note,
+	};
+}
+
 function buildLocationSectionData(context: AdaptationContext) {
 	const { data, eventSlug } = context;
 	if (!data.location) return undefined;
@@ -447,6 +462,10 @@ function buildLocationSectionData(context: AdaptationContext) {
 			? resolveAsset(eventSlug, data.location.ornament, data.title)
 			: undefined,
 		indicationsHeading: data.location.indicationsHeading ?? '',
+		indicationsReference: resolveIndicationsReference(
+			eventSlug,
+			data.location.indicationsReference,
+		),
 		indicationsLayout: data.location.presentationOptions?.indicationsLayout ?? 'list',
 		showCalendarLinks: data.location.presentationOptions?.showCalendarLinks ?? false,
 		scene: data.location.presentationOptions?.scene,

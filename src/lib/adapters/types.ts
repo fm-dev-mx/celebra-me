@@ -295,6 +295,8 @@ export interface LocationSection {
 	/** Decorative cutout after the intro. */
 	ornament?: ImageAsset;
 	indicationsHeading?: string;
+	/** Reference picture opened from the indications enclosure. */
+	indicationsReference?: { image: ImageAsset; label: string; note?: string };
 	indicationsLayout?: LocationIndicationsLayout;
 	showCalendarLinks?: boolean;
 	scene?: LocationScene;

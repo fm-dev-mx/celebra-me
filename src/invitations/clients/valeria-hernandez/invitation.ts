@@ -130,12 +130,18 @@ const content: CanonicalEventContentInput = {
 		introLede:
 			'A las 5:45 p. m. daré gracias en misa; a las 7:30 p. m. le espero en Las Barricas para celebrar.',
 		indicationsHeading: 'Cherry disco',
+		indicationsReference: {
+			image: 'dressCodeReference',
+			label: 'Ver inspiración',
+			alt: 'Ideas de vestimenta glam disco: vestidos y trajes con lentejuelas, satín y brillos en negro, plata y dorado',
+			note: 'El color vino queda reservado para la quinceañera.',
+		},
 		indications: [
 			{
 				iconName: 'DressCode',
 				styleVariant: 'default',
 				title: 'Código de vestimenta',
-				text: 'Lentejuelas en negro, plata o dorado',
+				text: 'Glam disco: brillos y lentejuelas en negro, plata o dorado',
 			},
 			{
 				iconName: 'DressCode',
@@ -311,6 +317,7 @@ export default defineCanonicalInvitation({
 	assetFiles: {
 		hero: 'hero.webp',
 		thankYouPortrait: 'thank-you.webp',
+		dressCodeReference: 'dress-code-reference.webp',
 		gallery01: 'gallery-01.webp',
 		gallery02: 'gallery-02.webp',
 		gallery03: 'gallery-03.webp',

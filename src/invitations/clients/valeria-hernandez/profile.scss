@@ -116,6 +116,12 @@
 		var(--location-enclosure-ball-light) center / 100% 100% no-repeat,
 		var(--location-enclosure-ball-facets), rgb(122 16 40);
 	--location-enclosure-swatch-size: 2rem;
+	--location-reference-trigger-border: rgb(var(--color-night-blush-rgb) / 55%);
+	--location-reference-trigger-shadow: 0 0 0.9rem rgb(var(--color-rose-glow-rgb) / 35%);
+	--location-reference-bg: rgb(18 12 20);
+	--location-reference-ink: var(--color-night-blush);
+	--location-reference-border: rgb(var(--color-night-blush-rgb) / 28%);
+	--location-reference-backdrop: rgb(6 3 8 / 86%);
 	--location-enclosure-swatch-ring:
 		0 0 0 1px rgb(var(--color-night-blush-rgb) / 45%),
 		0 0 0.9rem rgb(var(--color-rose-glow-rgb) / 70%);
