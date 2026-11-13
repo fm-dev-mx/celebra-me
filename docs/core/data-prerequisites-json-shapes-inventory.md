@@ -127,7 +127,7 @@ schema defaults; no runtime code assumes an internal JSON shape).
   - **Confidence:** traced
 - **#:** 10
   - **Table.column:** `invitation_assets.provider_metadata`
-  - **Migration:** `supabase/migrations/20260725000000_invitation_assets_cloudinary_provider.sql:15`
+  - **Migration:** `supabase/migrations/20260725000000_invitation_assets_*.sql:15`
   - **Reader (file:line):**
     - `src/lib/intake/repositories/asset.repository.ts`,
       `src/lib/intake/services/asset-delivery.ts`: no reader (`provider_metadata` is not in
@@ -138,9 +138,9 @@ schema defaults; no runtime code assumes an internal JSON shape).
       `providerMetadata` property; no inner keys read
     - `scripts/provision/asset-reconciliation.ts:45`: interface definition only; no inner keys read
     - `supabase/functions/`: none (no edge functions directory)
-  - **Assumed shape:** Default `'{}'::jsonb`. Legacy column introduced for Cloudinary integration
-    (Cloudinary provider was retired in `20261019180000` / `20261025220000`). No reader across
-    `src/`, `scripts/`, or edge functions assumes any JSON shape or reads any key.
+  - **Assumed shape:** Default `'{}'::jsonb`. Legacy column introduced for retired media provider
+    integration (retired in `20261019180000` / `20261025220000`). No reader across `src/`,
+    `scripts/`, or edge functions assumes any JSON shape or reads any key.
   - **Risk:** Low
   - **Confidence:** traced
 - **#:** 11
