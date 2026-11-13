@@ -331,3 +331,92 @@
 		font-size: min(0.95rem, 2.3svh);
 	}
 }
+
+// --------------------------------------------------------------------------
+// Scroll entrances. Each piece reaches its resting pose as its own box crosses the viewport.
+// Without scroll timelines, or with reduced motion, the piece simply rests there.
+//   $name   Keyframes that hold only the starting pose.
+//   $range  Stretch of the crossing that drives the move.
+//   $also   A clock-driven animation the piece keeps running, if it has one.
+// --------------------------------------------------------------------------
+@mixin on-scroll($name, $range: entry 0% cover 40%, $also: null) {
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			@if $also {
+				animation:
+					#{$also},
+					$name linear both;
+				animation-timeline: auto, view();
+			} @else {
+				animation: $name linear both;
+				animation-timeline: view();
+			}
+
+			animation-range: $range;
+		}
+	}
+}
+
+// A neon sign that comes down on its cables and flickers on.
+@mixin neon-power-on($range: entry 15% cover 45%) {
+	@include on-scroll(disco-neon-power-on, $range);
+
+	@keyframes disco-neon-power-on {
+		0% {
+			opacity: 12%;
+			translate: 0 -1.75rem;
+		}
+
+		35% {
+			opacity: 70%;
+		}
+
+		45% {
+			opacity: 25%;
+		}
+
+		65% {
+			opacity: 90%;
+		}
+
+		72% {
+			opacity: 50%;
+		}
+	}
+}
+
+// A printed ticket fed up out of its slot.
+@mixin ticket-feed($range: entry 0% cover 28%) {
+	@include on-scroll(disco-ticket-feed, $range);
+
+	@keyframes disco-ticket-feed {
+		from {
+			opacity: 0%;
+			translate: 0 2.5rem;
+		}
+	}
+}
+
+// A mirror ball that rolls in from the side to its place.
+@mixin mirror-ball-roll-in($range: entry 10% cover 35%) {
+	@include on-scroll(disco-ball-roll-in, $range);
+
+	@keyframes disco-ball-roll-in {
+		from {
+			opacity: 0%;
+			rotate: -200deg;
+			translate: -2.5rem 0;
+		}
+	}
+}
+
+// A hanging mirror ball lowered into place; `$also` keeps its own sway going.
+@mixin mirror-ball-lower($also: null, $range: entry 20% cover 50%) {
+	@include on-scroll(disco-ball-lower, $range, $also);
+
+	@keyframes disco-ball-lower {
+		from {
+			translate: 0 -7rem;
+		}
+	}
+}

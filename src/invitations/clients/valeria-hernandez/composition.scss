@@ -37,6 +37,11 @@ $valeria-night-ground:
 // The words scene: the shared neon sign (palette in profile.scss) on the same night inks.
 .event--valeria-hernandez.event-theme-wrapper .quote-section {
 	@include valeria-night-inks;
+
+	// The sign comes down on its cables and flickers on as the scene scrolls in.
+	.neon-sign__sign {
+		@include scenes.neon-power-on;
+	}
 }
 
 // The family scene is the night's line-up: a left-aligned bill where the parents headline as
@@ -227,6 +232,11 @@ $valeria-night-ground:
 		}
 	}
 
+	// The ball is lowered over the bill with the scroll and keeps swaying.
+	.family__container::before {
+		@include scenes.mirror-ball-lower(valeria-ball-sway 6s ease-in-out infinite alternate);
+	}
+
 	@keyframes valeria-ball-sway {
 		from {
 			transform: rotate(-4deg);
@@ -278,6 +288,9 @@ $valeria-night-ground:
 			border-color: transparent;
 		}
 
+		// The ticket is fed out as the scene scrolls in.
+		@include scenes.ticket-feed;
+
 		// The ticket's printed header line.
 		&::after {
 			position: absolute;
@@ -295,11 +308,13 @@ $valeria-night-ground:
 		}
 	}
 
-	// A mirror ball hangs beside the heading.
+	// A mirror ball rolls in beside the heading.
 	.access-card__header::before {
 		@include scenes.mirror-ball-surface;
 
 		content: '';
+
+		@include scenes.mirror-ball-roll-in;
 	}
 
 	.access-card__guest {
