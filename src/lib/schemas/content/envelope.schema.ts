@@ -20,6 +20,15 @@ export type EnvelopeRevealVariant = z.infer<typeof envelopeRevealVariantSchema>;
 const editorialCoverExperienceSchema = z.enum(['standard', 'collector']);
 export type EditorialCoverExperience = z.infer<typeof editorialCoverExperienceSchema>;
 
+/** A pre-rendered opening clip served from `public/`; the poster is its first frame. */
+export const envelopeOpeningVideoSchema = z
+	.object({
+		webm: z.string().startsWith('/'),
+		mp4: z.string().startsWith('/').optional(),
+		poster: z.string().startsWith('/'),
+	})
+	.strict();
+
 export const envelopeSchema = z
 	.object({
 		disabled: z.boolean().optional().default(false),
@@ -45,14 +54,7 @@ export const envelopeSchema = z
 		sealImage: AssetSchema.optional(),
 		backdropImage: AssetSchema.optional(),
 		// A pre-rendered opening clip played behind the live envelope; the poster is its first frame.
-		openingVideo: z
-			.object({
-				webm: z.string().startsWith('/'),
-				mp4: z.string().startsWith('/').optional(),
-				poster: z.string().startsWith('/'),
-			})
-			.strict()
-			.optional(),
+		openingVideo: envelopeOpeningVideoSchema.optional(),
 		cardLabel: z.string().trim().max(60).optional(),
 		envelopeName: z.string().trim().max(200).optional(),
 		cardName: z.string().trim().max(200).optional(),
