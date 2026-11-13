@@ -225,6 +225,8 @@ export function AttendanceField(props: {
 	attendanceRef: RefObject<HTMLDivElement | null>;
 	prefersReducedMotion: boolean;
 	onAttendanceChange: (status: Exclude<RsvpAttendanceChoice, null>) => void;
+	/** Called when the already marked answer is chosen again. */
+	onAttendanceReselect?: (status: Exclude<RsvpAttendanceChoice, null>) => void;
 	onBlur: (field: string) => void;
 	confirmLabel?: string;
 	declineLabel?: string;
@@ -237,6 +239,7 @@ export function AttendanceField(props: {
 		attendanceRef,
 		prefersReducedMotion,
 		onAttendanceChange,
+		onAttendanceReselect,
 		onBlur,
 		confirmLabel = 'Sí, asistiré',
 		declineLabel = 'No podré asistir',
@@ -261,6 +264,9 @@ export function AttendanceField(props: {
 						name="attendance"
 						checked={attendanceStatus === 'confirmed'}
 						onChange={() => onAttendanceChange('confirmed')}
+						onClick={() =>
+							attendanceStatus === 'confirmed' && onAttendanceReselect?.('confirmed')
+						}
 						onBlur={() => onBlur('attendance')}
 						className="sr-only"
 						suppressHydrationWarning
@@ -275,6 +281,9 @@ export function AttendanceField(props: {
 						name="attendance"
 						checked={attendanceStatus === 'declined'}
 						onChange={() => onAttendanceChange('declined')}
+						onClick={() =>
+							attendanceStatus === 'declined' && onAttendanceReselect?.('declined')
+						}
 						onBlur={() => onBlur('attendance')}
 						className="sr-only"
 						suppressHydrationWarning

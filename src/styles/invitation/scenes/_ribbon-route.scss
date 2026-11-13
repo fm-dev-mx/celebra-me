@@ -9,7 +9,9 @@
 // a finished ribbon with the bow at its foot. Markup: ItineraryRibbonRoute.astro.
 // Tokens (all optional):
 //   --itinerary-ribbon-band / -sheen       Ribbon fill and its highlight line
-//   --itinerary-ribbon-ink / -muted        Moment label and description ink
+//   --itinerary-ribbon-art                 Image for the ribbon, stretched to the list; pair it
+//                                          with a transparent band and sheen
+//   --itinerary-ribbon-ink / -muted       Moment label and description ink
 //   --itinerary-ribbon-time                Hour ink
 //   --itinerary-ribbon-knot                Knot where a moment ties to the ribbon
 //   --itinerary-ribbon-bow-art             Image for the bow; pair it with
@@ -110,6 +112,7 @@ $bow-end: 96%;
 		width: 2.5rem;
 		height: 100%;
 		overflow: visible;
+		background: var(--itinerary-ribbon-art, none) 0 0 / 100% 100% no-repeat;
 
 		@include scene.timeline {
 			animation: ribbon-route-draw linear both;

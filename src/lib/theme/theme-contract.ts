@@ -134,9 +134,12 @@ export type SectionIntersectionFamily = (typeof SECTION_INTERSECTION_FAMILIES)[n
 /**
  * Decorative line-art sets that sections pick up at fixed positions (heading emblems, rule
  * separators, closing horizon). Purely presentational: CSS pseudo-elements, aria-hidden by nature.
+ * `satin-ribbons` goes further and dresses whole sections (cover, quote, family, gifts, location,
+ * reply card, thank-you and footer) with art and words the page supplies through `--ornament-*`.
  */
 export const SECTION_ORNAMENT_SETS = [
 	'seaside-lineart',
 	'storybook-lanterns',
 	'fine-butterflies',
+	'satin-ribbons',
 ] as const;
