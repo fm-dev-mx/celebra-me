@@ -181,7 +181,10 @@ Guest-facing copy (agent draft, D4; pending client approval). Voice: Valeria in 
 | Unresolved visual decisions       | Whole-invitation review at the client's first round                | pending                   |
 
 References: the client's cherry disco mood board (wine ground, silver disco balls, red stars, a bow)
-and the dress-code collage (black, silver, gold and wine sequins).
+and the dress-code collage (black, silver, gold and wine sequins). The invitation's «Ver
+inspiración» image is an AI-generated replacement of that collage (black, silver and gold only; wine
+is reserved for the celebrant); source PNG in creative-ops
+`valeria-hernandez/dress-code-reference/`.
 
 ---
 
