@@ -50,6 +50,15 @@ function productionFetch(): jest.MockedFunction<
 				JSON.stringify({ status: 'healthy', checks: { runtime: { status: 'ok' } } }),
 			);
 		}
+		if (pathname === '/api/health/invitations') {
+			return response(
+				200,
+				JSON.stringify({
+					status: 'healthy',
+					checks: { database: { status: 'ok' }, invitations: { active: 3, failing: 0 } },
+				}),
+			);
+		}
 		if (pathname === '/_astro/app.abc123.js') {
 			return response(200, '', { 'cache-control': 'public, max-age=31536000, immutable' });
 		}
@@ -92,7 +101,7 @@ describe('post-deploy smoke', () => {
 		const result = await runProductionSmoke('https://celebra-me.com', productionFetch());
 
 		expect(result).toEqual({
-			probeCount: 6 + PAGE_ROUTES.length,
+			probeCount: 7 + PAGE_ROUTES.length,
 			failedProbeCount: 0,
 			networkRetryCount: 0,
 			runtimeHealthVerified: true,
@@ -163,6 +172,82 @@ describe('post-deploy smoke', () => {
 
 		expect(result.failureCodes).toEqual([]);
 		expect(fetchMock).toHaveBeenCalledWith('https://celebra-me.com/brisa', expect.anything());
+	});
+
+	it('accepts a 404 invitation as pending publication only while no invitation fails', async () => {
+		const pages = [
+			{ kind: 'invitation', eventType: 'xv', slug: 'unpublished' },
+			{ kind: 'demo', eventType: 'xv', slug: 'demo-missing' },
+		] as const;
+		const baseFetch = productionFetch();
+		const fetchMock = productionFetch();
+		fetchMock.mockImplementation(async (input: string) => {
+			const pathname = new URL(input).pathname;
+			if (pathname === '/xv/unpublished' || pathname === '/xv/demo-missing') {
+				return response(404);
+			}
+			return baseFetch(input);
+		});
+
+		const result = await runProductionSmoke('https://celebra-me.com', fetchMock, { pages });
+
+		expect(result.failureCodes).toEqual(['demo_failed:xv:demo-missing']);
+		expect(result.probeResults).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					probe: 'invitations_health',
+					target: 'invitations_health',
+					status_code: 200,
+					failure_class: 'none',
+				}),
+				expect.objectContaining({
+					probe: 'invitation',
+					target: 'xv:unpublished',
+					status_code: 404,
+					failure_class: 'none',
+				}),
+			]),
+		);
+	});
+
+	it('fails the invitations health probe and every 404 invitation when content fails to resolve', async () => {
+		const pages = [{ kind: 'invitation', eventType: 'xv', slug: 'invalid-content' }] as const;
+		const baseFetch = productionFetch();
+		const fetchMock = productionFetch();
+		fetchMock.mockImplementation(async (input: string) => {
+			const pathname = new URL(input).pathname;
+			if (pathname === '/xv/invalid-content') return response(404);
+			if (pathname === '/api/health/invitations') {
+				return response(
+					503,
+					JSON.stringify({
+						status: 'unhealthy',
+						checks: {
+							database: { status: 'ok' },
+							invitations: { active: 28, failing: 4 },
+						},
+					}),
+				);
+			}
+			return baseFetch(input);
+		});
+
+		const result = await runProductionSmoke('https://celebra-me.com', fetchMock, { pages });
+
+		expect(result.failureCodes).toEqual([
+			'invitations_health_failed',
+			'invitation_failed:xv:invalid-content',
+		]);
+		expect(result.probeResults).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					probe: 'invitations_health',
+					status_code: 503,
+					failure_class: 'http_status',
+					retry_count: 1,
+				}),
+			]),
+		);
 	});
 
 	it('opens each page and accepts 403 only for an administrator-disabled invitation', async () => {

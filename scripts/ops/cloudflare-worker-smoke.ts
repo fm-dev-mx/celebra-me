@@ -144,6 +144,7 @@ export async function runCloudflareWorkerSmoke(
 		fetchImpl,
 		accessHeaders,
 		listSmokePageRoutes(new Date(), environment),
+		{ invitationsHealth: environment === 'production' },
 	);
 	const identity = await readBuildIdentity(origin, fetchImpl, accessHeaders);
 	const verified =
