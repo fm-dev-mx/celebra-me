@@ -57,8 +57,77 @@
 	--location-program-lede-font: 'EB Garamond Variable', 'EB Garamond', georgia, serif;
 	--location-program-lede-size: 1.125rem;
 
+	// The dress code is a dark club tag in the language of the pass: the theme in cherry neon, the
+	// four allowed colors as sequins, and the wine reserved for the quinceañera as a larger sequin.
+	--location-enclosure-bg:
+		radial-gradient(120% 70% at 50% 0%, rgb(var(--color-rose-dusk-rgb) / 55%), transparent 70%),
+		rgb(30 5 13);
+	--location-enclosure-ink: var(--color-night-blush);
+	--location-enclosure-muted: rgb(var(--color-night-blush-rgb) / 74%);
+	--location-enclosure-rule: rgb(var(--color-night-blush-rgb) / 24%);
+	--location-enclosure-shadow: none;
+	--location-enclosure-edge-shadow: drop-shadow(0 1.2rem 1.6rem rgb(0 0 0 / 45%));
+	--location-enclosure-max-width: 22rem;
+	--location-enclosure-heading-font: var(--font-calligraphy);
+	--location-enclosure-heading-size: clamp(3rem, 14vw, 3.75rem);
+	--location-enclosure-heading-line-height: 1;
+	--location-enclosure-heading-color: rgb(255 244 246);
+	--location-enclosure-heading-shadow:
+		0 0 0.2rem rgb(255 255 255 / 55%), 0 0 0.7rem rgb(var(--color-rose-glow-rgb) / 90%),
+		0 0 1.8rem rgb(var(--color-rose-glow-rgb) / 55%);
+	--location-enclosure-note-padding: 0.9rem;
+	--location-enclosure-note-rule-width: 3rem;
+	--location-enclosure-reserved-title-color: var(--color-rose-glow);
+	--location-enclosure-sequin-light: radial-gradient(
+		circle 0.5rem at 36% 30%,
+		rgb(255 255 255 / 60%),
+		transparent
+	);
+	--location-enclosure-sequin-ring: rgb(var(--color-night-blush-rgb) / 45%) 88% 96%;
+	--location-enclosure-palette-display: block;
+	--location-enclosure-palette-width: 10.4rem;
+	--location-enclosure-palette-height: 2rem;
+	--location-enclosure-palette:
+		var(--location-enclosure-sequin-light) 0 0 / 2rem 2rem no-repeat,
+		var(--location-enclosure-sequin-light) 2.8rem 0 / 2rem 2rem no-repeat,
+		var(--location-enclosure-sequin-light) 5.6rem 0 / 2rem 2rem no-repeat,
+		var(--location-enclosure-sequin-light) 8.4rem 0 / 2rem 2rem no-repeat,
+		radial-gradient(
+				circle 1rem,
+				rgb(20 18 20) 0 86%,
+				var(--location-enclosure-sequin-ring),
+				transparent 98%
+			)
+			0 0 / 2rem 2rem no-repeat,
+		radial-gradient(
+				circle 1rem,
+				rgb(206 208 216) 0 86%,
+				var(--location-enclosure-sequin-ring),
+				transparent 98%
+			)
+			2.8rem 0 / 2rem 2rem no-repeat,
+		radial-gradient(
+				circle 1rem,
+				rgb(204 164 86) 0 86%,
+				var(--location-enclosure-sequin-ring),
+				transparent 98%
+			)
+			5.6rem 0 / 2rem 2rem no-repeat,
+		radial-gradient(
+				circle 1rem,
+				rgb(110 14 36) 0 86%,
+				var(--location-enclosure-sequin-ring),
+				transparent 98%
+			)
+			8.4rem 0 / 2rem 2rem no-repeat;
+
 	// The «Vino» swatch shows the wine reserved for the quinceañera, not the cherry accent.
-	--location-enclosure-swatch: rgb(110 14 36);
+	--location-enclosure-swatch:
+		radial-gradient(circle at 36% 30%, rgb(255 255 255 / 60%), transparent 45%), rgb(110 14 36);
+	--location-enclosure-swatch-size: 1.5rem;
+	--location-enclosure-swatch-ring:
+		0 0 0 1px rgb(var(--color-night-blush-rgb) / 45%),
+		0 0 0.9rem rgb(var(--color-rose-glow-rgb) / 70%);
 
 	// The disco variants read the cherry night: cherry light, silver sequins, blush ink on wine.
 	--disco-stage-glow-rgb: var(--color-rose-glow-rgb);

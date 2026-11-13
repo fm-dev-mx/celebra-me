@@ -1527,7 +1527,9 @@
 //                                          A cord from above the card down to its eyelet
 //   --location-enclosure-swing             Scroll-linked keyframes as the card arrives
 //                                          (`location-enclosure-swing`), around -swing-origin
-//   --location-enclosure-heading-{transform,tracking,color}
+//   --location-enclosure-heading-{transform,tracking,color,shadow}
+//   --location-enclosure-palette / -palette-display / -palette-width / -palette-height
+//                                          A strip under the first note (the allowed colors)
 //   --location-enclosure-lead-title-{font,size,caps,tracking,color}  First note's title
 //   --location-enclosure-swatch-size / -swatch-ring
 //   --location-enclosure-last-text-{font,size,caps,transform,tracking,color}  Last note's text
@@ -1619,6 +1621,16 @@
 		text-transform: var(--location-enclosure-heading-transform, none);
 		text-wrap: balance;
 		color: var(--location-enclosure-heading-color, inherit);
+		text-shadow: var(--location-enclosure-heading-shadow, none);
+	}
+
+	.event-location__enclosure-note:first-of-type::after {
+		content: '';
+		display: var(--location-enclosure-palette-display, none);
+		width: var(--location-enclosure-palette-width, 100%);
+		height: var(--location-enclosure-palette-height, 1.5rem);
+		margin-top: 0.5rem;
+		background: var(--location-enclosure-palette, none);
 	}
 
 	.event-location__enclosure-note:first-of-type .event-location__enclosure-title {
