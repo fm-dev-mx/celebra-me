@@ -207,6 +207,13 @@ invitation profiles.
   drift only without `prefers-reduced-motion`; generic dividers and venue drawings hidden. Ink
   follows `--color-ornament-gold`; tuned through `--ornament-*` (`--ornament-lights-*`,
   `--ornament-thread-*`).
+- composition.ornaments satin-ribbons: a keepsake dressing for the `storybook-lilac` palette that
+  restyles whole sections instead of adding motifs — a cover painted in with brush strokes between
+  floral corners, the quote inside a drawn ribbon, family names joined in a script hand, the gifts
+  chapter wrapped like a present, the reply card as a ticket, and a thank-you medallion with a pen
+  flourish over a signed footer. The page supplies the art (`--ornament-art-<name>`, as `url()`) and
+  the words (`--ornament-monogram`, `--ornament-family-joiner`, `--ornament-signature`) from its
+  profile; an ornament without its art or word is absent. Proven on `yireh-ana`.
 - countdown.presentationOptions.dayUnit nights: the day segment reads "noches" (same value) for
   evening celebrations, e.g. "Faltan 43 noches".
 - interludes dusk (profile token): `--interlude-dusk-<n>: interlude-dusk` darkens the nth interlude

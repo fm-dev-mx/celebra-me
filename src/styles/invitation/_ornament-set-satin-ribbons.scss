@@ -1,0 +1,1128 @@
+@use 'sass:list';
+@use 'sass:math';
+@use 'sass:string';
+@use '../tools/motion';
+
+// Satin ribbons, loaded only by pages whose `composition.ornaments` is `satin-ribbons`.
+// A keepsake dressing for the `storybook-lilac` palette, whose `--color-*` tokens it reads. Unlike
+// the motif sets it restyles whole sections:
+// the cover is painted in with brush strokes and framed by floral corners, the quote sits inside
+// a drawn ribbon, the family names join in a script hand, the gifts chapter is wrapped like a
+// present, the reply card becomes a ticket, and the thank-you closes on a medallion with a pen
+// flourish. The page supplies the art and the words; without them each ornament is simply absent.
+//   --ornament-art-<name>             Art, as `url()`: hero-flora-left, hero-flora-right,
+//                                     hero-cover, gifts-ribbon, gifts-band, gifts-bow,
+//                                     location-oak, closing-flourish (default none)
+//   --ornament-monogram               Initial at the centre of the medallion (default none)
+//   --ornament-family-joiner          Script words between the family names (default none)
+//   --ornament-signature              Name signed in the footer (default none)
+//   --ornament-quote-ribbon           Ribbon drawn around the quote, as `url()`
+//   --ornament-sprig, --ornament-rule Divider sprig and hairline colour
+//   --ornament-title-color            Colour of the chapter titles
+//   --ornament-title-glow             Filter that lifts the cover title off the art
+//   --ornament-canvas, --ornament-ghost, --ornament-wash, --ornament-stroke-<n>
+//                                     Paper, mask, filter and brush strokes of the painted cover
+//   --ornament-flora, --ornament-closing-flora, --ornament-closing-glow-y
+//                                     Size of the floral corners and height of the closing glow
+//   --ornament-inking, --ornament-inking-range
+//                                     Animation and view range that ink the quote ribbon
+//   --ornament-ticket-radius, --ornament-ticket-inner-radius, --ornament-fit, --ornament-squeeze
+//                                     Ticket corners and the room it takes from tall or short
+//                                     screens
+//   --ornament-*-size, --ornament-*-radius, --ornament-*-corners
+//                                     Type sizes and corner radii of each piece; defaults below
+
+// Zero specificity: any page that sets one of these wins, whatever the sheet order.
+:where(.ornament-set--satin-ribbons) {
+	--ornament-quote-ribbon: none;
+	--ornament-sprig: none;
+	--ornament-rule: rgb(0 0 0 / 18%);
+	--ornament-title-color: currentcolor;
+	--ornament-title-glow: none;
+	--ornament-canvas: rgb(255 255 255);
+	--ornament-ghost: none;
+	--ornament-wash: none;
+	--ornament-flora: clamp(6.5rem, min(38vw, 22svh), 24rem);
+	--ornament-ticket-radius: 1.25rem;
+	--ornament-ticket-inner-radius: 0.7rem;
+	--ornament-fit: clamp(0px, 100svh - 640px, 220px);
+	--ornament-squeeze: clamp(0px, 640px - 100svh, 72px);
+	--ornament-monogram-size: clamp(4rem, 20vw, 5.5rem);
+	--ornament-joiner-size: clamp(1.15rem, 4.4vw, 1.4rem);
+	--ornament-band-radius: 3px;
+	--ornament-ticket-foot-corners: 0 0 var(--ornament-ticket-radius) var(--ornament-ticket-radius);
+	--ornament-reply-copy-size: 1rem;
+	--ornament-ticket-inner-foot-corners: 0 0 var(--ornament-ticket-inner-radius)
+		var(--ornament-ticket-inner-radius);
+	--ornament-pill-radius: 999px;
+	--ornament-choice-radius: 0.75rem;
+	--ornament-button-size: 0.95rem;
+	--ornament-button-size-compact: clamp(0.78rem, 3.6vw, 0.95rem);
+	--ornament-link-size: 0.85rem;
+	--ornament-step-count-size: 0.8rem;
+	--ornament-step-heading-size: 0.9rem;
+	--ornament-thanks-size: clamp(1.22rem, 5.2vw, 1.5rem);
+	--ornament-signature-size: clamp(3.1rem, 14vw, 4.4rem);
+	--ornament-thanks-size-wide: clamp(1.4rem, 1.9vw, 1.75rem);
+	--ornament-cue-radius: 99rem;
+	--ornament-ticket-head-corners: var(--ornament-ticket-radius) var(--ornament-ticket-radius) 0 0;
+	--ornament-ticket-inner-head-corners: var(--ornament-ticket-inner-radius)
+		var(--ornament-ticket-inner-radius) 0 0;
+	--ornament-band-foot-corners: 0 0 3px 3px;
+	--ornament-band-tail-corners: 0 0 3px;
+	--ornament-lantern-radius: 1px;
+	--ornament-question-size: clamp(1.5rem, 6.6vw, 1.85rem);
+	--ornament-closing-size: 0.75rem;
+	--ornament-footer-mark-size: clamp(3rem, 14vw, 3.75rem);
+}
+
+// The shared media entrance clips a square; the round medallion unfolds on its own.
+.ornament-set--satin-ribbons
+	#invitation-sections-container
+	.thank-you-section
+	.thank-you-editorial__media.photo-frame.is-visible[data-reveal-role] {
+	animation-name: none;
+}
+
+.ornament-set--satin-ribbons .thank-you-section {
+	padding-block: clamp(4.5rem, 8vw, 6.5rem);
+
+	// The wreath as a keepsake medallion: gold ring, her initial in the gold hand at the centre.
+	.thank-you-editorial__image-shell {
+		background: var(--color-lilac-mist);
+		box-shadow:
+			0 0 0 1px rgb(var(--color-candle-gold-rgb) / 70%),
+			0 0 0 7px var(--color-violet-night),
+			0 0 0 8px rgb(var(--color-candle-gold-rgb) / 30%),
+			0 0 4rem 0.5rem rgb(var(--color-candle-gold-rgb) / 16%);
+		overflow: visible;
+
+		.photo-image {
+			mix-blend-mode: multiply;
+		}
+
+		&::after {
+			content: var(--ornament-monogram, none);
+			position: absolute;
+			inset: 0;
+			display: grid;
+			place-items: center;
+			padding-top: 0.12em;
+			font-family: var(--font-calligraphy);
+			font-size: var(--ornament-monogram-size);
+			line-height: 1;
+			color: var(--color-gold-ink);
+			pointer-events: none;
+		}
+	}
+}
+
+// Cover: her name and «Mis XV años» with her sprig; a lilac scroll cue above the actions.
+.ornament-set--satin-ribbons .invitation-hero[data-variant='standard'] {
+	.invitation-hero__content {
+		display: grid;
+		justify-items: center;
+	}
+
+	.invitation-hero__title {
+		-webkit-text-stroke: 0.018em var(--color-violet-ink);
+		filter: var(--ornament-title-glow);
+	}
+
+	.invitation-hero__label {
+		order: 2;
+		margin-top: 0.5rem;
+		padding: 0.5em 1.6em;
+		background: radial-gradient(closest-side, var(--color-lilac-paper) 55%, transparent);
+		text-shadow: 0 0 0.6rem var(--color-lilac-paper);
+
+		&::after {
+			content: '';
+			display: block;
+			width: 4.2rem;
+			height: 1.2rem;
+			margin: 0.55rem auto 0;
+			background: var(--ornament-sprig) center / contain no-repeat;
+		}
+	}
+
+	.invitation-hero__details {
+		display: none;
+	}
+}
+
+// Opening: oil strokes (x y step w h rows start gap duration) paint her oak, flowers, then name.
+@property --ornament-t {
+	syntax: '<number>';
+	inherits: true;
+	initial-value: 0;
+}
+
+$satin-tall: (2 84 -8 96 16 6 0.45 0.22 0.6) (0 0 9 78 15 3 1.6 0.14 0.45)
+	(70 0 12 30 15 3 1.75 0.14 0.4) (76 66 10 24 15 3 2 0.12 0.35);
+$satin-wide: (4 82 -11 50 18 6 0.45 0.22 0.6) (0 0 12 34 16 4 1.6 0.14 0.45)
+	(68 0 13 32 16 4 1.75 0.14 0.45) (62 54 12 38 16 4 2 0.12 0.4);
+
+@function satin-sweep($start, $rate, $deg: 90deg) {
+	$p: 'clamp(-14, (var(--ornament-t) - #{$start}) * #{$rate} - 14, 100) * 1%';
+
+	@return string.unquote('linear-gradient(#{$deg}, #000 calc(#{$p}), #0000 calc(#{$p} + 14%))');
+}
+
+@function satin-brush($groups, $layers: (satin-sweep(2.7, 460), var(--ornament-ghost))) {
+	@each $x, $y, $s, $w, $h, $rows, $t, $gap, $dur in $groups {
+		@for $i from 0 to $rows {
+			$g: 'clamp(0.001, (var(--ornament-t) - #{$t + $i * $gap + $i % 3 * 0.04}) / #{$dur}, 1)';
+			$wg: '#{$w} * #{$g}';
+			$at: 'var(--ornament-stroke-#{$i % 2}) calc((#{$x + $i % 2 * $w} - #{$i % 2} * #{$wg}) / (100 - #{$wg}) * 100%) #{math.div($y + $i * $s, 100 - $h) * 100%} / calc(#{$wg} * 1%) #{$h * 1%} no-repeat';
+			$layers: list.append($layers, string.unquote($at), comma);
+		}
+	}
+
+	@return $layers;
+}
+
+.ornament-set--satin-ribbons[data-reveal-state='revealed']
+	.invitation-hero[data-variant='standard'] {
+	@include motion.motion-safe {
+		animation: satin-paint 4.3s linear 0.8s both;
+
+		.invitation-hero__background {
+			background: var(--ornament-canvas);
+
+			img,
+			&::before {
+				filter: var(--ornament-wash);
+				mask: satin-brush($satin-tall);
+
+				@media (width >= 992px) {
+					mask: satin-brush($satin-wide);
+				}
+			}
+		}
+
+		.invitation-hero__title {
+			margin: -0.3em -0.45em;
+			padding: 0.3em 0.45em;
+			opacity: 100%;
+			mask: satin-sweep(2.9, 90);
+		}
+	}
+
+	@keyframes satin-paint {
+		to {
+			--ornament-t: 4.3;
+		}
+	}
+}
+
+// Family: one sentence on plain paper, closed by her letter; no card, frame or monogram.
+.ornament-set--satin-ribbons .family {
+	.family__container {
+		display: flex;
+		flex-direction: column;
+		max-width: 34rem;
+		text-align: start;
+	}
+
+	.family__header,
+	.family__header-inner {
+		display: contents;
+	}
+
+	.family__eyebrow,
+	.family__content-overlay,
+	.family__panel::before,
+	.family__panel::after {
+		display: none;
+	}
+
+	.family__title {
+		order: 1;
+	}
+
+	.family__panel {
+		order: 2;
+	}
+
+	.family__group-title {
+		line-height: 1;
+	}
+
+	.family__name {
+		text-transform: uppercase;
+	}
+
+	.family__group--group-1::before {
+		content: var(--ornament-family-joiner, none);
+		position: static;
+		display: block;
+		width: auto;
+		height: auto;
+		margin: 1.1rem 0 0.2rem;
+		background: none;
+		opacity: 100%;
+		transform: none;
+		font-family: var(--font-display);
+		font-size: var(--ornament-joiner-size);
+		color: inherit;
+	}
+
+	.family__header-divider {
+		order: 3;
+		margin: 2rem 0 0 auto;
+	}
+
+	.family__message {
+		order: 4;
+
+		&::after {
+			text-align: end;
+		}
+	}
+}
+
+// Functional sections align to the leading edge, narrative ones stay centred.
+.ornament-set--satin-ribbons .itinerary__title {
+	margin-inline: 0;
+	text-align: start;
+}
+
+// Program ribbon ties its own bows; pinned rows tighten for short phones.
+.ornament-set--satin-ribbons {
+	$route: ".itinerary[data-itinerary-scene='ribbon-route']";
+	$timeline-scene: ':where(.scroll-scene *)';
+	$scripted-scene: ":where(.scroll-scene[data-scene-engine='script'] *)";
+
+	@mixin pinned-rows($scene) {
+		.ribbon-route__moments#{$scene} {
+			gap: clamp(0.9rem, 2.6svh, 1.75rem);
+
+			@media (width < 1024px) and (height <= 900px) {
+				gap: clamp(0.4rem, 3svh - 0.75rem, 1rem);
+			}
+		}
+
+		.ribbon-route__header#{$scene} {
+			margin-bottom: clamp(0.75rem, 2.5svh, 2rem);
+		}
+
+		.ribbon-route__note#{$scene} {
+			margin-top: clamp(0.5rem, 1.5svh, 1.5rem);
+		}
+	}
+
+	// One ribbon art carries its own bows and runs down to the foot bow; it stays inside the stage.
+	#{$route} .ribbon-route__track {
+		padding-inline-start: 3.75rem;
+	}
+
+	#{$route} .ribbon-route__ribbon {
+		width: 4rem;
+		height: calc(100% + 2.9rem);
+	}
+
+	// The band gathers into a small knot at each hour; the top bow already ties the first one.
+	#{$route} .ribbon-route__knot {
+		top: 0;
+		left: -2.3125rem;
+		width: 0.875rem;
+		height: 1.625rem;
+		border-radius: 0;
+		box-shadow: none;
+	}
+
+	#{$route} .ribbon-route__moment:first-child .ribbon-route__knot {
+		display: none;
+	}
+
+	// Alternate knots tie the other way.
+	#{$route} .ribbon-route__moment:nth-child(odd) .ribbon-route__knot {
+		transform: scaleX(-1);
+	}
+
+	#{$route} .ribbon-route__bow {
+		margin-top: -0.25rem;
+	}
+
+	@media (width < 1024px) and (height <= 900px) {
+		#{$route} .ribbon-route__description {
+			line-height: 1.25;
+		}
+	}
+
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			&[data-motion='editorial'] #{$route} {
+				@include pinned-rows($timeline-scene);
+			}
+		}
+
+		#{$route} {
+			@include pinned-rows($scripted-scene);
+		}
+	}
+}
+
+// Quote scene, pinned one screen: her ribbon falls, then each word is inked as the page scrolls.
+.ornament-set--satin-ribbons .quote-section {
+	display: grid;
+	place-items: start center;
+	overflow: clip;
+	view-timeline: --quote-accent block;
+
+	> * {
+		position: sticky;
+		inset: 0 auto auto;
+		grid-area: 1 / 1;
+		align-content: center;
+		height: 100svh;
+	}
+
+	.quote-texture {
+		width: 100%;
+		background: var(--ornament-quote-ribbon) 0 0 / 100% 100% no-repeat;
+		mix-blend-mode: normal;
+	}
+}
+
+@supports (animation-timeline: view()) {
+	@include motion.motion-safe {
+		.ornament-set--satin-ribbons
+			#invitation-sections-container
+			> .has-motion
+			.quote-section
+			.quote-line[data-reveal-role='title'].is-visible
+			.word,
+		.ornament-set--satin-ribbons .quote-section .quote-texture {
+			animation: var(--ornament-inking, satin-ink) linear both;
+			animation-timeline: --quote-accent;
+			animation-range: var(
+				--ornament-inking-range,
+				contain calc(14% + 4.5% * var(--i)) contain calc(22% + 4.5% * var(--i))
+			);
+
+			@keyframes satin-ink {
+				from {
+					clip-path: inset(-0.5em calc(100% + 0.5em) -0.5em -0.5em);
+				}
+
+				to {
+					clip-path: inset(-0.5em);
+				}
+			}
+		}
+	}
+}
+
+// Gifts: a wrapped box seen from above; two slim satin ribbons cross under an off-centre bow.
+.ornament-set--satin-ribbons .gifts-section__container {
+	position: relative;
+	max-width: 22rem;
+	padding: 6rem 4.5rem 3.75rem 1.25rem;
+	border-radius: var(--ornament-band-radius);
+	background:
+		var(--ornament-art-gifts-ribbon, none) right 2.3125rem top 0 / 1.125rem 100% no-repeat,
+		var(--ornament-art-gifts-band, none) 0 2.5625rem / 100% 1.125rem no-repeat,
+		linear-gradient(155deg, var(--color-lilac-paper), var(--color-lilac-mist));
+	box-shadow:
+		inset 0 0 0 1px rgb(var(--color-violet-ink-rgb) / 6%),
+		0 2px 4px rgb(var(--color-violet-ink-rgb) / 8%),
+		0 26px 30px -14px rgb(var(--color-violet-ink-rgb) / 32%);
+
+	&::after {
+		content: '';
+		position: absolute;
+		top: 0.38rem;
+		right: -1.5rem;
+		width: 9rem;
+		scale: -1 1;
+		height: 7.36rem;
+		background: var(--ornament-art-gifts-bow, none) 0 0 / contain no-repeat;
+		pointer-events: none;
+	}
+}
+
+.ornament-set--satin-ribbons.event-theme-wrapper {
+	.rsvp[data-variant='reply-card'] {
+		// The ticket closes on the same soft corners as the venue pass.
+		padding-top: calc(0.875rem + var(--ornament-fit) * 0.064 - var(--ornament-squeeze) * 0.055);
+		padding-bottom: calc(1rem + var(--ornament-fit) * 0.073 - var(--ornament-squeeze) * 0.083);
+		border-radius: var(--ornament-ticket-foot-corners);
+
+		.rsvp__header {
+			margin-bottom: calc(
+				0.75rem + var(--ornament-fit) * 0.055 - var(--ornament-squeeze) * 0.083
+			);
+		}
+
+		// One size at every width, so the ticket's height follows the screen's height alone.
+		.rsvp__subcopy {
+			max-width: 34ch;
+			font-size: var(--ornament-reply-copy-size);
+			line-height: 1.45;
+		}
+
+		// Screens shorter than a small phone keep the question and its two answers only.
+		@media (height < 640px) {
+			.rsvp__subcopy {
+				display: none;
+			}
+		}
+
+		// Once the answer is given the plea to reply has done its work; the later steps keep the
+		// ticket the height of the first one.
+		&:has(.rsvp-steps__actions:not(:empty)) .rsvp__subcopy {
+			display: none;
+		}
+
+		&::before {
+			border-radius: var(--ornament-ticket-inner-foot-corners);
+		}
+
+		// The two answers are the step's action: full ink, and an arrow says the card moves on.
+		.rsvp__radio-card {
+			min-height: calc(2.875rem + var(--ornament-fit) * 0.045);
+			padding: 0 1.125rem 0 1.25rem;
+			border-radius: var(--ornament-pill-radius);
+			box-shadow: 0 1px 0 rgb(255 255 255 / 70%) inset;
+			transition:
+				background-color 0.25s ease,
+				border-color 0.25s ease,
+				scale 0.2s ease;
+
+			&::after {
+				content: '';
+				width: 0.45rem;
+				height: 0.45rem;
+				margin-left: auto;
+				border-top: 1px solid var(--color-gold-ink);
+				border-right: 1px solid var(--color-gold-ink);
+				opacity: 70%;
+				rotate: 45deg;
+				transition: translate 0.25s ease;
+			}
+
+			&:hover,
+			&:has(input:focus-visible) {
+				background: rgb(255 255 255 / 82%);
+			}
+
+			&:hover::after {
+				translate: 0.2rem 0;
+			}
+
+			&:active {
+				scale: 0.985;
+			}
+
+			&:has(input:checked) {
+				background: rgb(var(--color-candle-gold-rgb) / 24%);
+			}
+		}
+
+		.rsvp__radio-label {
+			color: var(--ornament-title-color);
+		}
+
+		// Fields are the same white paper and gold hairline as the answers, not a lilac block.
+		input:not([type='radio']),
+		textarea {
+			border: 1px solid var(--reply-card-option-rule);
+			border-radius: var(--ornament-choice-radius);
+			background: var(--reply-card-option-bg);
+			color: var(--ornament-title-color);
+			transition: border-color 0.25s ease;
+
+			&:focus {
+				border-color: var(--color-gold-ink);
+			}
+		}
+
+		textarea {
+			height: calc(4.25rem + var(--ornament-fit) * 0.182);
+			min-height: 0;
+			resize: none;
+		}
+
+		// The button is the ticket's stamp: violet ink with a gold hairline set inside its edge.
+		.rsvp__button {
+			flex: 1;
+			padding-inline: 0.75rem;
+			white-space: nowrap;
+			min-height: calc(2.875rem + var(--ornament-fit) * 0.027);
+			border-color: transparent;
+			border-radius: var(--ornament-pill-radius);
+			font-size: var(--ornament-button-size);
+			font-weight: 500;
+			letter-spacing: 0.16em;
+			box-shadow:
+				inset 0 0 0 3px var(--color-violet-ink),
+				inset 0 0 0 4px rgb(var(--color-candle-gold-rgb) / 70%),
+				0 6px 14px rgb(var(--color-violet-ink-rgb) / 18%);
+			transition:
+				box-shadow 0.25s ease,
+				translate 0.25s ease,
+				background-color 0.25s ease;
+
+			&:hover:not(:disabled) {
+				box-shadow:
+					inset 0 0 0 3px var(--color-violet-ink),
+					inset 0 0 0 4px rgb(var(--color-candle-gold-rgb)),
+					0 9px 18px rgb(var(--color-violet-ink-rgb) / 22%);
+				translate: 0 -1px;
+			}
+
+			&:active:not(:disabled) {
+				box-shadow:
+					inset 0 0 0 3px var(--color-violet-ink),
+					inset 0 0 0 4px rgb(var(--color-candle-gold-rgb) / 70%),
+					0 2px 6px rgb(var(--color-violet-ink-rgb) / 18%);
+				translate: 0 1px;
+			}
+
+			// The longest label still leaves room for «Atrás» on a phone.
+			@media (width < 480px) {
+				font-size: var(--ornament-button-size-compact);
+				letter-spacing: 0.1em;
+			}
+		}
+
+		// «Atrás» is a quiet way back: an arrow and a word, no underline.
+		.rsvp__cancel-link {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+			padding-inline: 0.5rem 0.75rem;
+			font-size: var(--ornament-link-size);
+			font-weight: 500;
+			letter-spacing: 0.14em;
+			text-decoration: none;
+			transition: color 0.25s ease;
+
+			&::before {
+				content: '';
+				width: 0.4rem;
+				height: 0.4rem;
+				border-bottom: 1px solid currentcolor;
+				border-left: 1px solid currentcolor;
+				rotate: 45deg;
+				transition: translate 0.25s ease;
+			}
+
+			&:hover {
+				color: var(--color-gold-ink);
+			}
+
+			&:hover::before {
+				translate: -0.2rem 0;
+			}
+		}
+
+		// «Atrás» sits beside the button, not under it.
+		.rsvp-steps__actions {
+			flex-direction: row-reverse;
+			align-items: center;
+			gap: 0.5rem;
+		}
+
+		.rsvp-steps__count {
+			font-size: var(--ornament-step-count-size);
+			opacity: 85%;
+		}
+
+		.rsvp-steps__progress {
+			margin-bottom: calc(0.5rem + var(--ornament-fit) * 0.05);
+		}
+
+		// Progress: a fine gold thread and a ringed bead, like the bead that parts the pass.
+		.rsvp-steps {
+			gap: calc(0.625rem + var(--ornament-fit) * 0.027);
+		}
+
+		.rsvp-steps__track {
+			height: 1px;
+		}
+
+		// The bead rides the thread by its left edge: a full-width box pushed to the end would
+		// widen the page on the last step.
+		.rsvp-steps__lantern {
+			inset: 0 auto 0 calc(var(--rsvp-steps-progress) * 100%);
+			width: 0;
+			transition: inset 420ms cubic-bezier(0.22, 1, 0.36, 1);
+			translate: none;
+		}
+
+		.rsvp-steps__lantern::before {
+			width: 0.45rem;
+			height: 0.45rem;
+			border-radius: 50%;
+			box-shadow:
+				0 0 0 3px var(--color-lilac-paper),
+				0 0 0 4px rgb(var(--color-leaf-gold-rgb) / 70%);
+		}
+
+		// One display line per half of the ticket: the step is named in the pass's small capitals.
+		.rsvp-steps__heading {
+			margin-bottom: 0.375rem;
+			color: var(--color-gold-ink);
+			font-family: var(--font-body);
+			font-size: var(--ornament-step-heading-size);
+			font-style: normal;
+			font-weight: 500;
+			letter-spacing: 0.14em;
+			line-height: 1.4;
+			text-transform: uppercase;
+		}
+
+		// The last step's heading already names the field; the label stays for screen readers.
+		.rsvp__notes-label {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
+		}
+
+		// The first step has no buttons; its empty row would leave a blank band under the answers.
+		.rsvp-steps__actions:empty {
+			display: none;
+		}
+	}
+
+	// One cover spray leans in over the blank far corner, faint enough to stay behind the names.
+	.family::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: var(--ornament-art-hero-flora-right, none) right top /
+			clamp(5rem, 46% - 3rem, 15rem) auto no-repeat;
+		opacity: 55%;
+		mix-blend-mode: multiply;
+		pointer-events: none;
+		transform-origin: right top;
+	}
+
+	.family {
+		view-timeline: --ornament-family block;
+	}
+
+	// The spray and the oak grow in from their own edge as their sections arrive.
+	@supports (animation-timeline: view()) {
+		@include motion.motion-safe {
+			.family::after {
+				animation: satin-grow linear both;
+				animation-timeline: --ornament-family;
+				animation-range: entry 20% cover 42%;
+			}
+
+			.event-location[data-variant] .event-location__intro::before {
+				transform-origin: left bottom;
+				animation: satin-grow linear both;
+				animation-timeline: --ornament-location;
+				animation-range: entry 10% cover 22%;
+			}
+
+			@keyframes satin-grow {
+				from {
+					opacity: 0%;
+					scale: 0.88;
+				}
+			}
+		}
+	}
+
+	.thank-you-section {
+		// Dusk: candlelight behind the keepsake and a lilac haze from above, settling into the night.
+		background:
+			radial-gradient(
+				ellipse 34rem 20rem at 50% var(--ornament-closing-glow-y, 15rem),
+				rgb(var(--color-candle-gold-rgb) / 13%),
+				transparent 70%
+			),
+			linear-gradient(var(--color-violet-night), transparent 8rem),
+			radial-gradient(
+				ellipse 120% 55% at 50% 0%,
+				rgb(var(--color-lilac-deep-rgb) / 30%),
+				transparent 72%
+			),
+			var(--color-violet-night);
+
+		// The cover's corner sprays again, turned to grow from the ground and dimmed by the hour.
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background:
+				var(--ornament-art-hero-flora-left, none) left top /
+					var(--ornament-closing-flora, 46%) auto no-repeat,
+				var(--ornament-art-hero-flora-right, none) right top /
+					var(--ornament-closing-flora, 46%) auto no-repeat;
+			opacity: 42%;
+			scale: 1 -1;
+			pointer-events: none;
+		}
+
+		.thank-you-editorial {
+			gap: clamp(1.75rem, 5vw, 3rem);
+		}
+
+		.thank-you-editorial__media {
+			width: min(50vw, 12.5rem);
+		}
+
+		.thank-you-message {
+			max-width: 21rem;
+			margin-inline: auto;
+			font-size: var(--ornament-thanks-size);
+			line-height: 1.55;
+			text-wrap: balance;
+		}
+
+		// One pen stroke with a single loop closes the note, above her signature.
+		.signature-block {
+			margin-top: 1.5rem;
+
+			&::before {
+				content: '';
+				display: block;
+				width: min(60%, 11rem);
+				aspect-ratio: 10 / 1;
+				margin: 0 auto 0.9rem;
+				background: var(--color-candle-gold);
+				mask: var(--ornament-art-closing-flourish, none) center / 100% 100% no-repeat;
+				opacity: 75%;
+			}
+		}
+
+		.closing-name {
+			font-size: var(--ornament-signature-size);
+			line-height: 1.1;
+		}
+
+		@media (width >= 1024px) {
+			.thank-you-editorial__media {
+				width: clamp(15rem, 24vw, 20rem);
+			}
+
+			.thank-you-message {
+				font-size: var(--ornament-thanks-size-wide);
+			}
+		}
+	}
+
+	.invitation-hero[data-variant='standard'] {
+		.invitation-hero__background::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			z-index: 1;
+			background:
+				var(--ornament-art-hero-flora-left, none) left top / var(--ornament-flora) auto
+					no-repeat,
+				var(--ornament-art-hero-flora-right, none) right top /
+					calc(var(--ornament-flora) * 0.82) auto no-repeat;
+			pointer-events: none;
+		}
+
+		.invitation-hero__scroll-indicator {
+			inset: auto 0 calc(4.3rem + env(safe-area-inset-bottom, 0px));
+			flex-flow: row;
+			align-items: center;
+			gap: 0.5rem;
+			margin-inline: auto;
+			padding: 0.5rem 0.85rem 0.5rem 1.1rem;
+			border: 1px solid var(--ornament-rule);
+			border-radius: var(--ornament-cue-radius);
+			background: rgb(var(--color-lilac-paper-rgb) / 76%);
+			box-shadow: 0 0.15rem 0.6rem rgb(var(--color-violet-ink-rgb) / 7%);
+			backdrop-filter: blur(10px) saturate(120%);
+
+			@media (width >= 768px) {
+				bottom: 5.6rem;
+			}
+		}
+
+		.invitation-hero__scroll-text {
+			margin: 0;
+			font: 500 0.62rem / 1 var(--font-body);
+			letter-spacing: 0.26em;
+		}
+
+		.invitation-hero__scroll-chevron {
+			width: 0.85rem;
+			height: 0.85rem;
+			color: var(--color-gold-ink);
+		}
+	}
+
+	// Location: an entrance pass. Date, the time large, the salon as its title, the address, a
+	// perforated tear line and two large stacked buttons; the itinerary lists the other moments.
+	.event-location {
+		// The gifts' paper settles into the mist instead of stepping to it.
+		background-image: linear-gradient(var(--color-lilac-paper), transparent 7rem);
+		view-timeline: --ornament-location block;
+	}
+
+	// The cover's oak and the title share one row above the pass, so the tree can never sit over
+	// the words; its foot rests on the card and its crown runs off the edge as it does on the cover.
+	.event-location[data-variant] .event-location__intro {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		align-items: flex-end;
+		gap: 0.75rem;
+		max-width: var(--location-program-max-width);
+		margin: 0 auto -0.5rem;
+		text-align: start;
+
+		&::before {
+			content: '';
+			flex: none;
+			width: clamp(8.5rem, 44vw, 11.5rem);
+			margin-left: -1.5rem;
+			aspect-ratio: 480 / 379;
+			background: var(--ornament-art-location-oak, none) center / contain no-repeat;
+			pointer-events: none;
+		}
+	}
+
+	.event-location__heading {
+		flex: 1;
+		min-width: 0;
+		padding-bottom: 2rem;
+	}
+
+	.event-location__enclosure {
+		border: var(--location-program-entry-border);
+		border-radius: var(--location-program-entry-radius);
+		box-shadow: var(--location-program-entry-shadow);
+	}
+
+	// A short gold rule with a bead closes the title before the note.
+	.event-location__indications-heading {
+		margin-bottom: 0.35rem;
+
+		&::after {
+			content: '';
+			display: block;
+			width: 5.5rem;
+			height: 7px;
+			margin: 0.9rem auto 0;
+			background:
+				radial-gradient(circle, var(--color-gold-ink) 2.5px, transparent 3px) center / 7px
+					7px no-repeat,
+				linear-gradient(rgb(var(--color-leaf-gold-rgb) / 70%) 0 0) left center / 2rem 1px
+					no-repeat,
+				linear-gradient(rgb(var(--color-leaf-gold-rgb) / 70%) 0 0) right center / 2rem 1px
+					no-repeat;
+		}
+	}
+
+	.personalized-access {
+		// The pass settles before its lower edge shows, so the reply half is never seen apart.
+		.access-card {
+			animation-range: entry 0% entry 90%;
+			padding-top: calc(1rem + var(--ornament-fit) * 0.109 - var(--ornament-squeeze) * 0.083);
+			padding-bottom: calc(
+				0.75rem + var(--ornament-fit) * 0.055 - var(--ornament-squeeze) * 0.055
+			);
+			border-radius: var(--ornament-ticket-head-corners);
+
+			&::before {
+				border-radius: var(--ornament-ticket-inner-head-corners);
+			}
+		}
+
+		.access-card__field {
+			margin-top: calc(0.4rem + var(--ornament-fit) * 0.045);
+		}
+
+		.access-card__divider {
+			margin: calc(0.5rem + var(--ornament-fit) * 0.055) 0
+				calc(0.5rem + var(--ornament-fit) * 0.045);
+		}
+
+		// The name leads the pass; the count and its words follow on one line.
+		.access-card__quota {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			justify-content: center;
+			gap: 0.875rem;
+		}
+	}
+
+	// The side of the gift box: a darker strip under the lid that the ribbon runs down.
+	.gifts-section__container::before {
+		content: '';
+		position: absolute;
+		inset: 100% 0 auto;
+		height: 0.5rem;
+		border-radius: var(--ornament-band-foot-corners);
+		background:
+			linear-gradient(180deg, rgb(var(--color-violet-ink-rgb) / 14%), transparent 70%),
+			var(--ornament-art-gifts-ribbon, none) right 2.3125rem top 0 / 1.125rem 100% no-repeat,
+			var(--color-lilac-veil);
+	}
+
+	// Wrapping paper print: the cover's flowers, faint, in the corner opposite the bow.
+	.gifts-section__container {
+		isolation: isolate;
+	}
+
+	.gifts-section__header {
+		position: static;
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: auto auto 0 0;
+			z-index: -1;
+			width: 50%;
+			scale: -1 1;
+			aspect-ratio: 1;
+			border-radius: var(--ornament-band-tail-corners);
+			background: var(--ornament-art-hero-cover, none) right bottom / 235% auto no-repeat;
+			opacity: 70%;
+			mix-blend-mode: multiply;
+			mask-image: radial-gradient(ellipse 100% 100% at 100% 100%, black 38%, transparent 72%);
+			pointer-events: none;
+		}
+	}
+
+	.invitation-footer {
+		// A cap and a base turn the glowing pill into a paper lantern.
+		.footer-reply__lantern::after {
+			content: '';
+			position: absolute;
+			top: -2px;
+			left: 50%;
+			width: 0.7rem;
+			height: 3px;
+			border-radius: var(--ornament-lantern-radius);
+			translate: -50% 0;
+			background: color-mix(in srgb, var(--color-candle-gold) 68%, var(--color-violet-night));
+			box-shadow: 0 calc(var(--footer-reply-lantern-height) + 1px) 0
+				color-mix(in srgb, var(--color-candle-gold) 68%, var(--color-violet-night));
+		}
+
+		.footer-reply__eyebrow {
+			margin-bottom: 0.75rem;
+			padding-inline: 2.5rem;
+			background:
+				linear-gradient(to right, transparent, rgb(var(--color-candle-gold-rgb) / 55%)) left
+					center / 1.75rem 1px no-repeat,
+				linear-gradient(to left, transparent, rgb(var(--color-candle-gold-rgb) / 55%)) right
+					center / 1.75rem 1px no-repeat;
+			font-weight: 500;
+			letter-spacing: 0.22em;
+
+			// The narrowest phones keep the line whole by giving up the side hairlines.
+			@media (width < 22.5rem) {
+				padding-inline: 0;
+				background: none;
+				letter-spacing: 0.18em;
+			}
+		}
+
+		.footer-reply__question {
+			margin-bottom: 1.625rem;
+			font-size: var(--ornament-question-size);
+			font-weight: 500;
+			letter-spacing: 0.005em;
+		}
+
+		.footer-reply__button {
+			min-width: min(100%, 17rem);
+			min-height: 3.25rem;
+			font-weight: 600;
+			letter-spacing: 0.2em;
+			box-shadow:
+				inset 0 1px 0 rgb(var(--color-candle-cream-rgb) / 70%),
+				inset 0 0 0 3px rgb(var(--color-candle-gold-rgb) / 0%),
+				inset 0 0 0 4px rgb(var(--color-violet-night-rgb) / 30%),
+				0 1px 0 rgb(var(--color-violet-night-rgb) / 60%),
+				0 10px 26px rgb(var(--color-candle-gold-rgb) / 18%);
+
+			&:focus-visible {
+				outline-color: var(--color-candle-gold);
+			}
+
+			transition:
+				translate var(--duration-snappy) var(--ease-standard),
+				box-shadow var(--duration-snappy) var(--ease-standard);
+
+			&:hover {
+				translate: 0 -1px;
+			}
+
+			&:active {
+				translate: 0 1px;
+			}
+		}
+
+		.footer-reply__note {
+			margin-top: 0.875rem;
+			opacity: 85%;
+		}
+
+		.footer__closing-phrase {
+			max-width: 21rem;
+			margin-bottom: 0.5rem;
+			font-family: var(--font-body);
+			font-size: var(--ornament-closing-size);
+			font-style: normal;
+			letter-spacing: 0.2em;
+			line-height: 1.85;
+			text-transform: uppercase;
+			text-wrap: balance;
+			white-space: pre-line;
+
+			&::before {
+				content: var(--ornament-signature, none);
+				display: block;
+				margin-bottom: 0.875rem;
+				padding-bottom: 1.125rem;
+
+				// A hairline with one gold point closes the signature above the date.
+				background:
+					radial-gradient(circle, var(--color-candle-gold) 0 1.6px, transparent 2.2px)
+						center bottom / 7px 7px no-repeat,
+					linear-gradient(
+							to right,
+							transparent,
+							rgb(var(--color-candle-gold-rgb) / 45%) 38%,
+							transparent 38% 62%,
+							rgb(var(--color-candle-gold-rgb) / 45%) 62%,
+							transparent
+						)
+						center bottom 3px / 9rem 1px no-repeat;
+				font-family: var(--font-calligraphy), cursive;
+				font-size: var(--ornament-footer-mark-size);
+				letter-spacing: 0;
+				line-height: 1;
+				text-transform: none;
+				color: var(--color-candle-cream);
+			}
+		}
+
+		.footer__primary-row {
+			flex-wrap: wrap;
+			justify-content: center;
+			gap: 1rem 1.5rem;
+		}
+
+		.footer__replay-link {
+			text-decoration: underline;
+			text-decoration-color: rgb(var(--color-night-lilac-rgb) / 40%);
+			text-decoration-thickness: 1px;
+			text-underline-offset: 0.45em;
+		}
+
+		.whatsapp-button {
+			text-decoration: none;
+		}
+	}
+}

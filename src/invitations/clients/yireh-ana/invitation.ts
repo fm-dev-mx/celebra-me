@@ -49,6 +49,7 @@ const content: CanonicalEventContentInput = {
 		'thankYou',
 	],
 	composition: {
+		ornaments: 'satin-ribbons',
 		intersections: {
 			// Three intentional joins across the whole narrative arc (Bridge, Bridge, Climax),
 			// preserving clean neutral paper-mist cuts everywhere else.
@@ -66,8 +67,8 @@ const content: CanonicalEventContentInput = {
 		date: '2027-10-23T12:00:00.000Z',
 		backgroundImage: 'hero',
 		backgroundImageDesktop: 'heroWide',
-		scrollLabel: 'Deslice para descubrir',
-		// Round 3: a single still cover (no pinned close-in) that carries the date and the hall.
+		scrollLabel: 'Descubra mi celebración',
+		// A single still cover (no pinned close-in) that carries the date and the hall.
 		presentation: { timeFormat: '12h' },
 	},
 	envelope: {
@@ -75,7 +76,8 @@ const content: CanonicalEventContentInput = {
 		revealVariant: 'storybook-butterflies',
 		sealStyle: 'wax',
 		sealIcon: 'flower',
-		sealColor: 'champagne',
+		sealColor: 'mauve',
+		sealInitials: 'YA',
 		envelopeName: CELEBRANT_NAME,
 		cardName: CELEBRANT_NAME,
 		cardLabel: 'Mis XV Años',
@@ -139,7 +141,8 @@ const content: CanonicalEventContentInput = {
 		],
 	},
 	itinerary: {
-		// Estimated hours agreed with the client on 2026-10-29; the copy says they may shift.
+		// Estimated hours agreed with the client on 2026-10-29; the copy says they may shift. One short
+		// line per moment at most, so the whole night reads large in a single screen.
 		variant: 'standard',
 		// Pinned scene: a yellow ribbon draws itself down the program and ends in the bow.
 		scene: 'ribbon-route',
@@ -149,36 +152,32 @@ const content: CanonicalEventContentInput = {
 				time: '19:00',
 				iconName: 'Reception',
 				label: 'Recepción',
-				description:
-					'Bienvenida en el Salón Casino Imperial. Le agradeceré llegar con tiempo para estar presente desde el inicio.',
+				description: 'Llegue con tiempo',
 			},
 			{
 				time: '19:30',
 				iconName: 'Dove',
 				label: 'Acción de gracias',
-				description:
-					'En el mismo salón, a cargo del Pastor Jesús Manuel Ozaeta Pérez. En ella recibiré diez elementos simbólicos.',
+				description: 'Con el Pastor Jesús Manuel Ozaeta',
 			},
 			{
 				time: '21:00',
 				iconName: 'Waltz',
 				label: 'Vals y brindis',
-				description: 'Bailaré mi vals y después brindaremos juntos.',
 			},
 			{
 				time: '21:30',
 				iconName: 'Dinner',
-				label: 'Bocadillos y aguas frescas',
-				description: 'La pista queda abierta para bailar.',
+				label: 'Bocadillos y baile',
 			},
 			{
 				time: '00:00',
 				iconName: 'Party',
 				label: 'Cierre',
-				description: 'Gracias por compartir esta noche conmigo.',
+				description: 'Gracias por acompañarme',
 			},
 		],
-		closingNote: 'Los horarios son aproximados; la celebración termina a medianoche.',
+		closingNote: 'Horarios aproximados',
 	},
 	gifts: {
 		// No registry and no envelopes: one gentle line, in the client's words.
@@ -251,11 +250,11 @@ const content: CanonicalEventContentInput = {
 		variant: 'portrait-keepsake',
 		image: 'wreath',
 		focalPoint: '50% 50%',
-		// Round 3 draft, pending the client's approval: the guest reads it before the party.
+		// Draft copy, pending the client's approval: the guest reads it before the party.
 		message:
 			'Gracias por acompañarme en mis quince años. Esa noche será más bonita con usted y con el cariño de cada persona que llegue.',
 		closingName: CELEBRANT_NAME,
-		closingPhrase: `Sábado ${EVENT_DATE_LABEL} · Ciudad Delicias, Chihuahua`,
+		closingPhrase: `Sábado ${EVENT_DATE_LABEL}\nCiudad Delicias, Chihuahua`,
 	},
 	navigation: [
 		{ label: 'Momento', href: '#quote-section' },
@@ -296,8 +295,8 @@ export default defineCanonicalInvitation({
 	hostLoginAlias: 'yireh_ana',
 	assetDir: 'src/invitations/clients/yireh-ana/assets',
 	assetFiles: {
-		hero: 'hero-cover.webp',
-		heroWide: 'hero-cover-wide.webp',
+		hero: 'hero-ground.webp',
+		heroWide: 'hero-ground-wide.webp',
 		wreath: 'closing-wreath.webp',
 		ogShare: 'og-share.webp',
 	},

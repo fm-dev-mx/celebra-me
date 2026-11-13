@@ -373,6 +373,12 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					if (name.startsWith('event--')) layer.classList.add(name);
 				});
 				document.body.append(layer);
+				// Optional hold so a composition's own opening can start before the flyers leave.
+				const holdRaw = getComputedStyle(this).getPropertyValue('--storybook-send-off-delay').trim();
+				const holdValue = Number.parseFloat(holdRaw);
+				const hold = Number.isFinite(holdValue)
+					? Math.max(0, holdRaw.endsWith('ms') ? holdValue : holdValue * 1000)
+					: 0;
 				const lanterns = Array.from(layer.querySelectorAll<HTMLElement>('.lantern-flight__lantern'));
 				let flying = lanterns.length;
 				lanterns.forEach((lantern) => {
@@ -386,7 +392,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 						],
 						{
 							duration: 3200 + Math.random() * 1600,
-							delay: Math.random() * 900,
+							delay: hold + Math.random() * 900,
 							easing: 'cubic-bezier(0.33, 0, 0.67, 1)',
 							fill: 'both',
 						},
@@ -510,21 +516,15 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 								: Math.round(parsedFade * 1000);
 
 					const settleScroll = () => {
+						// Land exactly on the hero's top edge: a page whose hero sits near the top lands on 0,
+						// so the name is never left a few pixels under the fold.
+						let target = 0;
 						if (hero instanceof HTMLElement) {
-							const rect = hero.getBoundingClientRect();
-							const inView =
-								rect.top >= -8 &&
-								rect.top <= window.innerHeight * 0.35 &&
-								rect.bottom > 0;
-							if (!inView) {
-								hero.scrollIntoView({
-									block: 'start',
-									inline: 'nearest',
-									behavior: scrollBehavior,
-								});
-							}
-						} else if (window.scrollY > 0) {
-							window.scrollTo({ top: 0, left: 0, behavior: scrollBehavior });
+							const heroTop = hero.getBoundingClientRect().top + window.scrollY;
+							if (heroTop > window.innerHeight * 0.35) target = Math.round(heroTop);
+						}
+						if (Math.abs(window.scrollY - target) > 1) {
+							window.scrollTo({ top: target, left: 0, behavior: scrollBehavior });
 						}
 					};
 
