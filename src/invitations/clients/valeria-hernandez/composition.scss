@@ -288,8 +288,7 @@ $valeria-night-ground:
 		}
 	}
 
-	// Every name is set in the body serif's italic (client request, 2026-11-14), so the section
-	// keeps three faces: the calligraphy title, the Cinzel labels and the serif text and names.
+	// Names in the body serif's italic: the section keeps three faces (script, Cinzel, serif).
 	.family__name {
 		justify-content: flex-start;
 		color: rgb(255 255 255);
@@ -302,9 +301,7 @@ $valeria-night-ground:
 		filter: drop-shadow(0 0 0.55rem rgb(var(--color-rose-glow-rgb) / 70%));
 	}
 
-	// Asymmetric billing: the parents lead on the left, the mother stepped in under the father
-	// and no role labels (the group title already says it); the godparents answer from the
-	// right, one size down.
+	// Asymmetric billing: parents left (mother stepped in), godparents right, one size down.
 	.family__group--parents {
 		.family__member + .family__member {
 			margin-top: 0.9rem;
