@@ -1,0 +1,143 @@
+@use './disco-motifs' as disco;
+@use './disco-scenes' as scenes;
+
+// ==========================================================================
+// DISCO PHOTO PASS — the photo-sharing card of a disco night invitation, kept apart from the
+// shared disco scenes so adopting it leaves the other disco invitations' packages unchanged.
+// ==========================================================================
+
+// Photo pass. Include on a card `.memories-section`: the card turns into a dark glass pass under a
+// foil strip, with the title lit in neon over a sparkle rule, the action as a neon pill and the QR
+// printed on a pale plate below a perforation, as the stub a guest scans.
+@mixin photo-pass($glow-rgb: var(--color-rose-glow-rgb), $ink: rgb(244 240 244)) {
+	.memories-section__inner {
+		position: relative;
+		overflow: hidden;
+		row-gap: 0;
+		max-width: 26rem;
+		padding: clamp(2.75rem, 9vw, 3.5rem) clamp(1.5rem, 7vw, 2.75rem) clamp(1.75rem, 6vw, 2.5rem);
+		border: 1px solid rgb(var(--color-night-blush-rgb) / 30%);
+		outline: 1px solid rgb(var(--color-night-blush-rgb) / 14%);
+		outline-offset: -0.55rem;
+		background:
+			radial-gradient(120% 55% at 50% 0%, rgb(152 30 52 / 60%), transparent 72%),
+			radial-gradient(90% 40% at 50% 100%, rgb(96 14 34 / 70%), transparent 75%), rgb(30 5 13);
+		box-shadow:
+			0 1.6rem 3rem rgb(0 0 0 / 45%),
+			0 0 2.5rem rgb(#{$glow-rgb} / 12%);
+		color: $ink;
+
+		@include scenes.ticket-feed;
+
+		&::before {
+			@include scenes.foil-strip($glow-rgb);
+
+			position: absolute;
+			inset: 0 0 auto;
+			display: block;
+			height: 0.4rem;
+			content: '';
+			pointer-events: none;
+		}
+	}
+
+	.memories-section__title {
+		max-width: 12ch;
+		font-family: var(--font-calligraphy, var(--font-display));
+		font-size: clamp(2.75rem, 11vw, 3.5rem);
+		line-height: 1;
+		color: $ink;
+		text-shadow:
+			0 0 0.5rem rgb(#{$glow-rgb} / 75%),
+			0 0 1.4rem rgb(#{$glow-rgb} / 40%);
+
+		&::after {
+			display: block;
+			width: 6.5rem;
+			height: 1rem;
+			margin: 1.1rem auto 0;
+			background: disco.$sparkle-rule center / contain no-repeat;
+			opacity: 75%;
+			content: '';
+		}
+	}
+
+	.memories-section__description {
+		max-width: 27ch;
+		margin-top: 1.1rem;
+		font-size: 1.08rem;
+		line-height: 1.6;
+		color: rgb(var(--color-night-blush-rgb) / 82%);
+	}
+
+	.memories-section__action {
+		width: auto;
+		max-width: 100%;
+		min-height: 52px;
+		margin-top: 1.9rem;
+		padding: 0.85rem 2.1rem;
+		border: 1px solid rgb(#{$glow-rgb} / 85%);
+		border-radius: 999px;
+		background: linear-gradient(180deg, rgb(196 30 58), rgb(120 12 32));
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 22%),
+			0 0 1.2rem rgb(#{$glow-rgb} / 40%);
+		color: $ink;
+		font-size: 0.8rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		transition: box-shadow 0.25s ease;
+
+		&:hover {
+			filter: none;
+			box-shadow:
+				inset 0 1px 0 rgb(255 255 255 / 22%),
+				0 0 1.8rem rgb(#{$glow-rgb} / 65%);
+		}
+
+		&:focus-visible {
+			outline-color: rgb(#{$glow-rgb});
+		}
+	}
+
+	.memories-section__qr {
+		row-gap: 1rem;
+		width: 100%;
+		margin-top: 2.25rem;
+		padding-top: 2rem;
+		border-top: 1px dashed rgb(var(--color-night-blush-rgb) / 32%);
+	}
+
+	.memories-section__qr-frame {
+		padding: 0.8rem;
+		border-radius: 0.4rem;
+		background: rgb(255 250 251);
+		box-shadow:
+			0 0 0 0.45rem rgb(30 5 13),
+			0 0 0 calc(0.45rem + 1px) rgb(var(--color-night-blush-rgb) / 40%),
+			0 0 2rem rgb(#{$glow-rgb} / 30%);
+	}
+
+	.memories-section__qr-image {
+		width: clamp(9.5rem, 44vw, 12rem);
+	}
+
+	.memories-section__footer {
+		max-width: 24ch;
+		margin-top: 0.6rem;
+		font-size: 0.95rem;
+		color: rgb(var(--color-night-blush-rgb) / 70%);
+	}
+
+	.memories-section__download {
+		margin-top: 0.5rem;
+		font-family: var(--font-label, var(--font-body));
+		font-size: 0.72rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: rgb(var(--color-night-blush-rgb) / 88%);
+		text-decoration-color: rgb(var(--color-night-blush-rgb) / 40%);
+		text-decoration-thickness: 1px;
+		text-underline-offset: 0.55em;
+	}
+}
