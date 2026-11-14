@@ -80,6 +80,10 @@ async function resolveRsvpTarget(identity: RsvpIdentity): Promise<ResolvedRsvpTa
 			};
 		}
 
+		if (await isEventInvitationUnavailable(identity.event.id)) {
+			throw invitationUnavailableError();
+		}
+
 		const fullName = sanitize(identity.fullName, 140);
 		if (!fullName) throw new ApiError(400, 'bad_request', 'Full name is required.');
 

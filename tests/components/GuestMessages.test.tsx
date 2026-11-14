@@ -2,7 +2,14 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import GuestLastMessage from '@/components/dashboard/guests/GuestLastMessage';
 import GuestListRow from '@/components/dashboard/guests/GuestListRow';
 import GuestMessageWall from '@/components/dashboard/guests/GuestMessageWall';
-import { buildGuestMessageWall } from '@/components/dashboard/guests/guest-presenter';
+import {
+	GuestLoadError,
+	GuestListFeedback,
+} from '@/components/dashboard/guests/GuestDashboardStates';
+import {
+	buildGuestMessageWall,
+	GUEST_MESSAGE_READ_STORAGE_KEY,
+} from '@/components/dashboard/guests/guest-presenter';
 import { makeGuest } from '@tests/helpers/guest-factory';
 
 const LONG_MESSAGE =
@@ -95,10 +102,18 @@ describe('buildGuestMessageWall', () => {
 });
 
 describe('GuestMessageWall', () => {
-	it('lists every message in full and opens the guest on request', () => {
+	beforeEach(() => {
+		window.localStorage.clear();
+	});
+
+	it('lists every message in full, shows "Mensaje nuevo", and records the read on open', () => {
 		const onOpen = jest.fn();
-		const guest = makeGuest({ fullName: 'Familia Ruiz', guestComment: LONG_MESSAGE });
-		render(
+		const guest = makeGuest({
+			guestId: 'g-ruiz',
+			fullName: 'Familia Ruiz',
+			guestComment: LONG_MESSAGE,
+		});
+		const { unmount } = render(
 			<GuestMessageWall
 				items={[guest, makeGuest({ guestId: 'g-2', guestComment: '' })]}
 				onOpenDetails={onOpen}
@@ -109,9 +124,37 @@ describe('GuestMessageWall', () => {
 		expect(within(wall).getByText('Del más reciente al más antiguo.')).toBeInTheDocument();
 		const card = within(wall).getByRole('article', { name: 'Familia Ruiz' });
 		expect(within(card).getByText(LONG_MESSAGE)).toBeInTheDocument();
+		expect(within(card).getByText('Mensaje nuevo')).toBeInTheDocument();
 
 		fireEvent.click(within(card).getByRole('button', { name: 'Ver detalles de Familia Ruiz' }));
 		expect(onOpen).toHaveBeenCalledWith(guest);
+		expect(within(card).queryByText('Mensaje nuevo')).not.toBeInTheDocument();
+		expect(window.localStorage.getItem(GUEST_MESSAGE_READ_STORAGE_KEY)).toContain('g-ruiz');
+
+		unmount();
+		render(<GuestMessageWall items={[guest]} onOpenDetails={onOpen} />);
+		expect(screen.queryByText('Mensaje nuevo')).not.toBeInTheDocument();
+	});
+
+	it('shows "Mensaje nuevo" again when a read guest sends a newer message', () => {
+		const initial = makeGuest({
+			guestId: 'g-ruiz',
+			fullName: 'Familia Ruiz',
+			guestComment: 'Primer mensaje',
+		});
+		const { rerender } = render(
+			<GuestMessageWall items={[initial]} onOpenDetails={jest.fn()} />,
+		);
+		fireEvent.click(screen.getByRole('button', { name: 'Ver detalles de Familia Ruiz' }));
+		expect(screen.queryByText('Mensaje nuevo')).not.toBeInTheDocument();
+
+		const updated = makeGuest({
+			guestId: 'g-ruiz',
+			fullName: 'Familia Ruiz',
+			guestComment: 'Primer mensaje\n\n[12 jun 2026, 11:03] Segundo mensaje',
+		});
+		rerender(<GuestMessageWall items={[updated]} onOpenDetails={jest.fn()} />);
+		expect(screen.getByText('Mensaje nuevo')).toBeInTheDocument();
 	});
 
 	it('renders nothing when no guest left a message', () => {
@@ -122,5 +165,34 @@ describe('GuestMessageWall', () => {
 			/>,
 		);
 		expect(container).toBeEmptyDOMElement();
+	});
+});
+
+describe('GuestDashboardStates — load error and empty filter results', () => {
+	it('renders the load error alert with retry CTA', () => {
+		const onRetry = jest.fn();
+		render(<GuestLoadError message="No se pudo cargar la lista." onRetry={onRetry} />);
+
+		expect(screen.getByRole('alert')).toHaveTextContent('No se pudo cargar la lista.');
+		fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
+		expect(onRetry).toHaveBeenCalledTimes(1);
+	});
+
+	it('renders nothing in GuestListFeedback when total invitations is 0', () => {
+		const { container } = render(
+			<GuestListFeedback total={0} visible={0} filtered={false} onClear={jest.fn()} />,
+		);
+		expect(container).toBeEmptyDOMElement();
+	});
+
+	it('renders empty search/filter feedback with clear CTA when visible is 0', () => {
+		const onClear = jest.fn();
+		render(<GuestListFeedback total={8} visible={0} filtered={true} onClear={onClear} />);
+
+		expect(
+			screen.getByText('Ninguna invitación coincide con la búsqueda o el filtro.'),
+		).toBeInTheDocument();
+		fireEvent.click(screen.getByRole('button', { name: 'Ver todas las invitaciones' }));
+		expect(onClear).toHaveBeenCalledTimes(1);
 	});
 });

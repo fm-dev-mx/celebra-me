@@ -1,4 +1,7 @@
-import { submitGuestRsvpByInviteId } from '@/lib/rsvp/services/rsvp-submission.service';
+import {
+	submitGuestRsvpByInviteId,
+	submitGuestRsvpByPublicEvent,
+} from '@/lib/rsvp/services/rsvp-submission.service';
 import {
 	findGuestByInviteIdPublic,
 	submitGuestRsvpPublicRpc,
@@ -9,7 +12,7 @@ import {
 } from '@/lib/rsvp/rsvp-operation-contract';
 import { assertObservedOperationCount } from '@/lib/invitation/delivery-contract';
 import { isEventInvitationUnavailable } from '@/lib/invitation/access/invitation-access.repository';
-import type { GuestInvitationRecord } from '@/interfaces/rsvp/domain.interface';
+import type { EventRecord, GuestInvitationRecord } from '@/interfaces/rsvp/domain.interface';
 
 jest.mock('@/lib/rsvp/repositories/guest.repository');
 jest.mock('@/lib/invitation/access/invitation-access.repository', () => ({
@@ -181,6 +184,121 @@ describe('rsvp service unit', () => {
 			expect(call.inviteId).toBe('invite-1');
 			expect(call.guestComment).toContain('Anterior mensaje');
 			expect(call.guestComment).toContain('Nuevo mensaje');
+		});
+	});
+
+	describe('children category and public availability', () => {
+		it('persists childrenCount when within maxAllowedChildren and forces 0 when declined', async () => {
+			findGuestByInviteIdPublicMock.mockResolvedValue(
+				makeGuestRecord({ maxAllowedAttendees: 4, maxAllowedChildren: 2 }),
+			);
+			submitGuestRsvpPublicRpcMock.mockResolvedValue(
+				makeGuestRecord({
+					attendanceStatus: 'confirmed',
+					attendeeCount: 3,
+					childrenCount: 2,
+					respondedAt: new Date().toISOString(),
+				}),
+			);
+
+			const confirmed = await submitGuestRsvpByInviteId('invite-1', {
+				attendanceStatus: 'confirmed',
+				attendeeCount: 3,
+				childrenCount: 2,
+				guestComment: '',
+			});
+			expect(confirmed.childrenCount).toBe(2);
+			expect(submitGuestRsvpPublicRpcMock).toHaveBeenLastCalledWith(
+				expect.objectContaining({
+					inviteId: 'invite-1',
+					attendeeCount: 3,
+					childrenCount: 2,
+				}),
+			);
+
+			submitGuestRsvpPublicRpcMock.mockResolvedValue(
+				makeGuestRecord({
+					attendanceStatus: 'declined',
+					attendeeCount: 0,
+					childrenCount: 0,
+					respondedAt: new Date().toISOString(),
+				}),
+			);
+			const declined = await submitGuestRsvpByInviteId('invite-1', {
+				attendanceStatus: 'declined',
+				attendeeCount: 3,
+				childrenCount: 2,
+				guestComment: '',
+			});
+			expect(declined.childrenCount).toBe(0);
+			expect(submitGuestRsvpPublicRpcMock).toHaveBeenLastCalledWith(
+				expect.objectContaining({
+					inviteId: 'invite-1',
+					attendeeCount: 0,
+					childrenCount: 0,
+				}),
+			);
+		});
+
+		it('rejects RSVP when childrenCount exceeds maxAllowedChildren or attendeeCount', async () => {
+			findGuestByInviteIdPublicMock.mockResolvedValue(
+				makeGuestRecord({ maxAllowedAttendees: 4, maxAllowedChildren: 1 }),
+			);
+
+			await expect(
+				submitGuestRsvpByInviteId('invite-1', {
+					attendanceStatus: 'confirmed',
+					attendeeCount: 3,
+					childrenCount: 2,
+				}),
+			).rejects.toMatchObject({
+				status: 400,
+				message: 'Children count exceeds the limit for this invitation.',
+			});
+
+			findGuestByInviteIdPublicMock.mockResolvedValue(
+				makeGuestRecord({ maxAllowedAttendees: 4, maxAllowedChildren: 3 }),
+			);
+			await expect(
+				submitGuestRsvpByInviteId('invite-1', {
+					attendanceStatus: 'confirmed',
+					attendeeCount: 1,
+					childrenCount: 2,
+				}),
+			).rejects.toMatchObject({
+				status: 400,
+				message: 'Children count exceeds the limit for this invitation.',
+			});
+		});
+
+		it('rejects a public RSVP when the event invitation is expired or unavailable', async () => {
+			(isEventInvitationUnavailable as jest.Mock).mockResolvedValueOnce(true);
+
+			await expect(
+				submitGuestRsvpByPublicEvent({
+					event: {
+						id: 'evt-1',
+						ownerUserId: 'host-1',
+						slug: 'evento',
+						eventType: 'xv',
+						title: 'XV',
+						status: 'published',
+						publishedAt: null,
+						invitationId: 'inv-1',
+						brandingRemovalGuestLimit: 0,
+						createdAt: new Date().toISOString(),
+						updatedAt: new Date().toISOString(),
+					} as EventRecord,
+					fullName: 'Invitada',
+					phone: '',
+					maxAllowedAttendees: 2,
+					payload: {
+						attendanceStatus: 'confirmed',
+						attendeeCount: 2,
+					},
+				}),
+			).rejects.toMatchObject({ status: 403, code: 'invitation_unavailable' });
+			expect(submitGuestRsvpPublicRpcMock).not.toHaveBeenCalled();
 		});
 	});
 });
