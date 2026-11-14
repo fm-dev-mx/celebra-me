@@ -167,7 +167,13 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	.quote-texture {
 		--quote-texture-opacity: 1;
 		--ornament-inking: ribbon-route-draw; // falls from the top as the scene arrives
-		--ornament-inking-range: entry 30% contain 12%;
+		--ornament-inking-range: entry 15% entry 85%;
+	}
+
+	// The words are inked while the scene rises into place, so the phrase reads in about one swipe
+	// and a half instead of waiting for the pinned screen.
+	.quote-line[data-reveal-role='title'] .word {
+		--ornament-inking-range: entry calc(60% + 1.8% * var(--i)) entry calc(67% + 1.8% * var(--i));
 	}
 
 	// No lead-in space above the first line: the phrase sits centred inside the ribbon.
@@ -776,12 +782,13 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 		--font-display: var(--yireh-title-font);
 	}
 
-	// The quote follows the cover on clean paper as a scene two screens tall, pinned for one, with
-	// room under it for the night's cut.
+	// The quote follows the cover on clean paper as a scene a quarter screen taller than the phone,
+	// so the inked phrase holds briefly before the page moves on, with room under it for the
+	// night's cut.
 	.invitation-section-wrapper[data-section-kind='quote'] {
 		--section-band-paper: var(--color-lilac-paper);
 		--quote-bg: transparent;
-		--quote-min-height: 200svh;
+		--quote-min-height: 125svh;
 
 		// The section sets its own padding, so the tokens go on it: edge to edge for the ribbon; the
 		// night's cut lands on the empty paper under the centred phrase.
