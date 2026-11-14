@@ -1691,4 +1691,107 @@ describe('RSVP Component', () => {
 			).not.toBeInTheDocument();
 		});
 	});
+
+	describe('Children Category Submission & Validation', () => {
+		it('submits childrenCount when within allowance and resets to 0 when declined', async () => {
+			const user = userEvent.setup();
+			const { unmount } = render(
+				<RSVP
+					{...defaultProps}
+					guestCap={4}
+					initialGuestData={{
+						inviteId: 'mock-invite-id',
+						fullName: 'Familia López',
+						maxAllowedAttendees: 4,
+						maxAllowedChildren: 2,
+					}}
+				/>,
+			);
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			const childrenInput = screen.getByLabelText(/De ellos, niños/i);
+			await user.clear(childrenInput);
+			await user.type(childrenInput, '1');
+
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				const submitCall = (global.fetch as jest.Mock).mock.calls.find(
+					([url, init]) =>
+						typeof url === 'string' && PERSONALIZED_RSVP_URL.test(url) && init?.body,
+				);
+				expect(submitCall).toBeDefined();
+				const body = JSON.parse(submitCall[1].body);
+				expect(body).toMatchObject({
+					attendanceStatus: 'confirmed',
+					attendeeCount: 4,
+					childrenCount: 1,
+				});
+			});
+
+			unmount();
+			jest.clearAllMocks();
+
+			render(
+				<RSVP
+					{...defaultProps}
+					guestCap={4}
+					initialGuestData={{
+						inviteId: 'mock-invite-id',
+						fullName: 'Familia López',
+						maxAllowedAttendees: 4,
+						maxAllowedChildren: 2,
+					}}
+				/>,
+			);
+
+			await user.click(screen.getByLabelText(/No podré/i));
+			await user.click(screen.getByRole('button', { name: /ENVIAR RESPUESTA/i }));
+
+			await waitFor(() => {
+				const submitCall = (global.fetch as jest.Mock).mock.calls.find(
+					([url, init]) =>
+						typeof url === 'string' && PERSONALIZED_RSVP_URL.test(url) && init?.body,
+				);
+				expect(submitCall).toBeDefined();
+				const body = JSON.parse(submitCall[1].body);
+				expect(body).toMatchObject({
+					attendanceStatus: 'declined',
+					attendeeCount: 0,
+					childrenCount: 0,
+				});
+			});
+		});
+
+		it('blocks submission and shows error when childrenCount exceeds confirmed attendees', async () => {
+			const user = userEvent.setup();
+			render(
+				<RSVP
+					{...defaultProps}
+					guestCap={4}
+					initialGuestData={{
+						inviteId: 'mock-invite-id',
+						fullName: 'Familia López',
+						maxAllowedAttendees: 4,
+						maxAllowedChildren: 2,
+					}}
+				/>,
+			);
+
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			const childrenInput = screen.getByLabelText(/De ellos, niños/i);
+			await user.clear(childrenInput);
+			await user.type(childrenInput, '2');
+
+			const guestInput = screen.getByLabelText(/Número de asistentes/i);
+			await user.clear(guestInput);
+			await user.type(guestInput, '1');
+
+			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
+
+			await waitFor(() => {
+				expect(screen.getByText('Pueden venir hasta 1 niño.')).toBeInTheDocument();
+			});
+		});
+	});
 });

@@ -62,9 +62,11 @@ interface RSVPProps {
 	initialGuestData?: {
 		fullName?: string;
 		maxAllowedAttendees?: number;
+		maxAllowedChildren?: number;
 		inviteId?: string;
 		attendanceStatus?: 'pending' | 'confirmed' | 'declined';
 		attendeeCount?: number;
+		childrenCount?: number;
 		guestComment?: string;
 	};
 	isDemoPreview?: boolean;

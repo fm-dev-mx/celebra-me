@@ -269,4 +269,29 @@ describe('failed-code limit', () => {
 		expect(response?.headers.get('Retry-After')).toBe('3600');
 		expect(response?.headers.get('Cache-Control')).toBe('no-store, private');
 	});
+
+	it('answers 403 unavailable when a crawler opens an expired or disabled short link', async () => {
+		mockedByShortId.mockResolvedValue(americaContext);
+		mockedIsCrawler.mockReturnValue(true);
+		(resolvePublicInvitation as jest.Mock).mockResolvedValue({
+			source: 'unavailable',
+			viewModel: null,
+		});
+
+		const pageResult = await resolveShortIdPage(
+			'B5NBO65L',
+			guestRequest('/i/B5NBO65L', '203.0.113.15', 'WhatsApp/2.24.10.81 A'),
+			SITE_ORIGIN,
+		);
+		expect(pageResult).toEqual({ kind: 'unavailable' });
+
+		const responseInit = {
+			status: 200,
+			headers: new Headers(),
+		};
+		const earlyResponse = buildShortIdEarlyResponse(pageResult, responseInit);
+		expect(earlyResponse).toBeNull();
+		expect(responseInit.status).toBe(403);
+		expect(responseInit.headers.get('Cache-Control')).toBe('no-store, private');
+	});
 });
