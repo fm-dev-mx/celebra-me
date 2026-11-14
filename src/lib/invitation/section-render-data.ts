@@ -11,10 +11,7 @@ import type { PersonalizedAccessPassStyle } from '@/lib/invitation/personalized-
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 import { getLatestMessage } from '@/lib/rsvp/core/guest-message';
 import { DEMO_GUEST_NAME, type RsvpDefaultCopy } from '@/components/invitation/rsvp-logic';
-import {
-	keepsLegacyPassText,
-	keepsLegacyRsvpDefaults,
-} from '@/lib/invitation/legacy-rsvp-defaults';
+import { keepsLegacyRsvpDefaults } from '@/lib/invitation/legacy-rsvp-defaults';
 
 type Sections = InvitationPageContext['viewModel']['sections'];
 type SectionData<K extends keyof Sections> = NonNullable<Sections[K]>;
@@ -38,8 +35,6 @@ type PersonalizedAccessProps = {
 	guestName: string;
 	maxAllowedAttendees: number;
 	maxAllowedChildren?: number;
-	/** Says «Pase solo para adultos» on a pass with no child places; off for published invitations. */
-	adultsOnlyLabel?: boolean;
 	eventYear?: string;
 	editionMark?: string;
 	isDemoPreview?: boolean;
@@ -186,11 +181,6 @@ function resolvePassChildren(
 	return isDemoPreview ? (demoChildren ?? 0) : 0;
 }
 
-/** Every invitation outside the legacy published list shows the adults-only line on childless passes. */
-function resolveAdultsOnlyLabel(slug: string): boolean {
-	return !keepsLegacyPassText(slug);
-}
-
 function renderPersonalizedAccess(pageContext: InvitationPageContext): DescriptorData | null {
 	const config = resolvePersonalizedAccessConfig(pageContext);
 	if (!config) return null;
@@ -219,7 +209,6 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 				isDemoPreview,
 				rsvpSection?.demoMaxChildren,
 			),
-			adultsOnlyLabel: resolveAdultsOnlyLabel(pageContext.viewModel.id),
 			eventYear,
 			editionMark: pageContext.edition?.mark,
 			isDemoPreview,

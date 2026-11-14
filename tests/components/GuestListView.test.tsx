@@ -1,6 +1,5 @@
-import { act, fireEvent, render, renderHook, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import GuestListRow from '@/components/dashboard/guests/GuestListRow';
-import GuestViewToggle from '@/components/dashboard/guests/GuestViewToggle';
 import {
 	GUEST_LIST_VIEW_STORAGE_KEY,
 	useGuestListView,
@@ -32,9 +31,9 @@ describe('GuestListRow', () => {
 		expect(onOpen).toHaveBeenCalledWith(guest);
 	});
 
-	it('copies the link from the row without opening the details', async () => {
+	it('copies the link from an unanswered row without opening the details', async () => {
 		const onOpen = jest.fn();
-		const guest = makeGuest({ fullName: 'Lucía', attendanceStatus: 'confirmed' });
+		const guest = makeGuest({ fullName: 'Lucía', attendanceStatus: 'pending' });
 		render(<GuestListRow item={guest} inviteUrl="https://example.com/i/1" onOpen={onOpen} />);
 
 		await act(async () => {
@@ -45,20 +44,14 @@ describe('GuestListRow', () => {
 		expect(onOpen).not.toHaveBeenCalled();
 		expect(screen.getByRole('button', { name: 'Enlace copiado de Lucía' })).toBeInTheDocument();
 	});
-});
 
-describe('GuestViewToggle', () => {
-	it('marks the active view and reports changes', () => {
-		const onChange = jest.fn();
-		render(<GuestViewToggle view="list" onChange={onChange} />);
-
-		const group = screen.getByRole('group', { name: 'Ver como' });
-		expect(within(group).getByRole('button', { name: 'Lista' })).toHaveAttribute(
-			'aria-pressed',
-			'true',
+	it('hides the copy action once the guest answered', () => {
+		const guest = makeGuest({ fullName: 'Lucía', attendanceStatus: 'confirmed' });
+		render(
+			<GuestListRow item={guest} inviteUrl="https://example.com/i/1" onOpen={jest.fn()} />,
 		);
-		fireEvent.click(within(group).getByRole('button', { name: 'Tarjetas' }));
-		expect(onChange).toHaveBeenCalledWith('cards');
+
+		expect(screen.queryByRole('button', { name: 'Copiar enlace de Lucía' })).toBeNull();
 	});
 });
 

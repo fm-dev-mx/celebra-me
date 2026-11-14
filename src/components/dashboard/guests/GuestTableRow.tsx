@@ -1,6 +1,5 @@
 import React, { useId, useState } from 'react';
 import { MessageIcon } from '@/components/common/icons/ui';
-import CopyLinkButton from '@/components/dashboard/guests/CopyLinkButton';
 import GuestLastMessage from '@/components/dashboard/guests/GuestLastMessage';
 import { GUEST_TABLE_COL_COUNT } from '@/components/dashboard/guests/GuestTable';
 import GuestPrimaryAction from '@/components/dashboard/guests/GuestPrimaryAction';
@@ -45,7 +44,8 @@ const STAGE_NOTE: Partial<Record<GuestStage, string>> = {
 	opened: 'Abierta, sin responder',
 };
 
-type GuestRowVisibleAction = 'next-step' | 'message' | 'copy';
+/** Answered guests without a message need no visible action; the link sits in «⋯». */
+type GuestRowVisibleAction = 'next-step' | 'message' | 'none';
 
 interface GuestRowActionProps extends Pick<
 	GuestTableRowProps,
@@ -81,13 +81,6 @@ const GuestRowAction: React.FC<GuestRowActionProps> = ({ action, message, ...pro
 				<span>{message.open ? 'Ocultar mensaje' : 'Ver mensaje'}</span>
 			</button>
 		)}
-		{action === 'copy' && (
-			<CopyLinkButton
-				url={props.inviteUrl}
-				guestName={props.item.fullName}
-				className="btn-secondary btn--compact guest-row__copy-btn"
-			/>
-		)}
 	</div>
 );
 
@@ -117,15 +110,15 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 	const people = getGuestPeopleLabel(item);
 	const stageNote = STAGE_NOTE[getGuestStage(item)];
 
-	// One visible action per row: the next step while unanswered, then the guest's
-	// message, then the link. Everything else lives in the «⋯» menu.
+	// At most one visible action per row: the next step while unanswered, then the
+	// guest's message. The link and everything else live in the «⋯» menu.
 	const answered =
 		getGuestPrimaryAction(item, reminderMode, isReminderEligible).action === 'copy-link';
 	const visibleAction: GuestRowVisibleAction = !answered
 		? 'next-step'
 		: hasMessages
 			? 'message'
-			: 'copy';
+			: 'none';
 	const toggleMessage = () => setMsgOpen((v) => !v);
 
 	const msgPanel = hasMessages && msgOpen && (
@@ -219,7 +212,6 @@ const GuestTableRow: React.FC<GuestTableRowProps> = ({
 					<GuestRowMenu
 						guestName={item.fullName}
 						inviteUrl={inviteUrl}
-						showCopy={visibleAction !== 'copy'}
 						message={
 							hasMessages && visibleAction !== 'message'
 								? { open: msgOpen, onToggle: toggleMessage }

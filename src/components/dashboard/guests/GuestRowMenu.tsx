@@ -10,7 +10,7 @@ interface GuestRowMenuProps {
 	guestName: string;
 	inviteUrl: string;
 	/** Omitted when copying is already the row's visible action. */
-	showCopy: boolean;
+	showCopy?: boolean;
 	/** Message toggle; omitted when the guest left none or it is the visible action. */
 	message?: { open: boolean; onToggle: () => void };
 	onOpenDetails: () => void;
@@ -24,7 +24,7 @@ interface GuestRowMenuProps {
 const GuestRowMenu: React.FC<GuestRowMenuProps> = ({
 	guestName,
 	inviteUrl,
-	showCopy,
+	showCopy = true,
 	message,
 	onOpenDetails,
 }) => {

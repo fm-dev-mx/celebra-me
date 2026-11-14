@@ -3,11 +3,12 @@ import GuestConfirmedParty from '@/components/dashboard/guests/GuestConfirmedPar
 import GuestEngagementFunnel from '@/components/dashboard/guests/GuestEngagementFunnel';
 import GuestPassesBar from '@/components/dashboard/guests/GuestPassesBar';
 import type { DashboardEngagementSummary } from '@/interfaces/dashboard/guest.interface';
-import { formatParty } from '@/lib/rsvp/guest-cap';
+import { formatParty, formatPassBreakdown } from '@/lib/rsvp/guest-cap';
+import { WhatsAppIcon } from '@/components/common/icons/social/WhatsApp';
+import { CheckIcon, CopyIcon } from '@/components/common/icons/ui';
 import { writeClipboardText } from '@/hooks/use-clipboard';
 import {
 	buildGuestSummaryShareText,
-	formatPassesWithChildren,
 	formatSummaryParty,
 	type GuestReviewFilterValue,
 	type GuestSummary,
@@ -21,8 +22,11 @@ export interface GuestStatusOverviewProps {
 	reminderCount?: number;
 	/** Context for the reminder step, e.g. days left before the event. */
 	reminderHint?: string | null;
-	/** Guests who left a message; adds the "Con mensaje" shortcut when above zero. */
-	withMessageCount?: number;
+	/**
+	 * Set when the progress strip already leads the page: the overview then drops
+	 * the next step, the headline and the bar it would repeat, and keeps the detail.
+	 */
+	hideNextStep?: boolean;
 	/** Formatted RSVP deadline; empty when the event has none. */
 	rsvpDeadline?: string;
 	eventTitle?: string;
@@ -39,6 +43,8 @@ interface StageButton {
 	label: string;
 	count: number;
 	detail: string;
+	/** Adults and children of those passes; only when some pass is for children. */
+	party?: string;
 }
 
 function plural(count: number, singular: string, pluralForm: string): string {
@@ -48,6 +54,32 @@ function plural(count: number, singular: string, pluralForm: string): string {
 function passes(count: number): string {
 	return formatParty(count);
 }
+
+/** People count in the summary's own word: "3 invitados". */
+function guests(count: number): string {
+	return formatParty(count, { unit: 'invitado' });
+}
+
+/** Adults/children split under the headline; absent when no pass includes children. */
+const GuestPartyBreakdown: React.FC<{ people: GuestSummary['people'] }> = ({ people }) => {
+	if (people.assignedChildren === 0) return null;
+	return (
+		<dl className="guest-overview__breakdown">
+			{people.confirmedChildren > 0 && (
+				<div className="guest-overview__breakdown-row">
+					<dt>Confirmadas</dt>
+					<dd>
+						<GuestConfirmedParty people={people} className="guest-overview__party" />
+					</dd>
+				</div>
+			)}
+			<div className="guest-overview__breakdown-row">
+				<dt>Pases</dt>
+				<dd>{formatParty(people.assigned, { children: people.assignedChildren })}</dd>
+			</div>
+		</dl>
+	);
+};
 
 function percentOf(part: number, total: number): number {
 	return total > 0 ? (part / total) * 100 : 0;
@@ -70,7 +102,7 @@ interface GuestNextStepProps {
 	placement?: 'overview' | 'strip';
 }
 
-/** The one thing worth doing next: remind the unanswered, send the unsent, or nothing. */
+/** The one thing worth doing next: send the unsent, then remind the unanswered, or nothing. */
 export const GuestNextStep: React.FC<GuestNextStepProps> = ({
 	summary,
 	reminderCount,
@@ -90,10 +122,11 @@ export const GuestNextStep: React.FC<GuestNextStepProps> = ({
 	let action: { label: string; onClick?: () => void } | null = null;
 	let audienceNote = '';
 
-	if (reminderCount > 0 && awaitingAnswer.invitations > 0) {
+	// Unsent invitations come first: a reminder only makes sense once everyone has theirs.
+	if (toSend.invitations === 0 && reminderCount > 0 && awaitingAnswer.invitations > 0) {
 		tone = ' guest-overview__next--remind';
-		lead = `${prefix}${awaitingAnswer.invitations} ${plural(awaitingAnswer.invitations, 'invitación enviada sigue', 'invitaciones enviadas siguen')}`;
-		rest = ` sin respuesta (${formatPassesWithChildren(awaitingAnswer.passes, awaitingAnswer.children)}).`;
+		lead = `${prefix}${awaitingAnswer.invitations} ${plural(awaitingAnswer.invitations, 'invitación enviada sin confirmar', 'invitaciones enviadas sin confirmar')}`;
+		rest = `${guests(awaitingAnswer.passes)}${formatSummaryParty(awaitingAnswer.passes, awaitingAnswer.children)} por confirmar.`;
 		action = {
 			label: scopeLabel ? `Recordar a${ofScope(reminderCount)}` : 'Recordar por WhatsApp',
 			onClick: onRemind,
@@ -104,7 +137,7 @@ export const GuestNextStep: React.FC<GuestNextStepProps> = ({
 		}
 	} else if (toSend.invitations > 0) {
 		lead = `${prefix}${toSend.invitations} ${plural(toSend.invitations, 'invitación por enviar', 'invitaciones por enviar')}`;
-		rest = ` (${formatPassesWithChildren(toSend.passes, toSend.children)}).`;
+		rest = `En total, ${guests(toSend.passes)}${formatSummaryParty(toSend.passes, toSend.children)}.`;
 		action = {
 			label: scopeLabel ? `Enviar${ofScope(toSend.invitations)}` : 'Enviar invitaciones',
 			onClick: onSendPending,
@@ -142,6 +175,91 @@ export const GuestNextStep: React.FC<GuestNextStepProps> = ({
 	);
 };
 
+interface GuestSummaryShareProps {
+	summary: GuestSummary;
+	eventTitle: string;
+	rsvpDeadline: string;
+}
+
+/** WhatsApp and copy buttons that share the event summary as text. */
+const GuestSummaryShare: React.FC<GuestSummaryShareProps> = ({
+	summary,
+	eventTitle,
+	rsvpDeadline,
+}) => {
+	const [shareState, setShareState] = useState<ShareState>('idle');
+	const shareText = buildGuestSummaryShareText(summary, eventTitle, rsvpDeadline);
+	// No phone number: WhatsApp asks the host which chat to send it to.
+	const whatsAppShareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+	const handleCopySummary = async () => {
+		setShareState((await writeClipboardText(shareText)) ? 'copied' : 'failed');
+	};
+
+	return (
+		<div className="guest-overview__share" role="group" aria-labelledby="guest-overview-share">
+			<p id="guest-overview-share" className="guest-overview__share-label">
+				Compartir resumen
+			</p>
+			<a
+				className="guest-overview__share-action"
+				href={whatsAppShareUrl}
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				<WhatsAppIcon size={16} />
+				WhatsApp
+			</a>
+			<button
+				type="button"
+				className="guest-overview__share-action"
+				onClick={() => void handleCopySummary()}
+			>
+				{shareState === 'copied' ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+				{shareState === 'copied' ? 'Copiado' : 'Copiar'}
+			</button>
+			<span className="sr-only" role="status">
+				{shareState === 'copied' && 'Resumen copiado'}
+			</span>
+			{shareState === 'failed' && (
+				<p className="guest-overview__share-status" role="alert">
+					No se pudo copiar el resumen
+				</p>
+			)}
+		</div>
+	);
+};
+
+/** "Personas confirmadas": confirmed people of the assigned passes. */
+const GuestPeopleHeadline: React.FC<{ people: GuestSummary['people'] }> = ({ people }) => {
+	const confirmedPercent = Math.round(percentOf(people.confirmed, people.assigned));
+	return (
+		<>
+			<h2 className="guest-overview__heading">Personas confirmadas</h2>
+			<p className="guest-overview__headline">
+				<span className="guest-overview__big">{people.confirmed}</span>
+				<span className="guest-overview__of">
+					de {passes(people.assigned)}
+					{people.assigned > 0 && ` · ${confirmedPercent} %`}
+				</span>
+			</p>
+			<GuestPartyBreakdown people={people} />
+		</>
+	);
+};
+
+/** Invitations still without passes, which the people totals leave out. */
+const GuestWithoutPassesNote: React.FC<{ count: number }> = ({ count }) =>
+	count > 0 ? (
+		<p className="guest-overview__note">
+			{count}{' '}
+			{plural(
+				count,
+				'invitación no tiene pases asignados.',
+				'invitaciones no tienen pases asignados.',
+			)}
+		</p>
+	) : null;
+
 /**
  * Event overview for every width. People (passes) answer "how many are coming";
  * invitation stages answer "what is left to do" and double as the list filter.
@@ -153,7 +271,7 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 	onFilterChange,
 	reminderCount = 0,
 	reminderHint = null,
-	withMessageCount = 0,
+	hideNextStep = false,
 	rsvpDeadline = '',
 	eventTitle = '',
 	onRemind,
@@ -161,7 +279,6 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 	nextStepScope,
 	engagement,
 }) => {
-	const [shareState, setShareState] = useState<ShareState>('idle');
 	const { people, stages } = summary;
 
 	if (summary.invitations === 0) {
@@ -177,26 +294,28 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 		);
 	}
 
-	const confirmedPercent = Math.round(percentOf(people.confirmed, people.assigned));
 	const answered = stages.confirmed.invitations + stages.declined.invitations;
 	const stageButtons: StageButton[] = [
 		{
 			filter: 'delivery-pending',
 			label: 'Por enviar',
 			count: stages['to-send'].invitations,
-			detail: formatPassesWithChildren(stages['to-send'].passes, stages['to-send'].children),
+			detail: guests(stages['to-send'].passes),
+			party: formatPassBreakdown(stages['to-send'].passes, stages['to-send'].children),
 		},
 		{
 			filter: 'unopened',
 			label: 'Enviadas, sin abrir',
 			count: stages.unopened.invitations,
-			detail: formatPassesWithChildren(stages.unopened.passes, stages.unopened.children),
+			detail: guests(stages.unopened.passes),
+			party: formatPassBreakdown(stages.unopened.passes, stages.unopened.children),
 		},
 		{
 			filter: 'opened',
 			label: 'Abiertas, sin responder',
 			count: stages.opened.invitations,
-			detail: formatPassesWithChildren(stages.opened.passes, stages.opened.children),
+			detail: guests(stages.opened.passes),
+			party: formatPassBreakdown(stages.opened.passes, stages.opened.children),
 		},
 		{
 			filter: 'answered',
@@ -205,39 +324,8 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 			detail: `${stages.confirmed.invitations} sí · ${stages.declined.invitations} no`,
 		},
 	];
-	const shortcuts: StageButton[] = [];
-	if (reminderCount > 0) {
-		shortcuts.push({
-			filter: 'reminder-pending',
-			label: 'Por recordar',
-			count: reminderCount,
-			detail: '',
-		});
-	}
-	if (withMessageCount > 0) {
-		shortcuts.push({
-			filter: 'with-message',
-			label: 'Con mensaje',
-			count: withMessageCount,
-			detail: '',
-		});
-	}
-
 	const toggle = (filter: GuestReviewFilterValue) =>
 		onFilterChange(activeFilter === filter ? 'all' : filter);
-
-	const handleShareSummary = async () => {
-		const text = buildGuestSummaryShareText(summary, eventTitle, rsvpDeadline);
-		if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
-			try {
-				await navigator.share({ text });
-				return;
-			} catch (error) {
-				if (error instanceof DOMException && error.name === 'AbortError') return;
-			}
-		}
-		setShareState((await writeClipboardText(text)) ? 'copied' : 'failed');
-	};
 
 	const slices = [
 		{
@@ -269,90 +357,95 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 
 	return (
 		<section className="guest-overview" aria-label="Resumen de invitados">
+			{!hideNextStep && (
+				<GuestNextStep
+					summary={nextStepScope?.summary ?? summary}
+					reminderCount={nextStepScope?.reminderCount ?? reminderCount}
+					scopeLabel={nextStepScope?.label}
+					reminderHint={reminderHint}
+					onRemind={onRemind}
+					onSendPending={onSendPending}
+				/>
+			)}
 			<div className="guest-overview__grid">
-				<section className="guest-overview__people" aria-labelledby="guest-overview-people">
-					<h2 id="guest-overview-people" className="guest-overview__heading">
-						Personas confirmadas
-					</h2>
-					<p className="guest-overview__headline">
-						<span className="guest-overview__big">{people.confirmed}</span>
-						<span className="guest-overview__of">
-							de {formatPassesWithChildren(people.assigned, people.assignedChildren)}
-							{people.assigned > 0 && ` · ${confirmedPercent} %`}
-						</span>
-						<GuestConfirmedParty people={people} className="guest-overview__party" />
-					</p>
-					<GuestPassesBar
-						total={people.assigned}
-						label={barLabel}
-						slices={[
-							{ key: 'confirmed', value: people.confirmed },
-							{ key: 'declined', value: people.declined },
-							{ key: 'unused', value: people.unused },
-						]}
-					/>
-					<ul className="guest-overview__legend">
-						{slices.map((slice) => (
-							<li key={slice.key} className="guest-overview__legend-item">
-								<span
-									className={`guest-overview__swatch guest-overview__swatch--${slice.key}`}
-									aria-hidden="true"
-								/>
-								<span className="guest-overview__legend-label">
-									{slice.label}
-									{formatSummaryParty(slice.value, slice.children)}
-								</span>
-								<strong className="guest-overview__legend-value">
-									{slice.value}
-								</strong>
-							</li>
-						))}
-					</ul>
-					<details className="guest-overview__help">
-						<summary>¿Qué es un pase?</summary>
-						<p>
-							Un pase es el lugar de una persona. Una invitación puede incluir varios
-							pases. «Lugares no usados» son pases de quienes confirmaron menos
-							personas de las asignadas.
-						</p>
-					</details>
-					{summary.withoutPasses > 0 && (
-						<p className="guest-overview__note">
-							{summary.withoutPasses}{' '}
-							{plural(
-								summary.withoutPasses,
-								'invitación no tiene pases asignados.',
-								'invitaciones no tienen pases asignados.',
+				<section
+					className={`guest-overview__people${hideNextStep ? ' guest-overview__people--brief' : ''}`}
+					aria-label={hideNextStep ? 'Fecha límite y resumen' : 'Personas confirmadas'}
+				>
+					<div className="guest-overview__people-head">
+						<div className="guest-overview__hero">
+							{!hideNextStep && <GuestPeopleHeadline people={people} />}
+						</div>
+						<div className="guest-overview__meta">
+							{rsvpDeadline && (
+								<p className="guest-overview__deadline">
+									Confirmar antes del <strong>{rsvpDeadline}</strong>
+								</p>
 							)}
-						</p>
-					)}
-					<div className="guest-overview__meta">
-						{rsvpDeadline && (
-							<p className="guest-overview__deadline">
-								Confirmar antes del <strong>{rsvpDeadline}</strong>
-							</p>
-						)}
-						<button
-							type="button"
-							className="guest-overview__link"
-							onClick={() => void handleShareSummary()}
-						>
-							Compartir resumen
-						</button>
-						<span className="guest-overview__share-status" role="status">
-							{shareState === 'copied' && 'Resumen copiado'}
-							{shareState === 'failed' && 'No se pudo copiar el resumen'}
-						</span>
+							<GuestSummaryShare
+								summary={summary}
+								eventTitle={eventTitle}
+								rsvpDeadline={rsvpDeadline}
+							/>
+						</div>
 					</div>
+					{!hideNextStep && (
+						<GuestPassesBar
+							total={people.assigned}
+							label={barLabel}
+							slices={[
+								{ key: 'confirmed', value: people.confirmed },
+								{ key: 'declined', value: people.declined },
+								{ key: 'unused', value: people.unused },
+							]}
+						/>
+					)}
+					{!hideNextStep && (
+						<ul className="guest-overview__legend">
+							{slices.map((slice) => (
+								<li key={slice.key} className="guest-overview__legend-item">
+									<span className="guest-overview__legend-label">
+										<span
+											className={`guest-overview__swatch guest-overview__swatch--${slice.key}`}
+											aria-hidden="true"
+										/>
+										{slice.label}
+									</span>
+									<strong className="guest-overview__legend-value">
+										{slice.value}
+									</strong>
+									{formatPassBreakdown(slice.value, slice.children) && (
+										<span className="guest-overview__legend-detail">
+											{formatPassBreakdown(slice.value, slice.children)}
+										</span>
+									)}
+								</li>
+							))}
+						</ul>
+					)}
+					<GuestWithoutPassesNote count={summary.withoutPasses} />
+					{!hideNextStep && (
+						<details className="guest-overview__help">
+							<summary>¿Qué es un pase?</summary>
+							<p>
+								Un pase es el lugar de una persona. Una invitación puede incluir
+								varios pases. «Lugares no usados» son pases de quienes confirmaron
+								menos personas de las asignadas.
+							</p>
+						</details>
+					)}
 				</section>
 
 				<section className="guest-overview__stages" aria-labelledby="guest-overview-stages">
-					<h2 id="guest-overview-stages" className="guest-overview__heading">
-						Invitaciones{' '}
-						<span className="guest-overview__heading-note">
-							· {summary.invitations} en total
-						</span>
-					</h2>
+					<div className="guest-overview__stages-head">
+						<h2 id="guest-overview-stages" className="guest-overview__heading">
+							Invitaciones{' '}
+							<span className="guest-overview__heading-note">
+								· {answered} de {summary.invitations} respondidas (
+								{Math.round(percentOf(answered, summary.invitations))} %)
+							</span>
+						</h2>
+					</div>
 					<div
 						className="guest-overview__stage-grid"
 						role="group"
@@ -364,59 +457,30 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 								<button
 									key={stage.filter}
 									type="button"
-									className={`guest-overview__stage${active ? ' guest-overview__stage--active' : ''}`}
+									className={`guest-overview__stage${active ? ' guest-overview__stage--active' : ''}${stage.count === 0 ? ' guest-overview__stage--empty' : ''}`}
 									aria-label={`${stage.label}, ${stage.count}`}
 									aria-pressed={active}
 									onClick={() => toggle(stage.filter)}
 								>
-									<span className="guest-overview__stage-count">
-										{stage.count}
-									</span>
 									<span className="guest-overview__stage-label">
 										{stage.label}
+									</span>
+									<span className="guest-overview__stage-count">
+										{stage.count}
 									</span>
 									<span className="guest-overview__stage-detail">
 										{stage.detail}
 									</span>
+									{stage.party && (
+										<span className="guest-overview__stage-party">
+											{stage.party}
+										</span>
+									)}
 								</button>
 							);
 						})}
 					</div>
-					{shortcuts.length > 0 && (
-						<div
-							className="guest-overview__shortcuts"
-							role="group"
-							aria-label="Otros filtros"
-						>
-							{shortcuts.map((shortcut) => {
-								const active = activeFilter === shortcut.filter;
-								return (
-									<button
-										key={shortcut.filter}
-										type="button"
-										className={`guest-overview__chip${active ? ' guest-overview__chip--active' : ''}`}
-										aria-label={`${shortcut.label}, ${shortcut.count}`}
-										aria-pressed={active}
-										onClick={() => toggle(shortcut.filter)}
-									>
-										{shortcut.label}
-										<span className="guest-overview__chip-count">
-											{shortcut.count}
-										</span>
-									</button>
-								);
-							})}
-						</div>
-					)}
-					<GuestEngagementFunnel summary={engagement} />
-					<GuestNextStep
-						summary={nextStepScope?.summary ?? summary}
-						reminderCount={nextStepScope?.reminderCount ?? reminderCount}
-						scopeLabel={nextStepScope?.label}
-						reminderHint={reminderHint}
-						onRemind={onRemind}
-						onSendPending={onSendPending}
-					/>
+					<GuestEngagementFunnel summary={engagement} answeredInvitations={answered} />
 				</section>
 			</div>
 		</section>

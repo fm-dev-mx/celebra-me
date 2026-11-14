@@ -57,7 +57,8 @@ const GuestMobileDock: React.FC<GuestMobileDockProps> = ({
 
 	if (!isMounted) return null;
 
-	const showReminder = !hasPendingGenerated && hasReminderCta;
+	// Same priority as the next-step banner: send what is still unsent, then remind.
+	const showReminder = !hasPendingGenerated && hasReminderCta && reminderCount > 0;
 	const pendingLabel = pendingCount > 0 ? `Enviar (${pendingCount})` : 'Enviar pendientes';
 
 	return createPortal(

@@ -145,3 +145,9 @@ export const ChevronDownGlyph: React.FC<GlyphProps> = (props) => (
 		<path d="m6 9 6 6 6-6" />
 	</Glyph>
 );
+
+export const ChevronLeftGlyph: React.FC<GlyphProps> = (props) => (
+	<Glyph {...props} strokeWidth={2}>
+		<path d="m15 6-6 6 6 6" />
+	</Glyph>
+);

@@ -462,6 +462,18 @@
 	}
 }
 
+$event-single-size: 1.25rem;
+
+/* A single event shows its name in place of the picker */
+.header-event-selector__single {
+	margin: 0;
+	color: var(--color-text-primary);
+	font-family: var(--font-display-elegant);
+	font-size: $event-single-size;
+	font-weight: 600;
+	line-height: 1.2;
+}
+
 .header-event-selector {
 	display: flex;
 	flex-direction: column;

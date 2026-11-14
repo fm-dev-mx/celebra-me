@@ -533,7 +533,7 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		});
 	});
 
-	it('shows the adults-only line on childless demo passes', () => {
+	it('passes no children and no adults-only flag on childless passes', () => {
 		const base = setupDemoPageContext('demo-xv-editorial');
 		const childless = {
 			...base,
@@ -548,21 +548,8 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		const props = buildInvitationSectionRenderDescriptors(childless).find(
 			isPersonalizedAccessDescriptor,
 		)?.props;
-		expect(props).toMatchObject({ maxAllowedChildren: 0, adultsOnlyLabel: true });
-	});
-
-	it('keeps the original pass text on published invitations', () => {
-		const base = setupDemoPageContext();
-		const labelFor = (id: string) =>
-			buildInvitationSectionRenderDescriptors({
-				...base,
-				viewModel: { ...base.viewModel, id, isDemo: false },
-			}).find(isPersonalizedAccessDescriptor)?.props.adultsOnlyLabel;
-		expect(labelFor('andrea')).toBe(false);
-		expect(labelFor('destenid-sofia')).toBe(false);
-		expect(labelFor('naomi-huerta')).toBe(false);
-		expect(labelFor('valeria-hernandez')).toBe(false);
-		expect(labelFor('a-new-client')).toBe(true);
+		expect(props).toMatchObject({ maxAllowedChildren: 0 });
+		expect(props).not.toHaveProperty('adultsOnlyLabel');
 	});
 
 	it('renders RSVP form for demo preview regardless of accessMode', () => {

@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-	CheckGlyph,
-	ChevronRightGlyph,
-	ClockGlyph,
-	DeclinedGlyph,
-	MessageGlyph,
-	OpenedGlyph,
-	SentGlyph,
-} from '@/components/dashboard/guests/GuestGlyphs';
+import { ChevronRightGlyph, MessageGlyph } from '@/components/dashboard/guests/GuestGlyphs';
 import CopyLinkButton from '@/components/dashboard/guests/CopyLinkButton';
 import {
 	getGuestLatestMessage,
@@ -23,14 +15,6 @@ interface GuestListRowProps {
 	onOpen: (item: DashboardGuestItem) => void;
 }
 
-const STATUS_ICON: Record<GuestStage, typeof ClockGlyph> = {
-	'to-send': ClockGlyph,
-	unopened: SentGlyph,
-	opened: OpenedGlyph,
-	confirmed: CheckGlyph,
-	declined: DeclinedGlyph,
-};
-
 const STATUS_LABEL: Record<GuestStage, string> = {
 	'to-send': 'Por enviar',
 	unopened: 'Enviada, sin abrir',
@@ -41,15 +25,16 @@ const STATUS_LABEL: Record<GuestStage, string> = {
 
 /**
  * One-line guest summary for compact screens: tapping the row opens the guest's
- * details; the copy action sits beside it so it never depends on hover.
+ * details. Unanswered rows keep the copy action beside it so it never depends on
+ * hover; answered rows drop it (the detail sheet still offers the link).
  */
 const GuestListRow: React.FC<GuestListRowProps> = ({ item, inviteUrl, onOpen }) => {
 	const stage = getGuestStage(item);
 	const bucket = stage === 'unopened' || stage === 'opened' ? 'waiting' : stage;
-	const Icon = STATUS_ICON[stage];
 	const subtitle = getGuestListSubtitle(item);
 	const latestMessage = getGuestLatestMessage(item.guestComment);
 	const hasMessage = latestMessage.length > 0;
+	const answered = stage === 'confirmed' || stage === 'declined';
 
 	return (
 		<div className={`guest-row guest-row--${bucket}`}>
@@ -59,9 +44,6 @@ const GuestListRow: React.FC<GuestListRowProps> = ({ item, inviteUrl, onOpen }) 
 				aria-label={`${item.fullName}${item.isTest ? ' (invitado de prueba)' : ''}. ${STATUS_LABEL[stage]}. ${subtitle}${hasMessage ? '. Dejó un mensaje' : ''}`}
 				onClick={() => onOpen(item)}
 			>
-				<span className="guest-row__status" aria-hidden="true">
-					<Icon size={20} />
-				</span>
 				<span className="guest-row__text" aria-hidden="true">
 					<span className="guest-row__name">
 						{item.fullName}
@@ -77,12 +59,14 @@ const GuestListRow: React.FC<GuestListRowProps> = ({ item, inviteUrl, onOpen }) 
 				</span>
 				<ChevronRightGlyph size={22} className="guest-row__chevron" />
 			</button>
-			<CopyLinkButton
-				url={inviteUrl}
-				guestName={item.fullName}
-				variant="icon"
-				className="guest-row__copy"
-			/>
+			{!answered && (
+				<CopyLinkButton
+					url={inviteUrl}
+					guestName={item.fullName}
+					variant="icon"
+					className="guest-row__copy"
+				/>
+			)}
 		</div>
 	);
 };

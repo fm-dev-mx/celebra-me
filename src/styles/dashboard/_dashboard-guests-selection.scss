@@ -4,24 +4,6 @@
    Selection mode, change notice and batch confirmation
    ========================================================================== */
 
-.guest-select-toggle {
-	min-height: 48px;
-	padding: 0 0.25rem;
-	border: 0;
-	background: transparent;
-	color: var(--color-text-primary);
-	font-family: var(--font-ui);
-	font-size: 1rem;
-	font-weight: 700;
-	text-decoration: underline;
-	text-underline-offset: 4px;
-	cursor: pointer;
-
-	&:focus-visible {
-		@include mixins.focus-ring;
-	}
-}
-
 /* --- Selection rows --- */
 .guest-row--select {
 	cursor: pointer;
@@ -145,6 +127,9 @@
 	}
 }
 
+$filter-notice-radius: 14px;
+$filter-notice-size: 1rem;
+
 /* --- Live change notice --- */
 .guest-change-notice {
 	display: flex;
@@ -174,6 +159,44 @@
 	color: inherit;
 	font-family: var(--font-ui);
 	font-size: 1rem;
+	font-weight: 700;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+	cursor: pointer;
+
+	&:focus-visible {
+		@include mixins.focus-ring;
+	}
+}
+
+/* --- Active answer filter: says what the list shows and how to undo it --- */
+.guest-filter-notice {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.25rem 1rem;
+	margin: 0 0 0.75rem;
+	padding: 0.25rem 0.75rem 0.25rem 1rem;
+	border: 1px solid var(--color-border-control);
+	border-radius: $filter-notice-radius;
+	background: var(--color-surface-soft);
+	color: var(--color-text-primary);
+}
+
+.guest-filter-notice__text {
+	font-size: $filter-notice-size;
+}
+
+.guest-filter-notice__clear {
+	@include mixins.touch-target;
+
+	padding: 0 0.25rem;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font-family: var(--font-ui);
+	font-size: $filter-notice-size;
 	font-weight: 700;
 	text-decoration: underline;
 	text-underline-offset: 3px;

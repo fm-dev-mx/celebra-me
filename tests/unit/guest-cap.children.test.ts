@@ -2,6 +2,7 @@ import {
 	CHILDREN_EXCEED_PASSES_MESSAGE,
 	checkConfirmedParty,
 	formatParty,
+	formatPassBreakdown,
 	guestReservationSchema,
 	maxConfirmableChildren,
 	reservationIssue,
@@ -37,6 +38,19 @@ describe('guest reservation with children', () => {
 		expect(resolveChildrenCap(undefined, 4)).toBe(0);
 		expect(resolveChildrenCap(9, 4)).toBe(4);
 		expect(resolveChildrenCap(-2, 4)).toBe(0);
+	});
+});
+
+describe('formatPassBreakdown', () => {
+	it('never mentions children on a pass without child places', () => {
+		for (const children of [0, undefined, -1, Number.NaN]) {
+			expect(formatPassBreakdown(4, children)).toBeUndefined();
+		}
+	});
+
+	it('splits adults and children only when the pass includes children', () => {
+		expect(formatPassBreakdown(4, 1)).toBe('3 adultos y 1 niño');
+		expect(formatPassBreakdown(2, 5)).toBe('2 niños');
 	});
 });
 

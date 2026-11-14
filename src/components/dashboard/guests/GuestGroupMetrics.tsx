@@ -39,7 +39,7 @@ const GuestGroupMetrics: React.FC<GuestGroupMetricsProps> = ({
 				<span id="guest-group-metrics-title" className="guest-group-metrics__title">
 					Por grupo
 				</span>
-				<span className="guest-group-metrics__hint">personas confirmadas de sus pases</span>
+				<span className="guest-group-metrics__hint">cuántos asistirán</span>
 				<ChevronDownGlyph size={18} />
 			</button>
 			{open && (
@@ -63,7 +63,7 @@ const GuestGroupMetrics: React.FC<GuestGroupMetricsProps> = ({
 									<GuestPassesBar
 										size="small"
 										total={metric.passes}
-										label={`${metric.label}: ${metric.confirmed} confirmadas, ${metric.declined} no asistirán, ${metric.noAnswer} sin respuesta, de ${metric.passes} pases`}
+										label={`${metric.label}: ${metric.confirmed} asistirán, ${metric.declined} no asistirán, ${metric.noAnswer} sin confirmar, de ${metric.passes} invitados`}
 										slices={[
 											{ key: 'confirmed', value: metric.confirmed },
 											{ key: 'declined', value: metric.declined },
@@ -71,7 +71,7 @@ const GuestGroupMetrics: React.FC<GuestGroupMetricsProps> = ({
 									/>
 									<span className="guest-group-metrics__detail">
 										{metric.noAnswer > 0
-											? `${metric.noAnswer} sin respuesta`
+											? `${metric.noAnswer} sin confirmar`
 											: 'Todos respondieron'}
 									</span>
 								</button>

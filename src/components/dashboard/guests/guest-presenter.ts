@@ -134,27 +134,46 @@ export type GuestMessageWallEntry = {
 	latest: string;
 	timestampLabel: string;
 	count: number;
+	/** Older messages from the same guest, newest first. */
+	earlier: { id: string; message: string; timestampLabel: string }[];
+	/** When the latest message arrived (epoch ms, 0 when unknown). */
+	receivedAt: number;
 };
 
 /** Guests with a message, newest answer first, each with its latest message in full. */
 export function buildGuestMessageWall(items: DashboardGuestItem[]): GuestMessageWallEntry[] {
-	const entries: (GuestMessageWallEntry & { sortKey: number })[] = [];
+	const entries: GuestMessageWallEntry[] = [];
 	for (const item of items) {
 		const history = parseGuestCommentHistory(item.guestComment);
 		if (history.length === 0) continue;
 		const fallbackIso = getGuestMessageFallbackTimestamp(item);
-		const sortKey = Date.parse(fallbackIso);
+		const receivedAt = Date.parse(fallbackIso);
 		entries.push({
 			item,
 			latest: history[0].message,
 			timestampLabel: getGuestMessageDateLabel(history[0], history.length, fallbackIso),
 			count: history.length,
-			sortKey: Number.isNaN(sortKey) ? 0 : sortKey,
+			earlier: history.slice(1).map((entry) => ({
+				id: entry.id,
+				message: entry.message,
+				timestampLabel: getGuestMessageDateLabel(entry, history.length, fallbackIso),
+			})),
+			receivedAt: Number.isNaN(receivedAt) ? 0 : receivedAt,
 		});
 	}
-	return entries
-		.sort((a, b) => b.sortKey - a.sortKey)
-		.map(({ sortKey: _sortKey, ...entry }) => entry);
+	return entries.sort((a, b) => b.receivedAt - a.receivedAt);
+}
+
+/** Latest messages that arrived after the host last read the wall; all of them before the first read. */
+export function countNewGuestMessages(
+	entries: GuestMessageWallEntry[],
+	seenAt: number | null,
+): number {
+	return entries.filter((entry) => isNewGuestMessage(entry, seenAt)).length;
+}
+
+export function isNewGuestMessage(entry: GuestMessageWallEntry, seenAt: number | null): boolean {
+	return seenAt === null || entry.receivedAt > seenAt;
 }
 
 export type GuestPrimaryAction = {
@@ -590,7 +609,26 @@ export type GuestReviewFilterValue =
 	| 'confirmation-pending'
 	| 'confirmed'
 	| 'declined'
+	| 'no-answer'
 	| 'with-message';
+
+const REVIEW_FILTER_LABELS: Record<Exclude<GuestReviewFilterValue, 'all'>, string> = {
+	'reminder-pending': 'Por recordar',
+	'delivery-pending': 'Por enviar',
+	unopened: 'Sin abrir',
+	opened: 'Abiertas sin responder',
+	answered: 'Con respuesta',
+	'confirmation-pending': 'Enviadas sin confirmar',
+	confirmed: 'Asistirán',
+	declined: 'No asistirán',
+	'no-answer': 'Sin confirmar',
+	'with-message': 'Con mensaje',
+};
+
+/** Name of the active review filter for the list notice; null when unfiltered. */
+export function getReviewFilterLabel(filter: GuestReviewFilterValue): string | null {
+	return filter === 'all' ? null : REVIEW_FILTER_LABELS[filter];
+}
 
 /**
  * Client-side review, group and search filtering of the full event list. The
@@ -630,7 +668,16 @@ export function filterGuestsForReview(
 			case 'confirmed':
 				return item.attendanceStatus === 'confirmed';
 			case 'declined':
-				return item.attendanceStatus === 'declined';
+				// Matches the "No asistirán" count: declined invitations plus
+				// confirmed ones that left places unused.
+				return (
+					item.attendanceStatus === 'declined' ||
+					(item.attendanceStatus === 'confirmed' && attendingOf(item) < passesOf(item))
+				);
+			case 'no-answer':
+				return (
+					item.attendanceStatus !== 'confirmed' && item.attendanceStatus !== 'declined'
+				);
 			case 'with-message':
 				return (item.guestComment ?? '').trim().length > 0;
 			default:

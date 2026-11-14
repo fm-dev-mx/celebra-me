@@ -83,11 +83,12 @@ export function maxConfirmableChildren(attendeeCount: number, maxChildren: numbe
 	return Math.max(0, Math.min(attendeeCount, maxChildren));
 }
 
-export type PartyUnit = 'pase' | 'persona';
+export type PartyUnit = 'pase' | 'persona' | 'invitado';
 
 const UNIT_WORDS: Record<PartyUnit, [string, string]> = {
 	pase: ['pase', 'pases'],
 	persona: ['persona', 'personas'],
+	invitado: ['invitado', 'invitados'],
 };
 
 function countWord(count: number, [one, many]: [string, string]): string {
@@ -107,4 +108,15 @@ export function formatParty(
 	const adults = count - children;
 	const kids = countWord(children, ['niño', 'niños']);
 	return adults === 0 ? kids : `${countWord(adults, ['adulto', 'adultos'])} y ${kids}`;
+}
+
+/**
+ * Adult/child breakdown for a guest's pass. It is undefined when no place is for children, so
+ * an invitation without children never mentions them.
+ */
+export function formatPassBreakdown(
+	passes: number,
+	children: number | undefined,
+): string | undefined {
+	return resolveChildrenCap(children, passes) > 0 ? formatParty(passes, { children }) : undefined;
 }

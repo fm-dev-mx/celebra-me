@@ -1,6 +1,5 @@
 import React from 'react';
 import { SearchIcon } from '@/components/common/icons/ui';
-import { CheckGlyph } from '@/components/dashboard/guests/GuestGlyphs';
 import type { GroupMetric } from '@/components/dashboard/guests/guest-presenter';
 
 type GroupFilter = string;
@@ -8,7 +7,7 @@ type GroupFilter = string;
 interface GuestFiltersProps {
 	search: string;
 	group: GroupFilter;
-	/** Groups present in the event, with counts; drives the chip row. */
+	/** Groups present in the event, with counts; drives the group select. */
 	groupMetrics: GroupMetric[];
 	totalInvitations: number;
 	onSearchChange: (value: string) => void;
@@ -19,8 +18,8 @@ interface GuestFiltersProps {
 }
 
 /**
- * Search plus one row of group chips. Status filtering lives in the overview
- * stages, so there is a single vocabulary for invitation states.
+ * Search plus a labelled group select in one toolbar. Status filtering lives in
+ * the overview stages, so there is a single vocabulary for invitation states.
  */
 const GuestFilters: React.FC<GuestFiltersProps> = ({
 	search,
@@ -33,7 +32,7 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 	actions,
 }) => {
 	const hasActiveFilters = search.trim() !== '' || group !== 'all';
-	const chips = [
+	const options = [
 		{ value: 'all', label: 'Todos', count: totalInvitations },
 		...groupMetrics.map((metric) => ({
 			value: metric.value,
@@ -59,6 +58,27 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 						/>
 					</div>
 				</div>
+				{groupMetrics.length > 0 && (
+					<div className="filter-group filter-group--group">
+						<div className="group-select">
+							<label htmlFor="guest-group" className="group-select__label">
+								Grupo
+							</label>
+							<select
+								id="guest-group"
+								className="group-select__input"
+								value={group}
+								onChange={(event) => onGroupChange(event.target.value)}
+							>
+								{options.map((option) => (
+									<option key={option.value} value={option.value}>
+										{`${option.label} (${option.count})`}
+									</option>
+								))}
+							</select>
+						</div>
+					</div>
+				)}
 				{hasActiveFilters && (
 					<button
 						type="button"
@@ -73,27 +93,6 @@ const GuestFilters: React.FC<GuestFiltersProps> = ({
 				)}
 				{actions && <div className="filter-row__actions">{actions}</div>}
 			</div>
-
-			{groupMetrics.length > 0 && (
-				<div className="group-chips" role="group" aria-label="Grupo">
-					{chips.map((chip) => {
-						const active = group === chip.value;
-						return (
-							<button
-								key={chip.value}
-								type="button"
-								className={`group-chips__chip${active ? ' group-chips__chip--active' : ''}${chip.value !== 'all' && chip.label === 'Sin grupo' ? ' group-chips__chip--none' : ''}`}
-								aria-pressed={active}
-								onClick={() => onGroupChange(active ? 'all' : chip.value)}
-							>
-								{active && <CheckGlyph size={14} />}
-								{chip.label}
-								<span className="group-chips__count">{chip.count}</span>
-							</button>
-						);
-					})}
-				</div>
-			)}
 		</div>
 	);
 };

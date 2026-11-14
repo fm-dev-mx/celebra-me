@@ -30,6 +30,8 @@ export const GuestOverviewSkeleton: React.FC = () => (
 );
 
 interface GuestListFeedbackProps {
+	/** Nothing to report, e.g. while the message wall replaces the list. */
+	hidden?: boolean;
 	total: number;
 	visible: number;
 	filtered: boolean;
@@ -38,12 +40,13 @@ interface GuestListFeedbackProps {
 
 /** "Mostrando X de Y" while the list is narrowed, or a clear way out of an empty result. */
 export const GuestListFeedback: React.FC<GuestListFeedbackProps> = ({
+	hidden = false,
 	total,
 	visible,
 	filtered,
 	onClear,
 }) => {
-	if (total === 0) return null;
+	if (hidden || total === 0) return null;
 	if (visible === 0) {
 		return (
 			<div className="dashboard-guests__empty">
