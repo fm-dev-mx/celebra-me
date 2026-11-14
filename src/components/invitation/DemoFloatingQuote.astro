@@ -38,6 +38,10 @@ const available = !isPlaceholderContactPhone(getContactPhone());
 		let sectionsVisible = false;
 		let heroVisible = hero !== null;
 		const visibleHideZones = new Set<Element>();
+		const mobile = window.matchMedia('(width <= 600px)');
+		let lastScrollY = Math.max(0, window.scrollY);
+		let scrollingDown = false;
+		let idleTimer: ReturnType<typeof setTimeout> | undefined;
 
 		const isRevealed = () => !root || root.dataset.revealState === 'revealed';
 		const isConsentOpen = () =>
@@ -45,6 +49,7 @@ const available = !isPlaceholderContactPhone(getContactPhone());
 
 		const update = () => {
 			const visible =
+				!(mobile.matches && scrollingDown) &&
 				isRevealed() &&
 				!heroVisible &&
 				sectionsVisible &&
@@ -53,6 +58,30 @@ const available = !isPlaceholderContactPhone(getContactPhone());
 			quote.classList.toggle('demo-floating-quote--visible', visible);
 			quote.inert = !visible;
 		};
+
+		// This controls the floating action, not the invitation's section reveals.
+		const onScroll = () => {
+			const y = Math.max(0, Math.min(window.scrollY, document.documentElement.scrollHeight - window.innerHeight));
+			if (y === lastScrollY) return;
+			scrollingDown = y > lastScrollY;
+			lastScrollY = y;
+			clearTimeout(idleTimer);
+			update();
+			idleTimer = setTimeout(() => {
+				scrollingDown = false;
+				update();
+			}, 250);
+		};
+		const onViewportChange = () => {
+			window.removeEventListener('scroll', onScroll);
+			clearTimeout(idleTimer);
+			scrollingDown = false;
+			lastScrollY = Math.max(0, window.scrollY);
+			if (mobile.matches) window.addEventListener('scroll', onScroll, { passive: true });
+			update();
+		};
+		mobile.addEventListener('change', onViewportChange);
+		onViewportChange();
 
 		new IntersectionObserver(([entry]) => {
 			sectionsVisible = entry.isIntersecting;
