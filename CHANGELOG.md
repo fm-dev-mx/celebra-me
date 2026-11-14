@@ -20,7 +20,8 @@ daily Production window. No database migrations.
 - Invitations: Yireh Ana adds send-off bows to the envelope opening, inks the quote in fewer swipes,
   pins the itinerary for two screens instead of three and shows the monogram in the footer (#971,
   #973).
-- Invitations: Valeria Hernández applies the client's requests (#972).
+- Invitations: Valeria Hernández applies the client's requests (#972) and styles the photo-sharing
+  card as a disco photo pass, still hidden in the published page (#976).
 
 ### Fixed
 
