@@ -70,6 +70,34 @@ describe('RSVP Component', () => {
 		} as unknown as typeof ResizeObserver;
 	});
 
+	describe('Children on the pass', () => {
+		const passFor = (maxAllowedChildren: number) => ({
+			...defaultProps,
+			guestCap: 4,
+			defaultCopy: 'usted' as const,
+			initialGuestData: {
+				inviteId: 'mock-invite-id',
+				maxAllowedAttendees: 4,
+				maxAllowedChildren,
+			},
+		});
+
+		it('never mentions children when the pass has no child places', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...passFor(0)} />);
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			expect(screen.queryByLabelText(/De ellos, niños/i)).not.toBeInTheDocument();
+			expect(screen.queryByText(/niñ/i)).not.toBeInTheDocument();
+		});
+
+		it('asks how many children come when the pass includes children', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...passFor(2)} />);
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			expect(screen.getByLabelText(/De ellos, niños/i)).toBeInTheDocument();
+		});
+	});
+
 	describe('Initial Render', () => {
 		it('should render the title', () => {
 			render(<RSVP {...defaultProps} />);
