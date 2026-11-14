@@ -12,8 +12,12 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [0.73.0] - 2026-11-14
 
-Applies client requests to Yireh Ana and Valeria Hernández, and hardens deploy-run detection in the
-daily Production window. No database migrations.
+Applies client requests to Yireh Ana and Valeria Hernández, marks unread guest messages in the host
+dashboard, and hardens deploy-run detection in the daily Production window. No database migrations.
+
+### Added
+
+- Dashboard: guest messages show a «Mensaje nuevo» badge until the host opens them (#969).
 
 ### Changed
 
@@ -27,6 +31,8 @@ daily Production window. No database migrations.
 
 - Operations: the daily Production window detects the dispatched deploy run by id and head SHA
   (#968).
+- RSVP: public-event RSVP submissions are refused when the invitation is unavailable, as
+  personalized ones already were (#969).
 
 ## [0.72.0] - 2026-11-13
 
