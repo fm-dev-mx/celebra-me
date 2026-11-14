@@ -26,6 +26,12 @@
 	}
 }
 
+.guest-actions-menu__item.guest-actions-menu__item--compact {
+	@include mixins.respond-to(xl) {
+		display: none;
+	}
+}
+
 .guest-actions-menu__item {
 	display: flex;
 	align-items: center;
