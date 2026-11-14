@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-13T20:26:00.735Z",
+    "generatedAt": "2026-11-14T18:31:07.073Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -2591,8 +2591,8 @@
             "preset": "storybook-blush",
             "viewport": "mobile",
             "file": "pages/invitation-xv-valeria-hernandez-mobile.png",
-            "sha256": "63d4cce381fb73fc2c4b829ace163dab9c1652c041ff78d424c80a7eb295c936",
-            "contentHash": "d898b42143982e7ff3892fbc04427d6d02734745652f77b8bd457ee87d6b6eda",
+            "sha256": "6892772fa627f77446b4e7f0a2191f0c82872dc3ec57fa641af6b937f3d9549e",
+            "contentHash": "8bbb2cf3568d5a3ac3f2fa04a83e524666f4176c34ac44afb60a7f1bf058b7bf",
             "assetHash": "7ca2d80d24dc04508869ad1727c98ad909125ceb06bbe9e20044066c183d1319",
             "comparisonResult": "ACCEPTED"
         },
@@ -2603,8 +2603,8 @@
             "preset": "storybook-blush",
             "viewport": "desktop",
             "file": "pages/invitation-xv-valeria-hernandez-desktop.png",
-            "sha256": "3587b798d7918ad300f1d8e3b6a59b0ed249bb64b4f175ff926b8ed767dad1d0",
-            "contentHash": "d898b42143982e7ff3892fbc04427d6d02734745652f77b8bd457ee87d6b6eda",
+            "sha256": "35ee28ee78e1efd1f1fddafdd6d7a07e5cb6b50fe3ce736e690799007377690f",
+            "contentHash": "8bbb2cf3568d5a3ac3f2fa04a83e524666f4176c34ac44afb60a7f1bf058b7bf",
             "assetHash": "7ca2d80d24dc04508869ad1727c98ad909125ceb06bbe9e20044066c183d1319",
             "comparisonResult": "ACCEPTED"
         },
@@ -2633,9 +2633,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "da8236ca3913ae67b5f6e6b16ca3e212e5771c82",
+    "referenceSha": "9e45f03fc995e3e799787342a2f3d3b3676203da",
     "variantManifest": {
-        "generatedAt": "2026-11-13T20:26:00.735Z",
+        "generatedAt": "2026-11-14T18:31:07.073Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4789,10 +4789,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "da8236ca3913ae67b5f6e6b16ca3e212e5771c82"
+        "referenceSha": "9e45f03fc995e3e799787342a2f3d3b3676203da"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-13T20:26:00.742Z",
+        "generatedAt": "2026-11-14T18:31:07.127Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -5255,8 +5255,8 @@
                 "preset": "storybook-blush",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-valeria-hernandez-mobile.png",
-                "sha256": "63d4cce381fb73fc2c4b829ace163dab9c1652c041ff78d424c80a7eb295c936",
-                "contentHash": "d898b42143982e7ff3892fbc04427d6d02734745652f77b8bd457ee87d6b6eda",
+                "sha256": "6892772fa627f77446b4e7f0a2191f0c82872dc3ec57fa641af6b937f3d9549e",
+                "contentHash": "8bbb2cf3568d5a3ac3f2fa04a83e524666f4176c34ac44afb60a7f1bf058b7bf",
                 "assetHash": "7ca2d80d24dc04508869ad1727c98ad909125ceb06bbe9e20044066c183d1319",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5267,8 +5267,8 @@
                 "preset": "storybook-blush",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-valeria-hernandez-desktop.png",
-                "sha256": "3587b798d7918ad300f1d8e3b6a59b0ed249bb64b4f175ff926b8ed767dad1d0",
-                "contentHash": "d898b42143982e7ff3892fbc04427d6d02734745652f77b8bd457ee87d6b6eda",
+                "sha256": "35ee28ee78e1efd1f1fddafdd6d7a07e5cb6b50fe3ce736e690799007377690f",
+                "contentHash": "8bbb2cf3568d5a3ac3f2fa04a83e524666f4176c34ac44afb60a7f1bf058b7bf",
                 "assetHash": "7ca2d80d24dc04508869ad1727c98ad909125ceb06bbe9e20044066c183d1319",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5297,9 +5297,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "da8236ca3913ae67b5f6e6b16ca3e212e5771c82"
+        "referenceSha": "9e45f03fc995e3e799787342a2f3d3b3676203da"
     },
-    "candidateManifestSha256": "d72fb43e1008cd645f1782ce239e9959dd424109bb395d125741bf0e99563a12",
-    "acceptedFromCommit": "da8236ca3913ae67b5f6e6b16ca3e212e5771c82",
-    "acceptedAt": "2026-11-13T20:26:27.798Z"
+    "candidateManifestSha256": "c58087a98f48fcc263b87f7549ac8b568e94f93b1d1c63646543f5e4a65a9ddd",
+    "acceptedFromCommit": "9e45f03fc995e3e799787342a2f3d3b3676203da",
+    "acceptedAt": "2026-11-14T18:32:07.115Z"
 }
