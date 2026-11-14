@@ -2615,7 +2615,7 @@
             "preset": "storybook-lilac",
             "viewport": "mobile",
             "file": "pages/invitation-xv-yireh-ana-mobile.png",
-            "sha256": "e21af7c96c357eb599c050a5c656d865e10a6c330b6130e438d1b872a1807db8",
+            "sha256": "991503db05dcb31f4783f0fbe41f46f1b58014d769e4296d543732930ba83df4",
             "contentHash": "661b573b69201654a839df72f4a4ebf3da508608bb9d7467fc2adbec325eb194",
             "assetHash": "e36e5ae75c39c74fd85b4ffea8d7d74696374305e4b42c1a03f86840226cfae5",
             "comparisonResult": "ACCEPTED"
@@ -2627,7 +2627,7 @@
             "preset": "storybook-lilac",
             "viewport": "desktop",
             "file": "pages/invitation-xv-yireh-ana-desktop.png",
-            "sha256": "d4605329f7a66eb666cd60cfbd62a0e778ae6616819130efa1f91dce14139703",
+            "sha256": "f1a5f8084616edbba97292ba4240921cd8d47ccd0a7297751c06c73e9dcac92d",
             "contentHash": "661b573b69201654a839df72f4a4ebf3da508608bb9d7467fc2adbec325eb194",
             "assetHash": "e36e5ae75c39c74fd85b4ffea8d7d74696374305e4b42c1a03f86840226cfae5",
             "comparisonResult": "ACCEPTED"
@@ -5279,7 +5279,7 @@
                 "preset": "storybook-lilac",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-yireh-ana-mobile.png",
-                "sha256": "e21af7c96c357eb599c050a5c656d865e10a6c330b6130e438d1b872a1807db8",
+                "sha256": "991503db05dcb31f4783f0fbe41f46f1b58014d769e4296d543732930ba83df4",
                 "contentHash": "661b573b69201654a839df72f4a4ebf3da508608bb9d7467fc2adbec325eb194",
                 "assetHash": "e36e5ae75c39c74fd85b4ffea8d7d74696374305e4b42c1a03f86840226cfae5",
                 "comparisonResult": "CANDIDATE"
@@ -5291,7 +5291,7 @@
                 "preset": "storybook-lilac",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-yireh-ana-desktop.png",
-                "sha256": "d4605329f7a66eb666cd60cfbd62a0e778ae6616819130efa1f91dce14139703",
+                "sha256": "f1a5f8084616edbba97292ba4240921cd8d47ccd0a7297751c06c73e9dcac92d",
                 "contentHash": "661b573b69201654a839df72f4a4ebf3da508608bb9d7467fc2adbec325eb194",
                 "assetHash": "e36e5ae75c39c74fd85b4ffea8d7d74696374305e4b42c1a03f86840226cfae5",
                 "comparisonResult": "CANDIDATE"
