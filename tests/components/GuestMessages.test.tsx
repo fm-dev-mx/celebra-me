@@ -105,22 +105,23 @@ describe('GuestMessageWall', () => {
 			/>,
 		);
 
-		const wall = screen.getByRole('region', { name: 'Mensajes de sus invitados' });
-		expect(within(wall).getByText('Del más reciente al más antiguo.')).toBeInTheDocument();
+		const wall = screen.getByRole('region', { name: 'Mensajes de sus invitados (1)' });
 		const card = within(wall).getByRole('article', { name: 'Familia Ruiz' });
 		expect(within(card).getByText(LONG_MESSAGE)).toBeInTheDocument();
 
-		fireEvent.click(within(card).getByRole('button', { name: 'Ver detalles de Familia Ruiz' }));
+		fireEvent.click(within(card).getByRole('button', { name: 'Ver invitado: Familia Ruiz' }));
 		expect(onOpen).toHaveBeenCalledWith(guest);
 	});
 
-	it('renders nothing when no guest left a message', () => {
-		const { container } = render(
+	it('says so when no message matches the search', () => {
+		render(
 			<GuestMessageWall
 				items={[makeGuest({ guestComment: '' })]}
 				onOpenDetails={jest.fn()}
 			/>,
 		);
-		expect(container).toBeEmptyDOMElement();
+		const wall = screen.getByRole('region', { name: 'Mensajes de sus invitados' });
+		expect(wall).toHaveTextContent('Ningún mensaje coincide con su búsqueda.');
+		expect(within(wall).queryByRole('article')).not.toBeInTheDocument();
 	});
 });

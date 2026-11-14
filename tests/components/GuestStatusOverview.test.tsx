@@ -1,9 +1,9 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import GuestStatusOverview from '@/components/dashboard/guests/GuestStatusOverview';
 import { computeGuestSummary } from '@/components/dashboard/guests/guest-presenter';
 import { makeGuest } from '@tests/helpers/guest-factory';
 
-const summary = computeGuestSummary([
+const guests = [
 	makeGuest({ guestId: 'a', deliveryStatus: 'generated', maxAllowedAttendees: 2 }),
 	makeGuest({ guestId: 'b', deliveryStatus: 'shared', maxAllowedAttendees: 3 }),
 	makeGuest({ guestId: 'c', deliveryStatus: 'shared', isViewed: true, maxAllowedAttendees: 4 }),
@@ -20,7 +20,10 @@ const summary = computeGuestSummary([
 		attendanceStatus: 'declined',
 		maxAllowedAttendees: 2,
 	}),
-]);
+];
+const summary = computeGuestSummary(guests);
+// Everyone has their invitation, so the next step is the reminder.
+const sentSummary = computeGuestSummary(guests.filter((guest) => guest.guestId !== 'a'));
 
 describe('GuestStatusOverview', () => {
 	it('shows adult and child counts for every category without changing its total', () => {
@@ -53,25 +56,29 @@ describe('GuestStatusOverview', () => {
 				onFilterChange={jest.fn()}
 			/>,
 		);
-		expect(screen.getByText('de 23 pases (13 adultos y 10 niños) · 17 %')).toBeInTheDocument();
-		expect(
-			screen.getByText('Confirmadas (3 adultos y 1 niño)').closest('li'),
-		).toHaveTextContent('4');
-		expect(
-			screen.getByText('No asistirán (4 adultos y 2 niños)').closest('li'),
-		).toHaveTextContent('6');
-		expect(
-			screen.getByText('Sin respuesta (7 adultos y 5 niños)').closest('li'),
-		).toHaveTextContent('12');
+		expect(screen.getByText('de 23 pases · 17 %')).toBeInTheDocument();
+		const breakdown = screen
+			.getByText('Pases', { selector: 'dt' })
+			.closest('dl') as HTMLElement;
+		expect(within(breakdown).getByText('13 adultos y 10 niños')).toBeInTheDocument();
+		expect(within(breakdown).getByText('3 adultos y 1 niño')).toBeInTheDocument();
+		const legendItem = (label: string) =>
+			screen
+				.getAllByText(label)
+				.map((el) => el.closest('li.guest-overview__legend-item'))
+				.find(Boolean);
+		expect(legendItem('Confirmadas')).toHaveTextContent('Confirmadas43 adultos y 1 niño');
+		expect(legendItem('No asistirán')).toHaveTextContent('No asistirán64 adultos y 2 niños');
+		expect(legendItem('Sin respuesta')).toHaveTextContent('Sin respuesta127 adultos y 5 niños');
 		expect(screen.getByRole('button', { name: 'Por enviar, 1' })).toHaveTextContent(
-			'5 pases (3 adultos y 2 niños)',
+			'5 invitados3 adultos y 2 niños',
 		);
 		expect(screen.getByRole('button', { name: 'Enviadas, sin abrir, 1' })).toHaveTextContent(
-			'4 pases (3 adultos y 1 niño)',
+			'4 invitados3 adultos y 1 niño',
 		);
 		expect(
 			screen.getByRole('button', { name: 'Abiertas, sin responder, 1' }),
-		).toHaveTextContent('3 pases (1 adulto y 2 niños)');
+		).toHaveTextContent('3 invitados1 adulto y 2 niños');
 	});
 
 	it('leads with confirmed people out of assigned passes', () => {
@@ -106,7 +113,8 @@ describe('GuestStatusOverview', () => {
 			/>,
 		);
 
-		expect(screen.getByText('2 adultos y 1 niño')).toBeInTheDocument();
+		const breakdown = screen.getByText('Confirmadas', { selector: 'dt' }).closest('dl');
+		expect(breakdown).toHaveTextContent('Confirmadas2 adultos y 1 niño');
 	});
 
 	it('omits the adults and children line when no children are confirmed', () => {
@@ -115,6 +123,9 @@ describe('GuestStatusOverview', () => {
 		);
 
 		expect(screen.queryByText(/adulto|niño/)).not.toBeInTheDocument();
+		expect(document.querySelector('.guest-overview__breakdown')).toBeNull();
+		expect(document.querySelector('.guest-overview__legend-detail')).toBeNull();
+		expect(document.querySelector('.guest-overview__stage-party')).toBeNull();
 	});
 
 	it('shows four invitation stages that toggle the list filter', () => {
@@ -153,28 +164,25 @@ describe('GuestStatusOverview', () => {
 		const onRemind = jest.fn();
 		render(
 			<GuestStatusOverview
-				summary={summary}
+				summary={sentSummary}
 				activeFilter="all"
 				onFilterChange={jest.fn()}
 				reminderCount={2}
 				reminderHint="Faltan 10 días · 2 invitados sin confirmar"
-				withMessageCount={1}
 				onRemind={onRemind}
 			/>,
 		);
 
-		expect(screen.getByText(/sin respuesta \(7 pases\)/)).toBeInTheDocument();
+		expect(screen.getByText(/2 invitaciones enviadas sin confirmar/)).toBeInTheDocument();
 		expect(screen.getByText('Faltan 10 días · 2 invitados sin confirmar')).toBeInTheDocument();
 		fireEvent.click(screen.getByRole('button', { name: 'Recordar por WhatsApp' }));
 		expect(onRemind).toHaveBeenCalled();
-		expect(screen.getByRole('button', { name: 'Por recordar, 2' })).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: 'Con mensaje, 1' })).toBeInTheDocument();
 	});
 
 	it('explains when the reminder reaches more invitations than the unanswered ones', () => {
 		render(
 			<GuestStatusOverview
-				summary={summary}
+				summary={sentSummary}
 				activeFilter="all"
 				onFilterChange={jest.fn()}
 				reminderCount={3}
@@ -202,7 +210,7 @@ describe('GuestStatusOverview', () => {
 			/>,
 		);
 
-		expect(screen.getByText(/Familia: 1 invitación enviada sigue/)).toBeInTheDocument();
+		expect(screen.getByText(/Familia: 1 invitación enviada sin confirmar/)).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Recordar a 1 de Familia' })).toBeInTheDocument();
 	});
 
@@ -237,7 +245,7 @@ describe('GuestStatusOverview', () => {
 
 		expect(screen.getByText('15 de noviembre')).toBeInTheDocument();
 		await act(async () => {
-			fireEvent.click(screen.getByRole('button', { name: 'Compartir resumen' }));
+			fireEvent.click(screen.getByRole('button', { name: 'Copiar' }));
 		});
 		expect(writeText).toHaveBeenCalledWith(expect.stringContaining('3 personas confirmadas'));
 		expect(screen.getByText('Resumen copiado')).toBeInTheDocument();

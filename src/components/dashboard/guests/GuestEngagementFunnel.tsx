@@ -8,6 +8,8 @@ import type { DashboardEngagementSummary } from '@/interfaces/dashboard/guest.in
 interface GuestEngagementFunnelProps {
 	/** Absent or null when the summary is unavailable; the funnel then renders nothing. */
 	summary?: DashboardEngagementSummary | null;
+	/** Invitations with an answer in the list, including the ones the host recorded. */
+	answeredInvitations?: number;
 }
 
 /** Bar width goes through a CSS variable because inline styles are not allowed. */
@@ -23,7 +25,10 @@ const FunnelBar: React.FC<{ percent: number }> = ({ percent }) => {
  * Guest engagement funnel (metrics dictionary: docs/domains/rsvp/engagement-analytics.md).
  * Each step counts only guests counted in every previous step; percentages are of sent invitations.
  */
-const GuestEngagementFunnel: React.FC<GuestEngagementFunnelProps> = ({ summary }) => {
+const GuestEngagementFunnel: React.FC<GuestEngagementFunnelProps> = ({
+	summary,
+	answeredInvitations = 0,
+}) => {
 	if (!summary || summary.shared === 0) return null;
 
 	const steps = [
@@ -31,9 +36,17 @@ const GuestEngagementFunnel: React.FC<GuestEngagementFunnelProps> = ({ summary }
 		{ key: 'opened', label: 'Abiertas', count: summary.opened },
 		{ key: 'form-viewed', label: 'Llegaron al formulario', count: summary.formViewed },
 		{ key: 'form-started', label: 'Empezaron a responder', count: summary.formStarted },
-		{ key: 'responded', label: 'Respondieron', count: summary.responded },
+		{ key: 'responded', label: 'Respondieron desde la invitación', count: summary.responded },
 	];
 	const notes: string[] = [];
+	const answeredElsewhere = answeredInvitations - summary.responded;
+	if (answeredElsewhere > 0) {
+		notes.push(
+			answeredElsewhere === 1
+				? '1 respuesta no aparece aquí: la registró usted o es anterior a estos datos.'
+				: `${answeredElsewhere} respuestas no aparecen aquí: las registró usted o son anteriores a estos datos.`,
+		);
+	}
 	if (summary.previewed > 0) {
 		notes.push(
 			summary.previewed === 1
@@ -50,7 +63,7 @@ const GuestEngagementFunnel: React.FC<GuestEngagementFunnelProps> = ({ summary }
 	return (
 		<section className="guest-engagement" aria-labelledby="guest-engagement-heading">
 			<h3 id="guest-engagement-heading" className="guest-engagement__heading">
-				Interacción de sus invitados
+				Visitas a la invitación
 			</h3>
 			<ol className="guest-engagement__steps">
 				{steps.map((step) => {
@@ -60,7 +73,8 @@ const GuestEngagementFunnel: React.FC<GuestEngagementFunnelProps> = ({ summary }
 							<span className="guest-engagement__label">{step.label}</span>
 							<FunnelBar percent={percent} />
 							<span className="guest-engagement__value">
-								<strong>{step.count}</strong> · {percent} %
+								<strong>{step.count}</strong>
+								{step.key !== 'shared' && ` · ${percent} %`}
 							</span>
 						</li>
 					);

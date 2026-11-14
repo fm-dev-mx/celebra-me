@@ -201,7 +201,7 @@ describe('filterGuestsForReview', () => {
 		['unopened', ['unopened']],
 		['opened', ['opened']],
 		['answered', ['partial', 'full', 'declined']],
-		['declined', ['declined']],
+		['declined', ['partial', 'declined']],
 		['delivery-pending', ['to-send']],
 	] as const)('filters the %s stage', (reviewFilter, ids) => {
 		const result = filterGuestsForReview(guests, { ...base, reviewFilter });

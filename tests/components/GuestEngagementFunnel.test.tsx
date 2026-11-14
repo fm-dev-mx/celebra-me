@@ -25,15 +25,15 @@ describe('GuestEngagementFunnel', () => {
 	it('shows each step as a count and a share of sent invitations', () => {
 		render(<GuestEngagementFunnel summary={summary} />);
 		expect(
-			screen.getByRole('heading', { name: 'Interacción de sus invitados' }),
+			screen.getByRole('heading', { name: 'Visitas a la invitación' }),
 		).toBeInTheDocument();
 		const steps = screen.getAllByRole('listitem').map((item) => item.textContent);
 		expect(steps).toEqual([
-			'Enviadas10 · 100 %',
+			'Enviadas10',
 			'Abiertas7 · 70 %',
 			'Llegaron al formulario5 · 50 %',
 			'Empezaron a responder4 · 40 %',
-			'Respondieron3 · 30 %',
+			'Respondieron desde la invitación3 · 30 %',
 		]);
 		expect(
 			screen.getByText('8 invitaciones se mostraron como vista previa en el chat.'),
@@ -43,6 +43,15 @@ describe('GuestEngagementFunnel', () => {
 		).toBeInTheDocument();
 		expect(
 			screen.getByText(/Datos desde el .*No incluye invitados de prueba\./),
+		).toBeInTheDocument();
+	});
+
+	it('notes the answers that did not come through the invitation', () => {
+		render(<GuestEngagementFunnel summary={summary} answeredInvitations={5} />);
+		expect(
+			screen.getByText(
+				'2 respuestas no aparecen aquí: las registró usted o son anteriores a estos datos.',
+			),
 		).toBeInTheDocument();
 	});
 

@@ -23,7 +23,7 @@ import { useGuestBatchSelection } from '@/components/dashboard/guests/use-guest-
 import ImportMagic from '@/components/dashboard/guests/ImportMagic';
 import SendInvitationModal from '@/components/dashboard/guests/SendInvitationModal';
 import ShareMessagesModal from '@/components/dashboard/guests/ShareMessagesModal';
-import ToolbarActionsMenu from '@/components/dashboard/guests/ToolbarActionsMenu';
+import GuestToolbarActions from '@/components/dashboard/guests/GuestToolbarActions';
 import Toast from '@/components/dashboard/guests/Toast';
 import {
 	buildGuestGroupScope,
@@ -32,6 +32,7 @@ import {
 	getBatchCandidates,
 	getGuestInviteUrl,
 } from '@/components/dashboard/guests/guest-presenter';
+import { useGuestMessageWall } from '@/components/dashboard/guests/use-guest-message-wall';
 import { guestsApi } from '@/lib/dashboard/guests-api';
 import { useGuestDashboardActions } from '@/components/dashboard/guests/use-guest-dashboard-actions';
 import { useGuestDashboardRealtime } from '@/components/dashboard/guests/use-guest-dashboard-realtime';
@@ -73,7 +74,7 @@ function formatReminderHint(
 	if (dateContext.rawDaysUntilEvent === null) return null;
 	const days = `Faltan ${dateContext.daysUntilEvent} día${s(dateContext.rawDaysUntilEvent)}`;
 	return audience === 'unconfirmed'
-		? `${days} · ${count} invitado${s(count)} sin confirmar`
+		? `${days} para el evento`
 		: `${days} · ${count} invitado${s(count)} activo${s(count)} con invitación enviada`;
 }
 
@@ -153,10 +154,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 	// Test guests stay in the list but never count toward the event overview.
 	const countedItems = useMemo(() => items.filter((item) => !item.isTest), [items]);
 	const summary = useMemo(() => computeGuestSummary(countedItems), [countedItems]);
-	const withMessageCount = useMemo(
-		() => items.filter((item) => (item.guestComment ?? '').trim().length > 0).length,
-		[items],
-	);
 	// Resolved from live items so the sheet follows edits and closes when the guest is removed.
 	const detailGuest = items.find((item) => item.guestId === detailGuestId);
 
@@ -357,6 +354,14 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		},
 		!modalOpen && !deleteConfirmOpen && !importModalOpen,
 	);
+	const messages = useGuestMessageWall(
+		items,
+		eventId,
+		reviewFilter,
+		batchSelection.selectionMode,
+	);
+	const { messageWall } = messages;
+
 	return (
 		<ErrorBoundary>
 			<section className="dashboard-guests">
@@ -377,7 +382,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						onFilterChange: setReviewFilter,
 						reminderCount: showReminderCta ? eligibleGuestIds.size : 0,
 						reminderHint,
-						withMessageCount,
 						rsvpDeadline: shareDateContext.rsvpDeadline,
 						eventTitle: currentEventTitle,
 						engagement,
@@ -396,6 +400,8 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					groupMetrics={groupMetrics}
 					activeGroup={group}
 					onSelectGroup={setGroup}
+					messageCount={messages.messageCount}
+					newMessageCount={messages.newMessageCount}
 				/>
 
 				{showOverview && (
@@ -406,22 +412,6 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					/>
 				)}
 
-				<div className="dashboard-guests__toolbar dashboard-guests__toolbar--actions">
-					<button
-						type="button"
-						onClick={openCreateModal}
-						className="btn-primary btn--compact dashboard-guests__toolbar-create"
-					>
-						Agregar invitado
-					</button>
-					<ToolbarActionsMenu
-						onExport={handleExport}
-						onImport={openImportModal}
-						onRefresh={loadGuests}
-						onShareMessages={() => setShareMessagesModalOpen(true)}
-					/>
-				</div>
-
 				<GuestFilters
 					searchInputRef={searchInputRef}
 					search={search}
@@ -431,28 +421,31 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onSearchChange={setSearch}
 					onGroupChange={setGroup}
 					actions={
-						<ToolbarActionsMenu
-							iconOnly
+						<GuestToolbarActions
+							hasGuests={items.length > 0}
+							messageWall={messageWall}
+							selectionMode={batchSelection.selectionMode}
+							listView={listView}
+							onListViewChange={setListView}
+							onCreate={openCreateModal}
 							onExport={handleExport}
 							onImport={openImportModal}
 							onRefresh={loadGuests}
 							onShareMessages={() => setShareMessagesModalOpen(true)}
+							onStartSelection={batchSelection.startSelection}
 						/>
 					}
 				/>
 
 				<GuestListControls
-					hasGuests={items.length > 0}
-					selectionMode={batchSelection.selectionMode}
-					view={listView}
-					onViewChange={setListView}
-					showViewToggle={reviewFilter !== 'with-message'}
-					onStartSelection={batchSelection.startSelection}
 					changeNotice={changeNotice}
 					onDismissNotice={dismissNotice}
+					activeFilterLabel={messages.activeFilterLabel}
+					onClearFilter={() => setReviewFilter('all')}
 				/>
 
 				<GuestListFeedback
+					hidden={messageWall}
 					total={items.length}
 					visible={visibleItems.length}
 					filtered={isFiltered}
@@ -475,7 +468,10 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					view={listView}
 					onOpenDetails={(item) => setDetailGuestId(item.guestId)}
 					selection={batchSelection.tableSelection}
-					messageWall={reviewFilter === 'with-message'}
+					messageWall={messageWall}
+					onCloseMessageWall={() => setReviewFilter('all')}
+					messagesSeenAt={messages.seenAt}
+					onMessagesSeen={messages.markSeen}
 					onRequestBatch={batchSelection.requestBatch}
 				/>
 

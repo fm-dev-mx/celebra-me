@@ -1,40 +1,25 @@
 import React from 'react';
-import GuestViewToggle from '@/components/dashboard/guests/GuestViewToggle';
-import type { GuestListView } from '@/components/dashboard/guests/use-guest-list-view';
 
 interface GuestListControlsProps {
-	hasGuests: boolean;
-	selectionMode: boolean;
-	view: GuestListView;
-	onViewChange: (view: GuestListView) => void;
-	/** False under the message wall, where list and card views do not apply. */
-	showViewToggle?: boolean;
-	onStartSelection: () => void;
 	changeNotice: string | null;
 	onDismissNotice: () => void;
+	/** Name of the active answer filter, or null when the list is unfiltered. */
+	activeFilterLabel?: string | null;
+	onClearFilter?: () => void;
 }
 
-/** Compact-screen controls above the guest list: view, selection entry and live answers. */
+/**
+ * Notices above the guest list: the live-answer notice and the active answer
+ * filter. View and selection live in the toolbar "Opciones" menu; the
+ * message wall opens from the event summary.
+ */
 const GuestListControls: React.FC<GuestListControlsProps> = ({
-	hasGuests,
-	selectionMode,
-	view,
-	onViewChange,
-	showViewToggle = true,
-	onStartSelection,
 	changeNotice,
 	onDismissNotice,
+	activeFilterLabel = null,
+	onClearFilter,
 }) => (
 	<>
-		{hasGuests && !selectionMode && (
-			<div className="dashboard-guests__view-toggle">
-				{showViewToggle && <GuestViewToggle view={view} onChange={onViewChange} />}
-				<button type="button" className="guest-select-toggle" onClick={onStartSelection}>
-					Seleccionar varios
-				</button>
-			</div>
-		)}
-
 		{changeNotice && (
 			<div className="guest-change-notice" role="status">
 				<span className="guest-change-notice__text">{changeNotice}</span>
@@ -45,6 +30,22 @@ const GuestListControls: React.FC<GuestListControlsProps> = ({
 				>
 					Entendido
 				</button>
+			</div>
+		)}
+		{activeFilterLabel && (
+			<div className="guest-filter-notice" role="status">
+				<span className="guest-filter-notice__text">
+					Mostrando: <strong>{activeFilterLabel}</strong>
+				</span>
+				{onClearFilter && (
+					<button
+						type="button"
+						className="guest-filter-notice__clear"
+						onClick={onClearFilter}
+					>
+						Ver todos
+					</button>
+				)}
 			</div>
 		)}
 	</>

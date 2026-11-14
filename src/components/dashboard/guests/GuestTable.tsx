@@ -48,6 +48,11 @@ interface GuestTableProps {
 	};
 	/** "Con mensaje" filter: every message in full instead of rows; selection keeps the rows. */
 	messageWall?: boolean;
+	/** Leaves the message wall for the full list. */
+	onCloseMessageWall?: () => void;
+	/** Last read of the wall, to mark newer messages; null before the first read. */
+	messagesSeenAt?: number | null;
+	onMessagesSeen?: () => void;
 	/** Desktop group headers: send or remind every guest of that group, after confirmation. */
 	onRequestBatch?: (kind: BatchFlowKind, guestIds: ReadonlySet<string>) => void;
 }
@@ -98,6 +103,9 @@ const GuestTable: React.FC<GuestTableProps> = ({
 	onOpenDetails,
 	selection,
 	messageWall = false,
+	onCloseMessageWall,
+	messagesSeenAt = null,
+	onMessagesSeen,
 	onRequestBatch,
 }) => {
 	// null until hydrated: both layouts render and CSS picks one. Afterwards only
@@ -132,7 +140,15 @@ const GuestTable: React.FC<GuestTableProps> = ({
 
 	if (items.length === 0) return null;
 	if (messageWall && !selection) {
-		return <GuestMessageWall items={items} onOpenDetails={onOpenDetails} />;
+		return (
+			<GuestMessageWall
+				items={items}
+				onOpenDetails={onOpenDetails}
+				onClose={onCloseMessageWall}
+				seenAt={messagesSeenAt}
+				onSeen={onMessagesSeen}
+			/>
+		);
 	}
 
 	const renderCard = (item: DashboardGuestItem, index: number) => (

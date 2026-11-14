@@ -183,12 +183,14 @@ describe('GuestDashboardApp overview filters', () => {
 	it('filters visible guests by existing guest message', () => {
 		render(<GuestDashboardApp initialEventId="event-1" />);
 
-		fireEvent.click(screen.getByRole('button', { name: 'Con mensaje, 1' }));
+		fireEvent.click(
+			screen.getByRole('button', { name: /^1 mensajes? (nuevo )?de sus invitados/ }),
+		);
 
 		expectVisibleGuestNames(['Message Guest']);
 		// "Con mensaje" shows the message wall, with each message in full.
 		expect(
-			screen.getByRole('region', { name: 'Mensajes de sus invitados' }),
+			screen.getByRole('region', { name: /^Mensajes de sus invitados/ }),
 		).toBeInTheDocument();
 		expect(screen.getByRole('article', { name: 'Message Guest' })).toHaveTextContent(
 			'Gracias por invitarme',
