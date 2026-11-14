@@ -1,8 +1,11 @@
-import React, { useId, useMemo } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import GuestStatusPill from '@/components/dashboard/guests/GuestStatusPill';
 import {
 	buildGuestMessageWall,
 	formatGuestMessageCount,
+	isGuestMessageUnread,
+	readStoredGuestMessageReads,
+	recordGuestMessageRead,
 } from '@/components/dashboard/guests/guest-presenter';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 
@@ -18,6 +21,10 @@ interface GuestMessageWallProps {
 const GuestMessageWall: React.FC<GuestMessageWallProps> = ({ items, onOpenDetails }) => {
 	const titleId = useId();
 	const entries = useMemo(() => buildGuestMessageWall(items), [items]);
+	const [readMessages, setReadMessages] = useState<Record<string, string>>(() =>
+		readStoredGuestMessageReads(),
+	);
+
 	if (entries.length === 0) return null;
 
 	return (
@@ -32,11 +39,17 @@ const GuestMessageWall: React.FC<GuestMessageWallProps> = ({ items, onOpenDetail
 			<ol className="guest-message-wall__list">
 				{entries.map(({ item, latest, timestampLabel, count }) => {
 					const signatureId = `${titleId}-${item.guestId}`;
+					const isUnread = isGuestMessageUnread(item, readMessages);
 					return (
 						<li key={item.guestId}>
 							<article className="guest-message-card" aria-labelledby={signatureId}>
 								<div className="guest-message-card__top">
 									<GuestStatusPill item={item} />
+									{isUnread && (
+										<span className="guest-tag guest-tag--message">
+											Mensaje nuevo
+										</span>
+									)}
 									<p className="guest-message-card__meta">
 										{timestampLabel}
 										{count > 1 && ` · ${formatGuestMessageCount(count)}`}
@@ -57,7 +70,12 @@ const GuestMessageWall: React.FC<GuestMessageWallProps> = ({ items, onOpenDetail
 									type="button"
 									className="guest-message-card__open"
 									aria-label={`Ver detalles de ${item.fullName}`}
-									onClick={() => onOpenDetails(item)}
+									onClick={() => {
+										setReadMessages((prev) =>
+											recordGuestMessageRead(item, prev),
+										);
+										onOpenDetails(item);
+									}}
 								>
 									Ver detalles
 								</button>

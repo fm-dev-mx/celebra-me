@@ -14,6 +14,11 @@ import {
 	normalizeViewPercentage,
 	parseGuestCommentHistory,
 	getGuestMessageCount,
+	getGuestMessageSignature,
+	GUEST_MESSAGE_READ_STORAGE_KEY,
+	isGuestMessageUnread,
+	readStoredGuestMessageReads,
+	recordGuestMessageRead,
 	getGuestPrimaryAction,
 	formatGuestDateShort,
 	resolveLabel,
@@ -681,5 +686,42 @@ describe('resolveLabel', () => {
 		expect(resolveLabel('12 jun 2026, 10:34', '2026-03-22T00:00:00.000Z')).toBe(
 			'12 jun 2026, 10:34',
 		);
+	});
+});
+
+describe('guest message read tracking', () => {
+	beforeEach(() => {
+		window.localStorage.clear();
+	});
+
+	it('marks a guest with a message as unread until recorded, and unread again on a newer message', () => {
+		const guest = makeGuest({ guestId: 'g-1', guestComment: 'Muchas felicidades' });
+		expect(isGuestMessageUnread(guest, readStoredGuestMessageReads())).toBe(true);
+
+		const recorded = recordGuestMessageRead(guest);
+		expect(isGuestMessageUnread(guest, recorded)).toBe(false);
+		expect(isGuestMessageUnread(guest, readStoredGuestMessageReads())).toBe(false);
+
+		const updatedGuest = makeGuest({
+			guestId: 'g-1',
+			guestComment: 'Muchas felicidades\n\n[12 jun 2026, 10:34] Nos vemos pronto',
+		});
+		expect(isGuestMessageUnread(updatedGuest, readStoredGuestMessageReads())).toBe(true);
+	});
+
+	it('never marks an empty or whitespace comment as unread and does not store it', () => {
+		const silent = makeGuest({ guestId: 'g-2', guestComment: '   ' });
+		expect(getGuestMessageSignature(silent.guestComment)).toBe('');
+		expect(isGuestMessageUnread(silent, {})).toBe(false);
+		expect(recordGuestMessageRead(silent, {})).toEqual({});
+		expect(window.localStorage.getItem(GUEST_MESSAGE_READ_STORAGE_KEY)).toBeNull();
+	});
+
+	it('falls back safely when localStorage contains malformed JSON or non-object data', () => {
+		window.localStorage.setItem(GUEST_MESSAGE_READ_STORAGE_KEY, '{bad-json');
+		expect(readStoredGuestMessageReads()).toEqual({});
+
+		window.localStorage.setItem(GUEST_MESSAGE_READ_STORAGE_KEY, JSON.stringify(['not-a-map']));
+		expect(readStoredGuestMessageReads()).toEqual({});
 	});
 });

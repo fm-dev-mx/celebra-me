@@ -140,8 +140,19 @@
 
 // Send-off: yellow ribbons replace the butterflies and leave across the bottom edge (on <body>).
 .event--yireh-ana.lantern-send-off .storybook-sky__butterfly {
+	// The butterfly's box widens into a halo that carries two loose bows beside each ribbon.
 	svg {
-		visibility: hidden;
+		position: absolute;
+		inset: -90% -160%;
+		width: auto;
+		height: auto;
+		background:
+			url('./assets/bow.webp') 4% 18% / 34% auto no-repeat,
+			url('./assets/bow.webp') 96% 78% / 28% auto no-repeat;
+
+		* {
+			display: none;
+		}
 	}
 
 	&::after {
