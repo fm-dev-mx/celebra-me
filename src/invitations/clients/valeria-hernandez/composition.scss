@@ -299,6 +299,17 @@ $valeria-night-ground:
 		filter: drop-shadow(0 0 0.55rem rgb(var(--color-rose-glow-rgb) / 70%));
 	}
 
+	// The parents' names are signed in the same calligraphy as «Mi familia» (client request,
+	// 2026-11-14); the godparents keep the bill's capitals.
+	.family__group--parents .family__name {
+		font-family: var(--font-calligraphy);
+		font-size: clamp(3rem, 14vw, 3.9rem);
+		font-weight: 400;
+		line-height: 0.95;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+
 	.family__group--godparents .family__name {
 		color: rgb(var(--color-leaf-silver-rgb));
 		font-size: clamp(0.95rem, 4.4vw, 1.2rem);
