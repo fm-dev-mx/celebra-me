@@ -8,9 +8,15 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
  * client's WhatsApp deliveries, cropped per role and never upscaled. Every guest-facing line is a
  * draft for the client's approval, except the program, the snacks note and the envelope gift,
  * which the client confirmed. The song is the client's YouTube pick, encoded at 64 kbps and hosted
- * on the media domain. The reply deadline and photo-QR space are pending and stay out of the page
- * until the client confirms them.
+ * on the media domain. The client set the reply deadline (21 December) and the envelope phrase on
+ * 2026-11-14. The photo-QR memories card is ready behind `MEMORIES_PAID`: it stays off the page and
+ * out of the content until the owner confirms the add-on payment and the memory space exists, since
+ * publication blocks on a `memories.publicSlug` without a space.
  */
+// Flip to true only after the owner confirms the QR add-on payment and the `valeria-hernandez`
+// memory space has been created through the guarded workflow.
+const MEMORIES_PAID = false;
+
 const VALERIA_TIMING = {
 	localDateTime: '2027-01-09T17:45',
 	timeZone: 'America/Mexico_City',
@@ -37,6 +43,7 @@ const content: CanonicalEventContentInput = {
 		'gifts',
 		'personalizedAccess',
 		'rsvp',
+		...(MEMORIES_PAID ? (['memories'] as const) : []),
 		'thankYou',
 	],
 	composition: {
@@ -49,7 +56,7 @@ const content: CanonicalEventContentInput = {
 			family: { family: 'folio', source: 'itinerary' },
 			gallery: { family: 'arch', source: 'family' },
 			'personalized-access': { family: 'folio', source: 'gifts' },
-			thankYou: { family: 'arch', source: 'rsvp' },
+			thankYou: { family: 'arch', source: MEMORIES_PAID ? 'memories' : 'rsvp' },
 		},
 	},
 	hero: {
@@ -246,7 +253,7 @@ const content: CanonicalEventContentInput = {
 		closingNote: 'Llegue puntual: la noche no espera.',
 	},
 	gifts: {
-		// The client asked for envelopes only.
+		// The client asked for envelopes only, in her own words, with a mailbox at the reception.
 		variant: 'gift-tag',
 		title: 'Regalos',
 		presentation: 'catalog',
@@ -255,7 +262,7 @@ const content: CanonicalEventContentInput = {
 			{
 				type: 'cash',
 				title: 'Lluvia de sobres',
-				text: 'Si desea tener un detalle conmigo, será bienvenido en sobre el día de la fiesta.',
+				text: 'Prefiero construir recuerdos que abrir cajas… Gracias por su cariño en sobre. Habrá un buzón durante la recepción.',
 			},
 		],
 	},
@@ -311,8 +318,8 @@ const content: CanonicalEventContentInput = {
 		// Pass and confirmation read as one printed reply card; seats are fixed per guest.
 		variant: 'reply-card',
 		title: '¿Me acompaña?',
-		// No deadline was given by the client, so the line asks for an early reply without a date.
-		subcopy: 'Le agradeceré confirmar su asistencia con tiempo.',
+		// Client-set: replies close on 21 December; the canonical RSVP block has no deadline field.
+		subcopy: 'Le agradeceré confirmar su asistencia a más tardar el 21 de diciembre.',
 		lockedMessage:
 			'Cada pase de esta noche lleva un nombre. Abra el enlace que le envié para ver el suyo.',
 		// Technical fallback only; every real pass carries the seats set per guest.
@@ -346,6 +353,19 @@ const content: CanonicalEventContentInput = {
 			},
 		},
 	},
+	...(MEMORIES_PAID
+		? {
+				memories: {
+					// Same card as Andrea's QR add-on; first person, like the rest.
+					variant: 'card',
+					publicSlug: 'valeria-hernandez',
+					title: 'Comparta sus fotos de mi noche',
+					description:
+						'Ayúdeme a guardar cada momento. Suba aquí sus fotos y videos; solo mi familia y usted podrán verlos.',
+					actionLabel: 'Subir fotos y videos',
+				},
+			}
+		: {}),
 	thankYou: {
 		// A smiling night photograph closes the page the way the party ends.
 		variant: 'last-song',
