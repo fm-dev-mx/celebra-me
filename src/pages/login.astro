@@ -50,6 +50,8 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 							name="email"
 							type="text"
 							autocomplete="username"
+							autocapitalize="none"
+							spellcheck="false"
 							placeholder="su-correo@ejemplo.com o su-usuario"
 						/>
 						<p id="login-email-error" class="field-error" aria-live="polite"></p>
@@ -57,12 +59,24 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 
 					<div id="login-password-wrap" class="auth-field">
 						<label for="login-password">Contraseña</label>
-						<input
-							id="login-password"
-							name="password"
-							type="password"
-							autocomplete="current-password"
-						/>
+						<div class="auth-password">
+							<input
+								id="login-password"
+								name="password"
+								type="password"
+								autocomplete="current-password"
+								autocapitalize="none"
+								spellcheck="false"
+							/>
+							<button
+								type="button"
+								class="auth-password__toggle"
+								data-password-toggle
+								aria-controls="login-password"
+								aria-pressed="false"
+								aria-label="Mostrar contraseña"
+							>Mostrar</button>
+						</div>
 						<p id="login-password-error" class="field-error" aria-live="polite"></p>
 					</div>
 

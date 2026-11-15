@@ -5,6 +5,7 @@ import {
 	validateLoginForm,
 } from '@/lib/client/auth/login-ui';
 import { authBridgeApi } from '@/lib/client/auth/auth-bridge-api';
+import { initPasswordToggles } from '@/lib/client/auth/password-visibility';
 
 export function getLoginQueryPrefill(search: string): {
 	email: string;
@@ -28,6 +29,7 @@ export function initLoginFlow() {
 	const loginSubmit = document.getElementById('login-submit');
 
 	let isSubmitting = false;
+	initPasswordToggles();
 	const loginQueryPrefill =
 		typeof window === 'undefined' ? null : getLoginQueryPrefill(window.location.search);
 

@@ -130,10 +130,8 @@ export const CreateUserSchema = z
 	);
 export const ChangePasswordSchema = z
 	.object({
-		currentPassword: z
-			.string()
-			.min(1, { message: 'La contraseña actual es requerida' })
-			.max(200),
+		// Optional only for the forced first change; the route requires it otherwise.
+		currentPassword: z.string().max(200).optional(),
 		newPassword: z
 			.string()
 			.min(8, { message: 'La nueva contraseña debe tener al menos 8 caracteres' })

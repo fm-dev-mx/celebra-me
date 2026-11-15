@@ -24,6 +24,16 @@ import { ChangePasswordSchema } from '@/lib/schemas';
 import { logSecurityEvent } from '@/lib/server/security-events';
 import { safeErr } from '@/lib/server/safe-error';
 
+async function verifyCurrentPassword(email: string, password: string): Promise<void> {
+	try {
+		await signInWithPassword({ email, password });
+	} catch (error) {
+		if (!isRejectedAuthCredential(error)) throw error;
+		logSecurityEvent('login_failed', { route: 'change-password' });
+		throw new ApiError(401, 'unauthorized', 'La contraseña actual es incorrecta.');
+	}
+}
+
 export const POST: APIRoute = async ({ request, url }) => {
 	try {
 		assertSameOrigin(request, url.origin);
@@ -57,20 +67,19 @@ export const POST: APIRoute = async ({ request, url }) => {
 		}
 		const { currentPassword, newPassword } = parsedResult.data;
 
-		const sanitizedCurrent = sanitizePassword(currentPassword);
+		// The forced first change follows a fresh login with the (unexpired) temporary password, so
+		// asking for it again adds nothing; every other change must prove the current password.
+		const requiresCurrentPassword = session.mustChangePassword !== true;
+		const sanitizedCurrent = sanitizePassword(currentPassword ?? '');
+		if (requiresCurrentPassword && !sanitizedCurrent.trim()) {
+			throw new ApiError(400, 'bad_request', 'La contraseña actual es requerida');
+		}
 		const sanitizedNew = sanitizePassword(newPassword);
 		assertValidPassword(sanitizedNew);
 
-		// Step 1: Verify current password
-		try {
-			await signInWithPassword({
-				email: session.email,
-				password: sanitizedCurrent,
-			});
-		} catch (error) {
-			if (!isRejectedAuthCredential(error)) throw error;
-			logSecurityEvent('login_failed', { route: 'change-password' });
-			throw new ApiError(401, 'unauthorized', 'La contraseña actual es incorrecta.');
+		// Step 1: Verify current password (skipped for the forced first change)
+		if (requiresCurrentPassword) {
+			await verifyCurrentPassword(session.email, sanitizedCurrent);
 		}
 
 		// Step 2: Update user password via authenticated user endpoint

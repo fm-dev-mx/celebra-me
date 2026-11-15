@@ -144,6 +144,34 @@
 		box-shadow 0.2s ease;
 }
 
+.auth-password {
+	position: relative;
+	display: grid;
+}
+
+.auth-password input {
+	padding-right: 5.5rem;
+}
+
+.auth-password__toggle {
+	position: absolute;
+	inset-block: 0.35rem;
+	right: 0.35rem;
+	padding: 0 0.75rem;
+	border: 0;
+	border-radius: 0.45rem;
+	font-family: var(--font-ui);
+	font-size: 0.82rem;
+	font-weight: 600;
+	color: var(--auth-label-color, var(--color-text-primary));
+	background: transparent;
+	cursor: pointer;
+}
+
+.auth-password__toggle:hover {
+	background: color-mix(in srgb, currentcolor 10%, transparent);
+}
+
 .auth-field input[aria-invalid='true'],
 .auth-field select[aria-invalid='true'] {
 	border-color: var(--auth-error, var(--color-state-danger));
@@ -265,6 +293,7 @@
 .auth-brand:focus-visible,
 .auth-field input:focus-visible,
 .auth-field select:focus-visible,
+.auth-password__toggle:focus-visible,
 .auth-submit:focus-visible,
 .auth-secondary:focus-visible {
 	@include a11y.focus-ring(var(--auth-focus-ring, rgb(var(--color-action-accent-rgb))));
