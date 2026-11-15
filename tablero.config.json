@@ -387,6 +387,16 @@
         {
             "id": "marketing",
             "nombre": "Marketing"
+        },
+        {
+            "id": "cej-landing",
+            "nombre": "CEJ landing",
+            "carpeta": "../cej-landing",
+            "github": {
+                "repo": "fm-dev-mx/cej-landing",
+                "unir": false
+            },
+            "protegidos": [".vercel/"]
         }
     ],
     "ciclo": {
