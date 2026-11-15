@@ -1,6 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import Logo from '@/components/ui/Logo.astro';
+import PasswordField from '@/components/ui/PasswordField.astro';
 import '@/styles/auth.scss';
 import '@styles/auth/_login.scss';
 import ChangePasswordBehavior from '@/components/behavior/ChangePasswordBehavior';
@@ -45,68 +46,35 @@ const mustChange = session?.mustChangePassword === true;
 				{!mustChange && (
 					<div class="auth-field">
 						<label for="current-password">Contraseña actual</label>
-						<div class="auth-password">
-							<input
-								id="current-password"
-								name="currentPassword"
-								type="password"
-								autocomplete="current-password"
-								placeholder="Ingrese su contraseña actual"
-							/>
-							<button
-								type="button"
-								class="auth-password__toggle"
-								data-password-toggle
-								aria-controls="current-password"
-								aria-pressed="false"
-								aria-label="Mostrar contraseña"
-							>Mostrar</button>
-						</div>
+						<PasswordField
+							id="current-password"
+							name="currentPassword"
+							autocomplete="current-password"
+							placeholder="Ingrese su contraseña actual"
+						/>
 						<p id="current-password-error" class="field-error" aria-live="polite"></p>
 					</div>
 				)}
 
 				<div class="auth-field">
 					<label for="new-password">Nueva contraseña</label>
-					<div class="auth-password">
-						<input
-							id="new-password"
-							name="newPassword"
-							type="password"
-							autocomplete="new-password"
-							placeholder="Mínimo 8 caracteres"
-						/>
-						<button
-							type="button"
-							class="auth-password__toggle"
-							data-password-toggle
-							aria-controls="new-password"
-							aria-pressed="false"
-							aria-label="Mostrar contraseña"
-						>Mostrar</button>
-					</div>
+					<PasswordField
+						id="new-password"
+						name="newPassword"
+						autocomplete="new-password"
+						placeholder="Mínimo 8 caracteres"
+					/>
 					<p id="new-password-error" class="field-error" aria-live="polite"></p>
 				</div>
 
 				<div class="auth-field">
 					<label for="confirm-password">Confirmar nueva contraseña</label>
-					<div class="auth-password">
-						<input
-							id="confirm-password"
-							name="confirmPassword"
-							type="password"
-							autocomplete="new-password"
-							placeholder="Repita su nueva contraseña"
-						/>
-						<button
-							type="button"
-							class="auth-password__toggle"
-							data-password-toggle
-							aria-controls="confirm-password"
-							aria-pressed="false"
-							aria-label="Mostrar contraseña"
-						>Mostrar</button>
-					</div>
+					<PasswordField
+						id="confirm-password"
+						name="confirmPassword"
+						autocomplete="new-password"
+						placeholder="Repita su nueva contraseña"
+					/>
 					<p id="confirm-password-error" class="field-error" aria-live="polite"></p>
 				</div>
 

@@ -72,8 +72,8 @@ export function initChangePasswordFlow() {
 			const confirmPassword = confirmInput?.value || '';
 
 			if (!mustChange && !currentPassword.trim()) {
-				setFieldError('current-password', 'Ingresa tu contraseña actual.');
-				setStatus('Ingresa tu contraseña actual.', 'error', true);
+				setFieldError('current-password', 'Ingrese su contraseña actual.');
+				setStatus('Ingrese su contraseña actual.', 'error', true);
 				return;
 			}
 			if (!newPassword.trim() || newPassword.length < 8) {
@@ -112,7 +112,7 @@ export function initChangePasswordFlow() {
 				const errorMessage =
 					error instanceof Error
 						? error.message
-						: 'No pudimos actualizar tu contraseña. Revisa tus datos e intenta de nuevo.';
+						: 'No pudimos actualizar su contraseña. Revise sus datos e intente de nuevo.';
 				setStatus(errorMessage, 'error', true);
 			} finally {
 				setSubmitting(false);

@@ -1,6 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import Logo from '@/components/ui/Logo.astro';
+import PasswordField from '@/components/ui/PasswordField.astro';
 import LoginFlowBehavior from '@/components/behavior/LoginFlowBehavior';
 import { resolveNextPath } from '@/lib/rsvp/auth/login';
 import '@/styles/auth.scss';
@@ -59,24 +60,13 @@ const next = resolveNextPath(Astro.url.searchParams.get('next'), '/dashboard/inv
 
 					<div id="login-password-wrap" class="auth-field">
 						<label for="login-password">Contraseña</label>
-						<div class="auth-password">
-							<input
-								id="login-password"
-								name="password"
-								type="password"
-								autocomplete="current-password"
-								autocapitalize="none"
-								spellcheck="false"
-							/>
-							<button
-								type="button"
-								class="auth-password__toggle"
-								data-password-toggle
-								aria-controls="login-password"
-								aria-pressed="false"
-								aria-label="Mostrar contraseña"
-							>Mostrar</button>
-						</div>
+						<PasswordField
+							id="login-password"
+							name="password"
+							autocomplete="current-password"
+							autocapitalize="none"
+							spellcheck="false"
+						/>
 						<p id="login-password-error" class="field-error" aria-live="polite"></p>
 					</div>
 

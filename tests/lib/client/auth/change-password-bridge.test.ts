@@ -124,7 +124,7 @@ describe('initChangePasswordFlow', () => {
 
 			expect(changePasswordMock).not.toHaveBeenCalled();
 			expect(document.getElementById('current-password-error')!.textContent).toBe(
-				'Ingresa tu contraseña actual.',
+				'Ingrese su contraseña actual.',
 			);
 		});
 
