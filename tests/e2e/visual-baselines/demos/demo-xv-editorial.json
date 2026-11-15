@@ -10,7 +10,7 @@
             "preset": "editorial",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-            "sha256": "7f1ac7388ddb04c110b3bab60956c60213b3a8d765ca77973b724186c3426664",
+            "sha256": "132c0d097a0d7dc606d6579eb01f88828b0093e493993c0380dca0523bbfe029",
             "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
             "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
             "comparisonResult": "ACCEPTED"
@@ -36,7 +36,7 @@
             "preset": "editorial",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-            "sha256": "7f1ac7388ddb04c110b3bab60956c60213b3a8d765ca77973b724186c3426664",
+            "sha256": "132c0d097a0d7dc606d6579eb01f88828b0093e493993c0380dca0523bbfe029",
             "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
             "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
             "comparisonResult": "CANDIDATE"
