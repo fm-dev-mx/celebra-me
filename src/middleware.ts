@@ -621,6 +621,14 @@ function dashboardBearerToken(url: URL, request: Request): string {
 		: '';
 }
 
+function unauthorizedApiResponse(): Response {
+	const response = errorResponse(
+		new ApiError(401, 'unauthorized', 'Su sesión no es válida. Inicie sesión de nuevo.'),
+	);
+	response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
+	return response;
+}
+
 async function handleBearerDashboardAuth(
 	accessToken: string,
 	cookies: CookieStore,
@@ -632,7 +640,7 @@ async function handleBearerDashboardAuth(
 	// Expired temporary passwords also carry must_change_password, just as in cookie auth.
 	if (user.app_metadata?.must_change_password === true) return passwordChangeRequiredResponse();
 	const authContext = await resolveAuthContext(cookies, request, user, accessToken);
-	if (!authContext.role) return null;
+	if (!authContext.role) return unauthorizedApiResponse();
 	locals.session = buildSessionFromUser(user, accessToken, authContext.role);
 	locals.hasAdminStrongAuth = computeMfaBypass(authContext, user.email).effectiveAdminStrongAuth;
 	return null;
