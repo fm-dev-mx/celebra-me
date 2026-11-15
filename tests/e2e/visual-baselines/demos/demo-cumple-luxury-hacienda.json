@@ -10,8 +10,8 @@
             "preset": "luxury-hacienda",
             "viewport": "mobile",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-            "sha256": "48c9fa0ee66194999ad6f0c0d5feb8ac415d7a7a108ab2d37c4b79a2ecce613f",
-            "contentHash": "774a2adebee7ce5ab9274b6120d50e5b0d2fad47e240e85b845a481d2e4fa633",
+            "sha256": "0644d202ec72a45b346eb5d188599deb2a41bf4455f47ab5ac006602b42eb86f",
+            "contentHash": "6bcb33133eea329fe27f6fc69c1a7664bc5e31f069e1cdedb35e4d309f775df1",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
         },
@@ -22,8 +22,8 @@
             "preset": "luxury-hacienda",
             "viewport": "desktop",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-            "sha256": "06ef45df5dde2ea3041e8497a62f85a3c318033b5b6d9774ab6b694a9e1c7a1c",
-            "contentHash": "774a2adebee7ce5ab9274b6120d50e5b0d2fad47e240e85b845a481d2e4fa633",
+            "sha256": "68e61be365f976e30768f4f41814a2b5b1f47886b61865f08d59e3ec9fa160ea",
+            "contentHash": "6bcb33133eea329fe27f6fc69c1a7664bc5e31f069e1cdedb35e4d309f775df1",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "ACCEPTED"
         }
@@ -36,8 +36,8 @@
             "preset": "luxury-hacienda",
             "viewport": "mobile",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-mobile.png",
-            "sha256": "48c9fa0ee66194999ad6f0c0d5feb8ac415d7a7a108ab2d37c4b79a2ecce613f",
-            "contentHash": "774a2adebee7ce5ab9274b6120d50e5b0d2fad47e240e85b845a481d2e4fa633",
+            "sha256": "0644d202ec72a45b346eb5d188599deb2a41bf4455f47ab5ac006602b42eb86f",
+            "contentHash": "6bcb33133eea329fe27f6fc69c1a7664bc5e31f069e1cdedb35e4d309f775df1",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "CANDIDATE"
         },
@@ -48,8 +48,8 @@
             "preset": "luxury-hacienda",
             "viewport": "desktop",
             "file": "pages/demo-cumple-demo-cumple-luxury-hacienda-desktop.png",
-            "sha256": "06ef45df5dde2ea3041e8497a62f85a3c318033b5b6d9774ab6b694a9e1c7a1c",
-            "contentHash": "774a2adebee7ce5ab9274b6120d50e5b0d2fad47e240e85b845a481d2e4fa633",
+            "sha256": "68e61be365f976e30768f4f41814a2b5b1f47886b61865f08d59e3ec9fa160ea",
+            "contentHash": "6bcb33133eea329fe27f6fc69c1a7664bc5e31f069e1cdedb35e4d309f775df1",
             "assetHash": "277839dd3b99610828992e64e266ef327be839038bd279e2bbbba5808718a0b8",
             "comparisonResult": "CANDIDATE"
         }

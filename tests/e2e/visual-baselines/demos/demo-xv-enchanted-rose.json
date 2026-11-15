@@ -10,7 +10,7 @@
             "preset": "enchanted-rose",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-enchanted-rose-mobile.png",
-            "sha256": "d84ee9ebdc61a5a02342f62a788f8913489e8decb57e066fe6bb060165908a28",
+            "sha256": "1c8dc6cb6de10c6d0fb736455e1b8454eacf2d1ddfb8fa17aa3fd51db5759658",
             "contentHash": "45931b3348c2f10ea80e5e6667f43b3dcf1c7edf3b15716c6af4a2b1b4d3115d",
             "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
             "comparisonResult": "ACCEPTED"
@@ -22,7 +22,7 @@
             "preset": "enchanted-rose",
             "viewport": "desktop",
             "file": "pages/demo-xv-demo-xv-enchanted-rose-desktop.png",
-            "sha256": "cea8c78078f68c9e12782f83832d0aaa0297786e1aafa0a0f591bff93dba4dcc",
+            "sha256": "b4f90e9f33069f3b2870fe2f51bf81bbb9f2128f4d6e02be04f2395e4e85e4fc",
             "contentHash": "45931b3348c2f10ea80e5e6667f43b3dcf1c7edf3b15716c6af4a2b1b4d3115d",
             "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
             "comparisonResult": "ACCEPTED"
@@ -36,7 +36,7 @@
             "preset": "enchanted-rose",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-enchanted-rose-mobile.png",
-            "sha256": "d84ee9ebdc61a5a02342f62a788f8913489e8decb57e066fe6bb060165908a28",
+            "sha256": "1c8dc6cb6de10c6d0fb736455e1b8454eacf2d1ddfb8fa17aa3fd51db5759658",
             "contentHash": "45931b3348c2f10ea80e5e6667f43b3dcf1c7edf3b15716c6af4a2b1b4d3115d",
             "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
             "comparisonResult": "CANDIDATE"
@@ -48,7 +48,7 @@
             "preset": "enchanted-rose",
             "viewport": "desktop",
             "file": "pages/demo-xv-demo-xv-enchanted-rose-desktop.png",
-            "sha256": "cea8c78078f68c9e12782f83832d0aaa0297786e1aafa0a0f591bff93dba4dcc",
+            "sha256": "b4f90e9f33069f3b2870fe2f51bf81bbb9f2128f4d6e02be04f2395e4e85e4fc",
             "contentHash": "45931b3348c2f10ea80e5e6667f43b3dcf1c7edf3b15716c6af4a2b1b4d3115d",
             "assetHash": "08c18070f62b90ae38005379d1a71b525a1480068960426a538dd129613a3117",
             "comparisonResult": "CANDIDATE"
