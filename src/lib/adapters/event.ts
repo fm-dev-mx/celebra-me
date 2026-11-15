@@ -377,6 +377,23 @@ function buildCountdownSectionData(context: AdaptationContext) {
 	};
 }
 
+// Only a public location may put its address and map link in the page; a gated one keeps the name.
+function buildCountdownCalendarLocation(
+	data: CanonicalEventContent,
+): { venueName?: string; address?: string; mapsUrl?: string } | undefined {
+	const venueName = pickVenueValue(data.location, 'venueName');
+	const locationVisibility = data.location?.accessPolicy?.visibility ?? data.location?.visibility;
+	const isPublicLocation = locationVisibility === 'public';
+	const address = isPublicLocation ? pickVenueValue(data.location, 'address') : undefined;
+	const mapsUrl = isPublicLocation ? pickVenueValue(data.location, 'googleMapsUrl') : undefined;
+	const location = {
+		...(venueName ? { venueName } : {}),
+		...(address ? { address } : {}),
+		...(mapsUrl ? { mapsUrl } : {}),
+	};
+	return Object.keys(location).length > 0 ? location : undefined;
+}
+
 function buildCountdownCalendar(
 	data: CanonicalEventContent,
 	startsAt: string | undefined,
@@ -392,20 +409,13 @@ function buildCountdownCalendar(
 	// guessed time (a legacy hero date is a floating day, not an instant).
 	const timeZone = data.eventTiming?.timeZone;
 	if (!timeZone || !startsAt) return { mark, month };
-	const venueName = pickVenueValue(data.location, 'venueName');
-	const address = pickVenueValue(data.location, 'address');
-	const mapsUrl = pickVenueValue(data.location, 'googleMapsUrl');
-	const location = {
-		...(venueName ? { venueName } : {}),
-		...(address ? { address } : {}),
-		...(mapsUrl ? { mapsUrl } : {}),
-	};
+	const location = buildCountdownCalendarLocation(data);
 	const links = buildCalendarLinks(
 		{
 			title: data.title,
 			startsAt,
 			timezone: timeZone,
-			...(Object.keys(location).length > 0 ? { location } : {}),
+			...(location ? { location } : {}),
 		},
 		data.title,
 	);
