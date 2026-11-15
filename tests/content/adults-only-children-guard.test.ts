@@ -25,9 +25,8 @@ function collectStrings(value: unknown, out: string[] = []): string[] {
 	return out;
 }
 
-// TODO: demo-cumple-luxury-hacienda says «Evento solo para adultos» in its FAQ but sets
-// demoMaxChildren 2. Remove it from this list once the content or the setting is fixed.
-const KNOWN_CONTRADICTIONS = new Set(['demo-cumple-luxury-hacienda']);
+// Slugs whose «solo adultos» text is known to contradict their demo pass. Keep it empty.
+const KNOWN_CONTRADICTIONS = new Set<string>([]);
 
 const entries = findContentFiles(ROOT).map((file) => ({
 	slug: path.basename(path.dirname(file)),

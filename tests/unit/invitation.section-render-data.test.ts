@@ -528,9 +528,10 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			maxAllowedAttendees: 2,
 			maxAllowedChildren: 1,
 		});
+		// Adults-only event: its FAQ says «Evento solo para adultos».
 		expect(passOf('demo-cumple-luxury-hacienda')).toMatchObject({
 			maxAllowedAttendees: 8,
-			maxAllowedChildren: 2,
+			maxAllowedChildren: 0,
 		});
 	});
 
