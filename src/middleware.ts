@@ -1,5 +1,8 @@
 import { defineMiddleware } from 'astro:middleware';
-import { getSupabaseUserByAccessToken } from '@/lib/rsvp/auth/auth';
+import {
+	getSupabaseUserByAccessToken,
+	getTokenFromAuthorizationHeader,
+} from '@/lib/rsvp/auth/auth';
 import type { SessionContext } from '@/lib/rsvp/auth/auth';
 import { hasMfaEvidence } from '@/lib/rsvp/auth/auth-mfa-evidence';
 import { refreshAccessToken } from '@/lib/rsvp/auth/auth-api';
@@ -562,6 +565,18 @@ function clearLegacyMfaCookies(cookies: CookieStore): void {
 	}
 }
 
+function passwordChangeRequiredResponse(): Response {
+	const response = errorResponse(
+		new ApiError(
+			403,
+			'password_change_required',
+			'Es necesario cambiar la contraseña temporal para continuar.',
+		),
+	);
+	response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
+	return response;
+}
+
 /** A temporary password past its 24h window ends the session instead of letting it continue. */
 function rejectExpiredTemporaryPassword(
 	user: { app_metadata?: Record<string, unknown> },
@@ -594,15 +609,49 @@ function rejectIdleSession(
 	return privateRedirect(redirect, '/login?reason=session_expired');
 }
 
+interface AuthLocals {
+	session?: SessionContext;
+	hasAdminStrongAuth?: boolean;
+	csrfToken?: string;
+}
+
+function dashboardBearerToken(url: URL, request: Request): string {
+	return url.pathname.startsWith('/api/dashboard')
+		? getTokenFromAuthorizationHeader(request.headers.get('authorization'))
+		: '';
+}
+
+async function handleBearerDashboardAuth(
+	accessToken: string,
+	cookies: CookieStore,
+	request: Request,
+	locals: AuthLocals,
+): Promise<Response | null> {
+	const user = await getSupabaseUserByAccessToken(accessToken);
+	if (!user) return null;
+	// Expired temporary passwords also carry must_change_password, just as in cookie auth.
+	if (user.app_metadata?.must_change_password === true) return passwordChangeRequiredResponse();
+	const authContext = await resolveAuthContext(cookies, request, user, accessToken);
+	if (!authContext.role) return null;
+	locals.session = buildSessionFromUser(user, accessToken, authContext.role);
+	locals.hasAdminStrongAuth = computeMfaBypass(authContext, user.email).effectiveAdminStrongAuth;
+	return null;
+}
+
 async function handleProtectedAuthRequest(
 	url: URL,
 	cookies: CookieStore,
 	redirect: (path: string) => Response,
 	request: Request,
-	locals: { session?: SessionContext; hasAdminStrongAuth?: boolean; csrfToken?: string },
+	locals: AuthLocals,
 ): Promise<Response | null> {
 	const now = Math.floor(Date.now() / 1000);
 	const isApiRoute = url.pathname.startsWith('/api/dashboard');
+
+	// Match API token precedence without refreshing another identity's cookie session or
+	// applying browser idle expiry, redirects and cookie rotation to an independent API token.
+	const bearerToken = dashboardBearerToken(url, request);
+	if (bearerToken) return handleBearerDashboardAuth(bearerToken, cookies, request, locals);
 
 	if (
 		url.pathname === '/login' &&
@@ -636,15 +685,7 @@ async function handleProtectedAuthRequest(
 	const mustChangePassword = user.app_metadata?.must_change_password === true;
 
 	if (mustChangePassword && isApiRoute) {
-		const response = errorResponse(
-			new ApiError(
-				403,
-				'password_change_required',
-				'Es necesario cambiar la contraseña temporal para continuar.',
-			),
-		);
-		response.headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
-		return response;
+		return passwordChangeRequiredResponse();
 	}
 
 	clearLegacyMfaCookies(cookies);
