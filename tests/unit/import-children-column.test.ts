@@ -27,10 +27,7 @@ describe('import: children column keeps adult and child passes apart', () => {
 		expect(row.error).toBe(CHILDREN_EXCEED_PASSES_MESSAGE);
 	});
 
-	// TODO: real gap. validateGuestRow only calls reservationIssue (children > passes), so a negative
-	// value passes the import preview; guestChildrenCapSchema rejects it later on the server.
-	// Flip to `it` once validateGuestRow flags negatives.
-	it.failing('rejects a negative children count', () => {
+	it('rejects a negative children count', () => {
 		const row = parseRow(`Ana,${PHONE},2,-1`);
 		expect(row.fieldErrors?.maxAllowedChildren).toBeTruthy();
 	});

@@ -1,4 +1,6 @@
 import {
+	adultsOverCapMessage,
+	maxConfirmableAdults,
 	CHILDREN_EXCEED_PASSES_MESSAGE,
 	checkConfirmedParty,
 	formatParty,
@@ -326,5 +328,88 @@ describe('pass breakdown text never confuses adults and children', () => {
 	it('formatParty without children keeps «pases», with children never says «pases»', () => {
 		expect(formatParty(2, { children: 0 })).toBe('2 pases');
 		expect(formatParty(2, { children: 1 })).not.toMatch(/pase/);
+	});
+});
+
+describe('adults never take child places (4 passes, 1 for a child)', () => {
+	const pass = { maxAttendees: 4, maxChildren: 1 };
+	// [adults, children, ok]
+	const cases: Array<[number, number, boolean]> = [
+		[4, 0, false],
+		[3, 1, true],
+		[3, 0, true],
+		[2, 1, true],
+		[0, 2, false],
+		[2, 2, false],
+	];
+
+	it.each(cases)('%i adults + %i children -> ok=%s', (adults, children, ok) => {
+		const issue = checkConfirmedParty({
+			attendeeCount: adults + children,
+			childrenCount: children,
+			...pass,
+		});
+		expect(issue === null).toBe(ok);
+	});
+
+	it('reports max_adults for 4 adults and the clear Spanish message in the form', () => {
+		expect(checkConfirmedParty({ attendeeCount: 4, childrenCount: 0, ...pass })).toBe(
+			'max_adults',
+		);
+		expect(maxConfirmableAdults(4, 1)).toBe(3);
+		expect(adultsOverCapMessage(4, 1)).toBe(
+			'Este pase incluye 1 lugar para niño; solo puede confirmar hasta 3 adultos.',
+		);
+		const errors = validateRsvpForm({
+			name: 'Ana',
+			phone: '',
+			phoneRequired: false,
+			nameLocked: true,
+			attendanceStatus: 'confirmed',
+			attendeeCount: 4,
+			supportsPlusOnes: true,
+			effectiveGuestCap: 4,
+			childrenCount: 0,
+			maxChildren: 1,
+		});
+		expect(errors.guestCount).toBe(adultsOverCapMessage(4, 1));
+	});
+
+	it('without child places any child is rejected and all adults are fine', () => {
+		expect(
+			checkConfirmedParty({ attendeeCount: 4, childrenCount: 0, maxAttendees: 4 }),
+		).toBeNull();
+		expect(
+			checkConfirmedParty({
+				attendeeCount: 4,
+				childrenCount: 1,
+				maxAttendees: 4,
+				maxChildren: 0,
+			}),
+		).toBe('max_children');
+	});
+
+	it('the API rule agrees', () => {
+		expect(() =>
+			validateRsvpPayload(
+				{ attendanceStatus: 'confirmed', attendeeCount: 4, childrenCount: 0 } as never,
+				4,
+				1,
+			),
+		).toThrow(/3 adultos/);
+		expect(
+			validateRsvpPayload(
+				{ attendanceStatus: 'confirmed', attendeeCount: 4, childrenCount: 1 } as never,
+				4,
+				1,
+			),
+		).toMatchObject({ attendeeCount: 4, childrenCount: 1 });
+		expect(() =>
+			validateRsvpPayload(
+				{ attendanceStatus: 'confirmed', attendeeCount: 4, childrenCount: 1 } as never,
+				4,
+				0,
+			),
+		).toThrow();
 	});
 });

@@ -405,4 +405,37 @@ describe('rsvp service: adult-only passes never take children', () => {
 			}),
 		).rejects.toMatchObject({ status: 400 });
 	});
+
+	it('rejects 4 adults and 0 children when 1 of 4 passes is a child place', async () => {
+		findGuestByInviteIdPublicMock.mockResolvedValue(
+			makeGuestRecord({ maxAllowedAttendees: 4, maxAllowedChildren: 1 }),
+		);
+		submitGuestRsvpPublicRpcMock.mockResolvedValue(
+			makeGuestRecord({ attendanceStatus: 'confirmed', attendeeCount: 3, childrenCount: 0 }),
+		);
+
+		await expect(
+			submitGuestRsvpByInviteId('invite-1', {
+				attendanceStatus: 'confirmed',
+				attendeeCount: 4,
+				childrenCount: 0,
+				guestComment: '',
+			}),
+		).rejects.toMatchObject({ status: 400, message: expect.stringContaining('3 adultos') });
+		expect(submitGuestRsvpPublicRpcMock).not.toHaveBeenCalled();
+
+		for (const [attendeeCount, childrenCount] of [
+			[3, 1],
+			[3, 0],
+			[2, 1],
+		]) {
+			await submitGuestRsvpByInviteId('invite-1', {
+				attendanceStatus: 'confirmed',
+				attendeeCount,
+				childrenCount,
+				guestComment: '',
+			});
+		}
+		expect(submitGuestRsvpPublicRpcMock).toHaveBeenCalledTimes(3);
+	});
 });

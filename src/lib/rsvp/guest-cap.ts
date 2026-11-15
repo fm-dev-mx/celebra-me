@@ -56,12 +56,13 @@ export function resolveChildrenCap(children: number | undefined, passes: number)
 	return Math.max(0, Math.min(n, passes));
 }
 
-export type ConfirmedPartyIssue = 'min_attendees' | 'max_attendees' | 'max_children';
+export type ConfirmedPartyIssue = 'min_attendees' | 'max_attendees' | 'max_children' | 'max_adults';
 
 /**
  * The one confirmed-count rule shared by the RSVP form and the RSVP API:
- * at least 1 attendee, no more than the passes, and children no more than
- * their reserved passes nor the confirmed attendees.
+ * at least 1 attendee, no more than the passes, children no more than their
+ * reserved passes nor the confirmed attendees, and adults no more than the
+ * adult passes (a child place is never used by an adult).
  */
 export function checkConfirmedParty(input: {
 	attendeeCount: number;
@@ -75,7 +76,26 @@ export function checkConfirmedParty(input: {
 	if (children < 0 || children > (input.maxChildren ?? 0) || children > input.attendeeCount) {
 		return 'max_children';
 	}
+	if (
+		input.attendeeCount - children >
+		maxConfirmableAdults(input.maxAttendees, input.maxChildren ?? 0)
+	) {
+		return 'max_adults';
+	}
 	return null;
+}
+
+/** Adult places of a pass: the passes that are not reserved for children. */
+export function maxConfirmableAdults(maxAttendees: number, maxChildren: number): number {
+	return Math.max(0, maxAttendees - Math.max(0, maxChildren));
+}
+
+/** Message for a party that has more adults than adult places; null when the pass has no child places. */
+export function adultsOverCapMessage(maxAttendees: number, maxChildren: number): string {
+	const kids = Math.max(0, maxChildren);
+	const adults = maxConfirmableAdults(maxAttendees, kids);
+	const places = kids === 1 ? '1 lugar para niño' : `${kids} lugares para niños`;
+	return `Este pase incluye ${places}; solo puede confirmar hasta ${adults} ${adults === 1 ? 'adulto' : 'adultos'}.`;
 }
 
 /** Children that may be confirmed for a given attendee count. */
