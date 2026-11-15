@@ -10,6 +10,15 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.73.1] - 2026-11-14
+
+Turns on the photo-sharing add-on for Valeria Hernández. No database migrations.
+
+### Changed
+
+- Invitations: Valeria Hernández shows its photo-sharing card on the published page now that the
+  add-on is paid; publishing requires the memories space in each environment (#981).
+
 ## [0.73.0] - 2026-11-14
 
 Applies client requests to Yireh Ana and Valeria Hernández, marks unread guest messages in the host
