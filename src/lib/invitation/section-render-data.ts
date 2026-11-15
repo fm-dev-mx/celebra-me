@@ -312,7 +312,7 @@ function renderGiftsSection(
 	};
 }
 
-/** Present only when the invitation opts in with  in its section order. */
+/** Present only when the invitation opts in with `dressCode` in its section order. */
 function renderDressCode(pageContext: InvitationPageContext): DescriptorData | null {
 	const location = pageContext.viewModel.sections.location;
 	if (!location?.indications?.length) return null;

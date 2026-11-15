@@ -52,7 +52,7 @@ interface AdaptationContext {
 
 function pickVenueValue(
 	location: CanonicalEventContent['location'] | undefined,
-	key: 'venueName' | 'city',
+	key: 'venueName' | 'city' | 'address' | 'googleMapsUrl',
 ): string | undefined {
 	if (!location) return undefined;
 	const venues = location.venues;
@@ -368,7 +368,10 @@ function buildCountdownSectionData(context: AdaptationContext) {
 		eventTimeZone: data.eventTiming?.timeZone,
 		visibleUnits: resolveCountdownVisibleUnits(data.countdown?.presentationOptions),
 		dayUnit: data.countdown?.presentationOptions?.dayUnit,
-		calendar: buildCountdownCalendar(data, target.targetIso),
+		calendar: buildCountdownCalendar(
+			data,
+			target.source === 'eventTiming' ? target.targetIso : undefined,
+		),
 		variant,
 		isDemo: data.isDemo,
 	};
@@ -376,7 +379,7 @@ function buildCountdownSectionData(context: AdaptationContext) {
 
 function buildCountdownCalendar(
 	data: CanonicalEventContent,
-	startsAt: string,
+	startsAt: string | undefined,
 ):
 	| { mark: CountdownCalendarMark; month: EventCalendarMonth; links?: VenueCalendarLinks }
 	| undefined {
@@ -385,16 +388,24 @@ function buildCountdownCalendar(
 	if (!mark || !localDateTime) return undefined;
 	const month = buildEventCalendarMonth(localDateTime);
 	if (!month) return undefined;
-	// The save-the-date links need a known zone, so the entry never lands at a guessed instant.
+	// The save-the-date links need a real instant and a known zone, so the entry never lands at a
+	// guessed time (a legacy hero date is a floating day, not an instant).
 	const timeZone = data.eventTiming?.timeZone;
-	if (!timeZone) return { mark, month };
+	if (!timeZone || !startsAt) return { mark, month };
 	const venueName = pickVenueValue(data.location, 'venueName');
+	const address = pickVenueValue(data.location, 'address');
+	const mapsUrl = pickVenueValue(data.location, 'googleMapsUrl');
+	const location = {
+		...(venueName ? { venueName } : {}),
+		...(address ? { address } : {}),
+		...(mapsUrl ? { mapsUrl } : {}),
+	};
 	const links = buildCalendarLinks(
 		{
 			title: data.title,
 			startsAt,
 			timezone: timeZone,
-			...(venueName ? { location: { venueName } } : {}),
+			...(Object.keys(location).length > 0 ? { location } : {}),
 		},
 		data.title,
 	);
