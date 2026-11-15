@@ -104,7 +104,7 @@ const content: CanonicalEventContentInput = {
 		footerText: 'Viernes 11 de diciembre de 2026',
 		presentationOptions: {
 			visibleUnits: ['days', 'hours', 'minutes', 'seconds'],
-			calendar: { mark: 'heart' },
+			calendar: { mark: 'heart', addToCalendar: true },
 		},
 	},
 	location: {

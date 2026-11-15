@@ -400,15 +400,16 @@ function buildCountdownCalendar(
 ):
 	| { mark: CountdownCalendarMark; month: EventCalendarMonth; links?: VenueCalendarLinks }
 	| undefined {
-	const mark = data.countdown?.presentationOptions?.calendar?.mark;
+	const calendarOptions = data.countdown?.presentationOptions?.calendar;
+	const mark = calendarOptions?.mark;
 	const localDateTime = data.eventTiming?.localDateTime;
 	if (!mark || !localDateTime) return undefined;
 	const month = buildEventCalendarMonth(localDateTime);
 	if (!month) return undefined;
-	// The save-the-date links need a real instant and a known zone, so the entry never lands at a
-	// guessed time (a legacy hero date is a floating day, not an instant).
+	// The save-the-date links are opt-in and need a real instant and a known zone, so the entry
+	// never lands at a guessed time (a legacy hero date is a floating day, not an instant).
 	const timeZone = data.eventTiming?.timeZone;
-	if (!timeZone || !startsAt) return { mark, month };
+	if (!calendarOptions?.addToCalendar || !timeZone || !startsAt) return { mark, month };
 	const location = buildCountdownCalendarLocation(data);
 	const links = buildCalendarLinks(
 		{
