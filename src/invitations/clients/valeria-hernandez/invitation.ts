@@ -9,13 +9,12 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
  * draft for the client's approval, except the program, the snacks note and the envelope gift,
  * which the client confirmed. The song is the client's YouTube pick, encoded at 64 kbps and hosted
  * on the media domain. The client set the reply deadline (21 December) and the envelope phrase on
- * 2026-11-14. The photo-QR memories card is ready behind `MEMORIES_PAID`: it stays off the page and
- * out of the content until the owner confirms the add-on payment and the memory space exists, since
- * publication blocks on a `memories.publicSlug` without a space.
+ * 2026-11-14. The client paid the photo-QR memories add-on on 2026-11-14, so the memories card and
+ * the memories-sourced thank-you are on. Publication blocks on a `memories.publicSlug` without a
+ * space, so each environment needs its `valeria-hernandez` memory space before release.
  */
-// Flip to true only after the owner confirms the QR add-on payment and the `valeria-hernandez`
-// memory space has been created through the guarded workflow.
-const MEMORIES_PAID = false;
+// On since the QR add-on payment was confirmed; set back to false only if the add-on is withdrawn.
+const MEMORIES_PAID = true;
 
 const VALERIA_TIMING = {
 	localDateTime: '2027-01-09T17:45',
