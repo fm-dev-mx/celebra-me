@@ -26,6 +26,7 @@ import {
 	type CountdownCalendarMark,
 } from '@/lib/invitation/countdown-presentation';
 import { buildEventCalendarMonth, type EventCalendarMonth } from '@/lib/invitation/event-calendar';
+import { buildCalendarLinks, type VenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
 import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import {
 	resolvePersonalizedAccessCheckInQr,
@@ -367,7 +368,7 @@ function buildCountdownSectionData(context: AdaptationContext) {
 		eventTimeZone: data.eventTiming?.timeZone,
 		visibleUnits: resolveCountdownVisibleUnits(data.countdown?.presentationOptions),
 		dayUnit: data.countdown?.presentationOptions?.dayUnit,
-		calendar: buildCountdownCalendar(data),
+		calendar: buildCountdownCalendar(data, target.targetIso),
 		variant,
 		isDemo: data.isDemo,
 	};
@@ -375,12 +376,29 @@ function buildCountdownSectionData(context: AdaptationContext) {
 
 function buildCountdownCalendar(
 	data: CanonicalEventContent,
-): { mark: CountdownCalendarMark; month: EventCalendarMonth } | undefined {
+	startsAt: string,
+):
+	| { mark: CountdownCalendarMark; month: EventCalendarMonth; links?: VenueCalendarLinks }
+	| undefined {
 	const mark = data.countdown?.presentationOptions?.calendar?.mark;
 	const localDateTime = data.eventTiming?.localDateTime;
 	if (!mark || !localDateTime) return undefined;
 	const month = buildEventCalendarMonth(localDateTime);
-	return month ? { mark, month } : undefined;
+	if (!month) return undefined;
+	// The save-the-date links need a known zone, so the entry never lands at a guessed instant.
+	const timeZone = data.eventTiming?.timeZone;
+	if (!timeZone) return { mark, month };
+	const venueName = pickVenueValue(data.location, 'venueName');
+	const links = buildCalendarLinks(
+		{
+			title: data.title,
+			startsAt,
+			timezone: timeZone,
+			...(venueName ? { location: { venueName } } : {}),
+		},
+		data.title,
+	);
+	return { mark, month, links };
 }
 
 function formatVenueLocation(

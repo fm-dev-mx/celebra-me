@@ -1,0 +1,1110 @@
+// Forwarded so the composition can size its own controls without widening the shared motion tool.
+@forward '../global/a11y' show touch-target;
+@use '../global/a11y';
+
+// ==========================================================================
+// JEWEL BOX SCENES — section looks for a jewel-box invitation (cream page, rose script, gold).
+// Mixins only: nothing here emits CSS until a composition includes it on the section root.
+// Colours, fonts and sizes come from the `--jewel-*` tokens the profile declares.
+// ==========================================================================
+
+// Full-bleed photo cover: the photograph fills the screen; script title, gold date arc and a quiet scroll cue. Include on `.invitation-hero`.
+@mixin photo-cover {
+	// Its blur filter would trap the lines below; each one keeps its own fade.
+	&[data-variant] .invitation-hero__content {
+		position: static;
+		animation: none;
+	}
+
+	// The photograph still fills the screen, lowered a touch so her head clears the name.
+	.invitation-hero__background {
+		background: var(--jewel-backdrop);
+
+		img {
+			translate: 0 4svh;
+			scale: 0.88;
+			transform-origin: 50% 100%;
+			mask-image:
+				linear-gradient(180deg, transparent, black 10%),
+				linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+			mask-composite: intersect;
+		}
+	}
+
+	.invitation-hero__title {
+		font-family: var(--font-calligraphy), cursive;
+	}
+
+	.invitation-hero__time,
+	.invitation-hero__venue {
+		display: none;
+	}
+
+	// The name and, just below it, the label sit in the empty top-left corner.
+	.invitation-hero__label,
+	.invitation-hero__title {
+		position: absolute;
+		top: clamp(4.75rem, 11svh, 6.5rem);
+		right: auto;
+		left: clamp(1.25rem, 6vw, 4rem);
+		z-index: 2;
+		margin: 0;
+		text-align: left;
+	}
+
+	.invitation-hero__label {
+		top: calc(clamp(4.75rem, 11svh, 6.5rem) + 5.5rem);
+	}
+
+	.invitation-hero__divider {
+		display: none;
+	}
+
+	// Its entrance transform would otherwise anchor the absolute date.
+	&[data-variant] .invitation-hero__details {
+		transform: none;
+		animation: none;
+		opacity: 100%;
+	}
+
+	// The date, kept for readers, is printed on the base's front face by a curved mask.
+	.invitation-hero__date {
+		position: absolute;
+		top: 90.5svh;
+		left: 52%;
+		z-index: 2;
+		margin: 0;
+		translate: -50% -50%;
+		rotate: 0deg;
+		color: transparent;
+		white-space: nowrap;
+		font-size: 0.6875rem;
+		letter-spacing: 0.24em;
+		text-shadow: none;
+
+		&::after {
+			position: absolute;
+			inset: 50% auto auto 50%;
+			width: 16.25rem;
+			height: 2.5rem;
+			translate: -50% -50%;
+			background: var(--jewel-gold-ink-deep);
+			mask: url('./assets/hero-date-arc.png') center / contain no-repeat;
+			content: '';
+		}
+	}
+
+	// Landscape: the full photograph, no lowering; the cropped base sends the date to the name.
+	@media (aspect-ratio >= 5/4) {
+		.invitation-hero__background img {
+			translate: none;
+			mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+		}
+
+		.invitation-hero__date {
+			top: calc(clamp(4.75rem, 11svh, 6.5rem) + 7.75rem);
+			left: clamp(1.25rem, 6vw, 4rem);
+			translate: none;
+			color: var(--jewel-gold-ink);
+
+			&::after {
+				display: none;
+			}
+		}
+	}
+
+	&[data-variant] .invitation-hero__scroll-indicator {
+		right: 0;
+		bottom: 1.75rem;
+		left: 0;
+		z-index: 2;
+		align-items: center;
+		margin-inline: auto;
+
+		.invitation-hero__scroll-text {
+			display: none;
+		}
+
+		// Portrait: a small gold-ink chevron under the printed date.
+		@media (aspect-ratio <= 5/4) {
+			bottom: 2.5svh;
+			color: var(--jewel-gold-ink);
+
+			--hero-scroll-distance: 4px;
+
+			.invitation-hero__scroll-chevron,
+			svg {
+				width: 1.25rem;
+				height: 1.25rem;
+				stroke-width: 2.5;
+				animation-duration: 2.8s;
+			}
+		}
+
+		// Landscape: one thin centred line instead of the chevron.
+		@media (aspect-ratio >= 5/4) {
+			svg {
+				display: none;
+			}
+
+			.invitation-hero__scroll-chevron {
+				width: 1px;
+				height: 2.75rem;
+				background: linear-gradient(180deg, transparent, var(--jewel-gold-light));
+			}
+		}
+	}
+}
+
+// Framed interlude: a landscape photo band from edge to edge between two gold hairlines. Include on `.invitation-interlude[data-presentation='framed']`.
+@mixin framed-photo-band {
+	--interlude-framed-bg: var(--jewel-cream);
+	--interlude-framed-padding: 0;
+	--interlude-framed-max-width: none;
+	--interlude-framed-mat: 0.5rem 0;
+	--interlude-framed-mat-bg: var(--jewel-cream);
+	--interlude-framed-border: 1px solid rgb(var(--jewel-gold-rgb) / 55%);
+	--interlude-framed-outline: none;
+	--interlude-framed-shadow: none;
+
+	padding-block: clamp(2rem, 6svh, 3.5rem);
+
+	.invitation-interlude__media {
+		width: 100%;
+		border-inline: 0;
+		overflow: hidden;
+	}
+
+	.invitation-interlude__image {
+		aspect-ratio: 3 / 2;
+		max-height: 50svh;
+		object-fit: cover;
+		object-position: 45% 35%;
+	}
+
+	@media (width >= 48rem) {
+		.invitation-interlude__image {
+			aspect-ratio: 21 / 9;
+			max-height: 45svh;
+			object-position: 50% 62%;
+		}
+	}
+
+	// The band fades in through a soft frame that opens on every side while the photo settles inside;
+	// the photo drifts slowly while in view; only when nearly gone does the band drift up and fade.
+	@include a11y.motion-safe {
+		@supports (animation-timeline: view()) {
+			.invitation-interlude__media.invitation-interlude__media:is(
+					#invitation-sections-container *
+				) {
+				--scroll-accent-rise: -3rem;
+
+				animation:
+					editorial-media linear both,
+					invitation-reveal-fade linear both,
+					scroll-accent-rise linear reverse forwards;
+				animation-timeline: view(), view(), view();
+				animation-range:
+					entry 0% cover 50%,
+					entry 0% cover 35%,
+					exit 40% exit 100%;
+			}
+
+			.invitation-interlude__image.invitation-interlude__image:is(
+					#invitation-sections-container *
+				) {
+				--art-drift-from: -4%;
+				--art-drift-to: 4%;
+				--motion-ambient-scale-to: 1.12;
+
+				scale: 1.1;
+				animation:
+					invitation-art-drift linear both,
+					interlude-ambient linear reverse both;
+				animation-timeline: view(), view();
+				animation-range:
+					cover 0% cover 100%,
+					entry 0% cover 50%;
+			}
+		}
+	}
+}
+
+// Full-screen envelope: a flap from the right edge meets the wax seal at the centre; a touch turns it away. Include on `.envelope-wrapper[data-variant='storybook-lanterns']`.
+@mixin flap-envelope {
+	--env-container-width: 100vw;
+	--env-container-ratio: 0.3;
+	--env-container-max-height: 100svh;
+	--env-container-radius: 0;
+	--env-shadow-container: none;
+	--env-seal-size-min: 84px;
+	--env-seal-size-ratio: 24;
+	--env-seal-size-max: 108px;
+	--env-title-size: clamp(3rem, 14cqw, 3.6rem);
+	--storybook-letter-hold: 0ms;
+	--storybook-letter-exit: 0ms;
+
+	gap: 0;
+	transition-duration: 800ms;
+
+	.envelope-flap {
+		--env-paper-bg: var(--jewel-paper-grain), var(--jewel-flap-paper);
+
+		inset: 0;
+		height: 100%;
+		clip-path: polygon(100% 0, 50% 50%, 100% 100%);
+		transform-origin: 100% 50%;
+		transition:
+			transform 950ms cubic-bezier(0.6, 0, 0.28, 1),
+			opacity 600ms ease 200ms;
+	}
+
+	// A light edge along the two folds of the flap.
+	.envelope-flap::after {
+		background:
+			linear-gradient(
+					to bottom right,
+					transparent calc(50% - 0.5px),
+					rgb(var(--jewel-white-rgb) / 70%) 50%,
+					transparent calc(50% + 6px)
+				)
+				right top / 50% 50% no-repeat,
+			linear-gradient(
+					to top right,
+					transparent calc(50% - 0.5px),
+					rgb(var(--jewel-white-rgb) / 70%) 50%,
+					transparent calc(50% + 6px)
+				)
+				right bottom / 50% 50% no-repeat;
+		opacity: 100%;
+	}
+
+	// The body is one flat face; the flap drops a soft shade on it along both folds.
+	.envelope-pocket {
+		clip-path: none;
+		box-shadow: none;
+
+		&::after {
+			inset: 0;
+			width: auto;
+			height: auto;
+			background:
+				linear-gradient(
+						to bottom right,
+						transparent calc(50% - 22px),
+						rgb(var(--jewel-petal-shade-rgb) / 34%) 50%,
+						transparent 50%
+					)
+					right top / 50% 50% no-repeat,
+				linear-gradient(
+						to top right,
+						transparent calc(50% - 22px),
+						rgb(var(--jewel-petal-shade-rgb) / 34%) 50%,
+						transparent 50%
+					)
+					right bottom / 50% 50% no-repeat;
+			opacity: 100%;
+			transition: opacity 500ms ease;
+		}
+	}
+
+	.envelope-reveal-stage {
+		visibility: hidden;
+	}
+
+	.envelope-tease {
+		padding: 0 1rem calc(6svh + env(safe-area-inset-bottom));
+	}
+
+	.envelope-zone--identity {
+		align-self: end;
+		gap: 0.6rem;
+		padding-top: 0;
+	}
+
+	.envelope-name {
+		margin-block: 0;
+		font-family: var(--jewel-script);
+		font-weight: 400;
+		line-height: 1.15;
+		color: var(--jewel-bronze);
+		text-shadow: 0 1px 0 rgb(var(--jewel-white-rgb) / 45%);
+	}
+
+	.tease-details-group {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.9rem;
+	}
+
+	.tease-divider {
+		display: block;
+		order: 2;
+		width: 11rem;
+		height: 0.5rem;
+		margin: 0;
+		background: var(--jewel-rule) center / contain no-repeat;
+		opacity: 100%;
+	}
+
+	.envelope-details {
+		display: block;
+		margin: 0;
+		font-family: var(--font-ui, var(--font-body));
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.3em;
+		text-transform: uppercase;
+		color: var(--jewel-bronze);
+		opacity: 100%;
+	}
+
+	.envelope-external-instruction {
+		display: none;
+	}
+
+	// The whole face opens the envelope, not only the wax.
+	.envelope-seal-button::after {
+		content: '';
+		position: absolute;
+		inset: -100vmax;
+	}
+
+	// The wax face: mottled gold with a pressed ring where the stamp met it.
+	.envelope-seal-button__visual {
+		--env-seal-bg:
+			radial-gradient(
+				circle at 40% 36%,
+				transparent 64%,
+				rgb(var(--jewel-white-rgb) / 55%) 66%,
+				transparent 69%
+			),
+			radial-gradient(
+				circle,
+				transparent 66%,
+				rgb(var(--jewel-ink-rgb) / 40%) 68.5%,
+				transparent 72%
+			),
+			radial-gradient(
+				ellipse 34% 22% at 34% 26%,
+				rgb(var(--jewel-white-rgb) / 55%) 0%,
+				transparent 100%
+			),
+			var(--jewel-wax-grain),
+			radial-gradient(
+				circle at 36% 30%,
+				var(--jewel-wax-shine) 0%,
+				var(--jewel-wax-gold) 40%,
+				var(--jewel-wax-deep) 100%
+			);
+		--env-shadow-seal:
+			inset 0 2px 2px rgb(var(--jewel-white-rgb) / 50%),
+			inset 0 -3px 5px rgb(var(--jewel-ink-rgb) / 40%),
+			0 2px 3px rgb(var(--jewel-petal-shade-rgb) / 55%);
+	}
+
+	// The initial is struck into the wax: a dark lip above, a lit lip below.
+	.envelope-seal-monogram {
+		font-size: calc(var(--env-seal-size, 88px) * 0.56);
+		font-weight: 400;
+		color: var(--jewel-wax-deep);
+		text-shadow:
+			0 1px 0 rgb(var(--jewel-white-rgb) / 70%),
+			0 -1px 1px rgb(var(--jewel-ink-rgb) / 50%);
+	}
+
+	// The wax rests still; a white ring breathes out from its rim.
+	&:not(.is-opening) .envelope-seal-button__visual {
+		animation: none;
+	}
+
+	@include a11y.motion-safe {
+		&:not(.is-opening) .envelope-seal-button__pulse {
+			display: block;
+			inset: 0;
+			border: 0;
+			opacity: 90%;
+			animation: storybook-envelope-shadow-out 2.2s ease-out infinite;
+
+			&::before {
+				content: '';
+				position: absolute;
+				inset: -2px;
+				border: 2px solid rgb(var(--jewel-white-rgb) / 80%);
+				border-radius: 50%;
+				// stylelint-disable-next-line declaration-no-important -- the ring keeps full ink while the shared pulse only scales it.
+				opacity: 100% !important;
+				animation: invitation-seal-pulse 2.2s ease-out infinite;
+			}
+		}
+	}
+
+	&.is-opening {
+		.envelope-flap {
+			animation: none;
+			transform: rotateY(115deg) translateX(-5%);
+			opacity: 0%;
+		}
+
+		.envelope-flap::after,
+		.envelope-flap-shadow,
+		.envelope-base,
+		.envelope-base::after,
+		.envelope-pocket {
+			animation: none;
+		}
+
+		.envelope-pocket::after {
+			opacity: 0%;
+		}
+
+		// The wax is pressed, then lifts away with the flap; the lettering fades first.
+		.envelope-seal-button__visual {
+			animation: none;
+			transform: scale(0.9) translateY(-6px);
+			opacity: 0%;
+			transition:
+				transform 520ms cubic-bezier(0.34, 1.4, 0.64, 1),
+				opacity 380ms ease 260ms;
+		}
+
+		.envelope-seal-button__pulse {
+			display: none;
+		}
+
+		.envelope-tease {
+			opacity: 0%;
+			transition: opacity 320ms ease;
+		}
+
+		.envelope-reveal-stage {
+			animation-duration: 300ms;
+			animation-delay: 650ms;
+		}
+	}
+}
+
+// One-screen countdown: title, numbers, date and a month calendar with the event day marked. Include on `.countdown-section`.
+@mixin calendar-countdown {
+	padding-block: clamp(1.5rem, 4svh, 6rem);
+
+	--location-calendar-margin-top: clamp(0.75rem, 2svh, 1.75rem);
+	--location-calendar-border: 1px solid var(--jewel-rose);
+	--location-calendar-color: var(--jewel-rose-deep);
+	--location-calendar-link-color: var(--jewel-rose-deep);
+
+	.countdown__segment {
+		padding-block: clamp(0.875rem, 3svh, 2.25rem);
+		padding-inline: clamp(0.5rem, 3vw, 1.5rem);
+	}
+
+	.countdown__value {
+		font-size: clamp(2.5rem, 11vw, 3.75rem);
+		line-height: 1;
+	}
+
+	.countdown__label {
+		letter-spacing: 0.12em;
+	}
+
+	.countdown-title {
+		margin-block: 0 clamp(0.75rem, 2svh, 2rem);
+	}
+
+	.countdown-timer-wrapper {
+		margin-bottom: clamp(0.75rem, 2svh, 2rem);
+	}
+
+	.countdown-footer {
+		margin-top: clamp(0.75rem, 2svh, 2.5rem);
+		font-size: clamp(1.0625rem, 4.4vw, 1.25rem);
+		color: var(--jewel-ink);
+	}
+
+	.event-calendar__day {
+		font-size: 0.875rem;
+	}
+
+	.event-calendar__day--event,
+	.event-calendar__mark {
+		color: var(--jewel-rose-deep);
+	}
+
+	// Scroll-linked entrance, reversible: title words, then the numbers one by one, the calendar, its heart, the date and the button.
+	@include a11y.motion-safe {
+		@supports (animation-timeline: view()) {
+			&:is(#invitation-sections-container .has-motion.has-motion.has-motion *) {
+				overflow: clip;
+
+				.countdown-title,
+				.countdown__segment,
+				.event-calendar,
+				.countdown-footer,
+				.countdown-calendar-links {
+					animation: none;
+				}
+
+				.countdown-title {
+					view-timeline: --jewel-cd-title block;
+				}
+
+				.countdown-title .word {
+					animation: editorial-word linear both;
+					animation-timeline: --jewel-cd-title;
+					animation-range: entry calc(var(--i, 0) * 12%) cover
+						calc(30% + var(--i, 0) * 8%);
+				}
+
+				.countdown__segment {
+					--scroll-accent-turn: 0deg;
+					--scroll-accent-scale: 0.82;
+
+					animation: scroll-accent-unfold linear both;
+					animation-timeline: view();
+					animation-range: entry 0% entry 70%;
+				}
+
+				.countdown__segment:nth-child(2) {
+					animation-range: entry 10% entry 80%;
+				}
+
+				.countdown__segment:nth-child(3) {
+					animation-range: entry 20% entry 90%;
+				}
+
+				.countdown__segment:nth-child(4) {
+					animation-range: entry 30% entry 100%;
+				}
+
+				.event-calendar {
+					--scroll-accent-rise: 2rem;
+
+					view-timeline: --jewel-cd-calendar block;
+					animation: scroll-accent-rise linear both;
+					animation-timeline: view();
+					animation-range: entry 0% entry 60%;
+				}
+
+				.event-calendar .event-calendar__mark path {
+					animation: event-calendar-draw linear both;
+					animation-timeline: --jewel-cd-calendar;
+					animation-range: entry 55% entry 100%;
+				}
+
+				.countdown-footer,
+				.countdown-calendar-links {
+					--scroll-accent-rise: 1.5rem;
+
+					animation: scroll-accent-rise linear both;
+					animation-timeline: view();
+					animation-range: entry 10% entry 100%;
+				}
+			}
+		}
+	}
+}
+
+// Location as an arched card: illustrated map, venue, both times and three map links, with a reversible scroll-linked entrance. Include on `.event-location`.
+@mixin arched-location-card {
+	padding-block: 0;
+
+	.event-location__intro {
+		max-width: 27.5rem;
+		margin-inline: auto;
+		text-align: end;
+		padding: clamp(0.75rem, 3svh, 3rem) 1.25rem 0;
+		margin-bottom: clamp(0.5rem, 2svh, 1.5rem);
+	}
+
+	.event-location__heading {
+		margin-block: 0 clamp(0.5rem, 2svh, 1.5rem);
+	}
+
+	.event-location__lede {
+		margin-block: 0;
+
+		@media (height <= 860px) {
+			display: none;
+		}
+	}
+
+	.event-location__container {
+		min-height: calc(100svh - 12rem);
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		padding-inline: 1.25rem;
+	}
+
+	.event-location__card-wrapper {
+		width: 100%;
+		max-width: 25rem;
+		margin-inline: auto;
+	}
+
+	.event-location__card-title,
+	.event-location__card-flourish,
+	.event-location__card-map-preview-grid,
+	.event-location__card-content-itinerary-dot,
+	.event-location__divider {
+		display: none;
+	}
+
+	.event-location__card {
+		position: relative;
+		overflow: visible;
+		padding: clamp(0.875rem, 2.5svh, 1.5rem) clamp(1rem, 5vw, 1.75rem)
+			clamp(1rem, 3svh, 1.75rem);
+		border: 1px solid var(--jewel-gold);
+		border-radius: 50% 50% 6px 6px / 8rem 8rem 6px 6px;
+		background: var(--jewel-white);
+		box-shadow: 0 22px 44px -30px var(--jewel-rose-deep);
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 6px;
+			border: 1px solid color-mix(in srgb, var(--jewel-gold) 40%, transparent);
+			border-radius: inherit;
+			pointer-events: none;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			top: -0.45rem;
+			left: 50%;
+			width: 0.8rem;
+			height: 0.8rem;
+			translate: -50% 0;
+			rotate: 45deg;
+			border: 1px solid var(--jewel-gold);
+			background: var(--jewel-cream);
+		}
+	}
+
+	.event-location__card-map-preview {
+		position: relative;
+		display: block;
+		min-height: 0;
+		height: clamp(5.25rem, calc(30svh - 6rem), 14rem);
+		margin: 0 0 clamp(0.5rem, 2svh, 1.25rem);
+		overflow: hidden;
+		border: 1px solid var(--jewel-gold);
+		border-radius: 50% 50% 4px 4px / 100% 100% 4px 4px;
+		background: var(--jewel-beige);
+	}
+
+	.event-location__card-map-preview-art {
+		position: absolute;
+		inset: 0;
+		background:
+			radial-gradient(
+				circle at 20% 72%,
+				color-mix(in srgb, var(--jewel-rose) 60%, transparent) 0 1.2rem,
+				transparent 1.25rem
+			),
+			linear-gradient(
+				162deg,
+				transparent 46%,
+				color-mix(in srgb, var(--jewel-gold) 70%, transparent) 46% 50%,
+				transparent 50%
+			),
+			repeating-linear-gradient(
+				0deg,
+				transparent 0 1.4rem,
+				var(--jewel-white) 1.4rem 1.55rem
+			),
+			repeating-linear-gradient(
+				90deg,
+				transparent 0 1.9rem,
+				var(--jewel-white) 1.9rem 2.05rem
+			),
+			var(--jewel-beige);
+	}
+
+	.event-location__card-map-preview-pin {
+		position: absolute;
+		top: 42%;
+		left: 50%;
+		translate: -50% -50%;
+		display: grid;
+		place-items: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		border-radius: 50%;
+		background: var(--jewel-rose-deep);
+		color: var(--jewel-white);
+		box-shadow:
+			0 0 0 5px color-mix(in srgb, var(--jewel-white) 75%, transparent),
+			0 8px 16px -8px var(--jewel-ink);
+
+		svg {
+			width: 1.125rem;
+			height: 1.125rem;
+		}
+	}
+
+	.event-location__card-map-preview-copy {
+		position: absolute;
+		inset: 0;
+		background: none;
+		backdrop-filter: none;
+		border: 0;
+		display: flex;
+		align-items: flex-end;
+		justify-content: flex-end;
+		padding: 0.375rem;
+	}
+
+	.event-location__card-map-preview-link {
+		position: static;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+
+		@include a11y.touch-target;
+
+		padding-inline: 0.875rem;
+		border: 1px solid var(--jewel-gold);
+		border-radius: 999px;
+		background: var(--jewel-white);
+		color: var(--jewel-rose-deep);
+		font-family: var(--font-label, var(--font-body));
+		font-size: 0.6875rem;
+		letter-spacing: 0.18em;
+		text-decoration: none;
+		text-transform: uppercase;
+
+		svg {
+			width: 0.875rem;
+			height: 0.875rem;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+		}
+	}
+
+	.event-location__card-content {
+		padding: 0;
+		text-align: end;
+	}
+
+	.event-location__card-content-place {
+		font-size: clamp(1.75rem, 7vw, 2.25rem);
+		line-height: 1.1;
+		color: var(--jewel-ink);
+	}
+
+	.event-location__card-content-date {
+		margin-top: 0.5rem;
+		font-family: var(--font-label, var(--font-body));
+		font-size: 0.75rem;
+		font-weight: 500;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--jewel-gold-deep);
+	}
+
+	.event-location__card-content-itinerary {
+		margin-block: clamp(0.75rem, 2.5svh, 1.75rem);
+		padding-block: clamp(0.5rem, 2svh, 1.25rem);
+		border-block: 1px solid color-mix(in srgb, var(--jewel-gold) 45%, transparent);
+	}
+
+	.event-location__card-content-itinerary-list {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0;
+	}
+
+	.event-location__card-content-itinerary-item {
+		display: flex;
+		flex-direction: column-reverse;
+		justify-content: flex-end;
+		align-items: flex-end;
+		gap: 0.375rem;
+		padding: 0 0.75rem 0 0;
+		border: 0;
+
+		& + & {
+			padding-inline: 1rem 0;
+			border-left: 1px solid color-mix(in srgb, var(--jewel-gold) 45%, transparent);
+		}
+	}
+
+	.event-location__card-content-itinerary-label {
+		font-family: var(--font-label, var(--font-body));
+		font-size: 0.625rem;
+		font-weight: 500;
+		letter-spacing: 0.16em;
+		line-height: 1.4;
+		text-align: end;
+		text-transform: uppercase;
+		color: var(--jewel-gold-deep);
+	}
+
+	.event-location__card-content-itinerary-time {
+		font-size: 0;
+		line-height: 1;
+
+		&::after {
+			content: '7:00 pm' / '';
+			font-family: var(--font-display);
+			font-size: clamp(1.375rem, 5.5vw, 1.625rem);
+			color: var(--jewel-rose-deep);
+		}
+	}
+
+	.event-location__card-content-itinerary-item
+		+ .event-location__card-content-itinerary-item
+		.event-location__card-content-itinerary-time::after {
+		content: '8:00 pm' / '';
+	}
+
+	.event-location__card-content-address {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		text-align: start;
+		font-style: italic;
+		font-size: 0.9375rem;
+		line-height: 1.45;
+		color: var(--jewel-ink);
+	}
+
+	.event-location__card-content-address-text {
+		flex: 1 1 auto;
+		text-align: start;
+	}
+
+	.event-location__card-content-copy-button {
+		flex: none;
+
+		@include a11y.touch-target;
+
+		margin-inline-end: -0.75rem;
+		padding-inline: 0.75rem;
+		font-style: normal;
+		color: var(--jewel-gold-deep);
+
+		.event-location__card-content-copy-label {
+			display: inline;
+			font-family: var(--font-label, var(--font-body));
+			font-size: 0.6875rem;
+			letter-spacing: 0.18em;
+			text-transform: uppercase;
+		}
+	}
+
+	.event-location__card-navigation-buttons {
+		display: flex;
+		flex-flow: row wrap;
+		gap: 0.5rem;
+		margin-top: clamp(0.5rem, 1.5svh, 1.25rem);
+	}
+
+	.event-location__nav-button {
+		flex: 1 1 5.5rem;
+
+		@include a11y.touch-target;
+
+		margin: 0;
+		padding-inline: 0.25rem;
+		border: 1px solid var(--jewel-gold);
+		border-radius: 999px;
+		background: transparent;
+		color: var(--jewel-ink);
+		font-size: 0.6875rem;
+		letter-spacing: 0.04em;
+		white-space: nowrap;
+	}
+
+	.event-location__nav-button--maps {
+		order: 1;
+		flex-basis: 100%;
+		border-color: var(--jewel-rose-deep);
+		background: var(--jewel-rose-deep);
+		color: var(--jewel-white);
+	}
+
+	.event-location__nav-button--waze {
+		order: 2;
+	}
+
+	.event-location__nav-button--apple {
+		order: 3;
+	}
+
+	@include a11y.motion-safe {
+		@supports (animation-timeline: view()) {
+			&:is(#invitation-sections-container .has-motion.has-motion.has-motion *) {
+				overflow: clip;
+
+				.event-location__heading,
+				.event-location__lede,
+				.event-location__card-wrapper,
+				.event-location__card-map-preview,
+				.event-location__card-content > *,
+				.event-location__card-content-itinerary-item,
+				.event-location__nav-button {
+					animation: none;
+				}
+
+				.event-location__heading {
+					view-timeline: --jewel-loc-title block;
+				}
+
+				.event-location__heading .word {
+					animation: editorial-word linear both;
+					animation-timeline: --jewel-loc-title;
+					animation-range: entry calc(var(--i, 0) * 12%) cover
+						calc(30% + var(--i, 0) * 8%);
+				}
+
+				.event-location__lede,
+				.event-location__card-content > *,
+				.event-location__card-content-itinerary-item,
+				.event-location__nav-button {
+					--scroll-accent-rise: 1.25rem;
+
+					animation: scroll-accent-rise linear both;
+					animation-timeline: view();
+					animation-range: entry 0% entry 80%;
+				}
+
+				.event-location__card-content-itinerary-item
+					+ .event-location__card-content-itinerary-item,
+				.event-location__nav-button--waze {
+					animation-range: entry 15% entry 95%;
+				}
+
+				.event-location__nav-button--apple {
+					animation-range: entry 25% entry 100%;
+				}
+
+				.event-location__card-wrapper {
+					--scroll-accent-turn: 0deg;
+					--scroll-accent-scale: 0.9;
+
+					animation: scroll-accent-unfold linear both;
+					animation-timeline: view();
+					animation-range: entry 0% entry 45%;
+				}
+
+				.event-location__card-map-preview {
+					animation: family-divider-draw linear both;
+					animation-timeline: view();
+					animation-range: entry 20% entry 70%;
+				}
+			}
+		}
+	}
+}
+
+// Dress code on its own screen: a colour swatch, gold small caps and a reversible scroll-linked reveal. Include on `.dress-code`.
+@mixin swatch-dress-code {
+	--dress-code-bg: var(--jewel-cream);
+	--dress-code-color: var(--jewel-ink);
+	--dress-code-muted: var(--jewel-ink);
+	--dress-code-accent: var(--jewel-gold-deep);
+	--dress-code-title-font: var(--font-label, var(--font-body));
+	--dress-code-gap: clamp(1rem, 3svh, 2rem);
+
+	place-items: center start;
+	padding-inline: max(1.5rem, calc(50% - 12.5rem));
+	text-align: start;
+
+	.dress-code__item {
+		justify-items: start;
+		gap: 1rem;
+		max-width: 21rem;
+	}
+
+	.dress-code__icon {
+		display: grid;
+		place-items: center;
+		width: 5rem;
+		height: 5rem;
+		border: 1px solid var(--jewel-gold);
+		border-radius: 50%;
+		background: linear-gradient(
+			135deg,
+			var(--jewel-rose),
+			var(--jewel-gold) 55%,
+			var(--jewel-rose-deep)
+		);
+		color: var(--jewel-white);
+		box-shadow:
+			0 0 0 6px var(--jewel-cream),
+			0 0 0 7px var(--jewel-gold);
+	}
+
+	.dress-code__title {
+		font-size: 0.75rem;
+		font-weight: 500;
+		letter-spacing: 0.24em;
+	}
+
+	.dress-code__text {
+		font-family: var(--font-display);
+		font-style: italic;
+		font-size: clamp(1.125rem, 4.5vw, 1.375rem);
+		line-height: 1.45;
+	}
+
+	@include a11y.motion-safe {
+		@supports (animation-timeline: view()) {
+			&:is(#invitation-sections-container .has-motion.has-motion.has-motion *) {
+				overflow: clip;
+
+				.dress-code__heading,
+				.dress-code__icon,
+				.dress-code__title,
+				.dress-code__text {
+					animation: none;
+				}
+
+				.dress-code__heading {
+					view-timeline: --jewel-dress-title block;
+
+					--scroll-accent-rise: 1.5rem;
+
+					animation: scroll-accent-rise linear both;
+					animation-timeline: view();
+					animation-range: entry 10% entry 90%;
+				}
+
+				.dress-code__heading .word {
+					animation: editorial-word linear both;
+					animation-timeline: --jewel-dress-title;
+					animation-range: entry calc(var(--i, 0) * 12%) cover
+						calc(30% + var(--i, 0) * 8%);
+				}
+
+				.dress-code__icon {
+					--scroll-accent-turn: -90deg;
+					--scroll-accent-scale: 0.6;
+
+					animation: scroll-accent-unfold linear both;
+					animation-timeline: view();
+					animation-range: entry 0% entry 80%;
+				}
+
+				.dress-code__title,
+				.dress-code__text {
+					--scroll-accent-rise: 1.25rem;
+
+					animation: scroll-accent-rise linear both;
+					animation-timeline: view();
+					animation-range: entry 0% entry 80%;
+				}
+			}
+		}
+	}
+}

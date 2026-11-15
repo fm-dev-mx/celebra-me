@@ -28,6 +28,11 @@ type LocationProps = SectionData<'location'> & {
 	};
 };
 
+export type DressCodeProps = {
+	heading?: string;
+	indications: NonNullable<SectionData<'location'>['indications']>;
+};
+
 type GiftsProps = Omit<SectionData<'gifts'>, 'items'> & {
 	gifts: SectionData<'gifts'>['items'];
 	editionLabel?: string;
@@ -122,6 +127,7 @@ type DescriptorData =
 			props: Omit<SectionData<'thankYou'>, 'closingPhrase'>;
 	  }
 	| { component: 'personalized-access'; props: PersonalizedAccessProps }
+	| { component: 'dress-code'; props: DressCodeProps }
 	| { component: 'memories'; props: SectionData<'memories'> };
 
 export type InvitationSectionRenderDescriptor = {
@@ -144,6 +150,7 @@ const REVEAL_RECIPES: Record<DescriptorData['component'], InvitationRevealRecipe
 	gifts: 'stagger-group',
 	thankYou: 'fade-up',
 	'personalized-access': 'fade-up',
+	'dress-code': 'stagger-group',
 	memories: 'fade-up',
 };
 
@@ -305,6 +312,26 @@ function renderGiftsSection(
 	};
 }
 
+/** Present only when the invitation opts in with  in its section order. */
+function renderDressCode(pageContext: InvitationPageContext): DescriptorData | null {
+	const location = pageContext.viewModel.sections.location;
+	if (!location?.indications?.length) return null;
+	return {
+		component: 'dress-code' as const,
+		props: { heading: location.indicationsHeading, indications: location.indications },
+	};
+}
+
+/** An opted-in invitation shows its indications in the dress-code section, not in location. */
+function withoutSeparatedDressCode(
+	pageContext: InvitationPageContext,
+	location: SectionData<'location'>,
+): SectionData<'location'> {
+	if (!pageContext.viewModel.sectionOrder.includes('dressCode')) return location;
+	const { indications: _indications, indicationsHeading: _heading, ...rest } = location;
+	return rest;
+}
+
 function getMonogram(name: string): string {
 	return name
 		.trim()
@@ -364,7 +391,7 @@ function renderSection(
 				? {
 						component: 'location' as const,
 						props: {
-							...sections.location,
+							...withoutSeparatedDressCode(pageContext, sections.location),
 							nextSectionLink,
 						},
 					}
@@ -432,6 +459,9 @@ function renderBlock(
 
 		case 'personalized-access':
 			return withRenderMetadata(renderPersonalizedAccess(pageContext), metadata, motion);
+
+		case 'dress-code':
+			return withRenderMetadata(renderDressCode(pageContext), metadata, motion);
 
 		case 'section': {
 			const nextSectionLink =

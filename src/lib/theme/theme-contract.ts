@@ -26,6 +26,8 @@ export type ContentSectionKey = (typeof CONTENT_SECTION_KEYS)[number];
 export const INVITATION_RENDER_SECTION_KEYS = [
 	...CONTENT_SECTION_KEYS,
 	'personalizedAccess',
+	// Opt-in: renders location.indications as their own section; location then omits them.
+	'dressCode',
 ] as const;
 
 export type InvitationRenderSectionKey = (typeof INVITATION_RENDER_SECTION_KEYS)[number];

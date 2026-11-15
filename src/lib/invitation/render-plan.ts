@@ -33,6 +33,9 @@ export type InvitationRenderPlanItem =
 	| (RenderPlanMetadata & {
 			type: 'personalized-access';
 	  })
+	| (RenderPlanMetadata & {
+			type: 'dress-code';
+	  })
 	| InterludeRenderItem;
 
 function hasRenderableSection(
@@ -89,6 +92,12 @@ export function buildInvitationRenderPlan(
 					viewModel.composition,
 					'personalized-access',
 				),
+			});
+		} else if (section === 'dressCode') {
+			if (!viewModel.sections.location?.indications?.length) continue;
+			items.push({
+				type: 'dress-code',
+				intersection: resolveRenderPlanIntersection(viewModel.composition, 'dress-code'),
 			});
 		} else {
 			if (!hasRenderableSection(viewModel, section)) continue;
