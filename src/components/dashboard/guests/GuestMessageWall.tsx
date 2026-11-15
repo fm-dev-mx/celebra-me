@@ -7,8 +7,12 @@ import {
 import GuestStatusPill from '@/components/dashboard/guests/GuestStatusPill';
 import {
 	buildGuestMessageWall,
+	formatGuestMessageCount,
 	getGuestListSubtitle,
+	isGuestMessageUnread,
 	isNewGuestMessage,
+	readStoredGuestMessageReads,
+	recordGuestMessageRead,
 	type GuestMessageWallEntry,
 } from '@/components/dashboard/guests/guest-presenter';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
@@ -50,7 +54,7 @@ const GuestMessageCard: React.FC<GuestMessageCardProps> = ({
 	nameId,
 	onOpenDetails,
 }) => {
-	const { item, latest, timestampLabel, earlier } = entry;
+	const { item, latest, timestampLabel, earlier, count } = entry;
 	const [showEarlier, setShowEarlier] = useState(false);
 	const earlierId = `${nameId}-earlier`;
 	// Oldest first, like a chat thread, so the latest message stays at the bottom.
@@ -79,6 +83,7 @@ const GuestMessageCard: React.FC<GuestMessageCardProps> = ({
 					<p className="guest-message-card__context">
 						<GuestStatusPill item={item} />
 						<span>{getGuestListSubtitle(item)}</span>
+						{count > 1 && <span>{formatGuestMessageCount(count)}</span>}
 					</p>
 				</div>
 				<ChevronRightGlyph size={16} />
@@ -122,7 +127,8 @@ const GuestMessageCard: React.FC<GuestMessageCardProps> = ({
  * Every guest message in one place, newest answer first: who wrote, what they
  * said, and how their invitation stands. Replaces the list
  * under "Con mensaje" and scrolls into view when it opens. Messages that came
- * after the host's last read are tagged; the read is recorded on open.
+ * after the host's last read, or whose card was never opened, are tagged; opening a
+ * card records its read.
  */
 const GuestMessageWall: React.FC<GuestMessageWallProps> = ({
 	items,
@@ -136,6 +142,9 @@ const GuestMessageWall: React.FC<GuestMessageWallProps> = ({
 	const entries = useMemo(() => buildGuestMessageWall(items), [items]);
 	// Keep the tags while the wall stays open, even after the read is recorded.
 	const [openedSeenAt] = useState(seenAt);
+	const [readMessages, setReadMessages] = useState<Record<string, string>>(() =>
+		readStoredGuestMessageReads(),
+	);
 	const onSeenRef = useRef(onSeen);
 
 	useEffect(() => {
@@ -170,9 +179,16 @@ const GuestMessageWall: React.FC<GuestMessageWallProps> = ({
 						<li key={entry.item.guestId}>
 							<GuestMessageCard
 								entry={entry}
-								isNew={isNewGuestMessage(entry, openedSeenAt)}
+								isNew={
+									isGuestMessageUnread(entry.item, readMessages) ||
+									(openedSeenAt !== null &&
+										isNewGuestMessage(entry, openedSeenAt))
+								}
 								nameId={`${titleId}-${entry.item.guestId}`}
-								onOpenDetails={onOpenDetails}
+								onOpenDetails={(item) => {
+									setReadMessages((prev) => recordGuestMessageRead(item, prev));
+									onOpenDetails(item);
+								}}
 							/>
 						</li>
 					))}

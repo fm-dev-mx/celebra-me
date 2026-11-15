@@ -10,6 +10,30 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.73.0] - 2026-11-14
+
+Applies client requests to Yireh Ana and Valeria Hernández, marks unread guest messages in the host
+dashboard, and hardens deploy-run detection in the daily Production window. No database migrations.
+
+### Added
+
+- Dashboard: guest messages show a «Mensaje nuevo» badge until the host opens them (#969).
+
+### Changed
+
+- Invitations: Yireh Ana adds send-off bows to the envelope opening, inks the quote in fewer swipes,
+  pins the itinerary for two screens instead of three and shows the monogram in the footer (#971,
+  #973).
+- Invitations: Valeria Hernández applies the client's requests (#972) and styles the photo-sharing
+  card as a disco photo pass, still hidden in the published page (#976).
+
+### Fixed
+
+- Operations: the daily Production window detects the dispatched deploy run by id and head SHA
+  (#968).
+- RSVP: public-event RSVP submissions are refused when the invitation is unavailable, as
+  personalized ones already were (#969).
+
 ## [0.72.0] - 2026-11-13
 
 Adds the background song, a gallery scroll cue and a new dress-code reference image to Valeria

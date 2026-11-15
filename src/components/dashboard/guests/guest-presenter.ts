@@ -129,6 +129,60 @@ export function getGuestLatestMessage(guestComment: string): string {
 	return parseGuestCommentHistory(guestComment)[0]?.message ?? '';
 }
 
+export const GUEST_MESSAGE_READ_STORAGE_KEY = 'rsvp-dashboard-read-messages';
+
+export function getGuestMessageSignature(guestComment: string): string {
+	const history = parseGuestCommentHistory(guestComment);
+	if (history.length === 0) return '';
+	const latest = history[0];
+	return `${history.length}:${latest.timestampLabel ?? ''}:${latest.message}`;
+}
+
+export function isGuestMessageUnread(
+	item: Pick<DashboardGuestItem, 'guestId' | 'guestComment'>,
+	readMessages: Readonly<Record<string, string>>,
+): boolean {
+	const signature = getGuestMessageSignature(item.guestComment);
+	if (!signature) return false;
+	return readMessages[item.guestId] !== signature;
+}
+
+export function readStoredGuestMessageReads(): Record<string, string> {
+	if (typeof window === 'undefined') return {};
+	try {
+		const raw = window.localStorage.getItem(GUEST_MESSAGE_READ_STORAGE_KEY);
+		if (!raw) return {};
+		const parsed: unknown = JSON.parse(raw);
+		if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+		const result: Record<string, string> = {};
+		for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
+			if (typeof value === 'string' && value.length > 0) {
+				result[key] = value;
+			}
+		}
+		return result;
+	} catch {
+		return {};
+	}
+}
+
+export function recordGuestMessageRead(
+	item: Pick<DashboardGuestItem, 'guestId' | 'guestComment'>,
+	current: Readonly<Record<string, string>> = readStoredGuestMessageReads(),
+): Record<string, string> {
+	const signature = getGuestMessageSignature(item.guestComment);
+	if (!signature) return { ...current };
+	const next = { ...current, [item.guestId]: signature };
+	if (typeof window !== 'undefined') {
+		try {
+			window.localStorage.setItem(GUEST_MESSAGE_READ_STORAGE_KEY, JSON.stringify(next));
+		} catch {
+			// Storage can be unavailable; in-memory state still updates for this session.
+		}
+	}
+	return next;
+}
+
 export type GuestMessageWallEntry = {
 	item: DashboardGuestItem;
 	latest: string;
