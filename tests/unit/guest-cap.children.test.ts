@@ -187,3 +187,144 @@ describe('WhatsApp confirmation message', () => {
 		);
 	});
 });
+
+describe('adult-only passes never take child places', () => {
+	const noChildPasses: Array<number | null | undefined> = [0, null, undefined];
+
+	it.each(noChildPasses)(
+		'checkConfirmedParty rejects any child when maxChildren is %s',
+		(maxChildren) => {
+			const input = { attendeeCount: 2, maxAttendees: 4, maxChildren: maxChildren as number };
+			expect(checkConfirmedParty({ ...input, childrenCount: 1 })).toBe('max_children');
+			expect(checkConfirmedParty({ ...input, childrenCount: 2 })).toBe('max_children');
+			expect(checkConfirmedParty({ ...input, childrenCount: 0 })).toBeNull();
+			expect(checkConfirmedParty(input)).toBeNull();
+		},
+	);
+
+	it('checkConfirmedParty treats an omitted maxChildren as zero child places', () => {
+		expect(checkConfirmedParty({ attendeeCount: 2, childrenCount: 1, maxAttendees: 4 })).toBe(
+			'max_children',
+		);
+	});
+
+	it('resolveChildrenCap yields 0 for undefined, null and non-finite children', () => {
+		expect(resolveChildrenCap(undefined, 4)).toBe(0);
+		expect(resolveChildrenCap(null as unknown as number, 4)).toBe(0);
+		expect(resolveChildrenCap(Number.NaN, 4)).toBe(0);
+		expect(resolveChildrenCap(undefined, 0)).toBe(0);
+	});
+
+	it.each(noChildPasses)(
+		'validateRsvpPayload rejects childrenCount > 0 with maxChildren %s',
+		(m) => {
+			const payload = {
+				attendanceStatus: 'confirmed' as const,
+				attendeeCount: 2,
+				childrenCount: 1,
+			};
+			expect(() => validateRsvpPayload(payload, 4, m as number)).toThrow(
+				'Children count exceeds the limit for this invitation.',
+			);
+			expect(validateRsvpPayload({ ...payload, childrenCount: 0 }, 4, m as number)).toEqual({
+				attendanceStatus: 'confirmed',
+				attendeeCount: 2,
+				childrenCount: 0,
+			});
+		},
+	);
+
+	it.each(noChildPasses)('a decline resets children to 0 with maxChildren %s', (m) => {
+		expect(
+			validateRsvpPayload(
+				{ attendanceStatus: 'declined', attendeeCount: 3, childrenCount: 2 },
+				4,
+				m as number,
+			),
+		).toEqual({ attendanceStatus: 'declined', attendeeCount: 0, childrenCount: 0 });
+	});
+
+	describe('RSVP form', () => {
+		const context = {
+			name: 'Ana',
+			phone: '',
+			phoneRequired: false,
+			nameLocked: true,
+			attendanceStatus: 'confirmed' as const,
+			attendeeCount: 2,
+			supportsPlusOnes: true,
+			effectiveGuestCap: 4,
+		};
+
+		it.each([0, undefined])(
+			'validation ignores children when maxChildren is %s, even if the field holds a value',
+			(m) => {
+				// The form drops the children field for adult-only passes; the API still rejects them.
+				expect(validateRsvpForm({ ...context, childrenCount: 2, maxChildren: m })).toEqual(
+					{},
+				);
+			},
+		);
+
+		it('sends 0 children when no child places are reserved', () => {
+			// maxChildren is a required number here; the hook passes `?? 0` for legacy values.
+			expect(normalizeChildrenCount('confirmed', 2, 2, 0)).toBe(0);
+		});
+
+		it('resets children to 0 on decline', () => {
+			expect(normalizeChildrenCount('declined', 2, 0, 2)).toBe(0);
+			expect(normalizeChildrenCount(null, 2, 2, 2)).toBe(0);
+			expect(
+				validateRsvpForm({
+					...context,
+					attendanceStatus: 'declined',
+					childrenCount: 2,
+					maxChildren: 0,
+				}),
+			).toEqual({});
+		});
+
+		it('flags children that exceed child places when some were reserved', () => {
+			expect(validateRsvpForm({ ...context, childrenCount: 1, maxChildren: 0 })).toEqual({});
+			expect(
+				validateRsvpForm({ ...context, childrenCount: 3, maxChildren: 1 }).childrenCount,
+			).toBe('Pueden venir hasta 1 niño.');
+		});
+	});
+});
+
+describe('pass breakdown text never confuses adults and children', () => {
+	const ADULTS_ONLY_WORDING = /solo (para )?adultos/i;
+
+	it.each([0, undefined, null])('adults-only pass (children %s) has no breakdown', (children) => {
+		expect(formatPassBreakdown(3, children as number)).toBeUndefined();
+		expect(formatPassBreakdown(1, children as number)).toBeUndefined();
+	});
+
+	it('never produces «solo para adultos» for any combination', () => {
+		for (let passes = 1; passes <= 6; passes++) {
+			for (let children = -1; children <= passes + 1; children++) {
+				const text = formatPassBreakdown(passes, children) ?? '';
+				expect(text).not.toMatch(ADULTS_ONLY_WORDING);
+			}
+		}
+	});
+
+	it('adults plus children reads «N adultos y M niños» with singular and plural', () => {
+		expect(formatPassBreakdown(2, 1)).toBe('1 adulto y 1 niño');
+		expect(formatPassBreakdown(3, 1)).toBe('2 adultos y 1 niño');
+		expect(formatPassBreakdown(3, 2)).toBe('1 adulto y 2 niños');
+		expect(formatPassBreakdown(5, 2)).toBe('3 adultos y 2 niños');
+	});
+
+	it('an all-children pass reads «M niños» without adults', () => {
+		expect(formatPassBreakdown(1, 1)).toBe('1 niño');
+		expect(formatPassBreakdown(3, 3)).toBe('3 niños');
+		expect(formatPassBreakdown(2, 9)).toBe('2 niños');
+	});
+
+	it('formatParty without children keeps «pases», with children never says «pases»', () => {
+		expect(formatParty(2, { children: 0 })).toBe('2 pases');
+		expect(formatParty(2, { children: 1 })).not.toMatch(/pase/);
+	});
+});
