@@ -10,7 +10,7 @@
             "preset": "angelic-presence",
             "viewport": "mobile",
             "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
-            "sha256": "cad066dc743ee81dee6d4f22b110097e840bd1d92cdc3bb948cbc769a081d45f",
+            "sha256": "e9e831bed1ec411149adaad23f10942830ed643a86eaadc6ca864a2025d99503",
             "contentHash": "3b07e2575cb36444c7bf8c8c32f13cbcba88e0d90c0a54ee00e724119ee4e0d4",
             "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
             "comparisonResult": "ACCEPTED"
@@ -36,7 +36,7 @@
             "preset": "angelic-presence",
             "viewport": "mobile",
             "file": "pages/demo-bautizo-demo-bautizo-angelic-presence-mobile.png",
-            "sha256": "cad066dc743ee81dee6d4f22b110097e840bd1d92cdc3bb948cbc769a081d45f",
+            "sha256": "e9e831bed1ec411149adaad23f10942830ed643a86eaadc6ca864a2025d99503",
             "contentHash": "3b07e2575cb36444c7bf8c8c32f13cbcba88e0d90c0a54ee00e724119ee4e0d4",
             "assetHash": "88297a8b010637a56052ac50e93b63ffb7e0267ed30056a033b3348a002fa029",
             "comparisonResult": "CANDIDATE"

@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-14T19:49:01.951Z",
+    "generatedAt": "2026-11-15T02:41:00.448Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-        "cssSha256": "d4504acc87477c01fe0bf97e332a28c90a4280962974f2250771ff57863b8002",
+        "cssSha256": "7e00a9cd38053bb487759debc70e187eca86044e445430e85327b723a4852dba",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2633,9 +2633,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "95c555c77b6a7d280d3b502ba19093c96a762036",
+    "referenceSha": "acd4e5c89058b97c01b5395102e04ce286b9b41b",
     "variantManifest": {
-        "generatedAt": "2026-11-14T19:49:01.951Z",
+        "generatedAt": "2026-11-15T02:41:00.448Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2648,7 +2648,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "d4504acc87477c01fe0bf97e332a28c90a4280962974f2250771ff57863b8002",
+            "cssSha256": "7e00a9cd38053bb487759debc70e187eca86044e445430e85327b723a4852dba",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4789,10 +4789,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "95c555c77b6a7d280d3b502ba19093c96a762036"
+        "referenceSha": "acd4e5c89058b97c01b5395102e04ce286b9b41b"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-14T19:49:02.109Z",
+        "generatedAt": "2026-11-15T02:41:00.462Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4805,7 +4805,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "d4504acc87477c01fe0bf97e332a28c90a4280962974f2250771ff57863b8002",
+            "cssSha256": "7e00a9cd38053bb487759debc70e187eca86044e445430e85327b723a4852dba",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -5297,9 +5297,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "95c555c77b6a7d280d3b502ba19093c96a762036"
+        "referenceSha": "acd4e5c89058b97c01b5395102e04ce286b9b41b"
     },
-    "candidateManifestSha256": "4c54c9e61adce928b3e324a1dba0e47cd50f866e37890dcc4fa7105e1d246595",
-    "acceptedFromCommit": "95c555c77b6a7d280d3b502ba19093c96a762036",
-    "acceptedAt": "2026-11-14T19:49:58.674Z"
+    "candidateManifestSha256": "a9e551c49de0b627ab1e2ab26f2f5b3c67a449c93cf236bbe934740682c3484f",
+    "acceptedFromCommit": "acd4e5c89058b97c01b5395102e04ce286b9b41b",
+    "acceptedAt": "2026-11-15T02:41:44.555Z"
 }
