@@ -12,6 +12,7 @@ import {
 	upsertUserRoleService,
 } from '@/lib/rsvp/repositories/role-membership.repository';
 import type { AppUserRole } from '@/interfaces/auth/session.interface';
+import { TEMPORARY_PASSWORD_WORDS } from '@/lib/rsvp/auth/temporary-password-words';
 import {
 	createAuthUserByAdmin,
 	adminResetAuthUserPassword,
@@ -127,30 +128,26 @@ export async function changeUserRoleAdmin(input: {
 	};
 }
 
-const TEMP_PASSWORD_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-const TEMP_PASSWORD_GROUPS = 3;
-const TEMP_PASSWORD_GROUP_LENGTH = 5;
+const TEMP_PASSWORD_WORD_COUNT = 3;
+const TEMP_PASSWORD_DIGITS = 3;
 
 /**
- * Generates a random temporary password from the CSPRNG: three dash-separated groups of five
- * unambiguous characters (17 characters, about 85 bits). It is never derived from any secret, so
- * it cannot be recomputed later; the change is forced on first login and the password expires.
+ * Generates a memorable temporary password from the CSPRNG: three capitalized Spanish words from
+ * a 256-word list plus three digits, e.g. `Luna-Faro-Mango-482` (about 34 bits). It is never
+ * derived from any secret, so it cannot be recomputed later; the change is forced on first login,
+ * the password expires, and login attempts are rate-limited.
  */
 export function generateTemporaryPassword(): string {
-	for (;;) {
-		const groups: string[] = [];
-		for (let g = 0; g < TEMP_PASSWORD_GROUPS; g += 1) {
-			let group = '';
-			for (let i = 0; i < TEMP_PASSWORD_GROUP_LENGTH; i += 1) {
-				group += TEMP_PASSWORD_ALPHABET[randomInt(0, TEMP_PASSWORD_ALPHABET.length)];
-			}
-			groups.push(group);
-		}
-		const password = groups.join('-');
-		if (/[A-Z]/.test(password) && /[a-z]/.test(password) && /[0-9]/.test(password)) {
-			return password;
-		}
+	const words: string[] = [];
+	for (let i = 0; i < TEMP_PASSWORD_WORD_COUNT; i += 1) {
+		const word = TEMPORARY_PASSWORD_WORDS[randomInt(0, TEMPORARY_PASSWORD_WORDS.length)];
+		words.push(word.charAt(0).toUpperCase() + word.slice(1));
 	}
+	const digits = String(randomInt(0, 10 ** TEMP_PASSWORD_DIGITS)).padStart(
+		TEMP_PASSWORD_DIGITS,
+		'0',
+	);
+	return [...words, digits].join('-');
 }
 
 async function recordIdentityMutation(input: {
