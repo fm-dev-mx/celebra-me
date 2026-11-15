@@ -1,0 +1,510 @@
+@use '../../../styles/tools/motion';
+@use '../../../styles/tools/jewel-box-scenes' as scenes;
+
+// Camila: only what her tokens cannot say. The cover: the photograph fills the screen.
+.event--camila-beltran .invitation-hero {
+	@include scenes.photo-cover;
+}
+
+// Every section title but the parents' in large dusty-rose script; the section scope outranks the preset's.
+.event--camila-beltran.theme-preset--jewelry-box {
+	:is(.countdown-section, .event-location, .gallery-section, .rsvp, section)
+		:is(
+			.countdown-title,
+			.event-location__heading,
+			.gallery-section__title,
+			.rsvp__title,
+			.dress-code__heading
+		) {
+		font-family: var(--jewel-script);
+		font-size: var(--jewel-title-size);
+		font-style: normal;
+		font-weight: 400;
+		line-height: 1.15;
+		letter-spacing: 0;
+		text-transform: none;
+		color: var(--jewel-rose-deep);
+		-webkit-text-fill-color: currentcolor;
+		background: none;
+	}
+}
+
+// Preset captions the sample lacks; the attendance legend stays for screen readers only.
+.event--camila-beltran {
+	color: var(--jewel-ink);
+
+	.event-location__card-map-preview-label,
+	.rsvp__eyebrow,
+	.event-location__indication-number {
+		display: none;
+	}
+
+	.rsvp__legend {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	.rsvp .rsvp__separator {
+		display: none;
+	}
+
+	.rsvp .rsvp-steps__track {
+		overflow: clip;
+		overflow-clip-margin: 1.5rem;
+	}
+
+	.rsvp .rsvp-steps__panel {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	@media (height <= 700px) {
+		.rsvp__subcopy {
+			display: none;
+		}
+
+		.rsvp {
+			padding-bottom: 1rem;
+		}
+
+		.rsvp-steps__panel {
+			gap: 0.6rem;
+		}
+	}
+
+	.rsvp .rsvp__button {
+		@include scenes.touch-target;
+
+		border: 0;
+		border-radius: 999px;
+		background: linear-gradient(90deg, var(--jewel-blush-deep), var(--jewel-rose));
+		color: var(--jewel-white);
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+	}
+
+	.rsvp .rsvp__radio-card {
+		border-radius: 999px;
+		padding-inline: 0.75rem;
+		white-space: nowrap;
+	}
+
+	.rsvp .rsvp__radio-indicator {
+		display: none;
+	}
+
+	.rsvp .rsvp__locked-card {
+		max-width: 20rem;
+		margin: 1.5rem auto 0;
+		padding: 1.5rem 1.25rem;
+		border: 1px solid rgb(var(--jewel-gold-rgb) / 45%);
+		border-radius: 18px;
+		background: var(--jewel-white);
+		text-align: center;
+	}
+
+	.rsvp .rsvp__locked-message {
+		margin: 0;
+		color: var(--jewel-rose-deep);
+		font-family: var(--jewel-serif);
+		font-size: 1.15rem;
+		font-style: italic;
+		line-height: 1.45;
+	}
+
+	// The phrase, the parents and the portrait each hold one whole screen, their content centred.
+	.quote-section,
+	.family {
+		min-height: 100svh;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		padding-block: clamp(2.5rem, 8svh, 5rem);
+	}
+
+	// The phrase: a stationery card line in rose script, one gold flourish before the date.
+	.quote-mark,
+	.quote-top-art,
+	.quote-divider-top,
+	.quote-divider-bottom {
+		display: none;
+	}
+
+	.quote-container {
+		max-width: 30rem;
+		margin-inline: auto;
+		padding-inline: 1.75rem;
+		text-align: center;
+	}
+
+	.quote-content {
+		margin-block: 0;
+	}
+
+	.quote-line {
+		font-family: var(--jewel-script);
+		font-size: clamp(2rem, 8.6vw, 2.875rem);
+		font-style: normal;
+		font-weight: 400;
+		line-height: 1.4;
+		letter-spacing: 0;
+		color: var(--jewel-rose-deep);
+	}
+
+	// The date under the phrase: gold small capitals, not a second line of script.
+	.quote-closing-line {
+		margin-top: 1.5rem;
+		font-family: var(--font-label, var(--font-body));
+		font-size: 0.9375rem;
+		font-style: normal;
+		font-weight: 500;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: var(--jewel-gold-deep);
+
+		&::before {
+			display: block;
+			width: 10rem;
+			height: 0.75rem;
+			margin: 0 auto 1.5rem;
+			background: var(--jewel-flourish) center / contain no-repeat;
+			content: '';
+		}
+	}
+
+	// The parents with no card: the title on the left, the mother under it, the father set to the right.
+	// Clip, not hidden: a hidden section would become the scroller and freeze its view timelines.
+	.family {
+		overflow: clip;
+	}
+
+	// The header boxes dissolve so the dedication can drop to the foot of the section, under the names.
+	.family__container {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		width: min(100%, 36rem);
+		margin-inline: auto;
+		padding-inline: 1.75rem;
+	}
+
+	.family__header,
+	.family__header-inner {
+		display: contents;
+	}
+
+	// A serif title in place of the script, so the parents' names are the only script on the page.
+	.family__title {
+		font-family: var(--jewel-serif);
+		font-size: clamp(1.75rem, 7.5vw, 2.25rem);
+		font-weight: 500;
+		line-height: 1.2;
+		letter-spacing: 0.01em;
+		text-align: start;
+		color: var(--jewel-rose-deep);
+	}
+
+	.family__message {
+		order: 1;
+		max-width: 22rem;
+		margin: clamp(2.25rem, 8svh, 4rem) 0 0;
+		font-family: var(--jewel-serif);
+		font-size: clamp(1rem, 4.2vw, 1.125rem);
+		font-weight: 400;
+		line-height: 1.5;
+		text-align: start;
+		color: var(--jewel-ink-soft);
+	}
+
+	.family__eyebrow,
+	.family__content-overlay,
+	.family__group-title {
+		display: none;
+	}
+
+	.family__header-divider {
+		width: 10rem;
+		height: 0.75rem;
+		margin: 1.25rem 0 0;
+		background: var(--jewel-flourish) left center / contain no-repeat;
+
+		&::before,
+		&::after {
+			content: none;
+		}
+	}
+
+	.family__panel {
+		width: 100%;
+		margin: clamp(1.75rem, 6svh, 3rem) 0 0;
+		padding: 0;
+		background: none;
+		border: 0;
+		outline: 0;
+		box-shadow: none;
+
+		&::before,
+		&::after {
+			content: none;
+		}
+	}
+
+	.family__members {
+		display: flex;
+		flex-direction: column;
+		gap: clamp(1.75rem, 6svh, 3rem);
+		padding: 0;
+		list-style: none;
+	}
+
+	.family__member {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.4rem;
+		text-align: start;
+	}
+
+	.family__member + .family__member {
+		align-items: flex-end;
+		text-align: end;
+	}
+
+	// The title already names them as parents, so the role labels would only repeat it.
+	.family__member-role {
+		display: none;
+	}
+
+	.family__member-name {
+		font-family: var(--jewel-script);
+		font-size: clamp(2.125rem, 9vw, 2.75rem);
+		font-weight: 400;
+		line-height: 1.15;
+		letter-spacing: 0;
+		color: var(--jewel-rose-deep);
+	}
+
+	// One fixed stage over three screens, tied to the scroll and undone on the way up. The phrase
+	// stays pinned: it comes into focus word by word, holds, then dissolves upward; the parents are
+	// pinned on the same ground and build in turn, so the page reads as one scene with two acts.
+	// Both wrappers share the same 300svh run, so a single cover range (4svh per 1%) drives each act.
+	// The selectors carry the container id and wrapper classes to outrank the one-shot reveals.
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			#invitation-sections-container
+				> .invitation-section-wrapper[data-reveal].has-motion.has-motion {
+				&:has(> .quote-section) {
+					height: 300svh;
+					view-timeline: --jewel-phrase block;
+				}
+
+				&:has(> .family) {
+					position: relative;
+					z-index: 1;
+					height: 300svh;
+					margin-top: -300svh;
+					pointer-events: none;
+					view-timeline: --jewel-parents block;
+				}
+
+				> .quote-section,
+				> .family {
+					position: sticky;
+					top: 0;
+					height: 100svh;
+					overflow: clip;
+				}
+
+				> .family {
+					background: transparent;
+					pointer-events: auto;
+					scroll-margin-top: -160svh;
+				}
+
+				.family__title .word,
+				.family__group,
+				.family__header {
+					animation: none;
+				}
+
+				.quote-line {
+					--scroll-accent-turn: 0deg;
+					--scroll-accent-scale: 0.7;
+
+					animation: scroll-accent-unfold linear both;
+					animation-timeline: --jewel-phrase;
+					animation-range: cover 5% cover 20%;
+				}
+
+				.quote-line .word {
+					animation: editorial-word linear both;
+					animation-timeline: --jewel-phrase;
+					animation-range: cover calc(6% + var(--i, 0) * 0.6%) cover
+						calc(14% + var(--i, 0) * 0.6%);
+				}
+
+				.quote-closing-line::before {
+					animation: family-divider-draw linear both;
+					animation-timeline: --jewel-phrase;
+					animation-range: cover 19% cover 25%;
+				}
+
+				.quote-closing-line {
+					--scroll-accent-rise: 3rem;
+
+					animation: scroll-accent-rise linear both;
+					animation-timeline: --jewel-phrase;
+					animation-range: cover 21% cover 27%;
+				}
+
+				.quote-container {
+					--scroll-accent-drift: -40%;
+					--scroll-accent-grow: 0.75;
+
+					animation:
+						editorial-word linear reverse both,
+						scroll-accent-leave linear both;
+					animation-timeline: --jewel-phrase, --jewel-phrase;
+					animation-range:
+						cover 36% cover 48%,
+						cover 35% cover 50%;
+				}
+
+				.family__title {
+					--scroll-accent-rise: 4.5rem;
+
+					animation: scroll-accent-rise linear both;
+					animation-timeline: --jewel-parents;
+					animation-range: cover 45% cover 54%;
+				}
+
+				.family__header-divider {
+					animation: family-divider-draw linear both;
+					animation-timeline: --jewel-parents;
+					animation-range: cover 50% cover 58%;
+				}
+
+				.family__member {
+					--scroll-accent-turn: -18deg;
+					--scroll-accent-scale: 0.62;
+
+					transform-origin: left center;
+					animation: scroll-accent-unfold linear both;
+					animation-timeline: --jewel-parents;
+					animation-range: cover 55% cover 64%;
+				}
+
+				.family__member + .family__member {
+					--scroll-accent-turn: 18deg;
+
+					transform-origin: right center;
+					animation-range: cover 60% cover 69%;
+				}
+
+				.family__message {
+					--scroll-accent-rise: 2.75rem;
+
+					animation: scroll-accent-rise linear both;
+					animation-timeline: --jewel-parents;
+					animation-range: cover 66% cover 74%;
+				}
+			}
+		}
+	}
+}
+
+// A landscape photo band from edge to edge between two gold hairlines, on the cream page.
+.event--camila-beltran.theme-preset--jewelry-box .invitation-interlude[data-presentation='framed'] {
+	@include scenes.framed-photo-band;
+}
+
+// The envelope fills the screen; a flap from the right edge meets the wax seal at the centre.
+// A touch anywhere turns the flap away and the face fades into the cover. No card, no cue.
+.event--camila-beltran .envelope-wrapper[data-variant='storybook-lanterns'] {
+	@include scenes.flap-envelope;
+}
+
+// Countdown fits one screen; hierarchy: title > numbers > date > calendar; the event day in rose.
+.event--camila-beltran.theme-preset--jewelry-box .countdown-section {
+	@include scenes.calendar-countdown;
+}
+
+// Location: an arched card (illustrated map, venue, both times, three maps); scroll-linked, reversible entrance.
+.event--camila-beltran.theme-preset--jewelry-box .event-location {
+	@include scenes.arched-location-card;
+}
+
+// Dress code: its own screen after the dress interlude; rose-gold swatch, gold small caps, scroll-linked reversible reveal.
+.event--camila-beltran.theme-preset--jewelry-box .dress-code {
+	@include scenes.swatch-dress-code;
+}
+
+// Gallery: a narrow mosaic (wide, two portraits, wide) sized by the viewport height so all four photos share one screen; reversible scroll-linked rise.
+.event--camila-beltran.theme-preset--jewelry-box .gallery-section {
+	--gallery-section-padding-block: clamp(1.5rem, 5svh, 3rem);
+	--gallery-section-padding-inline: 1rem;
+	--gallery-header-gap: clamp(0.5rem, 2svh, 1.25rem);
+	--gallery-container-max-width: min(30rem, 78vw, calc((100svh - 14.5rem) / 2));
+	--gallery-grid-columns-mobile: 2;
+	--gallery-grid-columns-tablet: 2;
+	--gallery-grid-columns-desktop: 2;
+	--gallery-grid-column-gap: 0.25rem;
+	--gallery-grid-row-gap: 0.25rem;
+	--gallery-item-aspect-ratio: 3 / 4;
+	--gallery-item-radius: 0;
+	--gallery-item-border: 0;
+	--gallery-item-shadow: none;
+	--gallery-item-emphasis-shadow: none;
+	--gallery-item-emphasis-border-color: transparent;
+
+	display: grid;
+	place-items: center;
+	min-height: 100svh;
+
+	.gallery-section__container {
+		width: 100%;
+	}
+
+	.gallery-grid__item:is(:first-child, :last-child) {
+		grid-column: 1 / -1;
+		aspect-ratio: 3 / 2;
+	}
+
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			&:is(#invitation-sections-container .has-motion.has-motion.has-motion *)
+				.gallery-grid__item {
+				animation: scroll-accent-rise linear both;
+				animation-timeline: view();
+				animation-range: entry 0% cover 35%;
+			}
+		}
+	}
+}
+
+// Thank-you photo: hidden, never inset-clipped, until a round fade + zoom; an inset clip squares the oval.
+.event--camila-beltran
+	.thank-you-editorial__media.thank-you-editorial__media.thank-you-editorial__media:is(
+		#invitation-sections-container *
+	) {
+	&[data-reveal-pending][data-reveal-pending]:is(.has-motion *) {
+		clip-path: none;
+		opacity: 0%;
+	}
+
+	&.is-visible.is-visible.is-visible {
+		animation-name: invitation-reveal-fade;
+	}
+
+	@include motion.motion-safe {
+		&.is-visible:is(.has-motion *) .thank-you-editorial__image-shell {
+			--motion-ambient-scale-to: 1.08;
+
+			animation: interlude-ambient 1200ms var(--editorial-ease) reverse backwards;
+			animation-delay: inherit;
+		}
+	}
+}

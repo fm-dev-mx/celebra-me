@@ -9,6 +9,7 @@ import {
 const RENDER_PLAN_TARGETS = [
 	...CONTENT_SECTION_KEYS,
 	'personalized-access',
+	'dress-code',
 	...INVITATION_RENDER_SECTION_KEYS.map((section) => `interlude-after-${section}` as const),
 ] as const;
 

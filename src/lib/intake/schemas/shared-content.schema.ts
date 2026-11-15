@@ -238,7 +238,11 @@ export const countdownEditorSchema = z
 				dayUnit: z.enum(COUNTDOWN_DAY_UNITS).optional(),
 				/** Month calendar of the event, its day circled by the mark; replaces the written date. */
 				calendar: z
-					.object({ mark: z.enum(COUNTDOWN_CALENDAR_MARKS) })
+					.object({
+						mark: z.enum(COUNTDOWN_CALENDAR_MARKS),
+						/** Opt-in "Agendar en el calendario" links under the calendar. */
+						addToCalendar: z.boolean().optional(),
+					})
 					.strict()
 					.optional(),
 			})

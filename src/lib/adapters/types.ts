@@ -1,5 +1,6 @@
 import type { RsvpFlow } from '@/lib/invitation/rsvp-flow';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type { VenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
 import type {
 	IndicationStyleVariant,
 	InvitationRenderSectionKey,
@@ -335,7 +336,12 @@ export interface InvitationViewModel {
 			ornament?: ImageAsset;
 			visibleUnits: CountdownUnit[];
 			dayUnit?: CountdownDayUnit;
-			calendar?: { mark: CountdownCalendarMark; month: EventCalendarMonth };
+			/** `links`: save-the-date destinations, present when the event time zone is known. */
+			calendar?: {
+				mark: CountdownCalendarMark;
+				month: EventCalendarMonth;
+				links?: VenueCalendarLinks;
+			};
 			variant: CountdownVariant;
 			/** Demo-only: if true, countdown uses a random target 30-60 days ahead */
 			isDemo?: boolean;
