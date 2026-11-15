@@ -29,7 +29,7 @@ test.describe('Authentication UI Scenarios (Spanish)', () => {
 		// Verify Spanish error message
 		const status = page.locator('#auth-status');
 		await expect(status).toBeVisible();
-		await expect(status).toContainText('Escribe tu correo o usuario');
+		await expect(status).toContainText('Escriba su correo o usuario');
 	});
 
 	test('Scenario: Access restricted dashboard without session', async ({ page }) => {

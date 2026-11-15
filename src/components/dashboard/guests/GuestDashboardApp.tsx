@@ -31,6 +31,7 @@ import {
 	computeGuestSummary,
 	getBatchCandidates,
 	getGuestInviteUrl,
+	recordGuestMessageRead,
 } from '@/components/dashboard/guests/guest-presenter';
 import { guestsApi } from '@/lib/dashboard/guests-api';
 import { useGuestDashboardActions } from '@/components/dashboard/guests/use-guest-dashboard-actions';
@@ -473,7 +474,10 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 					onMarkShared={handleMarkShared}
 					onSaveGuest={handleSaveInvitation}
 					view={listView}
-					onOpenDetails={(item) => setDetailGuestId(item.guestId)}
+					onOpenDetails={(item) => {
+						recordGuestMessageRead(item);
+						setDetailGuestId(item.guestId);
+					}}
 					selection={batchSelection.tableSelection}
 					messageWall={reviewFilter === 'with-message'}
 					onRequestBatch={batchSelection.requestBatch}

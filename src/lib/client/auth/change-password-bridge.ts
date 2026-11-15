@@ -1,6 +1,7 @@
 /** Client-side bridge for the change password form. */
 import { authBridgeApi } from '@/lib/client/auth/auth-bridge-api';
 import { logoutAndRedirect } from '@/lib/client/auth/logout-client';
+import { initPasswordToggles } from '@/lib/client/auth/password-visibility';
 
 export function initChangePasswordFlow() {
 	const formEl = document.getElementById('change-password-form') as HTMLFormElement | null;
@@ -13,7 +14,10 @@ export function initChangePasswordFlow() {
 	const shellEl = document.querySelector('.auth-shell') as HTMLElement | null;
 	const nextPath = shellEl?.dataset.next || '';
 
+	const mustChange = formEl?.dataset.mustChange === 'true';
+
 	let isSubmitting = false;
+	initPasswordToggles();
 
 	const setStatus = (message: string, tone = 'info', shouldFocus = false) => {
 		if (!statusEl) return;
@@ -67,13 +71,16 @@ export function initChangePasswordFlow() {
 			const newPassword = newInput?.value || '';
 			const confirmPassword = confirmInput?.value || '';
 
-			if (!currentPassword.trim()) {
-				setFieldError('current-password', 'Ingresa tu contraseña actual.');
-				setStatus('Ingresa tu contraseña actual.', 'error', true);
+			if (!mustChange && !currentPassword.trim()) {
+				setFieldError('current-password', 'Ingrese su contraseña actual.');
+				setStatus('Ingrese su contraseña actual.', 'error', true);
 				return;
 			}
 			if (!newPassword.trim() || newPassword.length < 8) {
-				setFieldError('new-password', 'La nueva contraseña debe tener al menos 8 caracteres.');
+				setFieldError(
+					'new-password',
+					'La nueva contraseña debe tener al menos 8 caracteres.',
+				);
 				setStatus('La nueva contraseña debe tener al menos 8 caracteres.', 'error', true);
 				return;
 			}
@@ -88,14 +95,16 @@ export function initChangePasswordFlow() {
 
 			try {
 				const data = await authBridgeApi.changePassword({
-					currentPassword,
+					...(mustChange ? {} : { currentPassword }),
 					newPassword,
 					confirmPassword,
 				});
 
 				setStatus('¡Contraseña actualizada con éxito! Redirigiendo...', 'success', true);
 				const redirectTo =
-					nextPath || (typeof data.next === 'string' ? data.next : '') || '/dashboard/invitados';
+					nextPath ||
+					(typeof data.next === 'string' ? data.next : '') ||
+					'/dashboard/invitados';
 				setTimeout(() => {
 					window.location.href = redirectTo;
 				}, 1000);
@@ -103,7 +112,7 @@ export function initChangePasswordFlow() {
 				const errorMessage =
 					error instanceof Error
 						? error.message
-						: 'No pudimos actualizar tu contraseña. Revisa tus datos e intenta de nuevo.';
+						: 'No pudimos actualizar su contraseña. Revise sus datos e intente de nuevo.';
 				setStatus(errorMessage, 'error', true);
 			} finally {
 				setSubmitting(false);

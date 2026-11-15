@@ -1,12 +1,11 @@
 @use '../../../styles/tools/motion';
 @use '../../../styles/tools/disco-motifs' as disco;
 @use '../../../styles/tools/disco-scenes' as scenes;
+@use '../../../styles/tools/disco-photo-pass' as photo;
 
-// Valeria's cherry disco night. The shared disco-stage, mirror-ball, last-song and disco-night
-// variants carry the palette from profile.scss; this file keeps her own scenes on the same night.
+// Valeria's cherry disco night: shared disco variants take profile.scss; her own scenes live here.
 
-// The night scenes: the opening, the words and the family sit on the same wine night as the
-// countdown and the closing. The night inks replace the paper inks inside each scene.
+// Night scenes (opening, words, family) sit on the closing's wine night with the night inks.
 @mixin valeria-night-inks {
 	--color-surface-primary: var(--color-rose-midnight);
 	--color-surface-primary-rgb: var(--color-rose-midnight-rgb);
@@ -31,8 +30,7 @@ $valeria-night-ground:
 	@include valeria-night-inks;
 }
 
-// The portrait is the giant mirror ball of the opening: no arch, a round photograph under mirror
-// tiles that turn slowly and stay thin over her face. It replaces the small hanging ball.
+// The portrait is the opening's giant mirror ball: a round photograph under slow, thin tiles.
 .event--valeria-hernandez.event-theme-wrapper
 	.invitation-hero.framed-portrait-hero[data-variant='disco-stage'] {
 	--valeria-ball: clamp(10rem, min(76vw, 46svh, calc(100svh - 28rem)), 28rem);
@@ -118,8 +116,7 @@ $valeria-night-ground:
 	}
 }
 
-// The family scene is the night's line-up: a left-aligned bill, parents «01», godparents «02»,
-// names in large capitals, a silver rule between the acts and a sweep of light as each rises.
+// The family scene is the night's line-up: an asymmetric bill and a sweep of light as each rises.
 .event--valeria-hernandez.event-theme-wrapper .family {
 	@include valeria-night-inks;
 
@@ -357,8 +354,7 @@ $valeria-night-ground:
 	@include scenes.mirror-ball-cue;
 }
 
-// The pass and the reply are one admission ticket: die-cut corners, a mirror ball by the heading,
-// a foil strip, the guest in neon, the seats in a neon ring by a barcode; the reply tears off.
+// The pass and its tear-off reply are one admission ticket: die-cut, foil, neon and a barcode.
 .event--valeria-hernandez.event-theme-wrapper .personalized-access[data-variant='reply-card'],
 .event--valeria-hernandez.event-theme-wrapper .rsvp-section {
 	--valeria-pass-edge: clamp(0.6rem, 2.4vw, 0.85rem);
@@ -597,4 +593,8 @@ $valeria-night-ground:
 
 .event--valeria-hernandez.event-theme-wrapper .gifts-section.gifts-section {
 	@include scenes.envelope-pass;
+}
+
+.event--valeria-hernandez.event-theme-wrapper .memories-section.memories-section {
+	@include photo.photo-pass;
 }

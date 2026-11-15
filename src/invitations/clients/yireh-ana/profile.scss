@@ -747,6 +747,12 @@ $yireh-icon-copy: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 	--itinerary-ribbon-muted: var(--color-violet-ink-soft);
 	--itinerary-ribbon-bow-drawing: none;
 
+	// The route pins for two screens instead of three: every moment still arrives in turn, in half
+	// the swipes (the client asked for less scrolling before the text shows).
+	.itinerary[data-itinerary-scene='ribbon-route'] .scroll-scene {
+		--scene-length: 2;
+	}
+
 	// Very short screens only: the ribbon route's labels step down, never below reading size.
 	@media (width < 1024px) and (height <= 700px) {
 		.itinerary[data-itinerary-scene='ribbon-route'] {
