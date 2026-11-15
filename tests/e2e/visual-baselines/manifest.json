@@ -2591,8 +2591,8 @@
             "preset": "storybook-blush",
             "viewport": "mobile",
             "file": "pages/invitation-xv-valeria-hernandez-mobile.png",
-            "sha256": "7a88606c11d0401bd339faaa6f3a8493c8138cf4fa1ebfac60bbea7527ff7b4b",
-            "contentHash": "8bbb2cf3568d5a3ac3f2fa04a83e524666f4176c34ac44afb60a7f1bf058b7bf",
+            "sha256": "fd697738d31bb73d6a43f9571dea53eb5b2c7b6abbdbbbb04bbb4f372ca1cc49",
+            "contentHash": "e4acc78c24a03283991e511b5f0954da5ce24133d11b0b2ec47f6c3c2ab5dfce",
             "assetHash": "7ca2d80d24dc04508869ad1727c98ad909125ceb06bbe9e20044066c183d1319",
             "comparisonResult": "ACCEPTED"
         },
@@ -2603,8 +2603,8 @@
             "preset": "storybook-blush",
             "viewport": "desktop",
             "file": "pages/invitation-xv-valeria-hernandez-desktop.png",
-            "sha256": "df0bdac2e0ee3965958c93cbe3ab89508bb76b7d15afe478574c624c1f33f8d6",
-            "contentHash": "8bbb2cf3568d5a3ac3f2fa04a83e524666f4176c34ac44afb60a7f1bf058b7bf",
+            "sha256": "2686acee6106cb8a4f311e484751c5bc80a520019b71a124cfec8666c4c8f0fd",
+            "contentHash": "e4acc78c24a03283991e511b5f0954da5ce24133d11b0b2ec47f6c3c2ab5dfce",
             "assetHash": "7ca2d80d24dc04508869ad1727c98ad909125ceb06bbe9e20044066c183d1319",
             "comparisonResult": "ACCEPTED"
         },
@@ -5255,8 +5255,8 @@
                 "preset": "storybook-blush",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-valeria-hernandez-mobile.png",
-                "sha256": "7a88606c11d0401bd339faaa6f3a8493c8138cf4fa1ebfac60bbea7527ff7b4b",
-                "contentHash": "8bbb2cf3568d5a3ac3f2fa04a83e524666f4176c34ac44afb60a7f1bf058b7bf",
+                "sha256": "fd697738d31bb73d6a43f9571dea53eb5b2c7b6abbdbbbb04bbb4f372ca1cc49",
+                "contentHash": "e4acc78c24a03283991e511b5f0954da5ce24133d11b0b2ec47f6c3c2ab5dfce",
                 "assetHash": "7ca2d80d24dc04508869ad1727c98ad909125ceb06bbe9e20044066c183d1319",
                 "comparisonResult": "CANDIDATE"
             },
@@ -5267,8 +5267,8 @@
                 "preset": "storybook-blush",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-valeria-hernandez-desktop.png",
-                "sha256": "df0bdac2e0ee3965958c93cbe3ab89508bb76b7d15afe478574c624c1f33f8d6",
-                "contentHash": "8bbb2cf3568d5a3ac3f2fa04a83e524666f4176c34ac44afb60a7f1bf058b7bf",
+                "sha256": "2686acee6106cb8a4f311e484751c5bc80a520019b71a124cfec8666c4c8f0fd",
+                "contentHash": "e4acc78c24a03283991e511b5f0954da5ce24133d11b0b2ec47f6c3c2ab5dfce",
                 "assetHash": "7ca2d80d24dc04508869ad1727c98ad909125ceb06bbe9e20044066c183d1319",
                 "comparisonResult": "CANDIDATE"
             },
