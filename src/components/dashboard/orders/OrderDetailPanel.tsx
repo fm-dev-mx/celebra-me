@@ -21,7 +21,7 @@ const dayLabel = (iso: string) =>
 const PAYMENT_LABELS = { deposit: 'Anticipo', installment: 'Abono', settlement: 'Liquidación' };
 
 /** Line of the seven order stages. The current one is announced, not only coloured. */
-export function OrderStageLine({ stages }: { stages: OrderStageProgress }) {
+function OrderStageLine({ stages }: { stages: OrderStageProgress }) {
 	return (
 		<ol className="orders-workspace__stages" aria-label="Etapas del pedido">
 			{stages.steps.map((step) => (

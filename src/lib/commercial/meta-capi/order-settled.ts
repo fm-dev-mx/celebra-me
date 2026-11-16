@@ -4,8 +4,8 @@ import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 // settles the balance). The Purchase already carried the total at the deposit, so this custom
 // event closes the cycle in Meta without a value and never double-counts revenue.
 export const ORDER_SETTLED_EVENT_NAME = 'OrderSettled';
-export const ORDER_SETTLED_TRIGGER_STATUS = 'order_settled';
-export const createOrderSettledEventId = (orderId: string): string => `order-settled:${orderId}`;
+const ORDER_SETTLED_TRIGGER_STATUS = 'order_settled';
+const createOrderSettledEventId = (orderId: string): string => `order-settled:${orderId}`;
 
 /** Queues the one OrderSettled event of a fully paid order; a repeated call keeps the first row. */
 export async function enqueueOrderSettledEvent(input: {
