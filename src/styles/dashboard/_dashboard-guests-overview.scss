@@ -83,12 +83,24 @@
 
 /* ==========================================================================
    Guest overview — every width
-   People (passes) lead; invitation stages double as the list filter.
-   Phone: one column, stages 2×2. Tablet: people in two columns, stages 4×1.
-   Desktop (lg+): people and stages side by side (5/7).
+   Next step leads; people (passes) and invitation stages stack below it.
+   Stat tiles and stages run 2×2 on narrow cards and 4×1 from 36rem.
    ========================================================================== */
 
+$ov-radius-card: 18px;
+$ov-radius-tile: 14px;
+$ov-radius-pill: 999px;
+$ov-radius-swatch: 3px;
+$ov-big-size: 3.5rem;
+$ov-count-size: 2rem;
+$ov-label-size: 0.8125rem;
+$ov-text-size: 1rem;
+$ov-small-size: 0.875rem;
+$ov-of-size: 1.125rem;
+
 .guest-overview {
+	display: grid;
+	gap: 1rem;
 	margin: 0 0 1.25rem;
 }
 
@@ -96,11 +108,6 @@
 	display: grid;
 	grid-template-columns: minmax(0, 1fr);
 	gap: 1rem;
-
-	@include mixins.respond-to(lg) {
-		grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-		align-items: start;
-	}
 }
 
 .guest-overview__people,
@@ -108,52 +115,50 @@
 .guest-overview__empty {
 	display: flex;
 	flex-direction: column;
-	gap: 0.875rem;
+	gap: 1rem;
 	min-width: 0;
-	padding: 1.125rem 1rem;
+	padding: 1.25rem 1rem;
 	background: var(--color-surface-elevated);
 	border: 1px solid var(--color-border-subtle);
-	border-radius: 18px;
+	border-radius: $ov-radius-card;
 	box-shadow: var(--shadow-warm);
 	container-type: inline-size;
 
 	@include mixins.respond-to(md) {
-		padding: 1.375rem 1.5rem;
+		padding: 1.5rem 1.75rem;
 	}
 }
 
-/* Tablet: headline and bar on the left, legend on the right */
-.guest-overview__people {
-	@media (width >= 600px) and (width < 992px) {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-		column-gap: 1.5rem;
-
-		> .guest-overview__legend {
-			grid-column: 2;
-			grid-row: 1 / span 3;
-			grid-template-columns: minmax(0, 1fr);
-			align-self: center;
-		}
-
-		> .guest-overview__help,
-		> .guest-overview__note,
-		> .guest-overview__meta {
-			grid-column: 1 / -1;
-		}
-	}
-}
-
+/* Section labels: a small caps line, the numbers carry the weight */
 .guest-overview__heading {
 	margin: 0;
 	color: var(--color-text-secondary);
 	font-family: var(--font-ui);
-	font-size: 1rem;
+	font-size: $ov-label-size;
 	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
 }
 
 .guest-overview__heading-note {
-	font-weight: 400;
+	font-weight: 500;
+	letter-spacing: 0.02em;
+	text-transform: none;
+}
+
+/* --- People: hero number, deadline aside --- */
+.guest-overview__people-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 0.75rem 1.5rem;
+}
+
+.guest-overview__hero {
+	display: grid;
+	gap: 0.375rem;
+	min-width: 0;
 }
 
 .guest-overview__headline {
@@ -167,60 +172,188 @@
 .guest-overview__big {
 	color: var(--color-text-primary);
 	font-family: var(--font-display-elegant);
-	font-size: 3.25rem;
+	font-size: $ov-big-size;
 	font-weight: 700;
 	line-height: 0.95;
 	font-variant-numeric: tabular-nums;
 }
 
-.guest-overview__of,
+.guest-overview__of {
+	color: var(--color-text-secondary);
+	font-size: $ov-of-size;
+}
+
 .guest-overview__party {
 	color: var(--color-text-secondary);
-	font-size: 1.0625rem;
+	font-size: $ov-of-size;
 }
 
-.guest-overview__party {
+/* Adults/children split: one quiet line per row under the headline */
+.guest-overview__breakdown {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.125rem 1rem;
+	margin: 0;
+}
+
+.guest-overview__breakdown-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0 0.375rem;
+
+	.guest-overview__party {
+		font-size: inherit;
+	}
+
+	dt {
+		font-weight: 600;
+
+		&::after {
+			content: ':';
+		}
+	}
+
+	dd {
+		margin: 0;
+	}
+}
+
+.guest-overview__meta {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 0.25rem;
+	text-align: right;
+
+	@container (width < 30rem) {
+		flex-flow: row wrap;
+		align-items: center;
+		column-gap: 1rem;
+		text-align: left;
+	}
+}
+
+.guest-overview__deadline {
+	margin: 0;
+	padding: 0.375rem 0.75rem;
+	border-radius: $ov-radius-pill;
+	background: var(--color-surface-soft);
+	color: var(--color-text-secondary);
+	font-size: $ov-small-size;
+
+	strong {
+		color: var(--color-text-primary);
+	}
+}
+
+/* Share the summary: a label and one button per way to send it */
+.guest-overview__share {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.guest-overview__share-label {
+	flex: 1 0 100%;
+	margin: 0;
+	color: var(--color-text-primary);
+	font-size: $ov-small-size;
+	font-weight: 700;
+}
+
+.guest-overview__share-action {
+	@include mixins.touch-target;
+
+	display: inline-flex;
+	align-items: center;
+	flex: 1 1 0;
+	justify-content: center;
+	gap: 0.375rem;
+	padding: 0 0.875rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: $ov-radius-pill;
+	background: var(--color-surface-elevated);
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	font-size: $ov-small-size;
+	font-weight: 600;
+	text-decoration: none;
+	cursor: pointer;
+
+	&:hover {
+		background: var(--color-surface-soft);
+	}
+
+	&:focus-visible {
+		@include mixins.focus-ring;
+	}
+}
+
+.guest-overview__share-status {
 	flex-basis: 100%;
+	margin: 0;
+	color: var(--color-state-danger-text);
+	font-size: $ov-small-size;
+	font-weight: 600;
+
+	&:empty {
+		display: none;
+	}
 }
 
+/* --- People: one stat tile per category, swatch matches the bar --- */
 .guest-overview__legend {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 0.5rem 1rem;
+	gap: 0.5rem;
 	margin: 0;
 	padding: 0;
 	list-style: none;
 
-	/* Narrow card or enlarged text: one item per row so numbers never collide */
-	@container (width < 20em) {
+	@container (width >= 36rem) {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+
+	@container (width < 17em) {
 		grid-template-columns: minmax(0, 1fr);
 	}
 }
 
 .guest-overview__legend-item {
 	display: flex;
-	align-items: center;
-	gap: 0.5rem;
+	flex-direction: column;
+	gap: 0.125rem;
 	min-width: 0;
-	font-size: 1rem;
+	padding: 0.75rem 0.875rem;
+	border-radius: $ov-radius-tile;
+	background: var(--color-surface-soft);
 }
 
 .guest-overview__legend-label {
-	flex: 1;
-	min-width: 0;
-	color: var(--color-text-primary);
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	color: var(--color-text-secondary);
+	font-size: $ov-small-size;
+	font-weight: 600;
+	line-height: 1.25;
 }
 
 .guest-overview__legend-value {
 	color: var(--color-text-primary);
+	font-family: var(--font-display-elegant);
+	font-size: $ov-count-size;
+	font-weight: 700;
+	line-height: 1.1;
 	font-variant-numeric: tabular-nums;
 }
 
 .guest-overview__swatch {
 	flex: none;
-	width: 14px;
-	height: 14px;
-	border-radius: 3px;
+	width: 12px;
+	height: 12px;
+	border-radius: $ov-radius-swatch;
 
 	&--confirmed {
 		@include passes-slice-confirmed;
@@ -242,16 +375,15 @@
 
 .guest-overview__help {
 	color: var(--color-text-secondary);
-	font-size: 0.9375rem;
+	font-size: $ov-small-size;
 	line-height: 1.45;
 
 	summary {
-		display: inline-flex;
-		align-items: center;
-
 		@include mixins.touch-target;
 
-		color: var(--color-text-primary);
+		display: inline-flex;
+		align-items: center;
+		color: var(--color-text-secondary);
 		font-weight: 600;
 		text-decoration: underline;
 		text-underline-offset: 3px;
@@ -270,109 +402,89 @@
 .guest-overview__note {
 	margin: 0;
 	color: var(--color-state-warning-text);
-	font-size: 0.9375rem;
+	font-size: $ov-small-size;
 }
 
-.guest-overview__meta {
+/* --- Invitation stages: a left-to-right progress track --- */
+.guest-overview__stages-head {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 0.25rem 1rem;
-	padding-top: 0.75rem;
-	border-top: 1px solid var(--color-border-subtle);
+	justify-content: space-between;
+	gap: 0.5rem 1rem;
 }
 
-.guest-overview__deadline {
-	flex: 1 1 auto;
-	margin: 0;
-	color: var(--color-text-secondary);
-	font-size: 0.9375rem;
-
-	strong {
-		color: var(--color-text-primary);
-	}
-}
-
-.guest-overview__link {
-	@include mixins.touch-target;
-
-	padding: 0;
-	border: 0;
-	background: transparent;
-	color: var(--color-text-primary);
-	font-family: var(--font-ui);
-	font-size: 0.9375rem;
-	font-weight: 700;
-	text-decoration: underline;
-	text-underline-offset: 4px;
-	cursor: pointer;
-
-	&:focus-visible {
-		@include mixins.focus-ring;
-	}
-}
-
-.guest-overview__share-status {
-	color: var(--color-state-success-text);
-	font-size: 0.9375rem;
-	font-weight: 600;
-
-	&:empty {
-		display: none;
-	}
-}
-
-/* --- Invitation stages --- */
 .guest-overview__stage-grid {
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 0.5rem;
 
-	@container (width >= 34rem) {
+	@container (width >= 36rem) {
 		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 0;
+		overflow: hidden;
+		border: 1px solid var(--color-border-control);
+		border-radius: $ov-radius-tile;
+
+		.guest-overview__stage {
+			border: 0;
+			border-radius: 0;
+		}
+
+		.guest-overview__stage + .guest-overview__stage {
+			border-left: 1px solid var(--color-border-subtle);
+		}
 	}
 
-	/* Narrow phones or enlarged text: one stage per row */
 	@container (width < 17em) {
 		grid-template-columns: minmax(0, 1fr);
 	}
 }
 
 .guest-overview__stage {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
 	gap: 0.125rem;
 	min-width: 0;
-	min-height: 88px;
-	padding: 0.75rem 0.875rem;
+	min-height: 96px;
+	padding: 0.875rem 1rem;
 	border: 1px solid var(--color-border-control);
-	border-radius: 14px;
+	border-radius: $ov-radius-tile;
 	background: var(--color-surface-elevated);
 	color: var(--color-text-primary);
 	font-family: var(--font-ui);
 	text-align: left;
 	cursor: pointer;
-	transition:
-		background-color 0.2s ease,
-		border-color 0.2s ease;
+	transition: background-color 0.2s ease;
 
 	&:hover {
-		border-color: var(--color-text-primary);
+		background: var(--color-surface-soft);
 	}
 
 	&:focus-visible {
 		@include mixins.focus-ring;
+
+		z-index: 1;
 	}
 
-	&--active {
+	&--empty .guest-overview__stage-count {
+		color: var(--color-text-secondary);
+		opacity: 60%;
+	}
+
+	&--active,
+	&--active:hover {
 		background: var(--dashboard-button-primary-bg);
-		border-color: var(--dashboard-button-primary-bg);
 		color: var(--dashboard-button-primary-text);
 
+		.guest-overview__stage-label,
 		.guest-overview__stage-count,
-		.guest-overview__stage-detail {
+		.guest-overview__stage-detail,
+		.guest-overview__stage-party {
 			color: inherit;
+			opacity: 100%;
 		}
 	}
 }
@@ -389,25 +501,33 @@
 	}
 }
 
+/* Two-line label slot keeps the counts on one baseline */
+.guest-overview__stage-label {
+	max-width: 100%;
+	min-height: 2.5em;
+	color: var(--color-text-secondary);
+	font-size: $ov-small-size;
+	font-weight: 600;
+	line-height: 1.25;
+}
+
 .guest-overview__stage-count {
 	color: var(--color-text-primary);
 	font-family: var(--font-display-elegant);
-	font-size: 1.75rem;
+	font-size: $ov-count-size;
 	font-weight: 700;
-	line-height: 1.05;
+	line-height: 1.1;
 	font-variant-numeric: tabular-nums;
 }
 
-.guest-overview__stage-label {
-	max-width: 100%;
-	font-size: 1rem;
-	font-weight: 600;
-	line-height: 1.2;
-}
-
-.guest-overview__stage-detail {
+/* Secondary detail text shared by the headline breakdown, stats and stages */
+.guest-overview__stage-detail,
+.guest-overview__stage-party,
+.guest-overview__legend-detail,
+.guest-overview__breakdown {
 	color: var(--color-text-secondary);
-	font-size: 0.875rem;
+	font-size: $ov-small-size;
+	line-height: 1.3;
 }
 
 .guest-overview__shortcuts {
@@ -417,19 +537,18 @@
 }
 
 .guest-overview__chip {
+	@include mixins.touch-target;
+
 	display: inline-flex;
 	align-items: center;
 	gap: 0.5rem;
-
-	@include mixins.touch-target;
-
 	padding: 0 0.875rem;
 	border: 1px solid var(--color-border-control);
-	border-radius: 999px;
+	border-radius: $ov-radius-pill;
 	background: var(--color-surface-elevated);
 	color: var(--color-text-primary);
 	font-family: var(--font-ui);
-	font-size: 0.9375rem;
+	font-size: $ov-small-size;
 	font-weight: 600;
 	cursor: pointer;
 
@@ -448,80 +567,99 @@
 	font-variant-numeric: tabular-nums;
 }
 
+/* --- Next step: the one action, leading the overview --- */
 .guest-overview__next {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	justify-content: space-between;
-	gap: 0.75rem 1rem;
-	padding: 0.875rem 1rem;
-	border-radius: 14px;
+	gap: 0.75rem 1.25rem;
+	padding: 1rem 1.25rem;
+	border: 1px solid var(--color-border-subtle);
+	border-left-width: 4px;
+	border-radius: $ov-radius-tile;
 	background: var(--color-surface-soft);
 
 	&--remind {
+		border-color: var(--color-state-warning-text);
 		background: var(--color-state-warning-bg);
 	}
 
 	&--done {
+		border-color: var(--color-state-success-text);
 		background: var(--color-state-success-bg);
 	}
 }
 
 .guest-overview__next-text {
-	flex: 1 1 16rem;
+	flex: 1 1 18rem;
 	margin: 0;
 	color: var(--color-text-primary);
-	font-size: 1rem;
-	line-height: 1.4;
+	font-size: $ov-text-size;
+	line-height: 1.45;
+
+	strong {
+		display: block;
+	}
 }
 
 .guest-overview__next-hint {
 	display: block;
+	margin-top: 0.125rem;
 	color: var(--color-text-secondary);
-	font-size: 0.9375rem;
+	font-size: $ov-small-size;
 }
 
 .guest-overview__next-action {
 	@include mixins.touch-target;
 }
 
+$lead-card-radius: 18px;
+
 /* ==========================================================================
-   Compact-screen lead — summary strip and next step above the list; the full
-   overview and "Por grupo" fold behind "Ver resumen completo".
+   Lead — progress strip and next step above the list at every width; the full
+   overview and "Por grupo" fold behind "Más datos".
    ========================================================================== */
 
 .dashboard-guests__lead {
-	display: none;
+	display: grid;
+	overflow: hidden;
+	margin: 0 0 0.75rem;
+	background: var(--color-surface-elevated);
+	border: 1px solid var(--color-border-subtle);
+	border-radius: $lead-card-radius;
+	box-shadow: var(--shadow-warm);
 
-	@include mixins.respond-below(lg) {
-		display: grid;
-		gap: 0.5rem;
-		margin: 0 0 0.5rem;
+	/* One card: progress on top, the next step as its footer */
+	.guest-strip {
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
 	}
 
 	.guest-overview__next {
 		padding: 0.625rem 1rem;
+		border: 0;
+		border-top: 1px solid var(--color-border-subtle);
+		border-radius: 0;
 	}
 }
 
-.filter-row__actions {
+.dashboard-guests__summary--folded {
 	display: none;
 }
 
-@include mixins.respond-below(lg) {
-	.dashboard-guests__summary--folded,
-	.guest-overview__next--overview,
-	/* "Agregar" lives in the dock and "Más acciones" beside the search */
-	.dashboard-guests .dashboard-guests__toolbar--actions {
-		display: none;
-	}
+.filter-row__actions {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 0.5rem;
+}
 
+@include mixins.respond-below(lg) {
 	/* The dock carries the send / remind action right below */
-	.guest-overview__next--strip {
-		.guest-overview__next-hint,
-		.guest-overview__next-action {
-			display: none;
-		}
+	.guest-overview__next--strip .guest-overview__next-action {
+		display: none;
 	}
 
 	.dashboard-guests {
@@ -533,8 +671,7 @@
 		}
 
 		.header-event-selector label,
-		.filter-group--search label,
-		.guest-view-toggle__label {
+		.filter-group--search label {
 			/* Keeps a label for assistive technology while the compact screen drops it visually */
 			@include mixins.visually-hidden;
 		}
@@ -543,71 +680,41 @@
 			flex: 1 1 0;
 		}
 
-		.filter-row__actions {
-			display: flex;
-		}
-
 		.dashboard-guests__filters {
 			gap: 0.5rem;
 			margin-bottom: 0.5rem;
 		}
 
-		/* View switch and "Seleccionar varios" share one row */
-		.dashboard-guests__view-toggle {
-			flex-wrap: nowrap;
-			gap: 0.5rem;
-			margin-bottom: 0.5rem;
-
-			.guest-view-toggle {
-				flex: 0 1 auto;
-			}
-
-			/* Text-only options keep both controls inside 375 px */
-			.guest-view-toggle__option {
-				padding: 0 0.875rem;
-
-				svg {
-					display: none;
-				}
-			}
-
-			.guest-select-toggle {
-				flex: none;
-			}
-		}
-
-		.filter-row__actions .toolbar-actions-menu__trigger--icon {
-			justify-content: center;
-			width: 48px;
+		/* Same height as the search field beside it */
+		.filter-row__actions .toolbar-actions-menu__trigger {
 			min-height: 48px;
-			padding: 0;
+			gap: 0.125rem;
+			padding: 0 0.5rem;
 		}
 	}
 }
 
 /* Same card radius and type steps as the full overview */
 $strip-card-radius: 18px;
-$strip-big-size: 2rem;
+$strip-tile-radius: 14px;
+$strip-big-size: 2.5rem;
+$strip-count-size: 1.5rem;
 $strip-text-size: 1rem;
 $strip-control-size: 0.9375rem;
+$strip-small-size: 0.875rem;
+$strip-label-size: clamp(0.75rem, 3.2vw, 0.875rem);
 
 .guest-strip {
 	display: grid;
-	gap: 0.5rem;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: start;
+	gap: 0.5rem 1rem;
 	min-width: 0;
-	padding: 0.75rem 1rem 0;
+	padding: 0.75rem 1rem;
 	background: var(--color-surface-elevated);
 	border: 1px solid var(--color-border-subtle);
 	border-radius: $strip-card-radius;
 	box-shadow: var(--shadow-warm);
-}
-
-.guest-strip__headline {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: baseline;
-	gap: 0.25rem 0.5rem;
-	margin: 0;
 }
 
 .guest-strip__big {
@@ -619,85 +726,178 @@ $strip-control-size: 0.9375rem;
 	font-variant-numeric: tabular-nums;
 }
 
-.guest-strip__of,
-.guest-strip__party {
+.guest-strip__of {
 	color: var(--color-text-secondary);
 	font-size: $strip-text-size;
 }
 
-.guest-strip__party {
-	flex-basis: 100%;
+.guest-strip > :not(.guest-strip__toggle, .guest-strip__totals) {
+	grid-column: 1 / -1;
 }
 
-/* One scrollable row; the cut-off pill at the edge signals there is more */
-.guest-strip__pills {
+/* The total leads: the three counts below are its parts */
+.guest-strip__totals {
 	display: flex;
-	gap: 0.375rem;
-	margin: 0 -1rem;
-	padding: 0 1rem;
-	overflow-x: auto;
-
-	@include mixins.hide-scrollbar;
+	flex-wrap: wrap;
+	grid-row: 1;
+	grid-column: 1;
+	align-items: baseline;
+	gap: 0.125rem 0.5rem;
+	margin: 0;
 }
 
-.guest-strip__pill {
-	display: inline-flex;
-	align-items: center;
+/* Three counts that add up to every invited person; each one filters the list */
+.guest-strip__stats {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.375rem;
+}
 
-	@include mixins.touch-target;
-
-	padding: 0 0.75rem;
-	border: 1px solid transparent;
-	border-radius: var(--radius-pill);
+.guest-strip__stat {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.125rem;
+	min-width: 0;
+	min-height: 48px;
+	padding: 0.5rem 0.375rem;
+	border: 1px solid var(--color-border-control);
+	border-radius: $strip-tile-radius;
+	background: var(--color-surface-elevated);
+	color: var(--color-text-primary);
 	font-family: var(--font-ui);
-	font-size: $strip-control-size;
-	font-weight: 600;
-	font-variant-numeric: tabular-nums;
+	text-align: left;
 	cursor: pointer;
+	transition: background-color 0.2s ease;
+
+	&:hover {
+		background: var(--color-surface-soft);
+	}
 
 	&:focus-visible {
 		@include mixins.focus-ring;
 	}
 
-	flex: none;
-	white-space: nowrap;
+	&--active,
+	&--active:hover {
+		border-color: var(--dashboard-button-primary-bg);
+		background: var(--dashboard-button-primary-bg);
+		color: var(--dashboard-button-primary-text);
 
-	&--to-send {
-		background: var(--color-state-warning-bg);
-		color: var(--color-state-warning-text);
-	}
-
-	&--awaiting {
-		background: var(--color-state-info-bg);
-		color: var(--color-state-info-text);
-	}
-
-	&--confirmed {
-		background: var(--color-state-success-bg);
-		color: var(--color-state-success-text);
-	}
-
-	&--declined {
-		background: var(--color-state-danger-bg);
-		color: var(--color-state-danger-text);
-	}
-
-	/* Pressed keeps the state tint and adds an outline, so the tone never disappears */
-	&--active {
-		border-color: currentcolor;
-		box-shadow: inset 0 0 0 1px currentcolor;
-	}
-
-	@media (forced-colors: active) {
-		border-color: ButtonText;
+		.guest-strip__stat-label,
+		.guest-strip__stat-note {
+			color: inherit;
+		}
 	}
 }
 
-.guest-strip__toggle {
-	justify-self: start;
+.guest-strip__stat-label {
+	color: var(--color-text-secondary);
+	font-size: $strip-label-size;
+	font-weight: 600;
+	line-height: 1.2;
+}
+
+.guest-strip__stat-count {
+	display: flex;
+	align-items: center;
+	gap: 0.375rem;
+	font-family: var(--font-display-elegant);
+	font-size: $strip-count-size;
+	font-weight: 700;
+	line-height: 1.1;
+	font-variant-numeric: tabular-nums;
+}
+
+.guest-strip__stat-note,
+.guest-strip__pending {
+	margin: 0;
+	color: var(--color-text-secondary);
+	font-size: $strip-small-size;
+	line-height: 1.35;
+}
+
+/* Entry to the message wall: one full-width line under the counts. */
+.guest-strip__messages {
+	grid-column: 1 / -1;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
 
 	@include mixins.touch-target;
 
+	padding: 0.5rem 0.75rem;
+	border: 1px solid var(--color-border-subtle);
+	border-radius: $strip-tile-radius;
+	background: var(--color-surface-soft);
+	color: var(--color-text-primary);
+	font-family: var(--font-ui);
+	font-size: $strip-small-size;
+	text-align: left;
+	cursor: pointer;
+
+	&:hover {
+		border-color: var(--color-border-control);
+	}
+
+	&:focus-visible {
+		@include mixins.focus-ring;
+	}
+
+	svg {
+		flex: none;
+		color: var(--color-action-accent);
+	}
+}
+
+.guest-strip__messages--unread {
+	border-color: var(--color-action-accent);
+}
+
+.guest-strip__messages--active {
+	border-color: var(--color-text-primary);
+}
+
+.guest-strip__messages-text {
+	flex: 1;
+	min-width: 0;
+	font-weight: 600;
+}
+
+.guest-strip__messages-new {
+	flex: none;
+	padding: 0.125rem 0.5rem;
+	border-radius: 999px;
+	background: var(--color-action-accent);
+	color: var(--color-text-on-light);
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 1.4;
+}
+
+.guest-strip__messages-action {
+	flex: none;
+	font-weight: 700;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+@media (forced-colors: active) {
+	.guest-strip__stat--active {
+		@include mixins.focus-ring(Highlight);
+	}
+}
+
+/* Top-right, level with the totals */
+.guest-strip__toggle {
+	grid-row: 1;
+	grid-column: 2;
+	place-self: start end;
+
+	@include mixins.touch-target;
+
+	/* Same width for both labels, so the total never rewraps on toggle */
+	min-width: 5.5rem;
 	padding: 0;
 	border: 0;
 	background: transparent;

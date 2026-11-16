@@ -2,6 +2,7 @@ import {
 	buildInvitationSectionRenderDescriptors,
 	type InvitationSectionRenderDescriptor,
 } from '@/lib/invitation/section-render-data';
+import { formatPassBreakdown } from '@/lib/rsvp/guest-cap';
 import { DEMO_GUEST_NAME } from '@/components/invitation/rsvp-logic';
 import {
 	buildPageContextFromViewModel,
@@ -527,13 +528,14 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 			maxAllowedAttendees: 2,
 			maxAllowedChildren: 1,
 		});
+		// Adults-only event: its FAQ says «Evento solo para adultos».
 		expect(passOf('demo-cumple-luxury-hacienda')).toMatchObject({
 			maxAllowedAttendees: 8,
-			maxAllowedChildren: 2,
+			maxAllowedChildren: 0,
 		});
 	});
 
-	it('shows the adults-only line on childless demo passes', () => {
+	it('passes no children and no adults-only flag on childless passes', () => {
 		const base = setupDemoPageContext('demo-xv-editorial');
 		const childless = {
 			...base,
@@ -548,21 +550,62 @@ describe('buildInvitationSectionRenderDescriptors', () => {
 		const props = buildInvitationSectionRenderDescriptors(childless).find(
 			isPersonalizedAccessDescriptor,
 		)?.props;
-		expect(props).toMatchObject({ maxAllowedChildren: 0, adultsOnlyLabel: true });
+		expect(props).toMatchObject({ maxAllowedChildren: 0 });
+		expect(props).not.toHaveProperty('adultsOnlyLabel');
 	});
 
-	it('keeps the original pass text on published invitations', () => {
-		const base = setupDemoPageContext();
-		const labelFor = (id: string) =>
-			buildInvitationSectionRenderDescriptors({
+	describe('pass children never confuse adult and child passes', () => {
+		const base = setupDemoPageContext('demo-xv-editorial');
+		const withDemoChildren = (demoMaxChildren: number | undefined) =>
+			({
 				...base,
-				viewModel: { ...base.viewModel, id, isDemo: false },
-			}).find(isPersonalizedAccessDescriptor)?.props.adultsOnlyLabel;
-		expect(labelFor('andrea')).toBe(false);
-		expect(labelFor('destenid-sofia')).toBe(false);
-		expect(labelFor('naomi-huerta')).toBe(false);
-		expect(labelFor('valeria-hernandez')).toBe(false);
-		expect(labelFor('a-new-client')).toBe(true);
+				viewModel: {
+					...base.viewModel,
+					sections: {
+						...base.viewModel.sections,
+						rsvp: { ...base.viewModel.sections.rsvp, demoMaxChildren },
+					},
+				},
+			}) as typeof base;
+		const withGuest = (maxAllowedAttendees: number, maxAllowedChildren: number | undefined) =>
+			({
+				...withDemoChildren(2),
+				guestContext: {
+					inviteId: 'invite-1',
+					guest: {
+						fullName: 'Ana',
+						maxAllowedAttendees,
+						maxAllowedChildren,
+						attendanceStatus: 'pending',
+						attendeeCount: 0,
+					},
+				},
+			}) as unknown as typeof base;
+		const breakdownOf = (pageContext: typeof base) => {
+			const props = buildInvitationSectionRenderDescriptors(pageContext).find(
+				isPersonalizedAccessDescriptor,
+			)?.props;
+			return formatPassBreakdown(props!.maxAllowedAttendees, props!.maxAllowedChildren);
+		};
+
+		it.each([0, undefined])(
+			'adults-only demo pass (demoMaxChildren %s) has no children text',
+			(n) => {
+				expect(breakdownOf(withDemoChildren(n))).toBeUndefined();
+			},
+		);
+
+		it('a real guest pass ignores the demo children setting', () => {
+			expect(breakdownOf(withGuest(3, 0))).toBeUndefined();
+			expect(breakdownOf(withGuest(3, undefined))).toBeUndefined();
+		});
+
+		it('a real guest pass reads adults and children, never «solo para adultos»', () => {
+			expect(breakdownOf(withGuest(3, 1))).toBe('2 adultos y 1 niño');
+			expect(breakdownOf(withGuest(4, 2))).toBe('2 adultos y 2 niños');
+			expect(breakdownOf(withGuest(2, 2))).toBe('2 niños');
+			expect(breakdownOf(withGuest(2, 1))).not.toMatch(/solo para adultos/i);
+		});
 	});
 
 	it('renders RSVP form for demo preview regardless of accessMode', () => {

@@ -53,11 +53,13 @@ describe('GuestTableRow — status, people and actions', () => {
 	});
 
 	it.each(['confirmed', 'declined'] as const)(
-		'shows "Copiar enlace" as the one action of an answered row (%s)',
+		'keeps "Copiar enlace" only in the «⋯» menu of an answered row (%s)',
 		(attendanceStatus) => {
-			renderRow({ attendanceStatus, deliveryStatus: 'shared' });
-			expect(screen.getByRole('button', { name: 'Copiar enlace' })).toBeInTheDocument();
+			renderRow({ attendanceStatus, deliveryStatus: 'shared', fullName: 'Tía Carmen' });
+			expect(screen.queryByRole('button', { name: 'Copiar enlace' })).not.toBeInTheDocument();
 			expect(screen.queryByTestId('share-action')).not.toBeInTheDocument();
+			act(() => screen.getByRole('button', { name: 'Más acciones de Tía Carmen' }).click());
+			expect(screen.getByRole('menuitem', { name: 'Copiar enlace' })).toBeInTheDocument();
 		},
 	);
 

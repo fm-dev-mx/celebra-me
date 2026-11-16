@@ -19,7 +19,12 @@ import {
 	sanitize,
 	toSafeAttendeeCount,
 } from '@/lib/rsvp/core/utils';
-import { checkConfirmedParty, resolveChildrenCap, resolveGuestCap } from '@/lib/rsvp/guest-cap';
+import {
+	adultsOverCapMessage,
+	checkConfirmedParty,
+	resolveChildrenCap,
+	resolveGuestCap,
+} from '@/lib/rsvp/guest-cap';
 import { appendGuestMessage } from '@/lib/rsvp/core/guest-message';
 import { isSupportedCountryCode } from '@/lib/phone/country-codes';
 import { mapSupabaseErrorToApiError } from '@/lib/rsvp/repositories/supabase-errors';
@@ -132,11 +137,12 @@ export function validateRsvpPayload(
 	const attendeeCount = toSafeAttendeeCount(payload.attendeeCount);
 	const childrenCount = toSafeAttendeeCount(payload.childrenCount ?? 0);
 	const maxAllowedAttendees = resolveGuestCap(maxAllowed).maxTotalAttendees;
+	const childrenCap = resolveChildrenCap(maxChildren, maxAllowedAttendees);
 	const issue = checkConfirmedParty({
 		attendeeCount,
 		childrenCount,
 		maxAttendees: maxAllowedAttendees,
-		maxChildren: resolveChildrenCap(maxChildren, maxAllowedAttendees),
+		maxChildren: childrenCap,
 	});
 	if (issue === 'min_attendees') {
 		throw new ApiError(
@@ -150,6 +156,13 @@ export function validateRsvpPayload(
 			400,
 			'bad_request',
 			`The limit for this invitation is ${maxAllowedAttendees}.`,
+		);
+	}
+	if (issue === 'max_adults') {
+		throw new ApiError(
+			400,
+			'bad_request',
+			adultsOverCapMessage(maxAllowedAttendees, childrenCap),
 		);
 	}
 	if (issue === 'max_children') {

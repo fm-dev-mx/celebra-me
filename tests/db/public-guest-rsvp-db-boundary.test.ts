@@ -115,6 +115,27 @@ describe('public guest rsvp postgresql security boundary (real DB)', () => {
 		expect(parseInt(auditAfter.stdout.trim(), 10)).toBe(auditBeforeCount + 1);
 	});
 
+	it('rejects adults taking child places and keeps the stored response', () => {
+		const setup = runSql(
+			"update public.guest_invitations set max_allowed_attendees = 4, max_allowed_children = 1 where invite_id = '33333333-3333-3333-3333-333333333333';",
+		);
+		expect(setup.status).toBe(0);
+
+		const rpc = (count: number, children: number) =>
+			runSqlAsRole(
+				'service_role',
+				`select public.submit_guest_rsvp_public(p_invite_id => '33333333-3333-3333-3333-333333333333', p_attendance_status => 'confirmed', p_attendee_count => ${count}, p_children_count => ${children}, p_response_source => 'link');`,
+			);
+
+		const fourAdults = rpc(4, 0);
+		expect(fourAdults.status).not.toBe(0);
+		expect(fourAdults.stderr).toContain('adult_count_exceeds_limit');
+		expect(rpc(3, 1).status).toBe(0);
+		expect(rpc(3, 0).status).toBe(0);
+		expect(rpc(2, 1).status).toBe(0);
+		expect(rpc(2, 2).stderr).toContain('children_count_exceeds_limit');
+	});
+
 	it('allows service_role to record guest engagement and keeps the ledger append-only', () => {
 		const recordRes = runSqlAsRole(
 			'service_role',

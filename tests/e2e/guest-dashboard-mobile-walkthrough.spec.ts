@@ -265,6 +265,12 @@ async function expectMobileFooterCancel(modal: Locator) {
 	await expect(modal).not.toBeVisible();
 }
 
+/** The list/cards switch lives in the toolbar "Opciones" menu. */
+async function switchToCardsView(page: Page) {
+	await page.getByRole('button', { name: 'Opciones', exact: true }).click();
+	await page.getByRole('menuitem', { name: 'Ver como tarjetas' }).click();
+}
+
 test('uses the hydrated sidebar for keyboard logout', async ({ page, baseURL }) => {
 	let logouts = 0;
 	await page.route('**/api/auth/logout', async (route) => {
@@ -296,7 +302,7 @@ test.describe('Mobile modal cancel buttons at 390px', () => {
 	}) => {
 		await openGuestDashboard(page, baseURL);
 
-		await page.locator('.guest-view-toggle__option:has-text("Tarjetas")').click();
+		await switchToCardsView(page);
 		const shareBtn = page
 			.locator('.guest-card:has-text("Carlos Gómez")')
 			.locator('.dashboard-guests__share-button');
@@ -305,7 +311,7 @@ test.describe('Mobile modal cancel buttons at 390px', () => {
 		await expectMobileFooterCancel(page.locator('.dashboard-modal--send-invitation'));
 
 		// Compact screens show the menu as an icon beside the search; the toolbar copy is hidden.
-		await page.getByRole('button', { name: 'Más acciones' }).click();
+		await page.getByRole('button', { name: 'Opciones' }).click();
 		await page.locator('.guest-actions-menu__item:has-text("Plantillas de mensaje")').click();
 		await expectMobileFooterCancel(page.locator('.dashboard-modal--share-templates'));
 	});
@@ -350,9 +356,7 @@ test.describe('Mobile guest dashboard walkthrough at 390px', () => {
 		expect(hasListOverflow).toBe(false);
 
 		// 2. Switch to Tarjetas view and verify button layout styling
-		const cardsToggle = page.locator('.guest-view-toggle__option:has-text("Tarjetas")');
-		await expect(cardsToggle).toBeVisible();
-		await cardsToggle.click();
+		await switchToCardsView(page);
 		await page.waitForTimeout(300);
 
 		// Verify no horizontal overflow in cards view at 390px
@@ -457,8 +461,8 @@ test.describe('Pending-first guest dashboard at 375px', () => {
 		);
 		expect(hasOverflow).toBe(false);
 
-		// Charts, funnel and stage cards wait behind "Ver resumen completo".
-		const summaryToggle = page.getByRole('button', { name: 'Ver resumen completo' });
+		// Charts, funnel and stage cards wait behind "Más datos".
+		const summaryToggle = page.getByRole('button', { name: 'Más datos' });
 		await expect(summaryToggle).toHaveAttribute('aria-expanded', 'false');
 		await expect(page.locator('.guest-overview__stages')).toBeHidden();
 		await summaryToggle.click();
@@ -466,9 +470,10 @@ test.describe('Pending-first guest dashboard at 375px', () => {
 
 		// The choice is remembered for the next visit.
 		await page.reload({ waitUntil: 'networkidle' });
-		await expect(
-			page.getByRole('button', { name: 'Ocultar resumen completo' }),
-		).toHaveAttribute('aria-expanded', 'true');
+		await expect(page.getByRole('button', { name: 'Ocultar' })).toHaveAttribute(
+			'aria-expanded',
+			'true',
+		);
 	});
 });
 
@@ -477,17 +482,17 @@ test.describe('Guest dashboard summary on wide screens', () => {
 		viewport: { width: 1366, height: 900 },
 	});
 
-	test('keeps the full overview open and leaves the compact strip out', async ({
+	test('keeps the compact strip and folds the full overview behind Más datos', async ({
 		page,
 		baseURL,
 	}, testInfo) => {
 		await openGuestDashboard(page, baseURL, twelveMockGuests());
 
+		await expect(page.locator('.guest-strip')).toBeVisible();
+		await expect(page.locator('.guest-overview__stages')).toBeHidden();
+		await page.getByRole('button', { name: 'Más datos' }).click();
 		await expect(page.locator('.guest-overview__stages')).toBeVisible();
-		await expect(page.locator('.guest-strip')).toBeHidden();
-		await expect(page.getByRole('button', { name: 'Más acciones', exact: true })).toHaveCount(
-			1,
-		);
+		await expect(page.getByRole('button', { name: 'Opciones', exact: true })).toHaveCount(1);
 		await page.screenshot({ path: testInfo.outputPath('guests-1366.png') });
 	});
 });

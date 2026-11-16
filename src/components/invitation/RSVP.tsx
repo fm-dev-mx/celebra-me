@@ -338,7 +338,15 @@ const RSVP: React.FC<RSVPProps> = ({
 					maxChildren,
 					childrenCount,
 					onChildrenCountChange: (value) => {
+						// Adults keep their count; the total follows the children.
+						const adults = Math.max(
+							0,
+							(Number(attendeeCount) || 0) -
+								Math.min(Number(childrenCount) || 0, maxChildren),
+						);
+						const nextChildren = Math.max(0, Number.parseInt(value, 10) || 0);
 						setChildrenCount(value);
+						setAttendeeCount(adults + Math.min(nextChildren, maxChildren));
 						if (touched.childrenCount) validate();
 					},
 				}}

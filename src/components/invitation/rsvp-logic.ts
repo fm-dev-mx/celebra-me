@@ -1,7 +1,12 @@
 import { parsePhoneInput, stripAllNonDigits } from '@/lib/phone/validation';
 import { DEFAULT_COUNTRY_CODE } from '@/lib/phone/country-codes';
 import type { WhatsAppConfig } from '@/lib/adapters/types';
-import { checkConfirmedParty, formatParty, maxConfirmableChildren } from '@/lib/rsvp/guest-cap';
+import {
+	adultsOverCapMessage,
+	checkConfirmedParty,
+	formatParty,
+	maxConfirmableChildren,
+} from '@/lib/rsvp/guest-cap';
 export type { RsvpResponseMessages } from '@/lib/invitation/rsvp-messages';
 
 /**
@@ -334,6 +339,9 @@ function confirmedPartyErrors(
 		return { guestCount: 'El número de invitados debe ser al menos 1.' };
 	if (issue === 'max_attendees') {
 		return { guestCount: `El límite de invitados es de ${maxAttendees}.` };
+	}
+	if (issue === 'max_adults') {
+		return { guestCount: adultsOverCapMessage(maxAttendees, maxChildren) };
 	}
 	if (issue === 'max_children') {
 		const cap = maxConfirmableChildren(attendeeCount, maxChildren);

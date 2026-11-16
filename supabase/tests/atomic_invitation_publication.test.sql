@@ -1,5 +1,5 @@
 begin;
-select plan(101);
+select plan(103);
 
 insert into auth.users (id, aud, role, email, created_at, updated_at)
 values ('10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'atomic-publish@example.test', now(), now());
@@ -316,10 +316,16 @@ select throws_like(
 );
 update public.guest_invitations set max_allowed_children=2 where invite_id='91000000-0000-0000-0000-000000000003';
 select lives_ok(
-  $$select public.submit_guest_rsvp_public('91000000-0000-0000-0000-000000000003',null,null,null,null,null,'confirmed',3,'','link',null,1)$$,
+  $$select public.submit_guest_rsvp_public('91000000-0000-0000-0000-000000000003',null,null,null,null,null,'confirmed',3,'','link',null,2)$$,
   'RSVP with children inside the reserved passes succeeds'
 );
-select is((select children_count from public.guest_invitations where invite_id='91000000-0000-0000-0000-000000000003'), 1, 'RSVP stores the confirmed children');
+select is((select children_count from public.guest_invitations where invite_id='91000000-0000-0000-0000-000000000003'), 2, 'RSVP stores the confirmed children');
+select throws_like(
+  $$select public.submit_guest_rsvp_public('91000000-0000-0000-0000-000000000003',null,null,null,null,null,'confirmed',4,'','link',null,1)$$,
+  '%adult_count_exceeds_limit%',
+  'adults cannot take the places reserved for children'
+);
+select is((select children_count from public.guest_invitations where invite_id='91000000-0000-0000-0000-000000000003'), 2, 'rejected adult overflow leaves the stored children untouched');
 select throws_like(
   $$select public.submit_guest_rsvp_public('91000000-0000-0000-0000-000000000003',null,null,null,null,null,'confirmed',1,'','link',null,2)$$,
   '%children_count_exceeds_limit%',
