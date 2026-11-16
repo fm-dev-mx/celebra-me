@@ -141,12 +141,14 @@ export const gallerySchema = z
 			});
 		}
 
-		if (gallery.variant === 'feature-stack' && gallery.items.length < 3) {
+		if (
+			(gallery.variant === 'feature-stack' || gallery.variant === 'rising-stack') &&
+			gallery.items.length < 3
+		) {
 			context.addIssue({
 				code: 'custom',
 				path: ['items'],
-				message:
-					'La variante feature-stack requiere al menos tres elementos en la galería.',
+				message: `La variante ${gallery.variant} requiere al menos tres elementos en la galería.`,
 			});
 		}
 

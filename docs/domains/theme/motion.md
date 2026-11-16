@@ -205,6 +205,10 @@ only; elsewhere the same markup renders as a normal section.
   ball turns along the route under a spotlight that opens over a dance-floor night, and pins two
   screens instead of three so it can share the budget with an album. The album takes an optional
   `--gallery-album-dusk` ground that darkens in while the prints assemble (motion-safe only).
+  `countdown.framed-scene` (the frame opens and the counter comes in turn, then settles under the
+  next card), `gallery.rising-stack` (the prints rise into a framed stack) and
+  `location.pinned-program` (the program cards pin on the gold rail) are pinned scenes proven on the
+  Daniela y David wedding (`/boda/daniela-y-david`); each counts toward the budget above.
   `itinerary.scene: 'ribbon-route'` (standard variant, two or more moments) pins the program: a
   ribbon draws itself down the list, each moment comes forward as the ribbon reaches it, and the
   ribbon ties off in a bow (drawn, or the profile's `--itinerary-ribbon-bow-art`). Resting, it is a

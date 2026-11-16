@@ -1,0 +1,202 @@
+@use '../../../global/a11y' as a11y;
+
+// Veiled photo (quote): one screen, the photograph bleeding to the edges under a deep veil that
+// thickens toward the foot, where the text sits; on wide screens the veil centres and the text
+// rises to the middle. The closing line is script over a short hairline. Scroll-linked motion
+// (photograph surfaces and draws closer, the text rises, holds and lifts away) is included.
+// The base quote styles are not keyed on a variant, so nothing is carried over. Profiles map the
+// `--veiled-photo-*` tokens: `-image` (the photograph as a `url()`), `-veil-rgb` and
+// `-veil-deep-rgb` (space-separated channels of the two veil tones), `-rule` (the hairline).
+// `-stage-top` is optional (clears the fixed header and the preview banner).
+
+// Quote: one screen, the photograph bleeding to the edges under an olive veil that deepens
+// toward the foot, where the text sits; it follows the approved cover.
+.event-theme-wrapper .quote-section[data-variant='veiled-photo'] {
+	box-sizing: border-box;
+	height: 100svh;
+	align-items: flex-end;
+	overflow: clip;
+
+	// The bottom pad keeps the text above the fixed «Confirmar asistencia» button.
+	padding: var(
+			--veiled-photo-stage-top,
+			calc(var(--header-height-scrolled, 70px) + var(--preview-banner-height, 0px) + 0.75rem)
+		)
+		1.5rem clamp(6.5rem, 15svh, 8.5rem);
+	isolation: isolate;
+
+	&::before,
+	&::after {
+		content: '';
+		position: absolute;
+		z-index: -1;
+		inset: 0;
+		pointer-events: none;
+	}
+
+	&::before {
+		background: var(--veiled-photo-image, none) 50% 38% / cover no-repeat;
+		transform-origin: 50% 40%;
+	}
+
+	&::after {
+		background:
+			linear-gradient(
+				0deg,
+				rgb(var(--veiled-photo-veil-deep-rgb, 62 72 40) / 96%) 0%,
+				rgb(var(--veiled-photo-veil-rgb, 92 104 62) / 86%) 34%,
+				rgb(var(--veiled-photo-veil-rgb, 92 104 62) / 48%) 62%,
+				rgb(var(--veiled-photo-veil-rgb, 92 104 62) / 22%) 82%
+			),
+			linear-gradient(
+				180deg,
+				rgb(var(--veiled-photo-veil-deep-rgb, 62 72 40) / 62%) 0%,
+				transparent 22%
+			);
+	}
+
+	.quote-texture {
+		display: none;
+	}
+
+	.quote-container {
+		max-width: 34rem;
+	}
+}
+
+// Wide screens show the hands across the middle, so the veil covers more evenly and the text
+// rises to the centre.
+@media (width >= 62rem) {
+	.event-theme-wrapper .quote-section[data-variant='veiled-photo'] {
+		align-items: center;
+		padding-bottom: 3rem;
+
+		&::after {
+			background:
+				radial-gradient(
+					ellipse 60% 55% at 50% 52%,
+					rgb(var(--veiled-photo-veil-deep-rgb, 62 72 40) / 88%) 0%,
+					rgb(var(--veiled-photo-veil-rgb, 92 104 62) / 72%) 55%,
+					rgb(var(--veiled-photo-veil-rgb, 92 104 62) / 48%) 100%
+				),
+				linear-gradient(
+					180deg,
+					rgb(var(--veiled-photo-veil-deep-rgb, 62 72 40) / 62%) 0%,
+					transparent 22%
+				);
+		}
+	}
+}
+
+// Invitation line: serif text, a gold hairline, then the names in script.
+.event-theme-wrapper .quote-section[data-variant='veiled-photo'] .quote-closing-line {
+	font-family: var(--font-calligraphy);
+	font-size: var(--veiled-quote-closing-line-size, clamp(2.1rem, 1.6rem + 2.6vw, 3rem));
+	font-style: normal;
+	line-height: 1.1;
+
+	&::before {
+		content: '';
+		display: block;
+		width: 3rem;
+		height: 1px;
+		margin: clamp(1.1rem, 3svh, 1.75rem) auto;
+		background: var(--veiled-photo-rule, rgb(201 174 118));
+	}
+}
+
+@include a11y.motion-safe {
+	@supports (animation-timeline: view()) {
+		.event-theme-wrapper
+			#invitation-sections-container
+			> .invitation-section-wrapper.has-motion[data-reveal='editorial'][data-section-kind='quote']:has(
+				.quote-section[data-variant='veiled-photo']
+			) {
+			view-timeline-name: --veiled-photo-stage;
+
+			// The timed reveal of the preset gives way to the scroll position.
+			.quote-section :is([data-reveal-role], [data-reveal-item], .word) {
+				opacity: 100%;
+				animation: none;
+			}
+
+			// The photograph surfaces from the olive and draws slowly closer; the text rises in, holds
+			// while the screen is full, and lifts away as the next scene comes.
+			.quote-section::before {
+				animation: veiled-photo-near linear both;
+				animation-timeline: --veiled-photo-stage;
+			}
+
+			.quote-section .quote-line {
+				animation: veiled-photo-ink linear both;
+				animation-timeline: --veiled-photo-stage;
+			}
+
+			.quote-section .quote-closing-line {
+				animation: veiled-photo-ink-late linear both;
+				animation-timeline: --veiled-photo-stage;
+			}
+		}
+	}
+}
+
+// The cover ends in olive, so the quote arrives as plain olive and the photograph surfaces from
+// it; two photographs never meet at the seam.
+@keyframes veiled-photo-near {
+	0%,
+	20% {
+		opacity: 0%;
+		scale: 1;
+	}
+
+	50% {
+		opacity: 100%;
+	}
+
+	100% {
+		opacity: 100%;
+		scale: 1.16;
+	}
+}
+
+// The quote text starts rising as soon as the photograph does, so the picture never shows
+// alone.
+@keyframes veiled-photo-ink {
+	0%,
+	6% {
+		opacity: 0%;
+		translate: 0 1.75rem;
+	}
+
+	30%,
+	58% {
+		opacity: 100%;
+		translate: 0 0;
+	}
+
+	82%,
+	100% {
+		opacity: 0%;
+		translate: 0 -1.5rem;
+	}
+}
+
+@keyframes veiled-photo-ink-late {
+	0%,
+	12% {
+		opacity: 0%;
+		translate: 0 2.25rem;
+	}
+
+	36%,
+	62% {
+		opacity: 100%;
+		translate: 0 0;
+	}
+
+	88%,
+	100% {
+		opacity: 0%;
+		translate: 0 -1.5rem;
+	}
+}

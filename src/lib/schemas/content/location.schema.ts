@@ -15,6 +15,9 @@ import { LOCATION_VARIANTS } from '@/lib/invitation/section-variants';
 /** Variants built on the shared venue plates: two or more venues, optional compact cards. */
 const PLATE_VARIANTS: ReadonlySet<string> = new Set(['stacked-venue-plates', 'night-route']);
 
+/** Printed-program variants: one or more venues, optionally a pinned route scene. */
+const PROGRAM_VARIANTS: ReadonlySet<string> = new Set(['program-sheet', 'pinned-program']);
+
 /** Variants that lay out a route between venues and so need two or more of them. */
 const MULTI_VENUE_VARIANTS: ReadonlySet<string> = new Set([...PLATE_VARIANTS, 'star-route']);
 
@@ -120,7 +123,8 @@ function validateRouteScene(
 	location: { variant: string; venues: Array<{ isVisible?: boolean }> },
 	context: z.RefinementCtx,
 ): void {
-	if (location.variant === 'program-sheet' && collectVisibleVenues(location).length >= 2) return;
+	if (PROGRAM_VARIANTS.has(location.variant) && collectVisibleVenues(location).length >= 2)
+		return;
 	context.addIssue({
 		code: 'custom',
 		path: ['presentationOptions', 'scene'],
@@ -136,6 +140,7 @@ export const locationSchema = z
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[3]) }),
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[4]) }),
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[5]) }),
+		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[6]) }),
 	])
 	.superRefine((location, context) => {
 		if (
@@ -203,12 +208,12 @@ export const locationSchema = z
 			return;
 		}
 
-		if (location.variant === 'program-sheet') {
+		if (PROGRAM_VARIANTS.has(location.variant)) {
 			if (collectVisibleVenues(location).length >= 1) return;
 			context.addIssue({
 				code: 'custom',
 				path: ['variant'],
-				message: 'location.variant=program-sheet requires at least one visible venue',
+				message: `location.variant=${location.variant} requires at least one visible venue`,
 			});
 		}
 	});

@@ -1,0 +1,396 @@
+// Framed pass: formal-pass base rules retargeted to the framed-pass variant, followed by the promoted composition rules.
+
+.invitation-section-wrapper[data-section-kind='personalized-access']:has(
+		.personalized-access[data-variant='framed-pass']
+	) {
+	--color-text-primary: var(--formal-chapter-cream);
+	--color-text-primary-rgb: var(--formal-chapter-cream-rgb);
+	--color-text-secondary: rgb(var(--formal-chapter-cream-rgb) / 82%);
+	--color-text-muted: rgb(var(--formal-chapter-cream-rgb) / 64%);
+
+	background: var(--pa-section-bg, var(--formal-chapter-band));
+	color: var(--formal-chapter-cream);
+	padding-block-end: clamp(1.5rem, 3.5vw, 2.5rem);
+}
+
+.personalized-access[data-variant='framed-pass'] {
+	--formal-chapter-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+	--formal-chapter-body: 'Instrument Sans Variable', system-ui, sans-serif;
+	--formal-chapter-label:
+		var(--formal-chapter-label-font, 'Bodoni Moda Variable'), 'Playfair Display Variable',
+		georgia, serif;
+	--pa-padding-block-fallback: clamp(3rem, 6vw, 4.5rem);
+	--pa-padding-block-lg-fallback: clamp(4rem, 7vw, 5.5rem);
+	--pa-card-border-radius: 0.875rem;
+	--pa-card-bg-color-fallback: var(--formal-chapter-band);
+	--pa-card-bg-image-fallback: linear-gradient(
+		165deg,
+		rgb(var(--formal-chapter-cream-rgb) / 98%) 0%,
+		rgb(var(--formal-chapter-sand-rgb) / 90%) 52%,
+		rgb(var(--formal-chapter-cream-rgb) / 98%) 100%
+	);
+	--pa-card-border-fallback: 1px solid rgb(var(--formal-chapter-metal-rgb) / 32%);
+	--pa-card-shadow-fallback: 0 14px 36px rgb(0 0 0 / 14%);
+	--pa-card-inner-border-fallback: none;
+	--pa-card-glow-fallback: none;
+	--pa-count-frame-border-fallback: none;
+	--pa-count-frame-radius-fallback: 0;
+	--pa-count-frame-bg-fallback: transparent;
+	--pa-count-frame-shadow-fallback: none;
+	--pa-count-frame-inner-border-fallback: none;
+	--pa-count-color-fallback: var(--formal-chapter-band);
+	--pa-corner-opacity-fallback: 30%;
+	--pa-corner-color-fallback: var(--formal-chapter-metal);
+	--pa-corner-glow-blur-fallback: 0;
+	--pa-eyebrow-color-fallback: var(--formal-chapter-meta);
+	--pa-title-color-fallback: var(--formal-chapter-title);
+	--pa-title-tracking-fallback: 0.12em;
+	--pa-subtitle-color-fallback: var(--formal-chapter-muted);
+	--pa-label-color-fallback: var(--formal-chapter-meta);
+	--pa-guest-color-fallback: var(--formal-chapter-ink);
+	--pa-divider-gradient-fallback: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgb(var(--formal-chapter-metal-rgb) / 45%) 50%,
+		transparent 100%
+	);
+	--pa-divider-diamond-bg-fallback: var(--formal-chapter-cream);
+	--pa-divider-diamond-border-color-fallback: var(--formal-chapter-metal);
+	--pa-divider-diamond-shadow-fallback: none;
+	--pa-footer-bg-fallback: transparent;
+	--pa-footer-border-top-fallback: 1px solid rgb(var(--formal-chapter-metal-rgb) / 20%);
+	--pa-footer-text-color-fallback: rgb(var(--formal-chapter-ink-rgb) / 72%);
+	--pa-footer-text-font-style: normal;
+
+	padding-block: var(--pa-section-padding, clamp(1rem, 2.5vw, 2rem));
+	padding-inline: var(--pa-section-inline, clamp(1rem, 3.5vw, 2.25rem));
+	background: transparent;
+
+	.personalized-access__container {
+		width: min(100%, 34rem);
+	}
+
+	.access-card {
+		min-width: 0;
+		border-radius: var(--pa-card-border-radius, 0.875rem);
+
+		&__header {
+			padding: var(--pa-header-padding, 2rem 1.5rem 1.15rem);
+			gap: 0.45rem;
+			align-items: var(--pa-align-items, center);
+			text-align: var(--pa-text-align, center);
+		}
+
+		&__eyebrow {
+			font-family: var(--formal-chapter-label);
+			font-size: var(--framed-pass-eyebrow-size, 0.65rem);
+			letter-spacing: 0.22em;
+		}
+
+		&__seal {
+			display: var(--pa-seal-display, grid);
+			width: 2.5rem;
+			padding: 0;
+			margin-block-end: 0.15rem;
+			color: var(--formal-chapter-metal);
+			opacity: 55%;
+
+			&::before {
+				background: transparent;
+			}
+
+			svg {
+				opacity: 55%;
+			}
+		}
+
+		&__title {
+			font-family: var(--formal-chapter-display);
+			font-size: var(--pa-title-size, clamp(1rem, 1.4vw + 0.5rem, 1.25rem));
+			font-weight: 500;
+			letter-spacing: var(--pa-title-tracking, var(--pa-title-tracking-fallback, 0.12em));
+			text-transform: var(--pa-title-transform, uppercase);
+		}
+
+		&__subtitle {
+			margin-inline: var(--pa-note-margin-inline, auto);
+			max-width: 22rem;
+			font-family: var(--formal-chapter-body);
+			font-size: var(--pa-body-size, 0.825rem);
+			font-weight: 400;
+			line-height: 1.55;
+		}
+
+		&__body {
+			min-width: 0;
+			padding: var(--pa-body-padding, 1.25rem 1.5rem 1.65rem);
+			gap: var(--pa-body-gap, 1.35rem);
+		}
+
+		&__field {
+			gap: var(--pa-field-gap, 0.4rem);
+			justify-items: var(--pa-align-items, center);
+			text-align: var(--pa-text-align, center);
+		}
+
+		&__label {
+			font-family: var(--formal-chapter-label);
+			font-size: var(--pa-label-size, 0.68rem);
+			letter-spacing: 0.22em;
+		}
+
+		&__guest {
+			max-width: min(100%, 16ch);
+			font-family: var(--formal-chapter-display);
+			font-size: var(--pa-guest-size, clamp(2.25rem, 4.5vw + 0.8rem, 3.25rem));
+			font-weight: 500;
+			line-height: 1.05;
+			letter-spacing: 0.01em;
+		}
+
+		&__divider {
+			margin-block: 0.15rem;
+		}
+
+		&__quota {
+			gap: 0.35rem;
+			grid-template-columns: var(--pa-quota-columns, minmax(0, 1fr));
+			place-items: center var(--pa-align-items, center);
+			text-align: var(--pa-text-align, center);
+			position: relative;
+			background: var(--pa-quota-bg, transparent);
+			padding: var(--pa-quota-padding, 0);
+			margin: var(--pa-quota-margin, 0);
+			border-top: var(--pa-quota-border, 0);
+		}
+
+		&__count-frame {
+			grid-column: var(--pa-count-column, auto);
+			grid-row: var(--pa-count-row, auto);
+			min-width: 0;
+			padding: 0.15rem 0 0;
+			margin: 0 auto;
+		}
+
+		&__count {
+			font-family: var(--formal-chapter-display);
+			font-size: var(--pa-count-size, clamp(4.75rem, 6vw + 0.5rem, 5.5rem));
+			font-weight: 600;
+			line-height: 0.9;
+		}
+
+		&__note {
+			max-width: 25.5rem;
+			margin-inline: var(--pa-note-margin-inline, auto);
+			margin-top: var(--pa-note-margin-top, 0.85rem);
+			font-style: var(--pa-note-style, normal);
+			font-family: var(--formal-chapter-body);
+			font-size: var(--pa-body-size, clamp(0.825rem, 1.8vw, 0.92rem));
+			line-height: 1.55;
+			color: rgb(var(--formal-chapter-band-rgb) / 88%);
+			text-align: var(--pa-text-align, center);
+			text-wrap: balance;
+		}
+
+		&__footer {
+			padding: var(--pa-footer-padding, 1rem 1.5rem 1.4rem);
+			text-align: var(--pa-text-align, center);
+
+			p {
+				margin-inline: var(--pa-note-margin-inline, auto);
+				max-width: 24rem;
+				font-family: var(--formal-chapter-body);
+				font-size: var(--pa-footer-size, clamp(0.76rem, 1.5vw, 0.82rem));
+				line-height: 1.55;
+				letter-spacing: 0.02em;
+			}
+		}
+	}
+}
+
+.event-theme-wrapper {
+	.personalized-access[data-variant='framed-pass'] {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 100svh;
+		padding: var(
+				--framed-pass-stage-top,
+				calc(
+					var(--header-height-scrolled, 70px) + var(--preview-banner-height, 0px) +
+						0.75rem
+				)
+			)
+			clamp(1.25rem, 6vw, 3rem) clamp(1.25rem, 5svh, 3rem);
+		background: var(--framed-pass-paper, rgb(255 255 255));
+
+		.personalized-access__container {
+			width: 100%;
+			max-width: 24rem;
+			margin: 0 auto;
+		}
+
+		.access-card {
+			position: relative;
+			padding: clamp(1.25rem, 4.5svh, 2.75rem) clamp(1.25rem, 6vw, 2.25rem);
+			background: var(--framed-pass-paper, rgb(255 255 255));
+			border: 1px solid rgb(var(--framed-pass-gold-rgb, 201 174 118) / 55%);
+			border-radius: 0;
+			box-shadow: none;
+			color: var(--framed-pass-olive-deep, rgb(62 72 40));
+			text-align: center;
+
+			// The preset clips the card; the corner sprig hangs past the frame.
+			overflow: visible;
+
+			> * {
+				position: relative;
+				z-index: 1;
+			}
+
+			// The same stationery as the other cards: a watercolor eucalyptus corner tucked over the
+			// top-left of the frame, and a second gold hairline just inside the first.
+			&::before {
+				content: '';
+				position: absolute;
+				top: -1.5rem;
+				left: -1.5rem;
+				width: clamp(5.5rem, 26vw, 8rem);
+				aspect-ratio: 1;
+				background: var(--framed-pass-art-corner, none) top left / contain no-repeat;
+				pointer-events: none;
+			}
+
+			&::after {
+				content: '';
+				position: absolute;
+				inset: 0.4rem;
+				border: 1px solid rgb(var(--framed-pass-gold-rgb, 201 174 118) / 30%);
+				pointer-events: none;
+			}
+		}
+
+		.access-card__ornaments,
+		.access-card__seal,
+		.access-card[aria-label*='solo para adultos'] .access-card__party {
+			display: none;
+		}
+
+		.access-card__header,
+		.access-card__body,
+		.access-card__footer {
+			margin: 0;
+			padding: 0;
+			background: none;
+			border: 0;
+		}
+
+		.access-card__header {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: clamp(0.3rem, 1svh, 0.6rem);
+		}
+
+		.access-card__body {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: clamp(0.9rem, 3svh, 1.75rem);
+			margin-top: clamp(1rem, 3.5svh, 2rem);
+		}
+
+		.access-card__field,
+		.access-card__quota {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: clamp(0.25rem, 0.8svh, 0.5rem);
+		}
+
+		.access-card__eyebrow,
+		.access-card__label {
+			font-size: var(--framed-pass-label-size, 0.66rem);
+			font-weight: 500;
+			letter-spacing: 0.3em;
+			text-transform: uppercase;
+			color: var(--framed-pass-gold-ink, rgb(122 100 54));
+		}
+
+		.access-card__title {
+			margin: 0;
+			font-family: 'Cormorant Garamond Variable', serif;
+			font-size: var(--framed-pass-title-size, clamp(1.5rem, 3.6svh, 1.9rem));
+			font-style: italic;
+			font-weight: 500;
+			letter-spacing: 0;
+			text-transform: none;
+			color: var(--framed-pass-olive, rgb(92 104 62));
+		}
+
+		.access-card__subtitle,
+		.access-card__footer p {
+			margin: 0;
+			font-size: var(--framed-pass-footer-size, clamp(0.85rem, 2svh, 0.95rem));
+			line-height: 1.5;
+			color: rgb(var(--framed-pass-olive-deep-rgb, 62 72 40) / 75%);
+		}
+
+		.access-card__guest {
+			font-family: 'Cormorant Garamond Variable', serif;
+			font-size: var(--framed-pass-guest-size, clamp(2rem, 5.8svh, 2.9rem));
+			font-weight: 500;
+			line-height: 1.08;
+			color: var(--framed-pass-olive-deep, rgb(62 72 40));
+			text-wrap: balance;
+		}
+
+		.access-card__divider {
+			width: 2.5rem;
+			height: 1px;
+			margin: 0;
+			background: rgb(var(--framed-pass-gold-rgb, 201 174 118) / 70%);
+			opacity: 100%;
+		}
+
+		.access-card__count-frame {
+			padding: 0;
+			background: none;
+			border: 0;
+			box-shadow: none;
+		}
+
+		.access-card__count {
+			font-family: 'Cormorant Garamond Variable', serif;
+			font-size: var(--framed-pass-count-size, clamp(2rem, 5.5svh, 2.75rem));
+			line-height: 1;
+			color: var(--framed-pass-olive, rgb(92 104 62));
+		}
+
+		// With children the split replaces the bare total: «3 adultos y 1 niño», not «4».
+		.access-card:not([aria-label*='solo para adultos']) .access-card__count-frame {
+			display: none;
+		}
+
+		.access-card__party {
+			font-family: 'Cormorant Garamond Variable', serif;
+			font-size: var(--framed-pass-party-size, clamp(1.45rem, 4svh, 1.9rem));
+			font-style: italic;
+			font-weight: 500;
+			line-height: 1.15;
+			color: var(--framed-pass-olive, rgb(92 104 62));
+		}
+
+		.access-card__footer {
+			margin-top: clamp(1rem, 3.5svh, 2rem);
+		}
+	}
+}
+
+.event-theme-wrapper
+	.invitation-section-wrapper.invitation-section-wrapper[data-section-kind='personalized-access']:has(
+		.personalized-access[data-variant='framed-pass']
+	) {
+	padding-bottom: 0;
+	background: var(--framed-pass-paper, rgb(255 255 255));
+}
