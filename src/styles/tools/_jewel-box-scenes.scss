@@ -172,6 +172,9 @@
 
 	padding-block: clamp(2rem, 6svh, 3.5rem);
 
+	// The opening frame starts wider than the screen; it must not widen the page.
+	overflow-x: clip;
+
 	.invitation-interlude__media {
 		width: 100%;
 		border-inline: 0;
