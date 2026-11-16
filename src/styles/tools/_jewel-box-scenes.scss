@@ -9,7 +9,7 @@
 // ==========================================================================
 
 // Full-bleed photo cover: the photograph fills the screen; script title, gold date arc and a quiet scroll cue. Include on `.invitation-hero`.
-@mixin photo-cover {
+@mixin photo-cover($date-arc-mask) {
 	// Its blur filter would trap the lines below; each one keeps its own fade.
 	&[data-variant] .invitation-hero__content {
 		position: static;
@@ -92,7 +92,7 @@
 			height: 2.5rem;
 			translate: -50% -50%;
 			background: var(--jewel-gold-ink-deep);
-			mask: url('./assets/hero-date-arc.png') center / contain no-repeat;
+			mask: $date-arc-mask center / contain no-repeat;
 			content: '';
 		}
 	}
