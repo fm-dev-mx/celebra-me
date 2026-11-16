@@ -31,8 +31,12 @@
 		}
 	}
 
+	// The name and, just below it, the label sit in the empty top-left corner. The wrapper, not the
+	// name, is placed so it keeps the name's width.
 	.invitation-hero__title {
+		margin: 0;
 		font-family: var(--font-calligraphy), cursive;
+		text-align: left;
 	}
 
 	.invitation-hero__time,
@@ -40,9 +44,8 @@
 		display: none;
 	}
 
-	// The name and, just below it, the label sit in the empty top-left corner.
 	.invitation-hero__label,
-	.invitation-hero__title {
+	.invitation-hero__title-wrapper {
 		position: absolute;
 		top: clamp(4.75rem, 11svh, 6.5rem);
 		right: auto;
