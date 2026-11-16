@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-15T04:46:25.233Z",
+    "generatedAt": "2026-11-16T22:18:47.584Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,15 +12,15 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-        "cssSha256": "1b3c1fe99771990f018c38cc4d9fb1b1316e7b85970b60cf93b15e6a882ede40",
+        "cssSha256": "caa6f7dc137a6ae2eca5403de340ba898f3346f99806f4fcfa70aeea429506e5",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 210,
-    "matrixHash": "4ed867a122f5432cb7ae357ccdb8aa535035a292a3c3d8ec8bff43ce05a25671",
+    "totalCaptures": 212,
+    "matrixHash": "c27d53b6742ca9af70baf67acf4d83ace5161196ce026ab45368ce27f607ebeb",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2633,9 +2633,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "26764e9a214965f6d321830a37d6b594f96c97e6",
+    "referenceSha": "13a1521ab68287e82c6d0e827ea41002b77a51a8",
     "variantManifest": {
-        "generatedAt": "2026-11-15T04:46:25.233Z",
+        "generatedAt": "2026-11-16T22:18:47.584Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2648,7 +2648,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "1b3c1fe99771990f018c38cc4d9fb1b1316e7b85970b60cf93b15e6a882ede40",
+            "cssSha256": "caa6f7dc137a6ae2eca5403de340ba898f3346f99806f4fcfa70aeea429506e5",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4789,10 +4789,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "26764e9a214965f6d321830a37d6b594f96c97e6"
+        "referenceSha": "13a1521ab68287e82c6d0e827ea41002b77a51a8"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-15T04:46:25.240Z",
+        "generatedAt": "2026-11-16T22:18:47.594Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -4805,16 +4805,16 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a0a8e4ab119793669428a501c4daaad887de6bae40be6c0c51acbf2c7d17b227",
-            "cssSha256": "1b3c1fe99771990f018c38cc4d9fb1b1316e7b85970b60cf93b15e6a882ede40",
+            "cssSha256": "caa6f7dc137a6ae2eca5403de340ba898f3346f99806f4fcfa70aeea429506e5",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 58,
-        "matrixHash": "397d4cd507c91c82adf0478d9c60a81cbbed0cd8a3f188f785d1d1f67804410b",
-        "cases": 29,
+        "totalCaptures": 60,
+        "matrixHash": "6ee5e25de85321a5fb8ade957409f33a9acf2ec9a384f1bb3ed928243fa3cc4f",
+        "cases": 30,
         "captures": [
             {
                 "kind": "invitation",
@@ -5297,9 +5297,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "26764e9a214965f6d321830a37d6b594f96c97e6"
+        "referenceSha": "13a1521ab68287e82c6d0e827ea41002b77a51a8"
     },
-    "candidateManifestSha256": "2ac133b45507a2a3a3b0d3e58ca2f75cdf9891ce2841ee6c2e55f83ca81c9588",
-    "acceptedFromCommit": "26764e9a214965f6d321830a37d6b594f96c97e6",
-    "acceptedAt": "2026-11-15T04:46:56.017Z"
+    "candidateManifestSha256": "5b3f4ef738c8c1432fc1810f4c2dcdc488cb68d35b6eefbd2996c17805720d47",
+    "acceptedFromCommit": "13a1521ab68287e82c6d0e827ea41002b77a51a8",
+    "acceptedAt": "2026-11-16T22:19:48.380Z"
 }
