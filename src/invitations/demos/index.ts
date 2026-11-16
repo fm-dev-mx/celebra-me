@@ -1,3 +1,4 @@
+import graduation from './demo-graduacion-siguiente-capitulo/invitation';
 import type { DemoInvitationDocument } from '@/lib/invitation/demo-invitation';
 import xvCelestialBlue from './demo-xv-celestial-blue/invitation';
 import xvEnchantedRose from './demo-xv-enchanted-rose/invitation';
@@ -20,4 +21,5 @@ export const DEMO_INVITATIONS: readonly DemoInvitationDocument[] = [
 	bautizoAngelicPresence,
 	primeraComunionAngelicPresence,
 	cumpleLuxuryHacienda,
+	graduation,
 ];

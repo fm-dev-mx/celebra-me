@@ -1,0 +1,200 @@
+{
+    "eventType": "graduacion",
+    "isDemo": true,
+    "templateId": "graduacion-editorial",
+    "_assetSlug": "demo-graduacion-siguiente-capitulo",
+    "visualProfileId": "demo-graduacion-siguiente-capitulo",
+    "title": "El siguiente capítulo — Lucía",
+    "description": "Una celebración ficticia de graduación: Lucía, 24 años, comparte el logro y el camino con su familia. Demo sin vínculo institucional.",
+    "theme": {
+        "fontFamily": "serif",
+        "preset": "editorial"
+    },
+    "sectionOrder": ["quote", "gallery", "countdown", "location", "itinerary", "rsvp", "thankYou"],
+    "hero": {
+        "variant": "framed-portrait",
+        "name": "Lucía",
+        "label": "El siguiente capítulo",
+        "nickname": "Mi graduación · Un logro que quiero compartir con usted",
+        "date": "2027-06-19T12:00:00.000Z",
+        "backgroundImage": "hero",
+        "presentation": {
+            "venueIndex": 0
+        },
+        "scrollLabel": "Acompáñeme a descubrir esta historia"
+    },
+    "quote": {
+        "text": "Cada idea empezó en una hoja en blanco. Hoy cierro una etapa y abro todas las que soñé.",
+        "closingLine": "Soy Lucía, tengo 24 años y celebro mi graduación en Diseño Gráfico y Animación Digital. Gracias por ser parte del camino."
+    },
+    "interludes": [
+        {
+            "image": "interlude01",
+            "afterSection": "quote",
+            "height": "medium",
+            "presentation": "framed",
+            "alt": "Birrete, piezas de diseño y folder azul con el arte oficial de ISAD aplicado en oro champaña simulado. Escena de demostración."
+        },
+        {
+            "image": "interlude02",
+            "afterSection": "rsvp",
+            "height": "medium",
+            "presentation": "framed",
+            "alt": "Lucía al cerrar la celebración ficticia, con toga y folder de graduación."
+        }
+    ],
+    "gallery": {
+        "variant": "narrative-stack",
+        "eyebrow": "El camino hasta aquí",
+        "title": "Un logro compartido",
+        "subtitle": "Las personas y los momentos que me acompañan al comenzar lo que sigue.",
+        "items": [
+            {
+                "image": "portrait",
+                "alt": "Retrato de Lucía, egresada ficticia de 24 años.",
+                "caption": "Detrás de cada proyecto hubo una idea, muchas pruebas y la ilusión de seguir aprendiendo."
+            },
+            {
+                "image": "gallery01",
+                "alt": "Lucía camina con su toga y birrete en una escena sintética de graduación.",
+                "caption": "Hoy camino con gratitud por lo aprendido y curiosidad por todo lo que viene."
+            },
+            {
+                "image": "gallery02",
+                "alt": "Lucía y sus compañeros ficticios posan con sus folders de graduación.",
+                "caption": "Con mis compañeros, las entregas largas también se volvieron recuerdos compartidos."
+            },
+            {
+                "image": "gallery03",
+                "alt": "Lucía junto a su hermana Irene en una fotografía sintética.",
+                "caption": "Irene, mi hermana: gracias por escuchar cada idea y celebrar incluso los pequeños avances."
+            },
+            {
+                "image": "gallery04",
+                "alt": "Lucía acompañada por sus padres ficticios.",
+                "caption": "A mis padres, por su confianza y por recordarme que siempre había un lugar al que volver."
+            }
+        ]
+    },
+    "countdown": {
+        "variant": "written-days",
+        "title": "Falta poco",
+        "footerText": "para celebrar el siguiente capítulo",
+        "presentationOptions": {
+            "calendar": {
+                "mark": "ring"
+            }
+        }
+    },
+    "location": {
+        "variant": "standard",
+        "accessPolicy": {
+            "visibility": "public"
+        },
+        "presentationOptions": {
+            "showCalendarLinks": false,
+            "indicationsLayout": "band"
+        },
+        "indicationsHeading": "Para compartir este momento",
+        "indications": [
+            {
+                "iconName": "DressCode",
+                "title": "Vestimenta",
+                "text": "Formal, con libertad para elegir los colores que más le gusten."
+            },
+            {
+                "iconName": "Enveloped",
+                "title": "Una celebración de muestra",
+                "text": "Lucía, su familia, la fecha y la sede son ficticias. Las fotografías son sintéticas. Esta demo no anuncia un acto oficial ni cuenta con aval de ISAD."
+            }
+        ],
+        "venues": [
+            {
+                "venueEvent": "Celebración de graduación · Demo",
+                "venueName": "Patio del Capítulo · Sede ficticia",
+                "address": "Paseo de los Bocetos 24 · Dirección ficticia",
+                "city": "Ciudad de muestra",
+                "date": "2027-06-19",
+                "time": "19:00",
+                "image": "jardin",
+                "type": "reception",
+                "isVisible": true
+            }
+        ]
+    },
+    "itinerary": {
+        "variant": "editorial-program",
+        "title": "Una tarde para celebrar",
+        "items": [
+            {
+                "iconName": "Reception",
+                "label": "Bienvenida",
+                "time": "19:00",
+                "description": "Abrazos y fotografías con las personas que hicieron posible el camino."
+            },
+            {
+                "iconName": "Toast",
+                "label": "Palabras y brindis",
+                "time": "19:30",
+                "description": "Un momento para agradecer y mirar hacia lo que sigue."
+            },
+            {
+                "iconName": "Dinner",
+                "label": "Cena compartida",
+                "time": "20:00",
+                "description": "La mejor parte del logro es poder compartirlo."
+            },
+            {
+                "iconName": "Party",
+                "label": "Música y recuerdos",
+                "time": "21:00",
+                "description": "Una noche para cerrar esta etapa con alegría."
+            }
+        ]
+    },
+    "rsvp": {
+        "variant": "editorial-press-pass",
+        "title": "¿Me acompaña a celebrar?",
+        "subcopy": "Puede explorar la confirmación de muestra. Esta demo no registra asistencia ni envía mensajes.",
+        "guestCap": 2,
+        "accessMode": "hybrid",
+        "confirmationMode": "api",
+        "confirmationMessage": "Prueba completada. No se registró asistencia ni se envió ningún mensaje.",
+        "labels": {
+            "name": "Su nombre",
+            "notesLabel": "Unas palabras para Lucía",
+            "notesPlaceholder": "Comparta un buen deseo para el siguiente capítulo."
+        },
+        "responseMessages": {
+            "confirmed": {
+                "title": "Así se vería su confirmación",
+                "subtitle": "Esta respuesta es una simulación de la demo."
+            },
+            "declined": {
+                "title": "Gracias por explorar la demo",
+                "subtitle": "Esta respuesta es una simulación de la demo."
+            }
+        },
+        "personalizedAccess": {
+            "variant": "editorial-pass",
+            "title": "Su pase de muestra",
+            "subtitle": "Una vista previa de la experiencia de sus invitados.",
+            "footerText": "Use este pase ficticio para explorar la confirmación de muestra."
+        }
+    },
+    "thankYou": {
+        "variant": "standard",
+        "message": "Me llevo lo aprendido, a quienes me acompañaron y las ganas de seguir creando. Gracias por compartir este capítulo conmigo.",
+        "closingName": "Lucía",
+        "closingPhrase": "Con gratitud, hacia lo que sigue"
+    },
+    "envelope": {
+        "disabled": true
+    },
+    "eventTiming": {
+        "localDateTime": "2027-06-19T19:00",
+        "timeZone": "America/Chihuahua",
+        "startsAtUtc": "2027-06-20T01:00:00.000Z"
+    },
+    "composition": {}
+}

@@ -75,11 +75,23 @@ const EVENT_CONFIG: Record<
 		ref: 'COMUNION',
 	},
 	cumpleanos: { label: 'Cumpleaños', messageLabel: 'cumpleaños', ref: 'CUMPLE' },
+	graduacion: { label: 'Graduación', messageLabel: 'graduación', ref: 'GRADO' },
 	bautismo: undefined,
 	cumple: undefined,
 };
 
 const PRESENTATION: Record<string, VitrinaDemoPresentation> = {
+	'demo-graduacion-siguiente-capitulo': {
+		name: 'El siguiente capítulo',
+		ref: 'CAPITULO',
+		tags: ['Editorial', 'Portafolio'],
+		description: 'Un logro compartido, retratos de familia y una nueva historia por escribir.',
+		kicker: 'Mi graduación',
+		person: 'Lucía',
+		date: '2027-06-19',
+		focal: '70% 45%',
+		cover: 'hero',
+	},
 	'demo-xv-serenata': {
 		name: 'Serenata',
 		ref: 'SERENATA',

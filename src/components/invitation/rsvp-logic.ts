@@ -73,6 +73,7 @@ export type RsvpDefaultCopy = 'usted' | 'legacy';
 
 const DEFAULT_SUBCOPY: Record<RsvpDefaultCopy, Record<string, string>> = {
 	usted: {
+		graduacion: 'Su respuesta nos ayuda a preparar esta celebración de graduación.',
 		xv: 'Su respuesta nos ayuda a preparar cada detalle de esta celebración especial.',
 		boda: 'Su confirmación nos ayuda a preparar cada detalle para compartir este día con usted.',
 		bautizo: 'Su respuesta nos ayuda a preparar cada detalle de esta celebración familiar.',

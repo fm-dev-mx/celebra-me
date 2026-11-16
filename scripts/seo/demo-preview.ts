@@ -11,6 +11,7 @@ interface DemoPreviewComposition {
 
 // Social crops are independent of the hero's viewport and never change client invitations.
 const compositions: Record<string, DemoPreviewComposition> = {
+	'demo-graduacion-siguiente-capitulo': { verticalPosition: 0.32 },
 	'demo-bautizo-angelic-presence': { verticalPosition: 0.4 },
 	'demo-brisa': { sourceKey: 'interlude02', verticalPosition: 0.5 },
 	'demo-cumple-luxury-hacienda': { verticalPosition: 0.2 },
