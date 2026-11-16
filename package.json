@@ -244,7 +244,7 @@
         "jest": "^30.5.2",
         "jest-environment-jsdom": "^30.5.2",
         "jsqr": "^1.4.0",
-        "knip": "6.43.0",
+        "knip": "6.44.2",
         "lint-staged": "17.6.0",
         "markdownlint-cli2": "^0.24.0",
         "prettier": "^3.9.10",
