@@ -397,6 +397,7 @@
         {
             "id": "tablero",
             "nombre": "Tablero",
+            "carpeta": "../tablero",
             "github": {
                 "repo": "fm-dev-mx/tablero",
                 "unir": "main"
