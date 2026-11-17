@@ -40,8 +40,8 @@
 	--family-meta-font: var(--dyd-font-sans);
 	--formal-chapter-label-font: var(--dyd-font-sans);
 
-	// Cover: the photograph bleeds to every edge, an olive veil rises from the foot, and a gold
-	// hairline frames the screen.
+	// Cover: the photograph bleeds to every edge and an olive veil rises from the foot; no frame.
+	// The hairline frame below is the thank-you photograph's.
 	--hairline-frame-display: block;
 	--hairline-frame-ink: rgb(var(--dyd-gold-rgb) / 85%);
 	--hairline-frame-inset: 12px;
@@ -51,7 +51,7 @@
 		--hero-arch-width: 100%;
 		--hero-arch-height: 100%;
 		--hero-arch-radius: 0;
-		--hero-arch-moulding: rgb(var(--dyd-gold-rgb) / 80%);
+		--hero-arch-moulding: transparent;
 		--hero-arch-moulding-gap: -12px;
 		--hero-arch-moulding-radius: 0;
 		--hero-arch-label-top: calc(var(--header-height-scrolled, 64px) + 1.75rem);
@@ -93,12 +93,13 @@
 		--veiled-arch-city-line: 'Mazatlán, Sinaloa';
 	}
 
-	// Stationery card shared by the inner sections: white paper on a warm ground, watercolor
-	// eucalyptus at the corners and a gold hairline frame.
+	// Stationery card shared by the inner sections: white paper on a warm ground, eucalyptus at
+	// the corners and a gold hairline frame. The eucalyptus is drawn as crisp vector line art
+	// (stem, paired round leaves, midribs) so it still reads as a branch at small sizes.
 	--dyd-paper: rgb(255 255 255);
 	--dyd-ground: rgb(241 235 221);
-	--dyd-art-corner: url('./assets/eucalyptus-corner.webp');
-	--dyd-art-sprig: url('./assets/eucalyptus-sprig.webp');
+	--dyd-art-corner: url('./assets/eucalyptus-corner.svg');
+	--dyd-art-sprig: url('./assets/eucalyptus-sprig.svg');
 
 	// Quote: the hands-and-ring photograph full screen under an olive veil, the text in ivory.
 	--dyd-quote-photo: url('./assets/quote.webp');
@@ -155,6 +156,11 @@
 		--family-deceased-symbol-offset-y: -0.5em;
 		--family-deceased-symbol-opacity: 100%;
 		--family-deceased-symbol-color: var(--dyd-olive);
+
+		// Hierarchy: the names lead. The script group titles step down a size and the serif names
+		// step up, so each title labels its names instead of outweighing them.
+		--framed-groups-group-title-size: clamp(1.4rem, 0.9rem + 1.7svh, 2rem);
+		--framed-groups-name-size: clamp(1rem, 0.9rem + 0.8svh, 1.2rem);
 	}
 
 	// Reveal: an olive pocket-fold envelope, a gold hairline for the ink and an ivory card.
@@ -169,7 +175,7 @@
 		--pocket-fold-card-bg: var(--dyd-ivory);
 		--pocket-fold-card-ink: var(--dyd-olive-deep);
 		--pocket-fold-card-label-ink: var(--dyd-gold-ink);
-		--pocket-fold-guest-size: clamp(1.75rem, 7.5vw, 2.25rem);
+		--pocket-fold-guest-size: clamp(2.25rem, 10.5vw, 2.85rem);
 
 		// The star token is transparent to drop the night sky, but the variant also inks its text
 		// with it; the texts take their own colors: ivory for the names, a light gold for the small

@@ -206,7 +206,8 @@ const content: CanonicalEventContentInput = {
 		focalPoint: '50% 35%',
 		message: 'Gracias por acompañarnos en el día más importante de nuestras vidas.',
 		closingName: COUPLE_NAME,
-		// The footer prints it under the reply, beneath a gold point.
+		// Kept as data; the composition hides it in the footer, where the cover and the countdown
+		// already carry the date and the city.
 		closingPhrase: `Sábado ${EVENT_DATE_LABEL}\nMazatlán, Sinaloa`,
 	},
 	navigation: [
