@@ -146,12 +146,12 @@ const content: CanonicalEventContentInput = {
 		items: [
 			{
 				image: 'gallery01',
-				alt: 'Camila sonriente con un ramo de rosas rosa palo y guantes de encaje',
+				alt: 'Camila con sonrisa suave, un ramo de rosas rosa palo y guantes de encaje',
 				focalPoint: '50% 35%',
 			},
 			{
 				image: 'gallery02',
-				alt: 'Tiara de cristal, guante de encaje y tul rosa sobre un pedestal blanco',
+				alt: 'Aretes de gota rosa, collar fino, guante de encaje y tul rosa sobre un pedestal blanco',
 				focalPoint: '50% 50%',
 			},
 			{
