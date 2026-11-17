@@ -13,10 +13,11 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import process from 'node:process';
+import { git, isMainModule } from './git-helpers.mjs';
+export { git } from './git-helpers.mjs';
 import { evaluateLaneGuard } from './lane-guard.mjs';
 import { sha256Hex } from '../shared/hash.ts';
 
@@ -93,34 +94,6 @@ function sessionFlag(session) {
 
 function defaultRepoRoot() {
 	return resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
-}
-
-/**
- * @param {string} repoRoot
- * @param {string[]} args
- * @param {{ allowFailure?: boolean }} [options]
- */
-export function git(repoRoot, args, options = {}) {
-	const result = spawnSync('git', args, {
-		cwd: repoRoot,
-		encoding: 'utf8',
-		maxBuffer: 10 * 1024 * 1024,
-	});
-	if (result.error) throw result.error;
-	const status = result.status ?? 1;
-	if (!options.allowFailure && status !== 0) {
-		const detail = String(result.stderr || result.stdout || '').trim();
-		throw new Error(`git ${args.join(' ')} failed${detail ? `: ${detail}` : ''}`);
-	}
-	return {
-		status,
-		stdout: String(result.stdout || '')
-			.replace(/\r\n/g, '\n')
-			.trimEnd(),
-		stderr: String(result.stderr || '')
-			.replace(/\r\n/g, '\n')
-			.trimEnd(),
-	};
 }
 
 /**
@@ -826,7 +799,6 @@ function main() {
 	cmdFinish({ argv: parsed.rest, session });
 }
 
-const invokedFile = process.argv[1] ? resolve(process.argv[1]) : '';
-if (invokedFile === resolve(fileURLToPath(import.meta.url))) {
+if (isMainModule(import.meta.url, { resolveModulePath: true })) {
 	main();
 }
