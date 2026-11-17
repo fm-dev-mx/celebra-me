@@ -1,0 +1,28 @@
+// Navy portfolio, champagne type and an uncropped portrait beside the opening letter.
+// Existing semantic variants own every layout; this profile only tunes their tokens.
+.event--demo-graduacion-siguiente-capitulo.theme-preset--editorial {
+	--color-surface-primary: rgb(20 30 47);
+	--color-surface-primary-rgb: 20 30 47;
+	--color-surface-dark: rgb(15 24 39);
+	--color-surface-dark-rgb: 15 24 39;
+	--color-surface-soft: rgb(29 42 61);
+	--color-surface-secondary: rgb(235 228 216 / 6%);
+	--color-action-accent: rgb(218 198 164);
+	--color-action-accent-rgb: 218 198 164;
+	--color-text-emphasis: var(--color-action-accent);
+	--color-text-primary: rgb(247 242 234);
+	--color-text-primary-rgb: 247 242 234;
+	--color-text-secondary: rgb(247 242 234 / 82%);
+	--editorial-image-filter: none;
+	--hero-portrait-radius: 0.25rem;
+	--hero-portrait-max-width: 100%;
+	--hero-portrait-margin: 0 auto;
+	--hero-portrait-height-mobile: clamp(19rem, 48svh, 28rem);
+	--hero-portrait-height-desktop: min(76svh, 44rem);
+	--hero-title-size: clamp(3.75rem, 9vw, 6.5rem);
+	--hero-label-size: clamp(1.75rem, 4vw, 3rem);
+	--hero-arc-opacity: 0%;
+	--hero-details-color: var(--color-text-primary);
+	--hero-scroll-align: center;
+	--interlude-framed-mat-bg: rgb(235 228 216);
+}

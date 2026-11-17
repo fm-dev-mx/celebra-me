@@ -20,6 +20,7 @@ const CELEBRATION_LABELS: Record<EventType, string> = {
 	bautizo: 'su bautizo',
 	'primera-comunion': 'su primera comunión',
 	cumple: 'su cumpleaños',
+	graduacion: 'su graduación',
 	'baby-shower': 'su baby shower',
 };
 
