@@ -377,11 +377,25 @@
 
 		.envelope-tease {
 			grid-template-rows: auto auto 1fr auto;
+
+			// One column: the base grid areas assume three rows, so with four rows the name
+			// would fall into an implicit second column next to the empty stamp zone.
+			grid-template-columns: minmax(0, 1fr);
 			padding-top: calc(6svh + env(safe-area-inset-top));
+		}
+
+		// Center the seal on the whole tease (the flap tip), not inside the 'seal' area,
+		// which these four rows shrink to the details row.
+		.envelope-zone--seal {
+			grid-area: auto;
 		}
 
 		.envelope-zone--identity {
 			display: contents;
+		}
+
+		:is(.envelope-name, .tease-details-group, .guest-personalized) {
+			grid-column: 1 / -1;
 		}
 
 		.envelope-name {
