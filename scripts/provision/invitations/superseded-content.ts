@@ -13,12 +13,9 @@ import {
 	toCanonicalVenueDate,
 	toCanonicalVenueTime,
 } from '../../../src/lib/invitation/venue-datetime.ts';
+import { isRecord } from '../../../src/lib/shared/data-utils.ts';
 
 type JsonRecord = Record<string, unknown>;
-
-function isRecord(value: unknown): value is JsonRecord {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 function canonicalizeTime(record: JsonRecord): JsonRecord {
 	if (!isLegacyVenueTimeProse(record.time)) return record;

@@ -453,16 +453,12 @@ function hashTargetAssetState(
 	targetDbAssets: TargetAssetRecord[],
 	observedStorage: Record<string, ObservedStorageState>,
 ): string {
-	return createHash('sha256')
-		.update(
-			JSON.stringify({
-				rows: [...targetDbAssets].sort((a, b) =>
-					a.storagePath.localeCompare(b.storagePath),
-				),
-				observedStorage,
-			}),
-		)
-		.digest('hex');
+	return sha256Hex(
+		JSON.stringify({
+			rows: [...targetDbAssets].sort((a, b) => a.storagePath.localeCompare(b.storagePath)),
+			observedStorage,
+		}),
+	);
 }
 
 export function assertReconciledMutationTargets(
@@ -1815,15 +1811,13 @@ function computeTargetAssetFingerprint(targetDbUrl: string, invitationId: string
 		return refs.sort();
 	};
 
-	return createHash('sha256')
-		.update(
-			JSON.stringify({
-				dbRows,
-				draftRefs: extractRefs(draftContent),
-				pubRefs: extractRefs(pubContent),
-			}),
-		)
-		.digest('hex');
+	return sha256Hex(
+		JSON.stringify({
+			dbRows,
+			draftRefs: extractRefs(draftContent),
+			pubRefs: extractRefs(pubContent),
+		}),
+	);
 }
 
 // ---------------------------------------------------------------------------

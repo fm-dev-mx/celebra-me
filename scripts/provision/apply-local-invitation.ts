@@ -15,7 +15,8 @@
 
 import { PreconditionFailedError } from './release-errors.ts';
 import { classifyStorageDownloadFailure } from '../db/storage-object-archive.ts';
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
+import { sha256Hex } from '../shared/hash.ts';
 import { createClient } from '@supabase/supabase-js';
 import {
 	hashPublicMetadata,
@@ -107,16 +108,14 @@ export async function observeVersionedLocalAsset(
 		}
 		throw new Error(`Unable to verify versioned Local asset: HTTP ${response.status}`);
 	}
-	const sha256 = createHash('sha256')
-		.update(new Uint8Array(await response.arrayBuffer()))
-		.digest('hex');
+	const sha256 = sha256Hex(new Uint8Array(await response.arrayBuffer()));
 	if (sha256 !== expectedSha256)
 		throw new Error('Versioned Local asset checksum collision; refusing overwrite.');
 	return { present: true, sha256, httpStatus: response.status };
 }
 
 function deriveDeterministicUuid(namespace: string, seed: string): string {
-	const hash = createHash('sha256').update(`celebra-me:${namespace}:${seed}`).digest('hex');
+	const hash = sha256Hex(`celebra-me:${namespace}:${seed}`);
 	return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-a${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
 }
 
@@ -892,9 +891,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 			const response = await fetch(assetUrl);
 			present = response.ok;
 			if (present) {
-				sha256 = createHash('sha256')
-					.update(new Uint8Array(await response.arrayBuffer()))
-					.digest('hex');
+				sha256 = sha256Hex(new Uint8Array(await response.arrayBuffer()));
 			}
 		} catch {
 			// An unreadable object is observed as absent; pruning retains target-owned rows.
@@ -1168,9 +1165,7 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 		),
 	});
 
-	const assetStateHash = createHash('sha256')
-		.update(canonicalize(currentAssetStates))
-		.digest('hex');
+	const assetStateHash = sha256Hex(canonicalize(currentAssetStates));
 	const targetPreconditions = {
 		sourceHash: release.sourceHash,
 		packageHash,
