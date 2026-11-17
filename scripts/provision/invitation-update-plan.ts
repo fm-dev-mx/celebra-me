@@ -3,7 +3,7 @@
  */
 
 import type { PreconditionFailure } from './release-errors.ts';
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '../shared/hash.ts';
 import type { AssetPolicy } from './asset-reconciliation.ts';
 
 type FunctionalOperation =
@@ -172,7 +172,7 @@ export function computePlanId(params: {
 		},
 		operationFingerprint: params.operationFingerprint,
 	});
-	return createHash('sha256').update(raw).digest('hex').slice(0, 32);
+	return sha256Hex(raw).slice(0, 32);
 }
 
 function normalizeTimestamp(ts?: string): string | undefined {
