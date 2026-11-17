@@ -284,7 +284,7 @@ const content: CanonicalEventContentInput = {
 		{ label: 'Confirmar', href: '#rsvp' },
 	],
 	music: {
-		url: 'https://media-staging.celebra-me.com/invitations/xv/camila-beltran/music-2a99b2682dba29919f8fd021a8672c3d40128a0742509fadd8be0c2d7469496a.mp3',
+		url: 'https://media.celebra-me.com/invitations/xv/camila-beltran/music-2a99b2682dba29919f8fd021a8672c3d40128a0742509fadd8be0c2d7469496a.mp3',
 		title: 'No crezcas más — Tercer Cielo',
 		autoPlay: true,
 	},

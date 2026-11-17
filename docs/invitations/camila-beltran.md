@@ -67,7 +67,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | rsvpDeadline          | 2026-11-25                                                                                                      | verified       | owner-session | Client confirmed; displayed in RSVP copy, not an automatic API cutoff                                                   |
 | gifts                 | Lluvia de sobres, regalo sorpresa; baúl en la recepción                                                         | verified       | owner-session | Owner request; shown after the dress code, before memories                                                              |
 | itinerary             | [[PENDIENTE:ITINERARY]]                                                                                         | pending        | wa-export     | 19:00 and 20:00 confirmed; later times proposed by the owner-authorized draft; estimate labels removed at owner request |
-| musicUrl              | Tercer Cielo — No crezcas más                                                                                   | verified       | owner-session | 64 kbps MP3 (silence-trimmed) staged on R2 preview (`media-staging.celebra-me.com`, sha `2a99b268…`)                    |
+| musicUrl              | Tercer Cielo — No crezcas más                                                                                   | verified       | owner-session | 64 kbps MP3 (silence-trimmed) on Production R2 (`media.celebra-me.com`, copied from preview; sha `2a99b268…`)           |
 | checkInQr             | —                                                                                                               | not_applicable | wa-export     | Not requested                                                                                                           |
 | memoriesQr            | camila-beltran                                                                                                  | verified       | owner-session | Client-managed; uploads 2026-11-16 through 2026-12-26. Local active; hosted activation pending.                         |
 | specialMessages       | [[PENDIENTE:CELEBRANT_MESSAGE]]                                                                                 | pending        | owner-session | Quote and closing are agent drafts                                                                                      |
@@ -81,9 +81,9 @@ content the client has not supplied stays hidden; nothing is invented.
 
 ### Missing blockers
 
-- Preparing the local version is possible; final delivery still requires the ceremony venue and
-  exact pin, padrinos, copying the staged song MP3 to Production R2 (`media.celebra-me.com`), and
-  acceptance of the remaining copy/omissions.
+- Owner decision (2026-11-17): the invitation ships with the data on file; the client requests
+  changes after reviewing it. Delivery still requires copying the staged song MP3 to Production R2
+  (`media.celebra-me.com`) before the production release.
 - Local photo space is active and has an event owner. Both local upload services must be running
   with their ignored local configuration and the application origin allowed. Guest uploads work
   locally; hosted activation and access with the client's owner account remain delivery checks.
@@ -248,7 +248,7 @@ approval before it is published; that approval is recorded here.
   base `storybook-blush` reveal.
 - Music: 64 kbps MP3 («No crezcas más — Tercer Cielo», YouTube `BDwEyfgClF4`, trimmed edges) staged
   on Preview R2 at
-  `https://media-staging.celebra-me.com/invitations/xv/camila-beltran/music-2a99b2682dba29919f8fd021a8672c3d40128a0742509fadd8be0c2d7469496a.mp3`.
+  `https://media.celebra-me.com/invitations/xv/camila-beltran/music-2a99b2682dba29919f8fd021a8672c3d40128a0742509fadd8be0c2d7469496a.mp3`.
 - Every date string is typed from the fact register.
 
 ### Shared changes made for this invitation
