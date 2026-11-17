@@ -5,6 +5,7 @@ import {
 	buildMemoriesPublicUrl,
 } from '@/lib/memories/contract/private-request';
 import { buildMemoriesQrFileName, generateMemoriesQrSvg } from '@/lib/memories/qr';
+import { resolveMemoriesPublicOrigin } from '@/lib/memories/server/public-origin';
 import type { MemoriesVariant } from '@/lib/invitation/section-variants';
 
 interface Props {
@@ -21,9 +22,10 @@ interface Props {
 const { publicSlug, title, description, actionLabel, footerText, downloadLabel, qrAlt, variant } =
 	Astro.props;
 
-// The printed contract: the code always encodes the canonical public origin, while the
-// button stays on the serving origin so Preview and local runs remain self-contained.
-const qrSvg = await generateMemoriesQrSvg(buildMemoriesPublicUrl(publicSlug));
+// Keep the QR and button in the serving environment; Production uses the canonical origin.
+const qrSvg = await generateMemoriesQrSvg(
+	buildMemoriesPublicUrl(publicSlug, resolveMemoriesPublicOrigin(Astro.url.origin)),
+);
 // Percent-encoded rather than base64: the URI appears twice and SVG text compresses better.
 const qrDataUri = `data:image/svg+xml,${encodeURIComponent(qrSvg)}`;
 ---
