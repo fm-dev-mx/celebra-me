@@ -32,6 +32,7 @@ import {
 	invitationUnavailableError,
 	isEventInvitationUnavailable,
 } from '@/lib/invitation/access/invitation-access.repository';
+import { assertRsvpOpen } from '@/lib/rsvp/services/rsvp-deadline.service';
 
 type InviteRsvpIdentity = {
 	inviteId: string;
@@ -79,6 +80,7 @@ async function resolveRsvpTarget(identity: RsvpIdentity): Promise<ResolvedRsvpTa
 			if (await isEventInvitationUnavailable(invitation.eventId)) {
 				throw invitationUnavailableError();
 			}
+			await assertRsvpOpen(invitation.eventId);
 			return {
 				event: null,
 				invitation,
@@ -88,6 +90,7 @@ async function resolveRsvpTarget(identity: RsvpIdentity): Promise<ResolvedRsvpTa
 		if (await isEventInvitationUnavailable(identity.event.id)) {
 			throw invitationUnavailableError();
 		}
+		await assertRsvpOpen(identity.event);
 
 		const fullName = sanitize(identity.fullName, 140);
 		if (!fullName) throw new ApiError(400, 'bad_request', 'Full name is required.');

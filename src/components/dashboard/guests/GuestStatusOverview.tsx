@@ -29,6 +29,8 @@ export interface GuestStatusOverviewProps {
 	hideNextStep?: boolean;
 	/** Formatted RSVP deadline; empty when the event has none. */
 	rsvpDeadline?: string;
+	/** Host deadline editor; replaces the read-only deadline line when set. */
+	deadlineEditor?: React.ReactNode;
 	eventTitle?: string;
 	onRemind?: () => void;
 	onSendPending?: () => void;
@@ -265,6 +267,19 @@ const GuestWithoutPassesNote: React.FC<{ count: number }> = ({ count }) =>
  * invitation stages answer "what is left to do" and double as the list filter.
  * Totals always describe the whole event, never the filtered list.
  */
+const GuestDeadlineLine: React.FC<{ editor?: React.ReactNode; deadline: string }> = ({
+	editor,
+	deadline,
+}) => {
+	if (editor) return <>{editor}</>;
+	if (!deadline) return null;
+	return (
+		<p className="guest-overview__deadline">
+			Confirmar antes del <strong>{deadline}</strong>
+		</p>
+	);
+};
+
 const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 	summary,
 	activeFilter,
@@ -273,6 +288,7 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 	reminderHint = null,
 	hideNextStep = false,
 	rsvpDeadline = '',
+	deadlineEditor,
 	eventTitle = '',
 	onRemind,
 	onSendPending,
@@ -290,6 +306,7 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 						Agregue la primera invitación o importe su lista para empezar.
 					</p>
 				</div>
+				{deadlineEditor}
 			</section>
 		);
 	}
@@ -377,11 +394,7 @@ const GuestStatusOverview: React.FC<GuestStatusOverviewProps> = ({
 							{!hideNextStep && <GuestPeopleHeadline people={people} />}
 						</div>
 						<div className="guest-overview__meta">
-							{rsvpDeadline && (
-								<p className="guest-overview__deadline">
-									Confirmar antes del <strong>{rsvpDeadline}</strong>
-								</p>
-							)}
+							<GuestDeadlineLine editor={deadlineEditor} deadline={rsvpDeadline} />
 							<GuestSummaryShare
 								summary={summary}
 								eventTitle={eventTitle}

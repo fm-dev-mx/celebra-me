@@ -1,0 +1,302 @@
+@use '../../../global/a11y' as a11y;
+
+// Framed scene (countdown): one screen of dark ground, a double hairline frame, a script title
+// under a foil-stamped sprig, the days set large on their own line over hours, minutes and
+// seconds parted by hairlines, and the date written once between rules. Scroll-linked motion is
+// a pinned scene: the frame opens and the content comes in turn, then it settles under the next
+// card (which the section after it must pull up by one screen, see the location sheet).
+// The base countdown styles are not keyed on a variant, so nothing is carried over. Profiles map
+// the `--framed-scene-*` tokens: `-accent` / `-ink` (the ground's centre and edge, with
+// `-ink` also its fallback), `-light` and `-light-rgb` (type), `-rule` and `-rule-rgb` (frame and
+// hairlines), `-sprig` (the sprig as a `url()`, used as a mask) and `-sprig-display` (`block` to
+// show the stamp). `-stage-top` is optional (clears the fixed header and the preview banner).
+
+.event-theme-wrapper .countdown-section[data-variant='framed-scene'] {
+	position: relative;
+	display: flex;
+	box-sizing: border-box;
+	height: 100svh;
+	min-height: 0;
+	align-items: center;
+	justify-content: center;
+	overflow: clip;
+	padding: var(
+			--framed-scene-stage-top,
+			calc(var(--header-height-scrolled, 70px) + var(--preview-banner-height, 0px) + 0.75rem)
+		)
+		clamp(1.5rem, 6vw, 3rem) 1.5rem;
+	background:
+		radial-gradient(
+			ellipse 70% 60% at 50% 50%,
+			var(--framed-scene-accent, rgb(92 104 62)) 0%,
+			var(--framed-scene-ink, rgb(62 72 40)) 100%
+		),
+		var(--framed-scene-ink, rgb(62 72 40));
+
+	// A double gold frame, as on engraved stationery: the outer rule and a fainter inner one.
+	&::before,
+	&::after {
+		position: absolute;
+		content: '';
+		pointer-events: none;
+	}
+
+	&::before {
+		border: 1px solid rgb(var(--framed-scene-rule-rgb, 201 174 118) / 80%);
+		inset: 12px;
+	}
+
+	&::after {
+		border: 1px solid rgb(var(--framed-scene-rule-rgb, 201 174 118) / 38%);
+		inset: 18px;
+	}
+
+	// The eucalyptus sprig crowns the title as a pale foil stamp: the watercolor's silhouette
+	// filled with the ivory ink, so it reads on the olive ground.
+	.countdown-container::before {
+		display: var(--framed-scene-sprig-display, none);
+		width: clamp(9rem, 46vw, 13rem);
+		aspect-ratio: 880 / 336;
+		margin-bottom: calc(-1 * clamp(0.75rem, 2.5svh, 1.5rem));
+		background: rgb(var(--framed-scene-light-rgb, 251 249 243) / 82%);
+		content: '';
+		mask: var(--framed-scene-sprig, none) center / contain no-repeat;
+	}
+
+	.countdown-texture,
+	.storybook-lantern-sky {
+		display: none;
+	}
+
+	.countdown-container {
+		display: flex;
+		width: 100%;
+		max-width: 40rem;
+		flex-direction: column;
+		align-items: center;
+		gap: clamp(1.25rem, 4svh, 2.5rem);
+	}
+
+	.countdown-title {
+		margin: 0;
+		font-family: var(--font-calligraphy);
+		font-size: var(--framed-scene-title-size, clamp(2.4rem, 1.6rem + 3.4vw, 3.6rem));
+		font-weight: 400;
+		line-height: 1.1;
+		letter-spacing: 0;
+		text-transform: none;
+		color: var(--framed-scene-light, rgb(251 249 243));
+	}
+
+	.countdown-timer-wrapper {
+		width: 100%;
+		max-width: 30rem;
+	}
+
+	.countdown__timer {
+		display: grid;
+		width: 100%;
+		gap: 0;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.countdown__segment {
+		margin: 0;
+		padding: 0.25rem 0.25rem 0.35rem;
+		border: 0;
+		border-radius: 0;
+		background: none;
+		box-shadow: none;
+
+		& + .countdown__segment + .countdown__segment {
+			border-inline-start: 1px solid rgb(var(--framed-scene-rule-rgb, 201 174 118) / 70%);
+		}
+	}
+
+	// The days stand alone across the top, closed by a short gold rule.
+	.countdown__segment[data-unit='days'] {
+		position: relative;
+		margin-bottom: clamp(1rem, 3svh, 1.75rem);
+		padding-bottom: clamp(1rem, 3svh, 1.75rem);
+		grid-column: 1 / -1;
+
+		&::after {
+			position: absolute;
+			bottom: 0;
+			left: 50%;
+			width: clamp(3rem, 18vw, 6rem);
+			height: 1px;
+			background: var(--framed-scene-rule, rgb(201 174 118));
+			content: '';
+			translate: -50% 0;
+		}
+
+		.countdown__value {
+			font-size: var(--framed-scene-value-size, clamp(5.5rem, 3.5rem + 9vw, 9rem));
+			font-weight: 300;
+			line-height: 0.9;
+		}
+
+		.countdown__label {
+			margin-top: 0.4rem;
+			font-size: var(--framed-scene-label-size, clamp(0.75rem, 0.66rem + 0.35vw, 0.875rem));
+			letter-spacing: 0.32em;
+		}
+	}
+
+	.countdown__value {
+		font-family: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+		font-size: var(--framed-scene-value-size, clamp(2.6rem, 1.9rem + 3.2vw, 3.8rem));
+		font-weight: 400;
+		line-height: 1;
+		font-variant-numeric: lining-nums tabular-nums;
+		color: var(--framed-scene-light, rgb(251 249 243));
+	}
+
+	.countdown__label {
+		margin-top: 0.5rem;
+		font-family: var(--font-label);
+		font-size: var(--framed-scene-label-size, clamp(0.625rem, 0.55rem + 0.3vw, 0.75rem));
+		font-weight: 500;
+		letter-spacing: clamp(0.12em, 0.6vw, 0.24em);
+		text-transform: uppercase;
+		color: rgb(var(--framed-scene-light-rgb, 251 249 243) / 78%);
+	}
+
+	.countdown-date {
+		gap: clamp(0.5rem, 2.5vw, 1.25rem);
+		align-items: center;
+
+		.subtitle-line {
+			display: block;
+			flex: none;
+			width: clamp(1rem, 5vw, 4rem);
+			background: var(--framed-scene-rule, rgb(201 174 118));
+		}
+	}
+
+	.event-date {
+		font-family: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+		font-size: var(--framed-scene-date-size, clamp(1.1rem, 0.9rem + 1.1vw, 1.75rem));
+		font-style: italic;
+		font-weight: 400;
+		letter-spacing: 0.01em;
+		text-transform: none;
+		white-space: nowrap;
+		color: var(--framed-scene-light, rgb(251 249 243));
+	}
+}
+
+@include a11y.motion-safe {
+	@supports (animation-timeline: view()) {
+		.event-theme-wrapper
+			#invitation-sections-container
+			> .invitation-section-wrapper.has-motion[data-reveal='editorial'][data-section-kind='countdown']:has(
+				.countdown-section[data-variant='framed-scene']
+			) {
+			height: 300svh;
+			view-timeline-name: --framed-scene-stage;
+
+			// The timed reveal of the preset gives way to the scroll position.
+			.countdown-section :is([data-reveal-role], [data-reveal-item], .word) {
+				opacity: 100%;
+				animation: none;
+			}
+
+			// A pinned scene. The wrapper is taller than the screen and the section sticks to the top, so
+			// the timeline's `contain` range is the stretch where the scene stands still: the frame opens
+			// and title, days, the smaller figures and the date come in turn in the first half. In the
+			// second half the next card slides up over it like a sheet of paper while the scene settles
+			// back a little.
+			.countdown-section {
+				position: sticky;
+				top: 0;
+				animation: framed-scene-settle linear both;
+				animation-range: contain 0% contain 100%;
+				animation-timeline: --framed-scene-stage;
+			}
+
+			.countdown-section::before {
+				animation: framed-scene-frame linear both;
+				animation-range: contain 0% contain 100%;
+				animation-timeline: --framed-scene-stage;
+			}
+
+			.countdown-section :is(.countdown-title, .countdown__segment, .countdown-date) {
+				animation: framed-scene-step-1 linear both;
+				animation-range: contain 0% contain 100%;
+				animation-timeline: --framed-scene-stage;
+			}
+
+			.countdown-section .countdown-title {
+				animation-name: framed-scene-step-0;
+			}
+
+			.countdown-section .countdown-date {
+				animation-name: framed-scene-step-2;
+			}
+
+			.countdown-section .countdown__segment[data-unit='days'] {
+				animation-name: framed-scene-days;
+			}
+		}
+	}
+}
+
+// Countdown scene, over the pinned stretch. The frame opens first and the content rises in one
+// piece after another; all of it then stays, and the scene only settles back under the next card.
+@keyframes framed-scene-frame {
+	0% {
+		opacity: 0%;
+		scale: 0.94;
+	}
+
+	16%,
+	100% {
+		opacity: 100%;
+		scale: 1;
+	}
+}
+
+@keyframes framed-scene-days {
+	0%,
+	16% {
+		opacity: 0%;
+		scale: 0.86;
+	}
+
+	30%,
+	100% {
+		opacity: 100%;
+		scale: 1;
+	}
+}
+
+@each $step, $in in (0 8%, 1 26%, 2 34%) {
+	@keyframes framed-scene-step-#{$step} {
+		0%,
+		#{$in} {
+			opacity: 0%;
+			translate: 0 1rem;
+		}
+
+		#{$in + 12%},
+		100% {
+			opacity: 100%;
+			translate: 0 0;
+		}
+	}
+}
+
+@keyframes framed-scene-settle {
+	0%,
+	50% {
+		filter: brightness(1);
+		scale: 1;
+	}
+
+	100% {
+		filter: brightness(0.82);
+		scale: 0.94;
+	}
+}

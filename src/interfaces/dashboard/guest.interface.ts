@@ -73,12 +73,25 @@ export interface DashboardMemoriesReminder {
 	timeZone: string;
 }
 
+/** Host-set RSVP deadline and whether replies are closed (event time zone). */
+export interface DashboardRsvpWindow {
+	/** YYYY-MM-DD, inclusive; null = no deadline. */
+	deadline: string | null;
+	/** "20 de noviembre de 2026"; empty without a deadline. */
+	label: string;
+	closed: boolean;
+	eventDate: string | null;
+	eventTimeZone: string;
+}
+
 export interface DashboardGuestListResponse {
 	eventId: string;
 	items: DashboardGuestItem[];
 	shareTemplates: ShareMessagesConfig;
 	reminderSettings: ReminderSettings;
 	shareDateContext: ShareMessageDateContext;
+	/** Only for the event owner; members cannot edit the deadline. */
+	rsvpWindow?: DashboardRsvpWindow;
 	totals: {
 		totalInvitations: number;
 		totalPeople: number;

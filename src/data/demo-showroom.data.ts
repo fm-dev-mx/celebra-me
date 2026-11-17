@@ -80,6 +80,19 @@ export const DEMO_SHOWROOM_EVENTS: readonly DemoShowroomEvent[] = [
 			'Hola, me gustaría una invitación digital para cumpleaños. Vi sus demos y quiero conocer opciones.',
 		sortOrder: 50,
 	},
+	{
+		eventType: 'graduacion',
+		publicSlug: 'graduacion',
+		label: 'Graduación',
+		description: 'Un logro compartido con las personas que acompañaron el camino.',
+		icon: 'Enveloped',
+		showroomHref: '/#graduacion',
+		heroTitle: 'Demos de invitaciones para graduación',
+		heroDescription:
+			'Conozca una celebración de graduación con fotografías, programa y confirmación de muestra.',
+		whatsAppMessage: 'Hola, me gustaría conocer las invitaciones digitales para graduación.',
+		sortOrder: 60,
+	},
 ] as const;
 
 /** Showroom cards, one per demo folder in `src/invitations/demos/` (slug, route and asset derived). */

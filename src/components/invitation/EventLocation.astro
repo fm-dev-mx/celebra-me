@@ -110,7 +110,7 @@ const isIndicationsBand = indicationsLayout === 'band';
 // Enclosure: the indications become a small details card of the suite, without icons.
 const isIndicationsEnclosure = indicationsLayout === 'enclosure';
 // The printed program owns its rhythm; pinned routes also guide guests to the next chapter.
-const isProgramSheet = variant === 'program-sheet';
+const isProgramSheet = variant === 'program-sheet' || variant === 'pinned-program';
 // Star route: editorial rows on a starred line; its notes are light and the lede becomes a footnote.
 const isStarRoute = variant === 'star-route';
 const headerLede = isStarRoute ? undefined : introLede;

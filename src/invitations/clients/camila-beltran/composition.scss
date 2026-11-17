@@ -3,7 +3,8 @@
 
 // Camila: only what her tokens cannot say. The cover: the photograph fills the screen.
 .event--camila-beltran .invitation-hero {
-	@include scenes.photo-cover;
+	// The date arc lives with her assets; a url written in the shared tool would not resolve.
+	@include scenes.photo-cover(url('./assets/hero-date-arc.png'));
 }
 
 // Every section title but the parents' in large dusty-rose script; the section scope outranks the preset's.

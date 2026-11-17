@@ -1,3 +1,4 @@
+import { formatRsvpDeadlineEs, isRsvpClosed } from '@/lib/rsvp/rsvp-deadline';
 import {
 	createGuestInvitation,
 	findGuestsByEvent,
@@ -128,12 +129,15 @@ export function buildDashboardTotals(items: DashboardGuestListResponse['items'])
 	};
 }
 
+const DEFAULT_EVENT_TIME_ZONE = 'America/Chihuahua';
+
 async function resolveEventSharingContext(
-	event: Pick<EventRecord, 'slug' | 'eventType' | 'title'> | null,
+	event: Pick<EventRecord, 'slug' | 'eventType' | 'title' | 'rsvpDeadline'> | null,
 ): Promise<{
 	shareMessages: ShareMessagesConfig | null | undefined;
 	reminderSettings: ReminderSettings;
 	eventDate: string | null;
+	eventTimeZone: string;
 	rsvpDeadline: string | null;
 	shareDateContext: ShareMessageDateContext;
 }> {
@@ -142,20 +146,24 @@ async function resolveEventSharingContext(
 			shareMessages: undefined,
 			reminderSettings: resolveReminderSettings(null),
 			eventDate: null,
+			eventTimeZone: DEFAULT_EVENT_TIME_ZONE,
 			rsvpDeadline: null,
 			shareDateContext: buildShareMessageDateContext(null, null, '', new Date()),
 		};
 	}
 	const sharingConfig = await getSharingConfigForSlug(event.slug, event.eventType);
 	const today = new Date();
+	// The host-set deadline wins over the free-text one in the invitation content.
+	const rsvpDeadline = event.rsvpDeadline ?? sharingConfig.rsvpDeadline ?? null;
 	return {
 		shareMessages: sharingConfig.shareMessages,
 		reminderSettings: resolveReminderSettings(sharingConfig.reminderSettings),
 		eventDate: sharingConfig.eventDate ?? null,
-		rsvpDeadline: sharingConfig.rsvpDeadline ?? null,
+		eventTimeZone: sharingConfig.eventTimeZone ?? DEFAULT_EVENT_TIME_ZONE,
+		rsvpDeadline,
 		shareDateContext: buildShareMessageDateContext(
 			sharingConfig.eventDate ?? null,
-			sharingConfig.rsvpDeadline ?? null,
+			rsvpDeadline,
 			event.title,
 			today,
 		),
@@ -291,6 +299,13 @@ export async function listDashboardGuests(input: {
 			shareTemplates,
 			reminderSettings: sharingContext.reminderSettings,
 			shareDateContext: sharingContext.shareDateContext,
+			rsvpWindow: {
+				deadline: event.rsvpDeadline ?? null,
+				label: formatRsvpDeadlineEs(event.rsvpDeadline),
+				closed: isRsvpClosed(event.rsvpDeadline, sharingContext.eventTimeZone),
+				eventDate: sharingContext.eventDate,
+				eventTimeZone: sharingContext.eventTimeZone,
+			},
 			totals: buildDashboardTotals(items),
 			engagement: await loadEngagementSummary(event.id, input.hostAccessToken),
 			memoriesReminder: await loadMemoriesReminder(event.id, input.origin),

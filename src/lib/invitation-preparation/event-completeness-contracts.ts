@@ -624,6 +624,23 @@ function sacramentFields(
 }
 
 const CONTRACTS: Record<EventType, EventTypeCompletenessContract> = {
+	graduacion: {
+		eventType: 'graduacion',
+		maturity: 'partial',
+		summary: 'Demo-backed graduation contract; real-client preparation has not been verified.',
+		gaps: [
+			'Institutional ceremonies, client intake and publication requirements need real-client evidence.',
+		],
+		fields: ['slug', 'celebrantName', 'eventDate', 'sourceAssetPath', 'sectionOrder'].map(
+			(id) => ({
+				id,
+				label: id,
+				requirement: 'required',
+				blockingWhenUnresolved: true,
+				allowsPlaceholder: false,
+			}),
+		),
+	},
 	xv: {
 		eventType: 'xv',
 		maturity: 'evidence-backed',

@@ -114,6 +114,8 @@ type DescriptorData =
 				};
 				isDemoPreview?: boolean;
 				defaultCopy?: RsvpDefaultCopy;
+				rsvpDeadlineLabel?: string;
+				rsvpClosed?: boolean;
 			};
 	  }
 	| { component: 'gifts'; props: GiftsProps }
@@ -275,6 +277,12 @@ function renderRsvpSection(pageContext: InvitationPageContext): DescriptorData |
 					}
 				: undefined,
 			isDemoPreview: pageContext.isDemoPreview ?? false,
+			...(pageContext.rsvpWindow
+				? {
+						rsvpDeadlineLabel: pageContext.rsvpWindow.label,
+						rsvpClosed: pageContext.rsvpWindow.closed,
+					}
+				: {}),
 			// Only new invitations carry it, so a legacy one's island props stay as they were.
 			...(keepsLegacyRsvpDefaults(pageContext.viewModel.id)
 				? {}
@@ -487,7 +495,11 @@ function resolveSectionReveal(
 	if (descriptor.component === 'itinerary' && descriptor.props.variant === 'editorial-ledger') {
 		return 'fade-up';
 	}
-	if (descriptor.component === 'family' && descriptor.props.variant === 'asymmetric-groups') {
+	if (
+		descriptor.component === 'family' &&
+		(descriptor.props.variant === 'asymmetric-groups' ||
+			descriptor.props.variant === 'framed-groups')
+	) {
 		return 'fade-up';
 	}
 	return REVEAL_RECIPES[descriptor.component];
