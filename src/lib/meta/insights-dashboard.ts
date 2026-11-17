@@ -17,7 +17,7 @@ export interface MetaOrganicInsightRow {
 }
 
 /** `null` means no row was collected for that day, never zero. */
-export interface MetaInsightsDay {
+interface MetaInsightsDay {
 	date: string;
 	spend: number | null;
 	clicks: number | null;

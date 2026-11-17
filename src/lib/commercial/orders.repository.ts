@@ -381,7 +381,7 @@ export async function registerSalesOrderDepositPurchase(input: {
 	};
 }
 
-export type SalesOrderPaymentKind = 'deposit' | 'installment' | 'settlement';
+type SalesOrderPaymentKind = 'deposit' | 'installment' | 'settlement';
 
 export interface SalesOrderPayment {
 	id: string;

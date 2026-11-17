@@ -8,7 +8,7 @@ import type { EventType } from '@/lib/theme/theme-contract';
 type DemoInvitationThumbnail = Omit<DemoShowroomThumbnail, 'assetSlug'>;
 
 /** Showroom card fields a demo declares; slug, route and public slug are derived. */
-export type DemoShowroomCard = Omit<
+type DemoShowroomCard = Omit<
 	DemoShowroomItem,
 	'eventType' | 'publicSlug' | 'slug' | 'href' | 'thumbnail' | 'selectorThumbnail'
 > & {
