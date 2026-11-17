@@ -92,6 +92,8 @@ export async function updateEventService(input: {
 	eventType?: EventRecord['eventType'];
 	status?: EventRecord['status'];
 	invitationId?: string | null;
+	/** YYYY-MM-DD in the event time zone; null clears it. */
+	rsvpDeadline?: string | null;
 	/** Optimistic lock: only update while `updated_at` still equals this value. */
 	expectedUpdatedAt?: string;
 }): Promise<EventRecord> {
@@ -101,6 +103,7 @@ export async function updateEventService(input: {
 	if (input.eventType !== undefined) body.event_type = input.eventType;
 	if (input.status !== undefined) body.status = input.status;
 	if (input.invitationId !== undefined) body.invitation_project_id = input.invitationId;
+	if (input.rsvpDeadline !== undefined) body.rsvp_deadline = input.rsvpDeadline;
 
 	const versionFilter =
 		input.expectedUpdatedAt !== undefined

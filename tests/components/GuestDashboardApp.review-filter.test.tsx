@@ -70,6 +70,7 @@ function setupDashboard() {
 	mockedUseGuestDashboardRealtime.mockReturnValue({
 		error: '',
 		engagement: null,
+		rsvpWindow: null,
 		eventId: 'event-1',
 		hostEvents: [
 			{
