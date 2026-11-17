@@ -1,0 +1,623 @@
+@use '../../../global/a11y' as a11y;
+
+// Framed groups (family): one screen of stationery edge to edge, no card, with an asymmetric
+// column inside one fine frame. The heading and the first and last groups sit on the left, the
+// second group answers on the right, and a sprig leans beside the heading. Script titles over
+// serif names. Scroll-linked motion (heading, sprig and groups rise in reading order) is included.
+// Everything of the asymmetric-groups sheet is carried over first (only one sheet loads per
+// variant), then the composition. Profiles map the `--framed-groups-*` tokens: `-light` (page
+// ground), `-wash-rgb` (vignette channels), `-accent` (eyebrow, script titles, dagger),
+// `-ink` (names), `-rule-rgb` (frame channels) and `-sprig` (the sprig as a `url()`).
+// `-stage-top` is optional (clears the fixed header and the preview banner).
+
+// Carried over from the asymmetric-groups sheet (one sheet per variant): left-read staggered
+// groups with an optional right-set godparents block.
+// Opt-in tokens: --family-split-title-size / -title-weight / -title-line-height and
+// --family-split-name-size (defaults keep the variant's display scale); spacing tokens
+// --family-split-padding-block, -header-gap, -group-gap and -godparents-gap keep its rhythm.
+.family[data-variant='framed-groups'] {
+	--family-split-gap-inline: clamp(2rem, 6vw, 5rem);
+	--family-split-gap-block: clamp(1.25rem, 3.5vw, 1.65rem);
+	--family-split-divider: var(--color-border-subtle, rgb(166 84 58 / 18%));
+	--family-split-content-max-width: 58rem;
+	--family-bg-fallback: linear-gradient(
+		177deg,
+		var(--color-surface-soft, rgb(224 208 190 / 46%)) 0%,
+		var(--color-surface-primary, rgb(247 241 233)) 48%,
+		var(--color-surface-soft, rgb(224 208 190 / 56%)) 100%
+	);
+	--family-texture-opacity-fallback: 0%;
+	--family-vignette-bg-fallback: transparent;
+	--family-panel-bg-fallback: transparent;
+	--family-panel-border-fallback: none;
+	--family-panel-shadow-fallback: none;
+	--family-panel-rotate-fallback: none;
+	--family-panel-shadow-extra-display-fallback: none;
+	--family-panel-watermark-opacity-fallback: 0;
+	--family-panel-surface-after-opacity-fallback: 0;
+	--family-header-filter-fallback: none;
+	--family-media-filter-fallback: none;
+	--family-accent-fallback: var(--color-action-accent, rgb(176 142 96));
+	--family-text-primary-fallback: var(--color-text-primary, rgb(48 43 40));
+	--family-text-muted-fallback: var(--color-text-muted, rgb(48 43 40 / 64%));
+	--family-eyebrow-color-fallback: var(
+		--family-accent,
+		var(--family-accent-fallback, rgb(114 80 46))
+	);
+	--family-title-color-fallback: var(--color-text-emphasis, rgb(91 46 42));
+	--family-group-title-color-fallback: var(
+		--family-accent,
+		var(--family-accent-fallback, rgb(114 80 46))
+	);
+	--family-name-color: var(
+		--family-text-primary,
+		var(--family-text-primary-fallback, rgb(48 43 40))
+	);
+	--family-meta-color-fallback: var(
+		--family-text-muted,
+		var(--family-text-muted-fallback, rgb(48 43 40 / 64%))
+	);
+
+	padding-block: var(--family-split-padding-block, clamp(4.25rem, 8vw, 6.25rem));
+	background: var(--family-bg, var(--family-bg-fallback));
+	color: var(--family-text-primary, var(--family-text-primary-fallback));
+
+	.family__eyebrow {
+		padding-left: 2rem;
+		font-family: var(
+			--family-label-font,
+			'Bodoni Moda Variable',
+			'Playfair Display Variable',
+			georgia,
+			serif
+		);
+		color: var(--family-eyebrow-color, var(--family-eyebrow-color-fallback));
+	}
+
+	.family__header {
+		max-width: 36rem;
+		margin: 0 0 var(--family-split-header-gap, clamp(2.5rem, 5vw, 3.75rem));
+		text-align: left;
+	}
+
+	.family__header-inner {
+		align-items: flex-start;
+	}
+
+	.family__header-divider {
+		width: clamp(3rem, 8vw, 4.5rem);
+		margin-inline: 0;
+	}
+
+	.family__title {
+		max-width: 20ch;
+		margin-inline: 0;
+		font-family: var(
+			--family-title-font,
+			var(
+				--family-title-font-fallback,
+				var(
+					--font-display,
+					'Cormorant Garamond Variable',
+					'Cormorant Garamond',
+					georgia,
+					serif
+				)
+			)
+		);
+		font-size: var(--family-split-title-size, clamp(1.75rem, 3.8vw, 2.45rem));
+		font-weight: var(--family-split-title-weight, 600);
+		line-height: var(--family-split-title-line-height, 1.15);
+		color: var(--family-title-color, var(--family-title-color-fallback));
+	}
+
+	.family__message {
+		max-width: 30rem;
+		margin-inline: 0;
+		padding-left: 2rem;
+		font-family: var(
+			--family-body-font,
+			var(--font-body, 'Instrument Sans Variable', system-ui, sans-serif)
+		);
+		color: var(--family-text-muted, var(--family-text-muted-fallback));
+	}
+
+	.family__panel--no-media {
+		max-width: 58rem;
+		margin-inline: 0;
+		padding: 0;
+	}
+
+	.family__content {
+		position: relative;
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0 var(--family-split-gap-inline);
+		width: 100%;
+		max-width: var(--family-split-content-max-width);
+		margin-inline: 0;
+		align-items: start;
+	}
+
+	.family__content::after {
+		content: none;
+	}
+
+	.family__group + .family__group::before {
+		display: none;
+	}
+
+	.family__group--group-0,
+	.family__group--group-1,
+	.family__group--parents {
+		padding-top: clamp(1.25rem, 2.5vw, 1.75rem);
+		border-top: 1px solid var(--family-split-divider);
+		text-align: left;
+	}
+
+	.family__group--group-0 .family__group-title,
+	.family__group--group-0 .family__meta,
+	.family__group--group-1 .family__group-title,
+	.family__group--group-1 .family__meta,
+	.family__group--parents .family__group-title,
+	.family__group--parents .family__meta {
+		text-align: left;
+	}
+
+	.family__group--group-0 .family__list,
+	.family__group--group-0 .family__item,
+	.family__group--group-1 .family__list,
+	.family__group--group-1 .family__item,
+	.family__group--parents .family__list,
+	.family__group--parents .family__item {
+		align-items: flex-start;
+	}
+
+	.family__group--group-0 .family__name,
+	.family__group--group-1 .family__name,
+	.family__group--parents .family__name {
+		justify-content: flex-start;
+		text-align: left;
+		width: 100%;
+	}
+
+	.family__group--group-1 {
+		margin-top: var(--family-split-group-gap, clamp(1.75rem, 4vw, 3rem));
+	}
+
+	.family__group--group-1::before {
+		content: none;
+	}
+
+	.family__group-title {
+		font-family: var(
+			--family-label-font,
+			'Bodoni Moda Variable',
+			'Playfair Display Variable',
+			georgia,
+			serif
+		);
+		color: var(--family-group-title-color, var(--family-group-title-color-fallback));
+	}
+
+	.family__name {
+		font-family: var(
+			--family-name-font,
+			var(
+				--family-name-font-fallback,
+				var(
+					--font-display,
+					'Cormorant Garamond Variable',
+					'Cormorant Garamond',
+					georgia,
+					serif
+				)
+			)
+		);
+		font-size: var(--family-split-name-size, clamp(1.45rem, 3vw, 2.05rem));
+		font-weight: 500;
+		color: var(--family-name-color);
+	}
+
+	.family__meta,
+	.family__godparent-label {
+		font-family: var(
+			--family-meta-font,
+			'Bodoni Moda Variable',
+			'Playfair Display Variable',
+			georgia,
+			serif
+		);
+		color: var(--family-meta-color, var(--family-meta-color-fallback));
+	}
+
+	.family__group--godparents {
+		grid-column: 1 / -1;
+		margin-top: var(--family-split-godparents-gap, clamp(2.5rem, 5vw, 3.75rem));
+		padding-top: clamp(1.5rem, 3vw, 2.25rem);
+		border-top: 1px solid var(--family-split-divider);
+		text-align: right;
+	}
+
+	.family__group--godparents .family__group-title,
+	.family__group--godparents .family__meta {
+		text-align: right;
+	}
+
+	.family__group--godparents .family__list,
+	.family__group--godparents .family__item {
+		align-items: flex-end;
+	}
+
+	.family__group--godparents .family__name {
+		justify-content: flex-end;
+		text-align: right;
+		width: 100%;
+	}
+
+	// `by-role`: an optional hairline on the aligned edge of each secondary role.
+	.family__group--godparents .family__godparent-role:not(:first-child) {
+		padding-inline-end: var(--family-godparent-role-rule-gap, 0);
+		border-inline-end: var(--family-godparent-role-rule, 0);
+	}
+
+	@media (width <= 639px) {
+		.family__content {
+			grid-template-columns: 1fr;
+			gap: var(--family-split-gap-block);
+			max-width: none;
+		}
+
+		.family__group--godparents {
+			grid-column: 1;
+			text-align: left;
+		}
+
+		.family__group--godparents .family__group-title,
+		.family__group--godparents .family__meta {
+			text-align: left;
+		}
+
+		.family__group--godparents .family__list,
+		.family__group--godparents .family__item {
+			align-items: flex-start;
+		}
+
+		.family__group--godparents .family__name {
+			justify-content: flex-start;
+			text-align: left;
+		}
+
+		.family__group--godparents .family__godparent-role:not(:first-child) {
+			padding-inline: var(--family-godparent-role-rule-gap, 0) 0;
+			border-inline-start: var(--family-godparent-role-rule, 0);
+			border-inline-end: 0;
+		}
+
+		// Phones may stack the roles and trade the step down for an indent.
+		.family__group--godparents .family__godparent-roles {
+			grid-template-columns: var(
+				--family-godparent-roles-columns-mobile,
+				repeat(var(--family-godparent-roles-columns, 2), minmax(0, 1fr))
+			);
+		}
+
+		.family__group--godparents .family__godparent-role:nth-child(2n + 3) {
+			margin-top: var(
+				--family-godparent-role-offset-mobile,
+				var(--family-godparent-role-offset, 0)
+			);
+			margin-inline-start: var(--family-godparent-role-indent-mobile, 0);
+		}
+	}
+}
+
+.event-theme-wrapper .family[data-variant='framed-groups'] .family__container {
+	position: relative;
+	display: flex;
+	box-sizing: border-box;
+	width: 100%;
+	max-width: none;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: var(
+			--framed-groups-stage-top,
+			calc(var(--header-height-scrolled, 70px) + var(--preview-banner-height, 0px) + 0.75rem)
+		)
+		clamp(2rem, 9vw, 3rem) 1.5rem;
+	background: none;
+	outline: 1px solid rgb(var(--framed-groups-rule-rgb, 201 174 118) / 80%);
+	outline-offset: -12px;
+}
+
+// Family and godparents: one screen of ivory stationery edge to edge, no card, with an
+// asymmetric column inside the one fine frame. The heading and the first and last groups sit on
+// the left, the groom's mother answers on the right, and the sprig leans beside the heading.
+// Script titles over serif names; no other lines.
+.event-theme-wrapper .family[data-variant='framed-groups'] {
+	display: flex;
+	box-sizing: border-box;
+	height: 100svh;
+	min-height: 0;
+	align-items: stretch;
+	justify-content: center;
+	overflow: clip;
+	padding: 0;
+	background:
+		radial-gradient(
+			ellipse 75% 65% at 50% 48%,
+			var(--framed-groups-light, rgb(251 249 243)) 55%,
+			rgb(var(--framed-groups-wash-rgb, 233 224 205) / 70%) 100%
+		),
+		var(--framed-groups-light, rgb(251 249 243));
+
+	&::before,
+	.family__bg-texture,
+	.family__content-overlay,
+	.family__message {
+		display: none;
+	}
+
+	.family__container {
+		align-items: stretch;
+		gap: clamp(0.9rem, 3svh, 2.2rem);
+	}
+
+	.family__header,
+	.family__panel {
+		position: relative;
+		z-index: 1;
+		width: 100%;
+		max-width: 34rem;
+		margin: 0 auto;
+		padding: 0;
+		border: 0;
+		background: none;
+		box-shadow: none;
+		text-align: start;
+	}
+
+	.family__panel::before,
+	.family__panel::after {
+		display: none;
+	}
+
+	// Desktop: the heading and its sprig on the left, the three families on the right, both
+	// centered on the screen instead of one narrow column.
+	@media (width >= 64rem) {
+		.family__container {
+			display: grid;
+			grid-template-columns: minmax(0, 26rem) minmax(0, 30rem);
+			place-content: center;
+			align-items: center;
+			column-gap: clamp(3rem, 6vw, 6rem);
+		}
+
+		.family__header,
+		.family__panel {
+			margin: 0;
+		}
+	}
+
+	.family__header-inner {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.family__header .family__eyebrow {
+		display: block;
+		margin: 0 0 clamp(0.5rem, 1.4svh, 0.9rem);
+		padding: 0;
+		font-size: var(--framed-groups-eyebrow-size, 0.75rem);
+		font-weight: 600;
+		letter-spacing: 0.24em;
+		white-space: nowrap;
+		color: var(--framed-groups-accent, rgb(92 104 62));
+
+		&::before,
+		&::after {
+			display: none;
+		}
+	}
+
+	.family__header .family__title {
+		// Wide enough for the heading to break into two or three lines, never four.
+		max-width: 19ch;
+		margin: 0;
+		font-size: var(--framed-groups-title-size, clamp(1.45rem, 0.55rem + 2.6svh, 2.4rem));
+		font-weight: 400;
+		line-height: 1.1;
+		letter-spacing: -0.005em;
+		text-align: start;
+		text-wrap: pretty;
+
+		@media (width >= 48rem) {
+			max-width: 18ch;
+		}
+	}
+
+	// The one watercolor note of the page: the sprig lies under the heading as its rule, clear
+	// of every line of text.
+	.family__header-divider {
+		position: relative;
+		width: clamp(6.5rem, 30vw, 10rem);
+		height: auto;
+		aspect-ratio: 880 / 336;
+		margin: clamp(0.35rem, 1.2svh, 0.7rem) 0 0 -0.35rem;
+		background: var(--framed-groups-sprig, none) center / contain no-repeat;
+		rotate: -4deg;
+		transform-origin: 0% 50%;
+	}
+
+	// The cross after a late relative's name reads at name size, in the olive ink.
+	.family__deceased-indicator {
+		margin-left: 0.3em;
+
+		// Cormorant's dagger is a tiny superscript mark and the shared rule lifts it further;
+		// the Montserrat dagger sits on the name's baseline at a size that reads.
+		align-self: baseline;
+		font-family: var(--font-body);
+		font-size: 0.95em;
+		font-weight: 400;
+		line-height: 1;
+		color: var(--framed-groups-accent, rgb(92 104 62));
+		transform: none;
+	}
+
+	.family__groups {
+		gap: clamp(1.25rem, 4svh, 2.6rem);
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.family__group {
+		margin: 0;
+		padding: 0;
+		border: 0;
+		text-align: start;
+	}
+
+	.family__groups .family__group-title {
+		margin: 0 0 clamp(0.15rem, 0.6svh, 0.4rem);
+		font-family: var(--font-calligraphy);
+		font-size: var(--framed-groups-group-title-size, clamp(1.7rem, 1.05rem + 2.2svh, 2.5rem));
+		font-weight: 400;
+		line-height: 1.1;
+		letter-spacing: 0;
+		text-transform: none;
+		white-space: nowrap;
+		color: var(--framed-groups-accent, rgb(92 104 62));
+		text-align: inherit;
+
+		&::before,
+		&::after {
+			display: none;
+		}
+	}
+
+	.family__groups .family__list,
+	.family__groups .family__item {
+		align-items: flex-start;
+		justify-content: flex-start;
+		text-align: start;
+	}
+
+	.family__groups .family__name {
+		$name-size: clamp(0.85rem, min(4.1vw, 0.78rem + 0.9svh), 1.25rem);
+
+		font-family: var(--font-display);
+		font-size: var(--framed-groups-name-size, #{$name-size});
+		font-weight: 400;
+		line-height: 1.45;
+		letter-spacing: 0.005em;
+		text-transform: none;
+		text-align: start;
+		color: var(--framed-groups-ink, rgb(62 72 40));
+	}
+
+	// The groom's mother answers from the right.
+	.family__group--group-1 {
+		text-align: end;
+
+		:is(.family__list, .family__item) {
+			align-items: flex-end;
+			justify-content: flex-end;
+			text-align: end;
+		}
+
+		.family__name {
+			text-align: end;
+		}
+	}
+}
+
+@include a11y.motion-safe {
+	@supports (animation-timeline: view()) {
+		.event-theme-wrapper
+			#invitation-sections-container
+			> .invitation-section-wrapper.has-motion[data-reveal='editorial'][data-section-kind='family']:has(
+				.family[data-variant='framed-groups']
+			) {
+			view-timeline-name: --framed-groups-stage;
+
+			// The timed reveal of the preset gives way to the scroll position.
+			.family :is([data-reveal-role], [data-reveal-item], .word) {
+				opacity: 100%;
+				animation: none;
+			}
+
+			// The heading settles in while the sprig leans down beside it, then the groups surface one
+			// after another in reading order; all of it fades away together.
+			.family__header-divider {
+				animation: framed-groups-draw linear both;
+				animation-timeline: --framed-groups-stage;
+			}
+
+			.family .family__header {
+				animation: framed-groups-step-0 linear both;
+				animation-timeline: --framed-groups-stage;
+			}
+
+			.family .family__group {
+				animation: framed-groups-step-1 linear both;
+				animation-timeline: --framed-groups-stage;
+			}
+
+			.family .family__group--group-1 {
+				animation-name: framed-groups-step-2;
+			}
+
+			.family .family__group--godparents {
+				animation-name: framed-groups-step-3;
+			}
+		}
+	}
+}
+
+// The sprig fades in and leans the last few degrees down beside the heading.
+@keyframes framed-groups-draw {
+	0%,
+	20% {
+		opacity: 0%;
+		rotate: 4deg;
+	}
+
+	42%,
+	78% {
+		opacity: 100%;
+		rotate: -4deg;
+	}
+
+	92%,
+	100% {
+		opacity: 0%;
+		rotate: -4deg;
+	}
+}
+
+// Heading and groups: a soft rise in reading order, a still hold while the screen is full, and
+// one shared fade on the way out.
+@each $step, $start in (0: 16%, 1: 26%, 2: 32%, 3: 38%) {
+	@keyframes framed-groups-step-#{$step} {
+		0%,
+		#{$start} {
+			opacity: 0%;
+			translate: 0 0.75rem;
+		}
+
+		#{$start + 12%},
+		78% {
+			opacity: 100%;
+			translate: 0 0;
+		}
+
+		92%,
+		100% {
+			opacity: 0%;
+			translate: 0 -0.5rem;
+		}
+	}
+}

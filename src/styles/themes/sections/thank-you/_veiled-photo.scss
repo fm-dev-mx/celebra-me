@@ -1,0 +1,509 @@
+// Thank-you veiled-photo: promoted from a client composition. Base full-bleed-photo rules, then the
+// olive-veiled one-screen composition. Profiles set the --veiled-photo-* tokens. Breakpoints are
+// inlined (md 768px, sm 640px, xs 480px) because only tools/* may be @use-d.
+// Opt-in tokens (defaults keep the ivory veil and card):
+//   --thank-you-bleed-veil            Photograph veil at every width
+//   --thank-you-bleed-grid-opacity    Paper grid over the veil (default 22%)
+//   --thank-you-bleed-message-bg / -message-shadow / -message-backdrop / -message-border
+//                                     Message card paint
+//   --thank-you-bleed-monogram-display  Monogram ring above the message (`none` hides it)
+//   --thank-you-bleed-message-color / -message-style / -message-size / -message-line-height
+//   --thank-you-bleed-name-display    Closing name (default `none`); --thank-you-bleed-name-size (below md)
+//   --thank-you-bleed-photo-veil-content  `''` repeats the veil over the photo itself (default `none`)
+//   --thank-you-bleed-content-align     Desktop copy alignment (`end` keeps upper faces clear)
+
+:is(.event-theme-wrapper, body) .thank-you-section[data-variant='veiled-photo'] {
+	--thank-you-overlay-gap: clamp(2rem, 6vw, 5rem);
+	--thank-you-overlay-width: 35.5rem;
+	--thank-you-ink: var(--color-surface-dark, rgb(var(--color-eternal-ink-rgb, 22 20 18)));
+	--thank-you-ink-rgb: var(--color-surface-dark-rgb, var(--color-eternal-ink-rgb, 22 20 18));
+	--thank-you-ivory-rgb: var(
+		--color-surface-primary-rgb,
+		var(--color-pure-ivory-rgb, 252 249 243)
+	);
+	--thank-you-ivory-warm-rgb: var(
+		--color-surface-secondary-rgb,
+		var(--color-ivory-warm-rgb, 244 241 234)
+	);
+	--thank-you-accent-rgb: var(
+		--color-action-accent-rgb,
+		var(--color-sacred-gold-rgb, 176 148 96)
+	);
+
+	display: grid;
+	justify-content: stretch;
+	min-height: 100svh;
+	padding: clamp(5rem, 12vw, 8rem) clamp(1rem, 5vw, 4.5rem);
+	background:
+		linear-gradient(180deg, rgb(var(--thank-you-ink-rgb) / 8%), transparent 34%),
+		var(--thank-you-ink);
+	overflow: hidden;
+
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		background: var(
+			--thank-you-bleed-veil,
+			linear-gradient(
+				90deg,
+				rgb(var(--thank-you-ivory-rgb) / 94%) 0%,
+				rgb(var(--thank-you-ivory-rgb) / 78%) 30%,
+				rgb(var(--thank-you-ivory-rgb) / 34%) 52%,
+				rgb(var(--thank-you-ink-rgb) / 8%) 100%
+			),
+			linear-gradient(
+				180deg,
+				rgb(var(--thank-you-ivory-rgb) / 36%) 0%,
+				transparent 28%,
+				rgb(var(--thank-you-ink-rgb) / 34%) 100%
+			)
+		);
+		pointer-events: none;
+	}
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		background-image:
+			linear-gradient(rgb(var(--thank-you-ink-rgb) / 4%) 1px, transparent 1px),
+			linear-gradient(90deg, rgb(var(--thank-you-ink-rgb) / 3%) 1px, transparent 1px);
+		background-size:
+			44px 44px,
+			52px 52px;
+		mix-blend-mode: multiply;
+		opacity: var(--thank-you-bleed-grid-opacity, 22%);
+		pointer-events: none;
+	}
+
+	.thank-you-content {
+		position: static;
+		z-index: 2;
+		display: grid;
+		align-self: var(--thank-you-bleed-content-align, center);
+		width: min(100%, 1080px);
+		max-width: none;
+		margin: 1rem 2rem;
+		padding: 0;
+		text-align: left;
+	}
+
+	.photo-frame {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		border-radius: 0;
+		background: var(--thank-you-ink);
+		box-shadow: none;
+
+		&::before {
+			content: none;
+		}
+
+		// The section veil paints under the content's stacking context; a profile that needs the
+		// photo itself shaded opts in with --thank-you-bleed-photo-veil-content: ''.
+		&::after {
+			content: var(--thank-you-bleed-photo-veil-content, none);
+			position: absolute;
+			inset: 0;
+			z-index: 1;
+			background: var(--thank-you-bleed-veil, none);
+			pointer-events: none;
+		}
+
+		.photo-image {
+			width: 100%;
+			height: 100%;
+			border-radius: 0;
+			object-fit: cover;
+			object-position: var(--thank-you-focal-point, 52% 42%);
+			filter: none;
+			transform: none;
+		}
+
+		&:hover .photo-image {
+			transform: none;
+		}
+	}
+
+	.message-container,
+	.signature-block {
+		position: relative;
+		z-index: 2;
+		justify-self: start;
+		margin-left: clamp(0rem, 4vw, 2rem);
+	}
+
+	.message-container {
+		position: relative;
+		width: min(100%, 35.5rem);
+		max-width: none;
+		padding: clamp(1.25rem, 3vw, 2rem) clamp(1.25rem, 3.5vw, 2.4rem);
+		border-left: var(
+			--thank-you-bleed-message-border,
+			1px solid rgb(var(--thank-you-accent-rgb) / 34%)
+		);
+		background: var(
+			--thank-you-bleed-message-bg,
+			linear-gradient(
+				135deg,
+				rgb(var(--thank-you-ivory-rgb) / 82%) 0%,
+				rgb(var(--thank-you-ivory-warm-rgb) / 62%) 58%,
+				rgb(var(--thank-you-ivory-rgb) / 28%) 100%
+			)
+		);
+		box-shadow: var(
+			--thank-you-bleed-message-shadow,
+			0 24px 70px -54px rgb(var(--thank-you-ink-rgb) / 50%),
+			inset 0 1px 0 rgb(var(--thank-you-ivory-rgb) / 62%)
+		);
+		backdrop-filter: var(--thank-you-bleed-message-backdrop, blur(7px) saturate(118%));
+		perspective: none;
+
+		&::before {
+			content: var(--sacred-thank-you-monogram, '');
+			display: var(--thank-you-bleed-monogram-display, grid);
+			place-items: center;
+			width: 2.15rem;
+			height: 2.15rem;
+			margin-bottom: clamp(1rem, 3vw, 1.35rem);
+			border: 1px solid rgb(var(--thank-you-accent-rgb) / 34%);
+			border-radius: 50%;
+			color: rgb(var(--thank-you-accent-rgb) / 88%);
+			font-family: var(--font-display);
+			font-size: var(--veiled-thanks-message-container-before-size, 0.64rem);
+			letter-spacing: 0.18em;
+		}
+	}
+
+	.thank-you-message {
+		max-width: 33rem;
+		margin: 0;
+		color: var(--thank-you-bleed-message-color, rgb(var(--thank-you-ink-rgb) / 84%));
+		font-family: var(--font-display);
+		font-size: var(--thank-you-bleed-message-size, clamp(1.18rem, 2.1vw, 1.52rem));
+		font-style: var(--thank-you-bleed-message-style, normal);
+		font-weight: 400;
+		letter-spacing: 0;
+		line-height: var(--thank-you-bleed-message-line-height, 1.68);
+	}
+
+	.thank-you-message .drop-cap {
+		float: none;
+		padding-right: 0;
+		color: rgb(var(--thank-you-accent-rgb) / 80%);
+		font-family: inherit;
+		font-size: 1em;
+		line-height: inherit;
+		text-shadow: none;
+	}
+
+	.signature-block {
+		margin-top: clamp(1rem, 2.5vw, 1.6rem);
+		animation-delay: 0.25s;
+	}
+
+	.closing-name {
+		display: var(--thank-you-bleed-name-display, none);
+	}
+
+	@media (width <= 767px) {
+		display: grid;
+		align-items: stretch;
+		justify-content: stretch;
+		min-height: 100svh;
+
+		// `--thank-you-bleed-padding-end` keeps the closing clear of a held footer's pull cue.
+		padding: clamp(4rem, 10vw, 6rem) clamp(1rem, 4vw, 1.5rem)
+			var(--thank-you-bleed-padding-end, clamp(2rem, 5vw, 3rem));
+
+		&::before {
+			background: var(
+				--thank-you-bleed-veil,
+				linear-gradient(
+					180deg,
+					transparent 0%,
+					transparent 25%,
+					rgb(var(--thank-you-ivory-rgb) / 50%) 50%,
+					rgb(var(--thank-you-ivory-rgb) / 86%) 100%
+				),
+				linear-gradient(
+					90deg,
+					rgb(var(--thank-you-ink-rgb) / 8%) 0%,
+					transparent 30%,
+					transparent 70%,
+					rgb(var(--thank-you-ink-rgb) / 6%) 100%
+				)
+			);
+		}
+
+		&::after {
+			display: none;
+		}
+
+		.thank-you-content {
+			display: grid;
+			align-self: end;
+			width: 100%;
+			max-width: none;
+			margin: 0;
+			padding: 0;
+		}
+
+		.photo-frame {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			border-radius: 0;
+		}
+
+		.photo-frame .photo-image {
+			border-radius: 0;
+			object-position: var(--thank-you-focal-point, 50% 35%);
+		}
+
+		.message-container {
+			width: min(100%, 28rem);
+			max-width: none;
+			padding: clamp(1rem, 4vw, 1.4rem) clamp(1rem, 4vw, 1.4rem) clamp(0.85rem, 3vw, 1.1rem);
+			background: var(
+				--thank-you-bleed-message-bg,
+				linear-gradient(
+					135deg,
+					rgb(var(--thank-you-ivory-rgb) / 88%) 0%,
+					rgb(var(--thank-you-ivory-warm-rgb) / 72%) 60%,
+					rgb(var(--thank-you-ivory-rgb) / 56%) 100%
+				)
+			);
+			box-shadow: var(
+				--thank-you-bleed-message-shadow,
+				0 16px 48px -32px rgb(var(--thank-you-ink-rgb) / 40%),
+				inset 0 1px 0 rgb(var(--thank-you-ivory-rgb) / 70%)
+			);
+
+			&::before {
+				width: 1.75rem;
+				height: 1.75rem;
+				font-size: var(--veiled-thanks-message-container-before-size, 0.56rem);
+				margin-bottom: clamp(0.75rem, 2.5vw, 1rem);
+			}
+		}
+
+		.message-container,
+		.signature-block {
+			margin-left: 0;
+			justify-self: start;
+		}
+	}
+
+	@media (width <= 639px) {
+		.message-container {
+			width: 100%;
+			max-width: 100%;
+			padding: clamp(0.9rem, 4vw, 1.2rem);
+		}
+
+		.thank-you-message {
+			font-size: var(--thank-you-bleed-message-size, clamp(1rem, 4.5vw, 1.12rem));
+			line-height: var(--thank-you-bleed-message-line-height, 1.62);
+		}
+	}
+
+	@media (width <= 479px) {
+		padding-inline: 0.85rem;
+
+		.message-container {
+			padding: clamp(0.85rem, 3.5vw, 1.1rem);
+
+			&::before {
+				width: 1.5rem;
+				height: 1.5rem;
+				font-size: var(--veiled-thanks-message-container-before-size, 0.5rem);
+				margin-bottom: clamp(0.6rem, 2vw, 0.8rem);
+			}
+		}
+
+		.thank-you-message {
+			font-size: var(--thank-you-bleed-message-size, clamp(0.98rem, 5vw, 1.08rem));
+			line-height: var(--thank-you-bleed-message-line-height, 1.58);
+		}
+
+		.closing-name {
+			font-size: var(--thank-you-bleed-name-size, clamp(1.85rem, 11vw, 2.25rem));
+		}
+	}
+
+	// Tablet portrait range (769px–1023px) — editorial full-bleed with overlay text.
+	// Must be AFTER respond-below(md) to properly cascade (later rules override earlier).
+	@media (width >= 769px) and (width < 992px) {
+		display: grid;
+		justify-content: stretch;
+		min-height: 100svh;
+		padding: clamp(4rem, 10vw, 6rem) clamp(1.25rem, 4vw, 2.5rem);
+
+		&::before {
+			background: var(
+				--thank-you-bleed-veil,
+				linear-gradient(
+					90deg,
+					rgb(var(--thank-you-ivory-rgb) / 94%) 0%,
+					rgb(var(--thank-you-ivory-rgb) / 72%) 28%,
+					rgb(var(--thank-you-ivory-rgb) / 28%) 50%,
+					rgb(var(--thank-you-ink-rgb) / 12%) 100%
+				),
+				linear-gradient(
+					180deg,
+					rgb(var(--thank-you-ivory-rgb) / 32%) 0%,
+					transparent 30%,
+					rgb(var(--thank-you-ink-rgb) / 32%) 100%
+				)
+			);
+		}
+
+		&::after {
+			display: block;
+		}
+
+		.thank-you-content {
+			display: grid;
+			align-self: center;
+			width: min(100%, 900px);
+			padding: 0;
+		}
+
+		.photo-frame {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			border-radius: 0;
+		}
+
+		.photo-frame .photo-image {
+			border-radius: 0;
+		}
+
+		.message-container,
+		.signature-block {
+			margin-left: clamp(0rem, 3vw, 1.5rem);
+		}
+
+		.message-container {
+			width: min(100%, 32rem);
+			padding: clamp(1.1rem, 2.5vw, 1.75rem) clamp(1.1rem, 3vw, 2rem);
+		}
+
+		.thank-you-message {
+			font-size: var(--thank-you-bleed-message-size, clamp(1.1rem, 2vw, 1.4rem));
+			line-height: var(--thank-you-bleed-message-line-height, 1.7);
+		}
+	}
+}
+
+// One screen: the photograph under a colored veil deepening toward the foot, where the message
+// sits in light ink with no card, closed by a hairline and the couple's names in script.
+.event-theme-wrapper .thank-you-section[data-variant='veiled-photo'] {
+	--thank-you-bleed-veil:
+		linear-gradient(
+			0deg,
+			rgb(var(--veiled-photo-olive-deep-rgb, 62 72 40) / 96%) 0%,
+			rgb(var(--veiled-photo-olive-rgb, 92 104 62) / 86%) 34%,
+			rgb(var(--veiled-photo-olive-rgb, 92 104 62) / 42%) 62%,
+			rgb(var(--veiled-photo-olive-rgb, 92 104 62) / 14%) 84%
+		),
+		linear-gradient(
+			180deg,
+			rgb(var(--veiled-photo-olive-deep-rgb, 62 72 40) / 55%) 0%,
+			transparent 20%
+		);
+	--thank-you-bleed-photo-veil-content: '';
+	--thank-you-bleed-grid-opacity: 0%;
+	--thank-you-bleed-message-bg: none;
+	--thank-you-bleed-message-shadow: none;
+	--thank-you-bleed-message-backdrop: none;
+	--thank-you-bleed-message-border: 0;
+	--thank-you-bleed-monogram-display: none;
+	--thank-you-bleed-message-color: var(--veiled-photo-ivory, rgb(251 249 243));
+	--thank-you-bleed-message-style: italic;
+	--thank-you-bleed-message-size: clamp(1.15rem, 0.95rem + 1.4vw, 1.6rem);
+	--thank-you-bleed-message-line-height: 1.5;
+	--thank-you-bleed-name-display: block;
+
+	box-sizing: border-box;
+	height: 100svh;
+	min-height: 0;
+
+	// The footer follows right below, so the signature only needs a quiet margin.
+	padding: var(
+			--veiled-photo-stage-top,
+			calc(var(--header-height-scrolled, 70px) + var(--preview-banner-height, 0px) + 0.75rem)
+		)
+		1.5rem clamp(3.5rem, 9svh, 5rem);
+
+	.thank-you-content {
+		align-self: end;
+		justify-items: center;
+		width: min(100%, 34rem);
+		margin: 0 auto;
+		text-align: center;
+	}
+
+	.message-container,
+	.signature-block {
+		justify-self: center;
+		margin: 0;
+		padding: 0;
+	}
+
+	.thank-you-message {
+		font-family: 'Cormorant Garamond Variable', serif;
+		font-weight: 500;
+		text-wrap: balance;
+	}
+
+	.thank-you-message .drop-cap {
+		color: inherit;
+	}
+
+	.signature-block::before {
+		content: '';
+		display: block;
+		width: 3rem;
+		height: 1px;
+		margin: clamp(1rem, 3svh, 1.6rem) auto;
+		background: var(--veiled-photo-gold, rgb(201 174 118));
+	}
+
+	.closing-name {
+		margin: 0;
+		font-family: var(--font-calligraphy);
+		font-size: var(--veiled-thanks-name-size, clamp(2.1rem, 1.6rem + 2.6vw, 3rem));
+		font-weight: 400;
+		line-height: 1.1;
+		color: var(--veiled-photo-ivory, rgb(251 249 243));
+
+		// The preset paints the name with a gradient text fill that sinks into the veil.
+		background: none;
+		-webkit-text-fill-color: currentcolor;
+	}
+
+	// Wide screens: the portrait is cropped to a landscape band, so it slides up to keep both
+	// faces whole, and the copy stays at the foot.
+	@media (width >= 62rem) {
+		padding-bottom: 7rem;
+
+		.photo-frame {
+			--thank-you-focal-point: 50% 8%;
+		}
+	}
+}

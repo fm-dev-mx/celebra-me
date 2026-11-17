@@ -495,7 +495,11 @@ function resolveSectionReveal(
 	if (descriptor.component === 'itinerary' && descriptor.props.variant === 'editorial-ledger') {
 		return 'fade-up';
 	}
-	if (descriptor.component === 'family' && descriptor.props.variant === 'asymmetric-groups') {
+	if (
+		descriptor.component === 'family' &&
+		(descriptor.props.variant === 'asymmetric-groups' ||
+			descriptor.props.variant === 'framed-groups')
+	) {
 		return 'fade-up';
 	}
 	return REVEAL_RECIPES[descriptor.component];

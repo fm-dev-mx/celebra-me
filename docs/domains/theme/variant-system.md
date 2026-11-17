@@ -44,35 +44,38 @@ audit tooling (`pnpm invitation:published-audit`).
 - **Hero:** `standard`, `editorial-cover`, `split-cover`, `framed-portrait`, `bleed-portrait`,
   `cased-portrait`, `disco-stage`, `ceremonial-portrait`, `night-arch` (the photograph inside an
   arched window on a night sky, names below; wide screens put the arch on the right).
-- **Family:** `standard`, `split-groups`, `asymmetric-groups`, `ceremonial-family`; both group
-  layouts require at least two explicit `groups`.
+- **Family:** `standard`, `split-groups`, `asymmetric-groups`, `ceremonial-family`, `framed-groups`;
+  the three group layouts require at least two explicit `groups`.
 - **Location:** `standard`, `split-map`, `stacked-venue-plates`, `night-route` (the venue plates as
   numbered stops on one rail under a night sky; editorial invitations draw the rail with scroll),
   `star-route` (editorial rows that alternate a large photo with the time and venue data around one
-  line with a star per venue; the intro lede moves to a footnote), `program-sheet`; prerequisites
-  are enforced by the owning schema. `stacked-venue-plates` and `night-route` need at least two
-  visible venues and accept `venueCard: 'compact'`; `star-route` also needs two visible venues.
+  line with a star per venue; the intro lede moves to a footnote), `program-sheet`, `pinned-program`
+  (one visible venue or more); prerequisites are enforced by the owning schema.
+  `stacked-venue-plates` and `night-route` need at least two visible venues and accept
+  `venueCard: 'compact'`; `star-route` also needs two visible venues.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
   `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`,
   `narrative-stack`, `mirrored-mosaic`, `paired-portraits`, `album-assemble`, `photo-booth`,
-  `pinned-track` (a scroll scene: the photos travel sideways under a counter while the stage is
-  pinned; the scene is one screen plus `--gallery-track-pace` (0.2) screens per photo; at rest, a
-  two-column grid). `single-keepsake` requires exactly one item; `album-assemble` three to eight;
-  `photo-booth` exactly eight; feature layouts and `pinned-track` enforce their item requirements.
+  `rising-stack` (three items or more), `pinned-track` (a scroll scene: the photos travel sideways
+  under a counter while the stage is pinned; the scene is one screen plus `--gallery-track-pace`
+  (0.2) screens per photo; at rest, a two-column grid). `single-keepsake` requires exactly one item;
+  `album-assemble` three to eight; `photo-booth` exactly eight; feature layouts and `pinned-track`
+  enforce their item requirements.
 - **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`, `editorial-program`,
   `stacked-cards` (one sticky card per moment that recedes as the next arrives, using scroll-driven
   CSS where supported, otherwise a plain list; requires `itinerary.items`).
 - **Gifts:** `standard`, `editorial-catalog`, `gift-tag` (the whole registry fits one screen: a
   flush-left heading, beside the cards on wide screens; the store card as a tag with a bow and a
-  number pill; the cash gift as a strip; tokens `--gifts-tag-*`).
-- **RSVP:** `standard`, `editorial-press-pass`, `formal-register`, `reply-card`.
-- **Personalized Access:** `standard`, `ornamented`, `editorial-pass`, `formal-pass`, `reply-card`.
+  number pill; the cash gift as a strip; tokens `--gifts-tag-*`), `framed-card`.
+- **RSVP:** `standard`, `editorial-press-pass`, `formal-register`, `reply-card`, `framed-register`.
+- **Personalized Access:** `standard`, `ornamented`, `editorial-pass`, `formal-pass`, `reply-card`,
+  `framed-pass`.
 - **Thank You:** `standard`, `editorial-back-cover`, `portrait-letter`, `full-bleed-photo`,
-  `portrait-keepsake`, `last-song`, `ceremonial-closing`; `full-bleed-photo` requires
-  `thankYou.image`.
+  `portrait-keepsake`, `last-song`, `ceremonial-closing`, `veiled-photo`; `full-bleed-photo` and
+  `veiled-photo` require `thankYou.image`.
 - **Countdown:** `standard`, `editorial-folio`, `magazine-folio`, `clock-face`, `written-days`,
-  `mirror-ball`.
-- **Quote:** `standard`, `neon-sign`.
+  `mirror-ball`, `framed-scene`.
+- **Quote:** `standard`, `neon-sign`, `veiled-photo`.
 - **Memories:** `card`; requires `memories.publicSlug`. It has no default variant, because the
   section exists only for invitations with a memory space.
 
@@ -251,6 +254,33 @@ invitation profiles.
 - location.presentationOptions.indicationsLayout enclosure: the details card of a suite — one small
   card with an inner hairline, short notes without icons or numbering, and a single color swatch for
   a `reserved` note. `--location-enclosure-*`.
+- location.pinned-program: the program-sheet entries on an editorial page with a gold rail and, from
+  tablets up, two columns whose cards pin while the page scrolls. It loads one sheet that carries
+  the program-sheet rules, so `presentationOptions.scene` keeps working. Requires one visible venue.
+  `--pinned-program-*` (stage-top, serif, rail, olive, olive-deep, gold, beige, ivory, paper and
+  their `-rgb` triplets).
+- family.framed-groups: one screen of stationery with an asymmetric column inside one fine frame,
+  the second group answering on the right and a sprig beside the heading; carries the
+  asymmetric-groups rules. Requires two groups. `--framed-groups-*` (light, wash-rgb, accent, ink,
+  rule-rgb, sprig, stage-top).
+- gallery.rising-stack: the feature-stack grid framed as one screen, the prints rising in a pinned
+  scroll scene. Requires three items. `--rising-stack-*` (paper, gold, gold-ink, gold-rgb, title,
+  stage-top).
+- gifts.framed-card: one page without cards; options as rows between hairlines with a fine emblem
+  and an outlined store button, closed by a thin frame. `--framed-card-*`.
+- rsvp.framed-register: the formal-register underline form as a one-screen centered composition.
+  `--framed-register-*`.
+- personalizedAccess.framed-pass: the formal-pass ticket inside a framed page with a corner sprig.
+  `--framed-pass-*` (art-corner, gold-ink, gold-rgb, olive, olive-deep, paper, stage-top).
+- thankYou.veiled-photo: full-bleed-photo markup under a deep veil on one screen. Requires
+  `thankYou.image`. `--veiled-photo-*` and the opt-in `--thank-you-bleed-*` tokens.
+- countdown.framed-scene: one dark screen in a double hairline frame; script title under a foil
+  sprig, the days large over hours, minutes and seconds, and the date between rules, as a pinned
+  scene. `--framed-scene-*` (accent, ink, light, light-rgb, rule, rule-rgb, sprig, sprig-display,
+  stage-top).
+- quote.veiled-photo: the photograph to the edges under a veil that deepens toward the text, the
+  closing line in script over a hairline; scroll-linked.
+  `--veiled-photo-{image,veil-rgb,veil-deep-rgb,rule,stage-top}`.
 - location.program-sheet: venues as printed-program entries (line drawing for ceremony/reception,
   label, time in words, venue, address, text links of 44 px for map, calendar and copy). No cards
   and no section nav button; two columns with a vertical hairline on wide screens.
