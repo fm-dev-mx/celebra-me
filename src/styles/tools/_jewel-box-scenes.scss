@@ -251,8 +251,10 @@
 	--env-shadow-container: none;
 	--env-seal-size-min: 84px;
 	--env-seal-size-ratio: 24;
-	--env-seal-size-max: 108px;
-	--env-title-size: clamp(3rem, 14cqw, 3.6rem);
+	--env-seal-size-max: min(108px, 28svh);
+
+	// Sized from both axes so every line stays on the body, clear of the fold shade.
+	--env-title-size: clamp(2.2rem, min(12vw, 9svh), 3.6rem);
 	--storybook-letter-hold: 0ms;
 	--storybook-letter-exit: 0ms;
 
@@ -325,7 +327,10 @@
 	}
 
 	.envelope-tease {
-		padding: 0 1rem calc(6svh + env(safe-area-inset-bottom));
+		padding: 0 1rem calc(3.5svh + env(safe-area-inset-bottom));
+		padding-top: calc(
+			max(3.5svh, var(--preview-banner-height, 0px) + 0.25rem) + env(safe-area-inset-top)
+		);
 	}
 
 	.envelope-zone--identity {
@@ -347,13 +352,13 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.9rem;
+		gap: min(0.9rem, 2svh);
 	}
 
 	.tease-divider {
 		display: block;
 		order: 2;
-		width: 11rem;
+		width: min(11rem, 30vw, 36svh);
 		height: 0.5rem;
 		margin: 0;
 		background: var(--jewel-rule) center / contain no-repeat;
@@ -364,12 +369,20 @@
 		display: block;
 		margin: 0;
 		font-family: var(--font-ui, var(--font-body));
-		font-size: 0.72rem;
+		font-size: clamp(0.6rem, 3.2vw, 0.72rem);
 		font-weight: 600;
-		letter-spacing: 0.3em;
+		letter-spacing: clamp(0.12em, 1vw, 0.3em);
 		text-transform: uppercase;
 		color: var(--jewel-bronze);
 		opacity: 100%;
+	}
+
+	.envelope-tease .guest-personalized {
+		max-inline-size: min(100%, 22rem);
+	}
+
+	.envelope-tease .personalized-name {
+		font-size: clamp(1rem, 5.6vw, 1.45rem);
 	}
 
 	.envelope-external-instruction {
