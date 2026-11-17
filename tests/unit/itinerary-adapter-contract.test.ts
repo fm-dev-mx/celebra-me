@@ -25,7 +25,7 @@ function eventWith(overrides: Record<string, unknown>) {
 			composition: { intersections: {} },
 			hero: {
 				name: 'Celebrante',
-				date: '2027-11-20',
+				date: '2027-11-20T19:00:00Z',
 				backgroundImage: { type: 'external', src: '/images/test-bg.jpg' },
 				variant: 'standard',
 			},
@@ -37,6 +37,21 @@ function eventWith(overrides: Record<string, unknown>) {
 }
 
 describe('itinerary canonical variant contract', () => {
+	it('preserves the optional Spanish clock format through validation and adaptation', () => {
+		const input = eventWith({ itinerary: { ...baseItinerary, timeFormat: '12h-es' } });
+		expect(eventContentSchema.safeParse(input.data).success).toBe(true);
+		expect(adaptEvent(contentDocumentFromEntry(input)).sections.itinerary?.timeFormat).toBe(
+			'12h-es',
+		);
+	});
+
+	it('rejects a clock option on variants that cannot render it', () => {
+		const input = eventWith({
+			itinerary: { ...baseItinerary, variant: 'stacked-cards', timeFormat: '12h-es' },
+		});
+		expect(eventContentSchema.safeParse(input.data).success).toBe(false);
+	});
+
 	it('preserves an explicit canonical standard variant through the adapter', () => {
 		const viewModel = adaptEvent(contentDocumentFromEntry(eventWith({})));
 		expect(viewModel.sections.itinerary?.variant).toBe('standard');

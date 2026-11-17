@@ -147,13 +147,25 @@
 		margin: 0 auto 2rem;
 		background: rgb(var(--color-action-accent-rgb, 0 0 0) / 30%);
 	}
+
+	// Optional closing note below the cards (e.g. where envelopes are received).
+	&__note {
+		max-width: var(--gifts-note-max-width, 32rem);
+		margin: var(--gifts-note-gap, 2rem) auto 0;
+		font-family: var(--gifts-note-font, var(--font-body));
+		font-size: var(--gifts-note-size, 1rem);
+		font-style: var(--gifts-note-style, italic);
+		line-height: 1.6;
+		text-wrap: balance;
+		color: var(--gifts-note-color, var(--color-text-secondary));
+	}
 }
 
 .gifts-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(min(var(--gifts-grid-min-column), 100%), 1fr));
 	grid-auto-rows: var(--gifts-grid-auto-rows, auto);
-	gap: var(--spacing-lg);
+	gap: var(--gifts-grid-gap, var(--spacing-lg));
 
 	&[data-count='1'] {
 		grid-template-columns: minmax(0, 420px);

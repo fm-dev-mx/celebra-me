@@ -2,13 +2,15 @@
 // src/components/invitation/TimelineList.astro
 import Icon from '@/components/common/icons/Icon.astro';
 import type { ItineraryItem } from '@/lib/adapters/types';
-import { formatTime12h, isValidTime } from '@/lib/time/time-format';
+import { formatTime12h, formatTimeSpanish, isValidTime } from '@/lib/time/time-format';
 
 interface Props {
 	items: ItineraryItem[];
+	timeFormat?: '12h' | '12h-es';
 }
 
-const { items } = Astro.props;
+const { items, timeFormat } = Astro.props;
+const formatTime = timeFormat === '12h-es' ? formatTimeSpanish : formatTime12h;
 ---
 
 <div class="itinerary__items-wrapper" data-itinerary-wrapper>
@@ -36,7 +38,7 @@ const { items } = Astro.props;
 				>
 					<div class="itinerary__item-content">
 						{timeValid ? (
-							<div class="itinerary__item-time">{formatTime12h(item.time)}</div>
+							<div class="itinerary__item-time">{formatTime(item.time)}</div>
 						) : (
 							<div class="itinerary__item-time itinerary__item-time--pending" data-itinerary-time-pending>
 								Por confirmar
