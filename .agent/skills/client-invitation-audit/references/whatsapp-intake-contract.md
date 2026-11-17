@@ -46,7 +46,7 @@ Helpers: `assertClassificationRules` (`src/lib/invitation-preparation/`).
 | `inferred`      | Record basis; never phrase as “the client said”                               |
 | `ambiguous`     | Keep competing readings in notes; blocking when field is required/conditional |
 | Absence         | Never treat as consent, preference, or demo selection                         |
-| Recommendations | Stay in Agent Recommendations until owner approval                            |
+| Recommendations | Stay in Agent Recommendations until Production owner approval                 |
 
 Media interpretability (audio/image/video; no reconstruction from context): creation contract §1.2.
 

@@ -70,10 +70,13 @@ against current Production (target-owned state preserved; unresolved managed div
 typed owner confirmation (`APPLY <8-hex>` via `pnpm prod:apply`), managed import/publication apply,
 and mandatory post-apply verification. Worktree files under `.agent/tmp/approvals` are not the SSOT;
 use `pnpm invitation:release -- --package-hash <hash> --approve` for direct live Preview
-verification and approval. Legacy filesystem approval import is retired. Production promotion runs
-only through `pnpm prod:apply`, which uses the shared promotion orchestrator. Existing target
-invitations resolve and preserve their owner by slug. New target invitations ensure a dedicated Auth
-host from the definition `hostLoginAlias` (`{alias}@clientes.celebra.invalid`) before plan/apply;
+verification and approval. Preview approval is owned by the agent and requires verified hosted
+validation evidence for the exact `packageHash`; an approval never transfers to a different hash.
+Step ownership: Local and Preview steps are owned by the agent; Production steps remain exclusively
+owned by the owner. Legacy filesystem approval import is retired. Production promotion runs only
+through `pnpm prod:apply`, which uses the shared promotion orchestrator. Existing target invitations
+resolve and preserve their owner by slug. New target invitations ensure a dedicated Auth host from
+the definition `hostLoginAlias` (`{alias}@clientes.celebra.invalid`) before plan/apply;
 `--owner-user-id` is an optional override/assertion, not required on the happy path. Dry-run reports
 owner action as `OWNER_REUSE`, `OWNER_CREATE_PLANNED`, or `OWNER_CONFLICT` (blocked). Every selected
 target is inspected and planned before any mutation; a blocked or unevaluated target aborts the

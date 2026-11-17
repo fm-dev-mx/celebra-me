@@ -248,8 +248,8 @@ Each accepted item becomes its own task (per the owner decision of 2026-11-09), 
    with every advertised width variant and referenced social card. Propose a separate read-only
    check that derives keys from live R2 asset rows and published content references, validates
    bucket/origin and digest-key consistency, and checks object existence (totals only). A
-   `storage.objects` join cannot cover R2. Owner approval and a separate implementation task remain
-   pending; this inventory adds no check and does not accept missing R2 media as a risk.
+   `storage.objects` join cannot cover R2. Production owner approval and a separate implementation
+   task remain pending; this inventory adds no check and does not accept missing R2 media as a risk.
 3. **#1 and #2** content objects: every published and draft `content` has the paths the code reads
    (`hero.date`, `eventTiming`, `rsvp`). Extends the existing `20260812` prerequisite instead of
    duplicating it.

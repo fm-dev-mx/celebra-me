@@ -65,7 +65,9 @@ Run this before each commit that changes the look; the full loop is the
       invitation wrapper.
 - [ ] `pnpm exec jest tests/unit/invitation-token-shadowing.test.ts` passes before the commit.
 - [ ] When `visual-coverage-lifecycle` reports matrix drift, follow the commands it prints: full
-      candidate for the commit, owner review, then accept with `--matrix-hash=<current>`.
+      candidate for the commit, inspect candidate captures and diffs, then accept with
+      `--matrix-hash=<current>` retaining the candidate-manifest SHA-256 and diff evidence. Local
+      and Preview acceptance is owned by the agent; Production is owned by the owner.
 
 ## Authority boundary
 
