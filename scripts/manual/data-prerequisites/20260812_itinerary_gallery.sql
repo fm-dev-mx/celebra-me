@@ -44,8 +44,9 @@ WITH expected(slug, needs_gallery) AS (
     ) AS mismatched_rows
   FROM content_rows
 ), all_content AS (
-  SELECT 'published' AS source, p.is_demo, p.content
+  SELECT 'published' AS source, (i.kind = 'demo') AS is_demo, p.content
   FROM public.published_invitation_content p
+  JOIN public.invitations i ON i.id = p.invitation_project_id
   WHERE p.deleted_at IS NULL
   UNION ALL
   SELECT 'draft' AS source, NULL::boolean AS is_demo, d.content

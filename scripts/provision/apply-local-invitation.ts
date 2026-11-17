@@ -1627,7 +1627,6 @@ export async function applyLocalInvitation(options: ApplyLocalOptions): Promise<
 					p_idempotency_key: randomUUID(),
 					p_slug: targetSlug,
 					p_event_type: definition.eventType,
-					p_is_demo: false,
 					p_content: packagePublishedContent,
 				},
 			);

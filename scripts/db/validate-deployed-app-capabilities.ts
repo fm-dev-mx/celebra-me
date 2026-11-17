@@ -19,7 +19,6 @@ const REQUIRED_PUBLICATION_PARAMETERS = [
 	'p_idempotency_key',
 	'p_slug',
 	'p_event_type',
-	'p_is_demo',
 	'p_content',
 ] as const;
 

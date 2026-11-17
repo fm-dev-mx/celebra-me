@@ -139,7 +139,7 @@ export function loadSemanticParitySnapshot(
 
 	const published = queryRow(
 		dbUrl,
-		`select content, is_demo
+		`select content
 		 from public.published_invitation_content
 		 where invitation_project_id = ${invitationIdSql}
 		   and deleted_at is null
@@ -147,7 +147,6 @@ export function loadSemanticParitySnapshot(
 		 limit 1`,
 	) as {
 		content?: unknown;
-		is_demo?: boolean;
 	} | null;
 
 	const assets = queryJsonArray(

@@ -175,12 +175,11 @@ function ensurePublishedContent(dbUrl: string, invitationId: string, apply: bool
 	const content = JSON.stringify(buildPreviewFixtureContent());
 	const insert = runPsql(
 		`insert into public.published_invitation_content (
-			invitation_project_id, slug, event_type, is_demo, content, version
+			invitation_project_id, slug, event_type, content, version
 		) values (
 			${sqlLiteral(invitationId)}::uuid,
 			${sqlLiteral(PREVIEW_FIXTURE_SLUG)},
 			${sqlLiteral(PREVIEW_FIXTURE_EVENT_TYPE)},
-			false,
 			${sqlLiteral(content)}::jsonb,
 			1
 		)
@@ -273,7 +272,7 @@ export function ensurePreviewE2eFixture(options: {
 					 where invitation_project_id = ${sqlLiteral(existing.id)}::uuid
 					   and slug = ${sqlLiteral(PREVIEW_FIXTURE_SLUG)}
 					   and event_type = ${sqlLiteral(PREVIEW_FIXTURE_EVENT_TYPE)}
-					   and is_demo = false and deleted_at is null
+					   and deleted_at is null
 					   and content is distinct from ${sqlLiteral(JSON.stringify(content))}::jsonb;`,
 					dbUrl,
 					{ tuplesOnly: true, throwOnError: false },
