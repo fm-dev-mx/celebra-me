@@ -234,7 +234,7 @@ const headLinks = pageCtx
 				<Footer
 					eventSlug={pageCtx.viewModel.id}
 					showEnvelope={pageCtx.wrapper.showEnvelope}
-					variant="standard"
+					variant={pageCtx.viewModel.composition?.footerVariant ?? 'standard'}
 					closingPhrase={pageCtx.footerClosingPhrase}
 					showFooterBranding={pageCtx.viewModel.brandingVisibility.showFooterBranding}
 					showContactCta={pageCtx.viewModel.brandingVisibility.showContactCta}

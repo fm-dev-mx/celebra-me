@@ -67,6 +67,19 @@ const THEME_PRESET_SKINS = extractThemePresets();
 /** In-scope dirs scanned for forbidden theme-as-data-variant beyond the canonical registry. */
 const EXTRA_IN_SCOPE_VARIANT_DIRS = ['header', 'music-player', 'footer'];
 
+/** Footer variants live in the composition contract, not the section registry. */
+function extractFooterVariants() {
+	const source = fs.readFileSync(
+		path.join(__dirname, '..', 'src', 'lib', 'invitation', 'composition-contract.ts'),
+		'utf8',
+	);
+	const declaration = source.match(/FOOTER_VARIANTS\s*=\s*\[([^\]]*)\]/);
+	if (!declaration) throw new Error('FOOTER_VARIANTS not found in composition-contract.ts');
+	return new Set([...declaration[1].matchAll(/'([a-z0-9-]+)'/g)].map((match) => match[1]));
+}
+
+const EXTRA_IN_SCOPE_REGISTERED_VARIANTS = { footer: extractFooterVariants() };
+
 function extractCSSVariants(contracts) {
 	const themesDir = path.join(__dirname, '..', 'src', 'styles', 'themes', 'sections');
 	const variants = {};
@@ -111,7 +124,7 @@ function checkExtraInScopeThemeAsVariant() {
 					ERRORS.push(
 						`${dir}: CSS uses theme preset as data-variant '${v}' in ${relative}`,
 					);
-				} else {
+				} else if (!EXTRA_IN_SCOPE_REGISTERED_VARIANTS[dir]?.has(v)) {
 					WARNINGS.push(
 						`${dir}: CSS selector uses unregistered section variant '${v}' in ${relative}`,
 					);

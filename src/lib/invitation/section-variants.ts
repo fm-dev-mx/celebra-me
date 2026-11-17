@@ -559,6 +559,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		prerequisites: ['At least one visible venue'],
 		cssOwner: 'src/styles/themes/sections/location/_pinned-program.scss',
 	},
+	{
+		section: 'hero',
+		variant: 'veiled-arch',
+		default: false,
+		prerequisites: ['hero.backgroundImage'],
+		cssOwner: 'src/styles/themes/sections/hero/_veiled-arch.scss',
+	},
 ] as const satisfies readonly CanonicalVariantRegistryEntry[];
 
 export const CANONICAL_VARIANT_REGISTRY = canonicalVariantRegistry;
