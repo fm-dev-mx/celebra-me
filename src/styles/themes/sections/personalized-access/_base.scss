@@ -156,7 +156,7 @@
 
 	&__eyebrow {
 		font-family: var(--font-body, serif);
-		font-size: 0.68rem;
+		font-size: var(--pa-eyebrow-size, 0.68rem);
 		line-height: 1;
 		letter-spacing: var(--pa-eyebrow-tracking, 0.24em);
 		text-transform: uppercase;
@@ -226,7 +226,7 @@
 		margin: 0 auto;
 		font-family: var(--pa-subtitle-font, serif);
 		font-weight: var(--pa-subtitle-weight, 600);
-		font-size: 0.85rem;
+		font-size: var(--pa-subtitle-size, 0.85rem);
 		line-height: 1.6;
 		color: var(
 			--pa-subtitle-color,
@@ -255,7 +255,7 @@
 
 	&__label {
 		font-family: var(--font-body, serif);
-		font-size: 0.72rem;
+		font-size: var(--pa-label-size, 0.72rem);
 		line-height: 1.2;
 		letter-spacing: var(--pa-label-tracking, 0.24em);
 		text-transform: uppercase;
@@ -401,7 +401,7 @@
 			max-width: 22rem;
 			margin: 0 auto;
 			font-family: var(--font-body, serif);
-			font-size: 0.9rem;
+			font-size: var(--pa-footer-size, 0.9rem);
 			line-height: 1.65;
 			color: var(
 				--pa-footer-text-color,

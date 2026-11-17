@@ -391,6 +391,7 @@ export interface InvitationViewModel {
 			variant: ItineraryVariant;
 			closingNote?: string;
 			scene?: ItineraryScene;
+			timeFormat?: '12h' | '12h-es';
 		};
 		rsvp?: {
 			eventSlug: string;
@@ -449,6 +450,8 @@ export interface InvitationViewModel {
 			presentation: GiftsPresentation;
 			items: GiftItem[];
 			variant: GiftsVariant;
+			/** Closing note printed below the gift cards. */
+			note?: string;
 		};
 		thankYou?: {
 			message: string;

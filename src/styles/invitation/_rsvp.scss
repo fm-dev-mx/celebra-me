@@ -231,7 +231,7 @@
 
 	&__subcopy {
 		font-family: var(--font-body);
-		font-size: 0.88rem;
+		font-size: var(--rsvp-subcopy-size, 0.88rem);
 		line-height: 1.45;
 		color: var(--rsvp-subcopy-color, var(--color-text-secondary));
 		max-width: 30rem;

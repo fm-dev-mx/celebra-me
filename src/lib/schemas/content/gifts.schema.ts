@@ -68,6 +68,8 @@ export const cashGiftItemSchema = z.object({
 	// Optional catalog icon name (e.g. 'Enveloped') rendered in place of the
 	// literal title when the design calls for a glyph instead of the word.
 	iconName: z.string().min(1).optional(),
+	// Optional catalog icon name shown in the medallion instead of the cash glyph.
+	medallionIconName: z.string().min(1).optional(),
 });
 
 export const giftItemSchema = z.discriminatedUnion('type', [
@@ -88,6 +90,8 @@ export const giftsSchema = z
 		// Decorative cutout above the heading (e.g. an illustrated gift box).
 		ornament: AssetSchema.optional(),
 		items: z.array(giftItemSchema).optional(),
+		// Closing note printed below the gift cards (e.g. where to leave envelopes).
+		note: z.string().optional(),
 	})
 	.strict()
 	.superRefine((gifts, ctx) => {
