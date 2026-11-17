@@ -10,6 +10,81 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.73.1] - 2026-11-14
+
+Turns on the photo-sharing add-on for Valeria Hernández. No database migrations.
+
+### Changed
+
+- Invitations: Valeria Hernández shows its photo-sharing card on the published page now that the
+  add-on is paid; publishing requires the memories space in each environment (#981).
+
+## [0.73.0] - 2026-11-14
+
+Applies client requests to Yireh Ana and Valeria Hernández, marks unread guest messages in the host
+dashboard, and hardens deploy-run detection in the daily Production window. No database migrations.
+
+### Added
+
+- Dashboard: guest messages show a «Mensaje nuevo» badge until the host opens them (#969).
+
+### Changed
+
+- Invitations: Yireh Ana adds send-off bows to the envelope opening, inks the quote in fewer swipes,
+  pins the itinerary for two screens instead of three and shows the monogram in the footer (#971,
+  #973).
+- Invitations: Valeria Hernández applies the client's requests (#972) and styles the photo-sharing
+  card as a disco photo pass, still hidden in the published page (#976).
+
+### Fixed
+
+- Operations: the daily Production window detects the dispatched deploy run by id and head SHA
+  (#968).
+- RSVP: public-event RSVP submissions are refused when the invitation is unavailable, as
+  personalized ones already were (#969).
+
+## [0.72.0] - 2026-11-13
+
+Adds the background song, a gallery scroll cue and a new dress-code reference image to Valeria
+Hernández. No database migrations.
+
+### Added
+
+- Invitations: Valeria Hernández plays its background song and shows a subtle scroll cue in the
+  photo-booth gallery (#959).
+
+### Changed
+
+- Invitations: Valeria Hernández uses a new dress-code reference image (#959).
+- Governance: the Claude bridge may run `invitation:release` (#961).
+
+### Fixed
+
+- Invitations: the music-player equalizer stays steady during visual captures (#959).
+
+## [0.71.0] - 2026-11-13
+
+Ships the third client round of Yireh Ana and the cherry disco redesign of Valeria Hernández. No
+database migrations.
+
+### Added
+
+- Invitations: Valeria Hernández becomes a cherry disco night (#939), with a mirror-ball-route
+  location scene and an album dusk shift (#941).
+- Invitations: shared `satin-ribbons` ornament set, opted into only by Yireh Ana (#940).
+
+### Changed
+
+- Invitations: third client round of Yireh Ana — single-screen hero, always-visible footer with a
+  closing phrase, neutral RSVP step titles, envelope and location polish (#940).
+- RSVP: the stepped flow keeps the chosen answer marked when the guest goes back, and choosing it
+  again moves on (#940).
+
+### Fixed
+
+- Ops: the post-deploy smoke reports unpublished catalog invitations as pending content instead of
+  failing (#955).
+
 ## [0.70.0] - 2026-11-12
 
 Adds the order lifecycle, stage board and event agenda to the dashboard, keeps hosts signed in,
@@ -49,10 +124,17 @@ event); the two `20261110100000`/`20261110120000` migrations only release archiv
   panel fetch redirects to login (#904); a failed login alias check names the HTTP status (#929).
 - Database: the order payments migration passes the initial-revoke proof and is registered as expand
   (#923, #926).
+- Invitations: the timeline-paper itinerary shows times in Spanish ("5:30 p. m.") (#937).
 - Demos: the floating quote keeps its room and uses palette tokens (#885).
 - Release: historical invitation patches require verification (#897); the active package hash
   baseline is updated (#894); invitation note deletions compare from the merge base (#913); the
-  deploy check accepts an inactive no-traffic smoke when the same SHA has a successful run (#920).
+  deploy check accepts an inactive no-traffic smoke when the same SHA has a successful run (#920);
+  the Worker-first guard exempts only reviewed Auth and tracking patches that do not depend on the
+  Worker, while invitation content patches stay guarded (#946).
+- Tracking: a blank `lead_code` is dropped before an event is stored (#943).
+- Production data: blank tracking lead codes are cleared and Auth accounts without an application
+  role are removed (#943, #945); the Thank You prerequisite verifies the approved variants (#947);
+  the nine Production data prerequisites are marked verified (#948).
 - Preview data: the archived wedding slug, identity constraints and asset paths are released (#892,
   #900); the login alias backfill is marked verified (#895).
 - Visual: capture images decode synchronously so full-page frames match (#918).

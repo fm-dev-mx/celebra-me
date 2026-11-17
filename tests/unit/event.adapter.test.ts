@@ -343,6 +343,40 @@ describe('adaptEvent', () => {
 		expect(viewModel.sections.countdown?.targetSource).toBe('eventTiming');
 	});
 
+	it('countdown calendar adds save-the-date links only when addToCalendar is set', () => {
+		const fixture = loadFixture('tests/fixtures/content/xv-jewelry-box.json') as Record<
+			string,
+			any
+		>;
+		const build = (addToCalendar?: boolean) =>
+			adaptEvent(
+				contentDocumentFromEntry({
+					id: 'event-demos/xv/demo-xv-jewelry-box',
+					data: {
+						...fixture,
+						eventTiming: {
+							localDateTime: '2026-04-25T18:00',
+							timeZone: 'America/Mazatlan',
+							startsAtUtc: '2026-04-26T01:00:00.000Z',
+						},
+						countdown: {
+							...fixture.countdown,
+							presentationOptions: {
+								calendar: {
+									mark: 'heart',
+									...(addToCalendar ? { addToCalendar } : {}),
+								},
+							},
+						},
+					},
+				} as EventContentEntry),
+			).sections.countdown?.calendar;
+
+		expect(build()?.mark).toBe('heart');
+		expect(build()?.links).toBeUndefined();
+		expect(build(true)?.links?.googleUrl).toContain('calendar.google.com');
+	});
+
 	it('countdown uses centralized legacy fallback when eventTiming is missing', () => {
 		const event = {
 			id: 'event-demos/xv/demo-xv-jewelry-box',

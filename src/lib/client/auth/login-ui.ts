@@ -26,15 +26,15 @@ export function isValidLoginIdentifier(identifier: string): boolean {
 
 export function validateLoginForm(input: LoginFormState): string | null {
 	if (!normalize(input.email)) {
-		return 'Escribe tu correo o usuario para continuar.';
+		return 'Escriba su correo o usuario para continuar.';
 	}
 
 	if (!isValidLoginIdentifier(input.email)) {
-		return 'Escribe un correo o usuario valido para continuar.';
+		return 'Escriba un correo o usuario válido para continuar.';
 	}
 
 	if (!normalize(input.password)) {
-		return 'Ingresa tu contrasena para continuar con este metodo.';
+		return 'Ingrese su contraseña para continuar.';
 	}
 
 	return null;

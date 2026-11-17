@@ -2,81 +2,9 @@
 
 /* ==========================================================================
    Compact guest list (< xl)
-   Status-grouped rows (default) or cards, chosen with the "Ver como" toggle.
+   Status-grouped rows (default) or cards, chosen in the "Más acciones" menu.
    The desktop table owns xl and up.
    ========================================================================== */
-
-/* --- View toggle --- */
-.dashboard-guests__view-toggle {
-	display: none;
-
-	@include mixins.respond-below(xl) {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.75rem;
-		margin: 0 0 1rem;
-	}
-
-	.guest-view-toggle {
-		flex: 1 1 auto;
-	}
-}
-
-.guest-view-toggle {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	justify-content: space-between;
-	gap: 0.5rem 1rem;
-}
-
-.guest-view-toggle__label {
-	color: var(--color-text-primary);
-	font-size: 1.0625rem;
-	font-weight: 700;
-}
-
-.guest-view-toggle__options {
-	display: inline-flex;
-	gap: 2px;
-	padding: 3px;
-	border: 1px solid var(--color-border-control);
-	border-radius: 14px;
-	background: var(--color-surface-soft);
-}
-
-.guest-view-toggle__option {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.4rem;
-
-	@include mixins.touch-target;
-
-	padding: 0 1rem;
-	border: 0;
-	border-radius: 11px;
-	background: transparent;
-	color: var(--color-text-primary);
-	font-family: var(--font-ui);
-	font-size: 1rem;
-	font-weight: 700;
-	cursor: pointer;
-
-	&:focus-visible {
-		@include mixins.focus-ring;
-	}
-
-	&--active {
-		background: var(--dashboard-button-primary-bg);
-		color: var(--dashboard-button-primary-text);
-
-		svg {
-			color: var(--dashboard-button-primary-accent, currentcolor);
-		}
-	}
-}
 
 /* --- Grouped list --- */
 .dashboard-guests__list {
@@ -180,36 +108,6 @@
 
 .guest-row__copy {
 	flex-shrink: 0;
-}
-
-.guest-row__status {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-	width: 40px;
-	height: 40px;
-	border-radius: 50%;
-
-	.guest-row--to-send & {
-		background: var(--color-state-warning-bg);
-		color: var(--color-state-warning-text);
-	}
-
-	.guest-row--waiting & {
-		background: var(--color-state-info-bg);
-		color: var(--color-state-info-text);
-	}
-
-	.guest-row--confirmed & {
-		background: var(--color-state-success-bg);
-		color: var(--color-state-success-text);
-	}
-
-	.guest-row--declined & {
-		background: var(--color-state-neutral-bg);
-		color: var(--color-state-neutral-text);
-	}
 }
 
 .guest-row__text {

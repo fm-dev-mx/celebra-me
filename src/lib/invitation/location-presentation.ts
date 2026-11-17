@@ -42,10 +42,12 @@ export interface LocationPresentationOptions {
 	/** Adds a no-JS "Agendar en el calendario" disclosure to each venue with a date and time. */
 	showCalendarLinks?: boolean;
 	/**
-	 * Pinned scroll scene for editorial invitations (`program-sheet`, two or more venues):
-	 * the route between the venues draws itself while a traveler follows it and the entries take
+	 * Scroll scene for editorial invitations (`program-sheet`, two or more venues). The pinned
+	 * routes draw the way between the venues while a traveler follows it and the entries take
 	 * turns: a lantern under a starry night (`lantern-route`) or a butterfly over the section's own
-	 * day (`butterfly-route`). Without editorial motion or under reduced motion the program shows as is.
+	 * day (`butterfly-route`). `mirror-ball-route` does not pin: over a dance-floor night the
+	 * venues are club passes that stack as the page scrolls. Without editorial motion or under
+	 * reduced motion the program shows as is.
 	 */
 	scene?: LocationScene;
 	/**
@@ -55,7 +57,7 @@ export interface LocationPresentationOptions {
 	venueCard?: LocationVenueCard;
 }
 
-export const LOCATION_SCENES = ['lantern-route', 'butterfly-route'] as const;
+export const LOCATION_SCENES = ['lantern-route', 'butterfly-route', 'mirror-ball-route'] as const;
 export type LocationScene = (typeof LOCATION_SCENES)[number];
 
 export const LOCATION_VENUE_CARDS = ['compact'] as const;

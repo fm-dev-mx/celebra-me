@@ -129,32 +129,105 @@ export function getGuestLatestMessage(guestComment: string): string {
 	return parseGuestCommentHistory(guestComment)[0]?.message ?? '';
 }
 
+export const GUEST_MESSAGE_READ_STORAGE_KEY = 'rsvp-dashboard-read-messages';
+
+export function getGuestMessageSignature(guestComment: string): string {
+	const history = parseGuestCommentHistory(guestComment);
+	if (history.length === 0) return '';
+	const latest = history[0];
+	return `${history.length}:${latest.timestampLabel ?? ''}:${latest.message}`;
+}
+
+export function isGuestMessageUnread(
+	item: Pick<DashboardGuestItem, 'guestId' | 'guestComment'>,
+	readMessages: Readonly<Record<string, string>>,
+): boolean {
+	const signature = getGuestMessageSignature(item.guestComment);
+	if (!signature) return false;
+	return readMessages[item.guestId] !== signature;
+}
+
+export function readStoredGuestMessageReads(): Record<string, string> {
+	if (typeof window === 'undefined') return {};
+	try {
+		const raw = window.localStorage.getItem(GUEST_MESSAGE_READ_STORAGE_KEY);
+		if (!raw) return {};
+		const parsed: unknown = JSON.parse(raw);
+		if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+		const result: Record<string, string> = {};
+		for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
+			if (typeof value === 'string' && value.length > 0) {
+				result[key] = value;
+			}
+		}
+		return result;
+	} catch {
+		return {};
+	}
+}
+
+export function recordGuestMessageRead(
+	item: Pick<DashboardGuestItem, 'guestId' | 'guestComment'>,
+	current: Readonly<Record<string, string>> = readStoredGuestMessageReads(),
+): Record<string, string> {
+	const signature = getGuestMessageSignature(item.guestComment);
+	if (!signature) return { ...current };
+	const next = { ...current, [item.guestId]: signature };
+	if (typeof window !== 'undefined') {
+		try {
+			window.localStorage.setItem(GUEST_MESSAGE_READ_STORAGE_KEY, JSON.stringify(next));
+		} catch {
+			// Storage can be unavailable; in-memory state still updates for this session.
+		}
+	}
+	return next;
+}
+
 export type GuestMessageWallEntry = {
 	item: DashboardGuestItem;
 	latest: string;
 	timestampLabel: string;
 	count: number;
+	/** Older messages from the same guest, newest first. */
+	earlier: { id: string; message: string; timestampLabel: string }[];
+	/** When the latest message arrived (epoch ms, 0 when unknown). */
+	receivedAt: number;
 };
 
 /** Guests with a message, newest answer first, each with its latest message in full. */
 export function buildGuestMessageWall(items: DashboardGuestItem[]): GuestMessageWallEntry[] {
-	const entries: (GuestMessageWallEntry & { sortKey: number })[] = [];
+	const entries: GuestMessageWallEntry[] = [];
 	for (const item of items) {
 		const history = parseGuestCommentHistory(item.guestComment);
 		if (history.length === 0) continue;
 		const fallbackIso = getGuestMessageFallbackTimestamp(item);
-		const sortKey = Date.parse(fallbackIso);
+		const receivedAt = Date.parse(fallbackIso);
 		entries.push({
 			item,
 			latest: history[0].message,
 			timestampLabel: getGuestMessageDateLabel(history[0], history.length, fallbackIso),
 			count: history.length,
-			sortKey: Number.isNaN(sortKey) ? 0 : sortKey,
+			earlier: history.slice(1).map((entry) => ({
+				id: entry.id,
+				message: entry.message,
+				timestampLabel: getGuestMessageDateLabel(entry, history.length, fallbackIso),
+			})),
+			receivedAt: Number.isNaN(receivedAt) ? 0 : receivedAt,
 		});
 	}
-	return entries
-		.sort((a, b) => b.sortKey - a.sortKey)
-		.map(({ sortKey: _sortKey, ...entry }) => entry);
+	return entries.sort((a, b) => b.receivedAt - a.receivedAt);
+}
+
+/** Latest messages that arrived after the host last read the wall; all of them before the first read. */
+export function countNewGuestMessages(
+	entries: GuestMessageWallEntry[],
+	seenAt: number | null,
+): number {
+	return entries.filter((entry) => isNewGuestMessage(entry, seenAt)).length;
+}
+
+export function isNewGuestMessage(entry: GuestMessageWallEntry, seenAt: number | null): boolean {
+	return seenAt === null || entry.receivedAt > seenAt;
 }
 
 export type GuestPrimaryAction = {
@@ -590,7 +663,26 @@ export type GuestReviewFilterValue =
 	| 'confirmation-pending'
 	| 'confirmed'
 	| 'declined'
+	| 'no-answer'
 	| 'with-message';
+
+const REVIEW_FILTER_LABELS: Record<Exclude<GuestReviewFilterValue, 'all'>, string> = {
+	'reminder-pending': 'Por recordar',
+	'delivery-pending': 'Por enviar',
+	unopened: 'Sin abrir',
+	opened: 'Abiertas sin responder',
+	answered: 'Con respuesta',
+	'confirmation-pending': 'Enviadas sin confirmar',
+	confirmed: 'Asistirán',
+	declined: 'No asistirán',
+	'no-answer': 'Sin confirmar',
+	'with-message': 'Con mensaje',
+};
+
+/** Name of the active review filter for the list notice; null when unfiltered. */
+export function getReviewFilterLabel(filter: GuestReviewFilterValue): string | null {
+	return filter === 'all' ? null : REVIEW_FILTER_LABELS[filter];
+}
 
 /**
  * Client-side review, group and search filtering of the full event list. The
@@ -630,7 +722,16 @@ export function filterGuestsForReview(
 			case 'confirmed':
 				return item.attendanceStatus === 'confirmed';
 			case 'declined':
-				return item.attendanceStatus === 'declined';
+				// Matches the "No asistirán" count: declined invitations plus
+				// confirmed ones that left places unused.
+				return (
+					item.attendanceStatus === 'declined' ||
+					(item.attendanceStatus === 'confirmed' && attendingOf(item) < passesOf(item))
+				);
+			case 'no-answer':
+				return (
+					item.attendanceStatus !== 'confirmed' && item.attendanceStatus !== 'declined'
+				);
 			case 'with-message':
 				return (item.guestComment ?? '').trim().length > 0;
 			default:

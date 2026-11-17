@@ -1,4 +1,4 @@
-import { act, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { act, fireEvent, render, renderHook, screen, within } from '@testing-library/react';
 import GuestOverviewStrip from '@/components/dashboard/guests/GuestOverviewStrip';
 import { GuestNextStep } from '@/components/dashboard/guests/GuestStatusOverview';
 import { computeGuestSummary } from '@/components/dashboard/guests/guest-presenter';
@@ -62,25 +62,25 @@ describe('GuestOverviewStrip', () => {
 		expect(screen.queryByText(/adulto|niño/)).not.toBeInTheDocument();
 	});
 
-	it('leads with confirmed passes and the share of assigned passes', () => {
+	it('leads with the invited total and three counts that add up to it', () => {
 		renderStrip();
-		expect(screen.getByText('3')).toBeInTheDocument();
-		expect(screen.getByText(/de 11 pases confirmados · 27 %/)).toBeInTheDocument();
+		expect(screen.getByText('11')).toBeInTheDocument();
+		expect(screen.getByText(/invitados en 4 invitaciones/)).toBeInTheDocument();
+		const group = screen.getByRole('group', { name: 'Filtrar la lista por respuesta' });
+		const [confirmed, declined, noAnswer] = within(group).getAllByRole('button');
+		expect(confirmed).toHaveTextContent('3Asistirán');
+		expect(declined).toHaveTextContent('3No asistirán1 lugar sin ocupar');
+		expect(noAnswer).toHaveTextContent('5Sin confirmar');
 	});
 
-	it('shows one pill per state and toggles its list filter', () => {
+	it('toggles the list filter from each count', () => {
 		const { onFilterChange } = renderStrip();
-		const group = screen.getByRole('group', { name: 'Filtrar invitaciones por estado' });
-		expect(group).toHaveTextContent('1 por enviar');
-		expect(group).toHaveTextContent('1 sin responder');
-		expect(group).toHaveTextContent('1 confirmada');
-		expect(group).toHaveTextContent('1 no asistirán');
-
-		fireEvent.click(screen.getByRole('button', { name: '1 sin responder' }));
-		expect(onFilterChange).toHaveBeenCalledWith('confirmation-pending');
+		const group = screen.getByRole('group', { name: 'Filtrar la lista por respuesta' });
+		fireEvent.click(within(group).getAllByRole('button')[2]);
+		expect(onFilterChange).toHaveBeenCalledWith('no-answer');
 	});
 
-	it('clears an active pill and keeps it visible even at zero', () => {
+	it('clears an active count and keeps it visible even at zero', () => {
 		const onlyUnsent = computeGuestSummary([
 			makeGuest({ guestId: 'a', deliveryStatus: 'generated', maxAllowedAttendees: 2 }),
 		]);
@@ -88,9 +88,10 @@ describe('GuestOverviewStrip', () => {
 			summary: onlyUnsent,
 			activeFilter: 'declined',
 		});
-		const declined = screen.getByRole('button', { name: '0 no asistirán' });
+		const group = screen.getByRole('group', { name: 'Filtrar la lista por respuesta' });
+		const declined = within(group).getAllByRole('button')[1];
+		expect(declined).toHaveTextContent('0No asistirán');
 		expect(declined).toHaveAttribute('aria-pressed', 'true');
-		expect(screen.queryByRole('button', { name: /confirmada/ })).not.toBeInTheDocument();
 
 		fireEvent.click(declined);
 		expect(onFilterChange).toHaveBeenCalledWith('all');
@@ -98,7 +99,7 @@ describe('GuestOverviewStrip', () => {
 
 	it('names the full summary toggle by its state', () => {
 		const { onToggleExpanded } = renderStrip();
-		const toggle = screen.getByRole('button', { name: 'Ver resumen completo' });
+		const toggle = screen.getByRole('button', { name: 'Más datos' });
 		expect(toggle).toHaveAttribute('aria-expanded', 'false');
 		expect(toggle).toHaveAttribute('aria-controls', 'guest-summary-full');
 		fireEvent.click(toggle);
@@ -107,7 +108,7 @@ describe('GuestOverviewStrip', () => {
 
 	it('offers to hide the summary once it is open', () => {
 		renderStrip({ expanded: true });
-		expect(screen.getByRole('button', { name: 'Ocultar resumen completo' })).toHaveAttribute(
+		expect(screen.getByRole('button', { name: 'Ocultar' })).toHaveAttribute(
 			'aria-expanded',
 			'true',
 		);

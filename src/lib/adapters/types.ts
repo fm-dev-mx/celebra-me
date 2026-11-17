@@ -1,5 +1,6 @@
 import type { RsvpFlow } from '@/lib/invitation/rsvp-flow';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type { VenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
 import type {
 	IndicationStyleVariant,
 	InvitationRenderSectionKey,
@@ -103,6 +104,7 @@ export interface HeroViewModel {
 	focalPointDesktop?: string;
 	scrollLabel?: string;
 	scrollCue?: 'chevron' | 'constellation';
+	ambientVideo?: { webm: string; mp4?: string; poster: string };
 	tagline?: string;
 	photoCredit?: string;
 }
@@ -205,6 +207,7 @@ export interface EnvelopeViewModel {
 		sealColor?: string;
 		sealImage?: ImageAsset;
 		backdropImage?: ImageAsset;
+		openingVideo?: { webm: string; mp4?: string; poster: string };
 		microcopy: string;
 		documentLabel?: string;
 		stampText?: string;
@@ -293,6 +296,8 @@ export interface LocationSection {
 	/** Decorative cutout after the intro. */
 	ornament?: ImageAsset;
 	indicationsHeading?: string;
+	/** Reference picture opened from the indications enclosure. */
+	indicationsReference?: { image: ImageAsset; label: string; note?: string };
 	indicationsLayout?: LocationIndicationsLayout;
 	showCalendarLinks?: boolean;
 	scene?: LocationScene;
@@ -331,7 +336,12 @@ export interface InvitationViewModel {
 			ornament?: ImageAsset;
 			visibleUnits: CountdownUnit[];
 			dayUnit?: CountdownDayUnit;
-			calendar?: { mark: CountdownCalendarMark; month: EventCalendarMonth };
+			/** `links`: save-the-date destinations, present when the event time zone is known. */
+			calendar?: {
+				mark: CountdownCalendarMark;
+				month: EventCalendarMonth;
+				links?: VenueCalendarLinks;
+			};
 			variant: CountdownVariant;
 			/** Demo-only: if true, countdown uses a random target 30-60 days ahead */
 			isDemo?: boolean;
@@ -449,6 +459,7 @@ export interface InvitationViewModel {
 			image?: ImageAsset;
 			/** Decorative cutout below the signature. */
 			ornament?: ImageAsset;
+			ambientVideo?: { webm: string; mp4?: string; poster: string };
 			focalPoint?: string;
 			overlayAnchor?: 'left' | 'right' | 'top' | 'bottom';
 			overlaySafeArea?: {

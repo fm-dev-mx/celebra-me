@@ -24,7 +24,7 @@ export interface VisitorSessionInput {
 }
 
 /** Browser IP and user agent kept for Meta CAPI matching; callers pass them only with marketing consent. */
-export interface VisitorClientSignals {
+interface VisitorClientSignals {
 	ipAddress?: string | null;
 	userAgent?: string | null;
 }

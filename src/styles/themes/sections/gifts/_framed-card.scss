@@ -1,0 +1,296 @@
+// Framed card (gifts): one page, no cards. The heading leads left, and the options read as rows
+// between hairlines, each with a fine emblem; the store link is an outlined button, inverting on
+// hover. A thin frame closes the page.
+// The base gifts styles are not keyed on a variant, so nothing is carried over. Profiles map the
+// `--framed-card-*` tokens to their palette: `-paper` (page ground), `-ink` (titles and copy, with
+// `-ink-rgb` for the softer copy), `-accent` (emblem, outline and copy icon, with `-accent-rgb`),
+// `-rule` (hairlines, with `-rule-rgb`), `-rule-ink` (table label) and `-light` (hover text).
+// `-stage-top` is optional (clears the fixed header and the preview banner).
+
+.event-theme-wrapper .gifts-section[data-variant='framed-card'] {
+	position: relative;
+	display: flex;
+	box-sizing: border-box;
+	min-height: 100svh;
+	align-items: center;
+	padding: var(
+			--framed-card-stage-top,
+			calc(var(--header-height-scrolled, 70px) + var(--preview-banner-height, 0px) + 0.75rem)
+		)
+		clamp(1.75rem, 8vw, 4rem) clamp(2rem, 6svh, 3.5rem);
+	background: var(--framed-card-paper, rgb(255 255 255));
+
+	&::after {
+		position: absolute;
+		inset: clamp(0.6rem, 2vw, 1rem);
+		border: 1px solid rgb(var(--framed-card-rule-rgb, 201 174 118) / 55%);
+		content: '';
+		pointer-events: none;
+	}
+
+	.gifts-section__container {
+		width: 100%;
+		max-width: 34rem;
+		margin: 0 auto;
+		padding: 0;
+	}
+
+	.gifts-section__header {
+		margin: 0 0 clamp(1.25rem, 4svh, 2rem);
+		text-align: start;
+	}
+
+	.gifts-section__title {
+		margin: 0;
+		font-family: 'Cormorant Garamond Variable', var(--font-display);
+		font-size: var(--framed-card-title-size, clamp(2.6rem, 2.1rem + 2.4vw, 3.8rem));
+		font-style: italic;
+		font-weight: 500;
+		line-height: 0.95;
+		letter-spacing: -0.005em;
+		text-align: start;
+		text-transform: none;
+		color: var(--framed-card-ink, rgb(62 72 40));
+	}
+
+	.gifts-section__flourish {
+		justify-content: flex-start;
+		margin: 0.9rem 0;
+
+		.flourish-line {
+			width: 2rem;
+			max-width: 2rem;
+			flex: none;
+			background: var(--framed-card-rule, rgb(201 174 118));
+		}
+
+		.flourish-line + .flourish-diamond,
+		.flourish-diamond + .flourish-line {
+			display: none;
+		}
+	}
+
+	.gifts-section__subtitle {
+		max-width: 26rem;
+		margin: 0;
+		font-size: var(--framed-card-subtitle-size, 1rem);
+		line-height: 1.55;
+		text-align: start;
+		color: rgb(var(--framed-card-ink-rgb, 62 72 40) / 82%);
+	}
+
+	.gifts-section__separator {
+		display: none;
+	}
+
+	.gifts-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 0;
+		max-width: none;
+		margin: 0;
+		border-top: 1px solid rgb(var(--framed-card-rule-rgb, 201 174 118) / 55%);
+	}
+
+	.gift-card {
+		max-width: none;
+		margin: 0;
+		padding: clamp(1rem, 3svh, 1.5rem) 0;
+		border: 0;
+		border-bottom: 1px solid rgb(var(--framed-card-rule-rgb, 201 174 118) / 55%);
+		border-radius: 0;
+		background: none;
+		box-shadow: none;
+		transform: none;
+	}
+
+	.gift-card::before,
+	.gift-card::after,
+	.gift-card__inner::before,
+	.gift-card__inner::after {
+		display: none;
+	}
+
+	.gift-card__inner {
+		display: grid;
+		grid-template-columns: 2.75rem minmax(0, 1fr);
+		column-gap: 1rem;
+		align-items: start;
+		padding: 0;
+		border: 0;
+		background: none;
+		box-shadow: none;
+		text-align: start;
+	}
+
+	.gift-card__content-head {
+		display: contents;
+	}
+
+	.gift-card__icon-medallion {
+		display: grid;
+		width: 2.75rem;
+		height: 2.75rem;
+		grid-row: 1 / span 4;
+		place-items: center;
+		margin: 0;
+		border: 1px solid rgb(var(--framed-card-accent-rgb, 92 104 62) / 55%);
+		border-radius: 50%;
+		background: none;
+		box-shadow: none;
+		color: var(--framed-card-accent, rgb(92 104 62));
+	}
+
+	.gift-card__icon-inner {
+		display: grid;
+		width: 1.25rem;
+		height: 1.25rem;
+		place-items: center;
+		border: 0;
+		background: none;
+		box-shadow: none;
+		color: inherit;
+
+		svg {
+			width: 100%;
+			height: 100%;
+		}
+	}
+
+	.gift-card__title {
+		grid-column: 2;
+		margin: 0;
+		font-family: 'Cormorant Garamond Variable', var(--font-display);
+		font-size: var(--framed-card-card-title-size, 1.6rem);
+		font-weight: 500;
+		line-height: 1.1;
+		text-align: start;
+		text-transform: none;
+		color: var(--framed-card-ink, rgb(62 72 40));
+	}
+
+	.gift-card__store-label,
+	.gift-card__description {
+		grid-column: 2;
+		margin: 0.3rem 0 0;
+		font-size: var(--framed-card-description-size, 0.95rem);
+		line-height: 1.5;
+		text-align: start;
+		color: rgb(var(--framed-card-ink-rgb, 62 72 40) / 78%);
+	}
+
+	.gift-card__table-number-wrapper {
+		display: flex;
+		grid-column: 2;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 0.6rem;
+		margin: 0.7rem 0 0;
+	}
+
+	.gift-card__table-number-label {
+		font-size: var(--framed-card-table-number-label-size, 0.62rem);
+		font-weight: 500;
+		letter-spacing: 0.28em;
+		text-transform: uppercase;
+		color: var(--framed-card-rule-ink, rgb(122 100 54));
+	}
+
+	.gift-card__number-pill {
+		gap: 0.35rem;
+		padding: 0;
+		border: 0;
+		border-radius: 0;
+		background: none;
+		box-shadow: none;
+	}
+
+	.gift-card__table-number-code {
+		font-family: 'Cormorant Garamond Variable', var(--font-display);
+		font-size: var(--framed-card-table-number-code-size, 1.2rem);
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		color: var(--framed-card-ink, rgb(62 72 40));
+	}
+
+	.copy-icon-button {
+		color: var(--framed-card-accent, rgb(92 104 62));
+	}
+
+	.gift-card__actions {
+		grid-column: 2;
+		justify-content: flex-start;
+		margin: 0.9rem 0 0;
+		padding: 0;
+	}
+
+	.gift-card__button {
+		display: inline-flex;
+		width: auto;
+		min-height: 2.75rem;
+		align-items: center;
+		padding: 0 1.4rem;
+		border: 1px solid var(--framed-card-accent, rgb(92 104 62));
+		border-radius: 0;
+
+		// An outline, so the gifts read as quiet options and the reply stays the one filled button.
+		background: transparent;
+		box-shadow: none;
+		font-size: var(--framed-card-button-size, 0.68rem);
+		font-weight: 500;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		color: var(--framed-card-ink, rgb(62 72 40));
+
+		&:hover,
+		&:focus-visible {
+			background: var(--framed-card-accent, rgb(92 104 62));
+			color: var(--framed-card-light, rgb(251 249 243));
+		}
+	}
+
+	// Wide screens: the heading holds the left column and the options the right, as in the
+	// location sheet, instead of one narrow column in an empty page.
+	@media (width >= 48rem) {
+		.gifts-section__container {
+			display: grid;
+			max-width: 60rem;
+			grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+			align-items: center;
+			column-gap: clamp(2.5rem, 6vw, 5rem);
+		}
+
+		.gifts-section__header {
+			margin: 0;
+		}
+	}
+
+	// Short phones: the same page with tighter rhythm so both options stay on one screen.
+	@media (height <= 44rem) {
+		padding-bottom: 1.25rem;
+
+		.gifts-section__header {
+			margin-bottom: 0.9rem;
+		}
+
+		.gifts-section__title {
+			font-size: var(--framed-card-title-size, 2.3rem);
+		}
+
+		.gifts-section__flourish {
+			margin: 0.6rem 0;
+		}
+
+		.gift-card {
+			padding: 0.7rem 0;
+		}
+
+		.gift-card__table-number-wrapper {
+			margin-top: 0.4rem;
+		}
+
+		.gift-card__actions {
+			margin-top: 0.6rem;
+		}
+	}
+}

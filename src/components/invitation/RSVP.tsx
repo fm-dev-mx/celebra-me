@@ -19,6 +19,7 @@ import {
 import RsvpContext from '@/components/invitation/rsvp-context';
 import {
 	SubmittedState,
+	RsvpClosedState,
 	RsvpFormView,
 	type RevealedLocation,
 } from '@/components/invitation/RSVPComponents';
@@ -62,9 +63,11 @@ interface RSVPProps {
 	initialGuestData?: {
 		fullName?: string;
 		maxAllowedAttendees?: number;
+		maxAllowedChildren?: number;
 		inviteId?: string;
 		attendanceStatus?: 'pending' | 'confirmed' | 'declined';
 		attendeeCount?: number;
+		childrenCount?: number;
 		guestComment?: string;
 	};
 	isDemoPreview?: boolean;
@@ -76,6 +79,10 @@ interface RSVPProps {
 	calendarDescription?: string;
 	/** Default copy for what the content leaves out; absent means `legacy` (legacy-rsvp-defaults.ts). */
 	defaultCopy?: RsvpDefaultCopy;
+	/** Host-set deadline, formatted in Spanish; empty or absent hides it. */
+	rsvpDeadlineLabel?: string;
+	/** True once the deadline day ended in the event time zone. */
+	rsvpClosed?: boolean;
 }
 
 /* ------------------------------------------------------------------ */
@@ -132,6 +139,8 @@ function scrollRsvpCardIntoView(target: HTMLElement, behavior: ScrollBehavior = 
 
 const RSVP: React.FC<RSVPProps> = ({
 	defaultCopy = 'legacy',
+	rsvpDeadlineLabel,
+	rsvpClosed = false,
 	eventType,
 	eventSlug,
 	subcopy,
@@ -333,17 +342,30 @@ const RSVP: React.FC<RSVPProps> = ({
 				value={{
 					eventType,
 					defaultCopy,
+					deadlineLabel: rsvpDeadlineLabel || undefined,
 					maxChildren,
 					childrenCount,
 					onChildrenCountChange: (value) => {
+						// Adults keep their count; the total follows the children.
+						const adults = Math.max(
+							0,
+							(Number(attendeeCount) || 0) -
+								Math.min(Number(childrenCount) || 0, maxChildren),
+						);
+						const nextChildren = Math.max(0, Number.parseInt(value, 10) || 0);
 						setChildrenCount(value);
+						setAttendeeCount(adults + Math.min(nextChildren, maxChildren));
 						if (touched.childrenCount) validate();
 					},
 				}}
 			>
 				{/* Keep the first server/client render visible regardless of motion preference. */}
 				<AnimatePresence initial={false} mode="wait">
-					{submitted ? (
+					{rsvpClosed && !submitted ? (
+						<motion.div key="rsvp-closed">
+							<RsvpClosedState title={title} variant={variant} />
+						</motion.div>
+					) : submitted ? (
 						<motion.div
 							key="rsvp-success"
 							initial={prefersReducedMotion ? undefined : { opacity: 0, y: 15 }}
@@ -363,7 +385,7 @@ const RSVP: React.FC<RSVPProps> = ({
 								responseMessages={responseMessages}
 								revealedLocation={resolvedLocation}
 								locationError={locationError}
-								allowResponseEditing={allowResponseEditing}
+								allowResponseEditing={allowResponseEditing && !rsvpClosed}
 								onChangeResponse={handleChangeResponse}
 								showWhatsAppCta={showWhatsAppCta}
 								whatsAppUrl={buildWhatsAppUrl({

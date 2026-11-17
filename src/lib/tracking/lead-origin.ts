@@ -65,7 +65,7 @@ export interface LeadOriginInput {
 	demoTitles: ReadonlyMap<string, string>;
 }
 
-export interface LeadOriginDemo {
+interface LeadOriginDemo {
 	slug: string;
 	title: string;
 	views: number;

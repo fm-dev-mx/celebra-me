@@ -9,14 +9,21 @@ $repo = 'fm-dev-mx/celebra-me'
 Set-Location (Resolve-Path (Join-Path $PSScriptRoot '..\..'))
 fnm env --shell powershell | Out-String | Invoke-Expression
 
-function Nuevo-Run([string]$antes) {
-    # Devuelve el id del run del workflow creado después de $antes.
+function Runs-Dispatch {
+    # Newest workflow_dispatch runs of the deploy workflow on main.
+    @(gh run list --repo $repo --workflow deploy-production.yml --branch main --event workflow_dispatch --limit 20 --json databaseId,headSha | ConvertFrom-Json)
+}
+
+function Nuevo-Run([string[]]$previos, [string]$headSha) {
+    # Returns the id of the first run for $headSha that was not listed before the dispatch.
+    # It compares run ids, not timestamps: the local clock can differ from GitHub's by
+    # seconds (a run created right after dispatch then looks older) or by the UTC offset.
     for ($i = 0; $i -lt 30; $i++) {
-        $run = gh run list --repo $repo --workflow deploy-production.yml --branch main --limit 1 --json databaseId,createdAt --jq '.[0]' | ConvertFrom-Json
-        if ($run -and [datetime]$run.createdAt -gt [datetime]$antes) { return [string]$run.databaseId }
+        $run = Runs-Dispatch | Where-Object { $_.headSha -eq $headSha -and [string]$_.databaseId -notin $previos } | Select-Object -First 1
+        if ($run) { return [string]$run.databaseId }
         Start-Sleep 5
     }
-    throw 'No apareció el run del workflow.'
+    throw "No apareció el run del workflow para $headSha."
 }
 
 function Esperar-Run([string]$id) {
@@ -31,6 +38,35 @@ function Esperar-Run([string]$id) {
     Write-Host "  run $id : success"
 }
 
+function Version-Del-Upload([string]$id, [string]$headSha) {
+    # Returns the Worker version uploaded by run $id after checking that the run is a successful
+    # `step=upload` dispatch of deploy-production.yml on main for $headSha. It covers both a run
+    # this script dispatched and one passed with -UploadRunId, so nothing reaches traffic otherwise.
+    $workflowId = [string](gh api "repos/$repo/actions/workflows/deploy-production.yml" --jq .id)
+    if (-not $workflowId) { throw 'No pude leer el id del workflow deploy-production.yml.' }
+    $r = gh run view $id --repo $repo --json databaseId,headSha,headBranch,event,workflowDatabaseId,status,conclusion,jobs | ConvertFrom-Json
+    if (-not $r) { throw "No pude leer el run $id." }
+    if ([string]$r.workflowDatabaseId -ne $workflowId) { throw "El run $id no es de deploy-production.yml." }
+    if ($r.headBranch -ne 'main' -or $r.event -ne 'workflow_dispatch') {
+        throw "El run $id no es un workflow_dispatch en main ($($r.event) en $($r.headBranch))."
+    }
+    if ($r.headSha -ne $headSha) { throw "El run $id es de $($r.headSha), no de la main $headSha." }
+    if ($r.status -ne 'completed' -or $r.conclusion -ne 'success') {
+        throw "El run $id no terminó en success ($($r.status)/$($r.conclusion))."
+    }
+    $job = @($r.jobs | Where-Object { $_.name -eq 'Cloudflare production upload' })
+    if ($job.Count -ne 1 -or $job[0].conclusion -ne 'success') { throw "El run $id no tiene un upload exitoso." }
+    foreach ($paso in 'Upload Worker version', 'Smoke the uploaded version') {
+        $s = @($job[0].steps | Where-Object { $_.name -eq $paso })
+        if ($s.Count -ne 1 -or $s[0].conclusion -ne 'success') { throw "En el run $id el paso '$paso' no terminó en success." }
+    }
+    $ids = @(gh run view $id --repo $repo --log --job $job[0].databaseId |
+        Select-String 'Worker Version ID: ([0-9a-f-]{36})' -AllMatches |
+        ForEach-Object { $_.Matches } | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+    if ($ids.Count -ne 1) { throw "El log del upload del run $id tiene $($ids.Count) Worker Version ID; espero 1." }
+    return $ids[0]
+}
+
 # 1. Checkout en la main nueva.
 git fetch origin
 $sha = git rev-parse origin/main
@@ -42,14 +78,12 @@ if (git status --porcelain) { throw 'El checkout no quedó limpio.' }
 
 # 2. Subir el Worker (o seguir el run de upload ya lanzado).
 if (-not $UploadRunId) {
-    $antes = (Get-Date).ToUniversalTime().ToString('o')
+    $previos = @(Runs-Dispatch | ForEach-Object { [string]$_.databaseId })
     gh workflow run deploy-production.yml --repo $repo --ref main -f step=upload
-    $UploadRunId = Nuevo-Run $antes
+    $UploadRunId = Nuevo-Run $previos $sha
 }
 Esperar-Run $UploadRunId
-$linea = gh run view $UploadRunId --repo $repo --log | Select-String 'Worker Version ID: ([0-9a-f-]{36})' | Select-Object -First 1
-if (-not $linea) { throw 'No encontré el Worker Version ID en el log.' }
-$ver = $linea.Matches[0].Groups[1].Value
+$ver = Version-Del-Upload $UploadRunId $sha
 Write-Host "Versión subida: $ver"
 
 # 3. Activarla al 100 % y comprobarla.
@@ -65,9 +99,9 @@ if ($h.build.commitSha -ne $sha) { throw "El dominio sirve $($h.build.commitSha)
 Write-Host 'El dominio ya sirve la main nueva.'
 
 # 4. Smoke del dominio en GitHub y estado del release.
-$antes = (Get-Date).ToUniversalTime().ToString('o')
+$previos = @(Runs-Dispatch | ForEach-Object { [string]$_.databaseId })
 gh workflow run deploy-production.yml --repo $repo --ref main -f step=domain-smoke
-Esperar-Run (Nuevo-Run $antes)
+Esperar-Run (Nuevo-Run $previos $sha)
 pnpm ops:release-status --target production --sha $sha --wait
 if ($LASTEXITCODE) { throw 'ops:release-status no quedó en verde.' }
 Write-Host 'Worker verificado. Sigue prod:apply (te pedirá tus confirmaciones).'

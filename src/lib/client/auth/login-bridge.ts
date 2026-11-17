@@ -5,6 +5,7 @@ import {
 	validateLoginForm,
 } from '@/lib/client/auth/login-ui';
 import { authBridgeApi } from '@/lib/client/auth/auth-bridge-api';
+import { initPasswordToggles } from '@/lib/client/auth/password-visibility';
 
 export function getLoginQueryPrefill(search: string): {
 	email: string;
@@ -28,6 +29,7 @@ export function initLoginFlow() {
 	const loginSubmit = document.getElementById('login-submit');
 
 	let isSubmitting = false;
+	initPasswordToggles();
 	const loginQueryPrefill =
 		typeof window === 'undefined' ? null : getLoginQueryPrefill(window.location.search);
 
@@ -111,7 +113,7 @@ export function initLoginFlow() {
 			try {
 				const data = await authBridgeApi.login({ method: 'password', ...payload });
 				setStatus(
-					data.message || 'Bienvenido, redirigiendo a tu panel...',
+					data.message || 'Bienvenido, redirigiendo a su panel...',
 					'success',
 					true,
 				);
@@ -123,7 +125,7 @@ export function initLoginFlow() {
 				const errorMessage =
 					error instanceof Error
 						? error.message
-						: 'No pudimos iniciar sesion. Verifica tus datos e intenta de nuevo.';
+						: 'No pudimos iniciar sesión. Verifique sus datos e intente de nuevo.';
 				setStatus(errorMessage, 'error', true);
 			} finally {
 				setSubmitting(false);

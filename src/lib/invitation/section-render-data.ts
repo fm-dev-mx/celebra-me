@@ -11,10 +11,7 @@ import type { PersonalizedAccessPassStyle } from '@/lib/invitation/personalized-
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 import { getLatestMessage } from '@/lib/rsvp/core/guest-message';
 import { DEMO_GUEST_NAME, type RsvpDefaultCopy } from '@/components/invitation/rsvp-logic';
-import {
-	keepsLegacyPassText,
-	keepsLegacyRsvpDefaults,
-} from '@/lib/invitation/legacy-rsvp-defaults';
+import { keepsLegacyRsvpDefaults } from '@/lib/invitation/legacy-rsvp-defaults';
 
 type Sections = InvitationPageContext['viewModel']['sections'];
 type SectionData<K extends keyof Sections> = NonNullable<Sections[K]>;
@@ -28,6 +25,11 @@ type LocationProps = SectionData<'location'> & {
 	};
 };
 
+export type DressCodeProps = {
+	heading?: string;
+	indications: NonNullable<SectionData<'location'>['indications']>;
+};
+
 type GiftsProps = Omit<SectionData<'gifts'>, 'items'> & {
 	gifts: SectionData<'gifts'>['items'];
 	editionLabel?: string;
@@ -38,8 +40,6 @@ type PersonalizedAccessProps = {
 	guestName: string;
 	maxAllowedAttendees: number;
 	maxAllowedChildren?: number;
-	/** Says «Pase solo para adultos» on a pass with no child places; off for published invitations. */
-	adultsOnlyLabel?: boolean;
 	eventYear?: string;
 	editionMark?: string;
 	isDemoPreview?: boolean;
@@ -114,6 +114,8 @@ type DescriptorData =
 				};
 				isDemoPreview?: boolean;
 				defaultCopy?: RsvpDefaultCopy;
+				rsvpDeadlineLabel?: string;
+				rsvpClosed?: boolean;
 			};
 	  }
 	| { component: 'gifts'; props: GiftsProps }
@@ -122,6 +124,7 @@ type DescriptorData =
 			props: Omit<SectionData<'thankYou'>, 'closingPhrase'>;
 	  }
 	| { component: 'personalized-access'; props: PersonalizedAccessProps }
+	| { component: 'dress-code'; props: DressCodeProps }
 	| { component: 'memories'; props: SectionData<'memories'> };
 
 export type InvitationSectionRenderDescriptor = {
@@ -144,6 +147,7 @@ const REVEAL_RECIPES: Record<DescriptorData['component'], InvitationRevealRecipe
 	gifts: 'stagger-group',
 	thankYou: 'fade-up',
 	'personalized-access': 'fade-up',
+	'dress-code': 'stagger-group',
 	memories: 'fade-up',
 };
 
@@ -186,11 +190,6 @@ function resolvePassChildren(
 	return isDemoPreview ? (demoChildren ?? 0) : 0;
 }
 
-/** Every invitation outside the legacy published list shows the adults-only line on childless passes. */
-function resolveAdultsOnlyLabel(slug: string): boolean {
-	return !keepsLegacyPassText(slug);
-}
-
 function renderPersonalizedAccess(pageContext: InvitationPageContext): DescriptorData | null {
 	const config = resolvePersonalizedAccessConfig(pageContext);
 	if (!config) return null;
@@ -219,7 +218,6 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 				isDemoPreview,
 				rsvpSection?.demoMaxChildren,
 			),
-			adultsOnlyLabel: resolveAdultsOnlyLabel(pageContext.viewModel.id),
 			eventYear,
 			editionMark: pageContext.edition?.mark,
 			isDemoPreview,
@@ -279,6 +277,12 @@ function renderRsvpSection(pageContext: InvitationPageContext): DescriptorData |
 					}
 				: undefined,
 			isDemoPreview: pageContext.isDemoPreview ?? false,
+			...(pageContext.rsvpWindow
+				? {
+						rsvpDeadlineLabel: pageContext.rsvpWindow.label,
+						rsvpClosed: pageContext.rsvpWindow.closed,
+					}
+				: {}),
 			// Only new invitations carry it, so a legacy one's island props stay as they were.
 			...(keepsLegacyRsvpDefaults(pageContext.viewModel.id)
 				? {}
@@ -303,6 +307,26 @@ function renderGiftsSection(
 			editionLabel: edition?.label,
 		},
 	};
+}
+
+/** Present only when the invitation opts in with `dressCode` in its section order. */
+function renderDressCode(pageContext: InvitationPageContext): DescriptorData | null {
+	const location = pageContext.viewModel.sections.location;
+	if (!location?.indications?.length) return null;
+	return {
+		component: 'dress-code' as const,
+		props: { heading: location.indicationsHeading, indications: location.indications },
+	};
+}
+
+/** An opted-in invitation shows its indications in the dress-code section, not in location. */
+function withoutSeparatedDressCode(
+	pageContext: InvitationPageContext,
+	location: SectionData<'location'>,
+): SectionData<'location'> {
+	if (!pageContext.viewModel.sectionOrder.includes('dressCode')) return location;
+	const { indications: _indications, indicationsHeading: _heading, ...rest } = location;
+	return rest;
 }
 
 function getMonogram(name: string): string {
@@ -364,7 +388,7 @@ function renderSection(
 				? {
 						component: 'location' as const,
 						props: {
-							...sections.location,
+							...withoutSeparatedDressCode(pageContext, sections.location),
 							nextSectionLink,
 						},
 					}
@@ -433,6 +457,9 @@ function renderBlock(
 		case 'personalized-access':
 			return withRenderMetadata(renderPersonalizedAccess(pageContext), metadata, motion);
 
+		case 'dress-code':
+			return withRenderMetadata(renderDressCode(pageContext), metadata, motion);
+
 		case 'section': {
 			const nextSectionLink =
 				block.section === 'location' ? findNextSectionLink(renderPlan, index) : undefined;
@@ -468,7 +495,11 @@ function resolveSectionReveal(
 	if (descriptor.component === 'itinerary' && descriptor.props.variant === 'editorial-ledger') {
 		return 'fade-up';
 	}
-	if (descriptor.component === 'family' && descriptor.props.variant === 'asymmetric-groups') {
+	if (
+		descriptor.component === 'family' &&
+		(descriptor.props.variant === 'asymmetric-groups' ||
+			descriptor.props.variant === 'framed-groups')
+	) {
 		return 'fade-up';
 	}
 	return REVEAL_RECIPES[descriptor.component];

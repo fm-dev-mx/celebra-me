@@ -17,14 +17,15 @@ interface Props {
 	backgroundImage: ImageMetadata | ImageAsset;
 	scrollLabel?: string;
 	highPriority?: boolean;
-	variant?: 'framed-portrait' | 'bleed-portrait' | 'cased-portrait';
+	variant?: 'framed-portrait' | 'bleed-portrait' | 'cased-portrait' | 'disco-stage';
 	time?: string;
 	venueName?: string;
 	venueEvent?: string;
 	scrollCue?: 'chevron' | 'constellation';
+	ambientVideo?: { webm: string; mp4?: string; poster: string };
 }
 
-const { name, nameLeadWords, secondaryName, label, nickname, date, backgroundImage, scrollLabel: scrollLabelProp, highPriority = true, variant = 'framed-portrait', time, venueName, venueEvent, scrollCue } = Astro.props;
+const { name, nameLeadWords, secondaryName, label, nickname, date, backgroundImage, scrollLabel: scrollLabelProp, highPriority = true, variant = 'framed-portrait', time, venueName, venueEvent, scrollCue, ambientVideo } = Astro.props;
 // bleed-portrait: the photograph runs to the edges and the letter states when and where in
 // written form; the scroll cue is a silver line instead of a phrase with an arrow.
 const isBleed = variant === 'bleed-portrait';
@@ -52,6 +53,12 @@ const height = delivery?.height ?? ('height' in backgroundImage ? backgroundImag
 ---
 
 <section id="inicio" class="invitation-hero framed-portrait-hero" data-variant={variant} data-screenshot="invitation-open-hero" data-screenshot-section="hero">
+	{ambientVideo && (
+		<video class="framed-portrait-hero__ambient" poster={ambientVideo.poster} muted loop playsinline preload="none" aria-hidden="true" data-hero-ambient-video>
+			<source src={ambientVideo.webm} type="video/webm" />
+			{ambientVideo.mp4 && <source src={ambientVideo.mp4} type="video/mp4" />}
+		</video>
+	)}
 	<div class="framed-portrait-hero__layout">
 		<figure class="framed-portrait-hero__photograph">
 			<CacheSafeImage src={source} delivery={delivery} alt={`Fotografía de ${name}`} width={width} height={height} sizes={PORTRAIT_HERO_SIZES} loading="eager" fetchpriority={highPriority ? 'high' : undefined} />
@@ -101,3 +108,31 @@ const height = delivery?.height ?? ('height' in backgroundImage ? backgroundImag
 		<p class="framed-portrait-hero__invitation">{scrollLabel}<span aria-hidden="true"> ↓</span></p>
 	)}
 </section>
+
+<script>
+	import { getMotionPreference } from '@/lib/invitation/reveal-manager';
+	import { isVisualCaptureMode } from '@/lib/invitation/visual-capture-mode';
+
+	// The loop waits for the envelope so it never competes with the opening clip, plays only
+	// while the hero is on screen, and stays on its poster under reduced motion or in captures.
+	const video = document.querySelector<HTMLVideoElement>('[data-hero-ambient-video]');
+	const isCapture =
+		isVisualCaptureMode() ||
+		new URLSearchParams(window.location.search).get('screenshot') === '1';
+	if (video && !isCapture && !getMotionPreference()) {
+		let started = false;
+		const start = () => {
+			if (started) return;
+			started = true;
+			video.preload = 'auto';
+			new IntersectionObserver(([entry]) => {
+				if (entry?.isIntersecting) video.play().catch(() => {});
+				else video.pause();
+			}).observe(video);
+		};
+		const envelope = document.querySelector<HTMLElement>('ds-envelope-reveal');
+		// No envelope, or it already opened (or was skipped) before this ran.
+		if (!envelope || envelope.hidden) start();
+		window.addEventListener('envelope:opened', start, { once: true });
+	}
+</script>

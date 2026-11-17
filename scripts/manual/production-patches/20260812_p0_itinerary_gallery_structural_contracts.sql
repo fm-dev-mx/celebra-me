@@ -15,6 +15,16 @@
 
 begin;
 
+-- Superseded. `itinerary.presentation` is not part of the strict itinerary schema, so the rows
+-- this patch wrote fail content validation and the invitations stop resolving. The variants it
+-- sets stay; 20261112_itinerary_presentation_removal.sql removes the non-schema key, and the data
+-- prerequisite 20260812-itinerary-gallery-structural-contracts now verifies the variants and the
+-- absence of that key (scripts/manual/data-prerequisites/20260812_itinerary_gallery.sql).
+do $$
+begin
+  raise exception 'ITINERARY_CONTRACT_ABORT: superseded; itinerary.presentation is not in the itinerary schema, see scripts/manual/production-patches/20261112_itinerary_presentation_removal.sql';
+end $$;
+
 do $$
 declare
   expected text[] := array['xareni-iyarit','america-johana','ana-sofia-cota-guillen','abril-michelle-becerra-rea'];

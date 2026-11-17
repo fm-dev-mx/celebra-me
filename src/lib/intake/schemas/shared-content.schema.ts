@@ -9,7 +9,10 @@ import { giftItemSchema } from '@/lib/intake/schemas/intake-block.schema';
 import { safeHttpUrlSchema } from '@/lib/schemas/content/gifts.schema';
 import { THEME_PRESETS, INDICATION_STYLE_VARIANTS } from '@/lib/theme/theme-contract';
 import { ENVELOPE_SEAL_COLORS } from '@/lib/invitation/reveal-card';
-import { envelopeRevealVariantSchema } from '@/lib/schemas/content/envelope.schema';
+import {
+	envelopeOpeningVideoSchema,
+	envelopeRevealVariantSchema,
+} from '@/lib/schemas/content/envelope.schema';
 import {
 	COUNTDOWN_CALENDAR_MARKS,
 	COUNTDOWN_DAY_UNITS,
@@ -138,12 +141,14 @@ export const gallerySchema = z
 			});
 		}
 
-		if (gallery.variant === 'feature-stack' && gallery.items.length < 3) {
+		if (
+			(gallery.variant === 'feature-stack' || gallery.variant === 'rising-stack') &&
+			gallery.items.length < 3
+		) {
 			context.addIssue({
 				code: 'custom',
 				path: ['items'],
-				message:
-					'La variante feature-stack requiere al menos tres elementos en la galería.',
+				message: `La variante ${gallery.variant} requiere al menos tres elementos en la galería.`,
 			});
 		}
 
@@ -235,7 +240,11 @@ export const countdownEditorSchema = z
 				dayUnit: z.enum(COUNTDOWN_DAY_UNITS).optional(),
 				/** Month calendar of the event, its day circled by the mark; replaces the written date. */
 				calendar: z
-					.object({ mark: z.enum(COUNTDOWN_CALENDAR_MARKS) })
+					.object({
+						mark: z.enum(COUNTDOWN_CALENDAR_MARKS),
+						/** Opt-in "Agendar en el calendario" links under the calendar. */
+						addToCalendar: z.boolean().optional(),
+					})
 					.strict()
 					.optional(),
 			})
@@ -294,6 +303,7 @@ export const envelopeSchema = z
 		teaserDetails: z.string().trim().max(500).optional(),
 		variant: z.enum(THEME_PRESETS).optional(),
 		revealVariant: envelopeRevealVariantSchema.optional(),
+		openingVideo: envelopeOpeningVideoSchema.optional(),
 		coverEdition: z.string().trim().max(80).optional(),
 		coverEditionLabel: z.string().trim().max(16).optional(),
 		coverVolume: z.string().trim().max(40).optional(),

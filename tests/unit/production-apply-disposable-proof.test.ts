@@ -37,7 +37,7 @@ describe('prod:apply disposable proof refresh', () => {
 	});
 
 	it('resets and re-applies disposable-test only, then re-checks the proof', () => {
-		const runPnpm = jest.fn((_args: readonly string[]) => 0);
+		const runPnpm = jest.fn<number, [readonly string[]]>(() => 0);
 		const lines: string[] = [];
 		const result = ensureFreshDisposableProof({
 			assess: sequence(stale, valid),

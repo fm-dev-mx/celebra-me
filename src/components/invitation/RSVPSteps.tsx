@@ -233,6 +233,8 @@ export const RsvpStepsFormView = forwardRef<HTMLElement, RsvpStepsFormViewProps>
 							errors={errors}
 							attendanceLabel={props.attendanceLabel}
 							attendanceStatus={attendanceStatus}
+							// A marked radio fires no change; choosing it again still moves on.
+							onAttendanceReselect={handleAttendance}
 							attendanceRef={props.attendanceRef}
 							prefersReducedMotion={prefersReducedMotion}
 							onAttendanceChange={handleAttendance}

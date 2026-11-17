@@ -21,6 +21,7 @@ import {
 	LOCATION_VARIANTS,
 	PERSONALIZED_ACCESS_VARIANTS,
 	RSVP_VARIANTS,
+	QUOTE_VARIANTS,
 	THANK_YOU_VARIANTS,
 } from '@/lib/invitation/section-variants';
 import {
@@ -53,6 +54,7 @@ export const heroDraftSchema = z.object({
 });
 
 export const quoteDraftSchema = z.object({
+	variant: z.enum(QUOTE_VARIANTS).optional(),
 	text: optionalText(1000),
 	author: optionalText(200),
 });

@@ -17,7 +17,8 @@ export type CanonicalVariantSection =
 	| 'personalizedAccess'
 	| 'thankYou'
 	| 'countdown'
-	| 'memories';
+	| 'memories'
+	| 'quote';
 
 export type CanonicalVariantCssOwner =
 	`src/styles/themes/sections/${string}` | `section-base:${string}`;
@@ -53,6 +54,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		default: false,
 		prerequisites: ['hero.backgroundImage'],
 		cssOwner: 'src/styles/themes/sections/hero/_cased-portrait.scss',
+	},
+	{
+		section: 'hero',
+		variant: 'disco-stage',
+		default: false,
+		prerequisites: ['hero.backgroundImage'],
+		cssOwner: 'src/styles/themes/sections/hero/_disco-stage.scss',
 	},
 	{
 		section: 'hero',
@@ -272,6 +280,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		cssOwner: 'src/styles/themes/sections/gallery/_single-keepsake.scss',
 	},
 	{
+		section: 'gallery',
+		variant: 'photo-booth',
+		default: false,
+		prerequisites: ['gallery.items with exactly eight images'],
+		cssOwner: 'src/styles/themes/sections/gallery/_photo-booth.scss',
+	},
+	{
 		section: 'gifts',
 		variant: 'standard',
 		default: true,
@@ -385,6 +400,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'thankYou',
+		variant: 'last-song',
+		default: false,
+		prerequisites: ['thankYou.message', 'thankYou.closingName', 'thankYou.image'],
+		cssOwner: 'src/styles/themes/sections/thank-you/_last-song.scss',
+	},
+	{
+		section: 'thankYou',
 		variant: 'full-bleed-photo',
 		default: false,
 		prerequisites: ['thankYou.image'],
@@ -420,6 +442,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'countdown',
+		variant: 'mirror-ball',
+		default: false,
+		prerequisites: ['countdown'],
+		cssOwner: 'src/styles/themes/sections/countdown/_mirror-ball.scss',
+	},
+	{
+		section: 'countdown',
 		variant: 'clock-face',
 		default: false,
 		prerequisites: ['countdown'],
@@ -447,11 +476,88 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		cssOwner: 'src/styles/themes/sections/family/_ceremonial-family.scss',
 	},
 	{
+		section: 'quote',
+		variant: 'standard',
+		default: true,
+		prerequisites: ['quote.text'],
+		cssOwner: 'section-base:quote',
+	},
+	{
+		section: 'quote',
+		variant: 'neon-sign',
+		default: false,
+		prerequisites: ['quote.text'],
+		cssOwner: 'src/styles/themes/sections/quote/_neon-sign.scss',
+	},
+	{
 		section: 'memories',
 		variant: 'card',
 		default: false,
 		prerequisites: ['memories.publicSlug'],
 		cssOwner: 'src/styles/themes/sections/memories/_card.scss',
+	},
+	{
+		section: 'gifts',
+		variant: 'framed-card',
+		default: false,
+		prerequisites: noSpecialPrerequisites,
+		cssOwner: 'src/styles/themes/sections/gifts/_framed-card.scss',
+	},
+	{
+		section: 'family',
+		variant: 'framed-groups',
+		default: false,
+		prerequisites: ['family.groups'],
+		cssOwner: 'src/styles/themes/sections/family/_framed-groups.scss',
+	},
+	{
+		section: 'countdown',
+		variant: 'framed-scene',
+		default: false,
+		prerequisites: ['countdown'],
+		cssOwner: 'src/styles/themes/sections/countdown/_framed-scene.scss',
+	},
+	{
+		section: 'quote',
+		variant: 'veiled-photo',
+		default: false,
+		prerequisites: ['quote.text'],
+		cssOwner: 'src/styles/themes/sections/quote/_veiled-photo.scss',
+	},
+	{
+		section: 'rsvp',
+		variant: 'framed-register',
+		default: false,
+		prerequisites: noSpecialPrerequisites,
+		cssOwner: 'src/styles/themes/sections/rsvp/_framed-register.scss',
+	},
+	{
+		section: 'personalizedAccess',
+		variant: 'framed-pass',
+		default: false,
+		prerequisites: noSpecialPrerequisites,
+		cssOwner: 'src/styles/themes/sections/personalized-access/_framed-pass.scss',
+	},
+	{
+		section: 'gallery',
+		variant: 'rising-stack',
+		default: false,
+		prerequisites: ['gallery.items with at least three items'],
+		cssOwner: 'src/styles/themes/sections/gallery/_rising-stack.scss',
+	},
+	{
+		section: 'thankYou',
+		variant: 'veiled-photo',
+		default: false,
+		prerequisites: ['thankYou.image'],
+		cssOwner: 'src/styles/themes/sections/thank-you/_veiled-photo.scss',
+	},
+	{
+		section: 'location',
+		variant: 'pinned-program',
+		default: false,
+		prerequisites: ['At least one visible venue'],
+		cssOwner: 'src/styles/themes/sections/location/_pinned-program.scss',
 	},
 ] as const satisfies readonly CanonicalVariantRegistryEntry[];
 
@@ -487,8 +593,9 @@ export const COUNTDOWN_VARIANTS = variantsFor('countdown');
 export type CountdownVariant = (typeof COUNTDOWN_VARIANTS)[number];
 export const MEMORIES_VARIANTS = variantsFor('memories');
 export type MemoriesVariant = (typeof MEMORIES_VARIANTS)[number];
+export const QUOTE_VARIANTS = variantsFor('quote');
+export type QuoteVariant = (typeof QUOTE_VARIANTS)[number];
 
 /** Sections without a layout/skin choice emit this closed value. */ type StandardSectionVariant =
 	'standard';
-export type QuoteVariant = StandardSectionVariant;
 export type SharedSectionVariant = StandardSectionVariant;

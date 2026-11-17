@@ -33,7 +33,7 @@ $night-ease-rise: cubic-bezier(0.25, 0.1, 0.25, 1);
 //   4100ms→      the window flies onto the cover arch while the paper and the sky fade
 // ---------------------------------------------------------------------------------------------
 
-.envelope-wrapper[data-variant='night-envelope'] {
+.envelope-wrapper:is([data-variant='night-envelope'], [data-variant='disco-night']) {
 	--night-ink: var(--night-envelope-ink, var(--color-action-accent));
 	--night-field: var(--night-envelope-field, var(--color-surface-dark));
 	--night-star: var(--night-envelope-star, var(--color-text-on-dark));
@@ -587,7 +587,7 @@ $night-ease-rise: cubic-bezier(0.25, 0.1, 0.25, 1);
 
 // The window already sits on the cover arch, so the envelope leaves without a delay.
 .event-theme-wrapper[data-reveal-state='revealed']
-	.envelope-wrapper[data-variant='night-envelope'] {
+	.envelope-wrapper:is([data-variant='night-envelope'], [data-variant='disco-night']) {
 	--env-exit-delay: 0s;
 }
 
@@ -701,7 +701,7 @@ $night-ease-rise: cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 @include mixins.reduced-motion {
-	.envelope-wrapper[data-variant='night-envelope'] {
+	.envelope-wrapper:is([data-variant='night-envelope'], [data-variant='disco-night']) {
 		.envelope-seal-button__visual,
 		.envelope-seal-button::before {
 			/* stylelint-disable-next-line declaration-no-important */

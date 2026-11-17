@@ -5,6 +5,7 @@
 //   --storybook-closing-sky-display     `block` shows the sky behind a closing section
 //   --storybook-ambient-lanterns-display `block` shows the small lanterns behind a section's text
 //   --storybook-send-off                `lanterns` (or `butterflies`) releases them over the cover after the envelope
+//   --storybook-send-off-delay          optional hold (`1.4s`, `600ms`) before the send-off leaves
 // Colors: --storybook-sky-light / -glow / -lantern (as on the envelope sky).
 
 .storybook-sky--closing,

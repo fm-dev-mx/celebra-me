@@ -1,0 +1,408 @@
+@use 'sass:list';
+@use '../../../tools/motion';
+
+// Neon sign: the quote as a lit sign on a dark wall. The opening lines are thin small caps in a
+// blush tube; the last line is the neon itself, in the calligraphy face with a double glow. Two
+// cables hang the silver-framed sign from the top edge, a rose halo glows on the wall behind it and
+// light specks drift across it. The base state is the lit, still sign; under motion each line
+// flickers on in turn, the neon line last, then the neon breathes. Profiles map `--neon-sign-*`.
+$neon-sign-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 0l1.9 6.1L16 8l-6.1 1.9L8 16l-1.9-6.1L0 8l6.1-1.9z'/%3E%3C/svg%3E");
+
+.event-theme-wrapper .quote-section[data-variant='neon-sign'] {
+	--neon-sign-glow: var(--neon-sign-glow-rgb, var(--color-action-accent-rgb));
+	--neon-sign-silver: var(--neon-sign-silver-rgb, 233 234 238);
+	--neon-sign-step: 450ms;
+	--quote-min-height: 85svh;
+
+	// The wall opens on the ground the section above ends on (`--neon-sign-seam`), so the two meet
+	// in a fade instead of a flat edge.
+	--quote-bg:
+		linear-gradient(
+			to bottom,
+			var(--neon-sign-seam, transparent),
+			transparent clamp(8rem, 32svh, 18rem)
+		),
+		var(--neon-sign-wall, var(--color-surface-primary));
+	--quote-text-color: var(--neon-sign-ink, var(--color-text-primary));
+	--quote-divider-display: none;
+	--quote-mark-display: none;
+	--quote-top-art-display: none;
+	--quote-content-shadow: none;
+
+	isolation: isolate;
+
+	// The rose halo on the wall behind the sign.
+	&::after {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		background: radial-gradient(
+			ellipse min(80vw, 34rem) min(42svh, 22rem) at 50% 52%,
+			rgb(var(--neon-sign-glow) / 34%),
+			rgb(var(--neon-sign-glow) / 10%) 55%,
+			transparent 75%
+		);
+		content: '';
+		pointer-events: none;
+	}
+
+	.quote-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.neon-sign__specks {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		background:
+			radial-gradient(circle, rgb(var(--neon-sign-silver) / 55%) 0 1.5px, transparent 2.5px) 0
+				0 / 5rem 5rem,
+			radial-gradient(circle, rgb(var(--neon-sign-glow) / 45%) 0 1.5px, transparent 2.5px)
+				2.4rem 1.8rem / 7rem 7rem;
+		mask: radial-gradient(ellipse 75% 60% at 50% 50%, rgb(0 0 0), transparent 85%);
+		pointer-events: none;
+	}
+
+	// Two spotlight beams sweep in from either side; their sources sit past the edges of the
+	// section, so each beam enters the wall already open.
+	.neon-sign__beams {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		overflow: hidden;
+		pointer-events: none;
+
+		&::before,
+		&::after {
+			position: absolute;
+			top: 4%;
+			width: 36%;
+			height: 95%;
+			background: linear-gradient(
+				to bottom,
+				rgb(var(--neon-sign-glow) / 18%),
+				rgb(var(--neon-sign-glow) / 12%) 30%,
+				rgb(var(--neon-sign-glow) / 4%) 70%,
+				transparent
+			);
+			clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%);
+			filter: blur(14px);
+			content: '';
+		}
+
+		&::before {
+			left: -24%;
+			transform: rotate(-40deg);
+			transform-origin: 50% 0;
+		}
+
+		&::after {
+			right: -24%;
+			transform: rotate(40deg);
+			transform-origin: 50% 0;
+		}
+	}
+
+	// Neon sparkles scattered over the wall, each its own size and tint.
+	.neon-sign__sparkles {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+	}
+
+	.neon-sign__sparkle {
+		position: absolute;
+		width: var(--neon-sign-sparkle-size, 0.75rem);
+		aspect-ratio: 1;
+		background: rgb(var(--neon-sign-sparkle-rgb, var(--neon-sign-glow)));
+		filter: drop-shadow(0 0 0.3rem rgb(var(--neon-sign-glow) / 85%));
+		mask: $neon-sign-star center / contain no-repeat;
+
+		$sparkles: (
+			(8%, 18%, 0.9rem, glow, 0s),
+			(88%, 14%, 0.6rem, silver, 1.1s),
+			(14%, 62%, 0.55rem, silver, 2.3s),
+			(84%, 58%, 1rem, glow, 0.6s),
+			(24%, 88%, 0.7rem, glow, 1.7s),
+			(74%, 86%, 0.5rem, silver, 2.9s)
+		);
+
+		@each $left, $top, $size, $tint, $delay in $sparkles {
+			$i: list.index($sparkles, ($left, $top, $size, $tint, $delay));
+
+			&:nth-child(#{$i}) {
+				--neon-sign-sparkle-size: #{$size};
+				--neon-sign-sparkle-rgb: var(--neon-sign-#{$tint});
+				--neon-sign-sparkle-delay: #{$delay};
+
+				top: $top;
+				left: $left;
+			}
+		}
+	}
+
+	// The sign: a double tube, a lit outer tube in the neon glow over a faint silver inner line,
+	// hung from two cables with a neon star on its crown.
+	.neon-sign__sign {
+		position: relative;
+		width: min(100%, 34rem);
+		padding: clamp(2.25rem, 6vw, 3.25rem) clamp(1.25rem, 5vw, 2.75rem);
+		border: 1.5px solid rgb(var(--neon-sign-glow) / 70%);
+		border-radius: var(--neon-sign-board-radius, 1.25rem);
+		box-shadow:
+			0 0 0.35rem rgb(var(--neon-sign-glow) / 55%),
+			0 0 1.5rem rgb(var(--neon-sign-glow) / 25%),
+			inset 0 0 0.35rem rgb(var(--neon-sign-glow) / 40%),
+			inset 0 0 1.75rem rgb(var(--neon-sign-glow) / 12%);
+
+		&::before {
+			position: absolute;
+			inset: 0.45rem;
+			border: 1px solid rgb(var(--neon-sign-silver) / 28%);
+			border-radius: var(--neon-sign-board-inner-radius, 0.85rem);
+			content: '';
+			pointer-events: none;
+		}
+	}
+
+	.neon-sign__crown {
+		position: absolute;
+		top: 0;
+		left: 50%;
+		width: 1.6rem;
+		aspect-ratio: 1;
+		background: rgb(255 240 244);
+		filter: drop-shadow(0 0 0.25rem rgb(var(--neon-sign-glow)))
+			drop-shadow(0 0 0.7rem rgb(var(--neon-sign-glow) / 70%));
+		mask: $neon-sign-star center / contain no-repeat;
+		transform: translate(-50%, -50%);
+	}
+
+	.neon-sign__cable {
+		position: absolute;
+		bottom: 100%;
+		width: 1px;
+		height: clamp(4.5rem, 18svh, 9rem);
+
+		// The cables fade in from nothing, so they never start on a hard edge.
+		background: linear-gradient(
+			rgb(var(--neon-sign-silver) / 0%),
+			rgb(var(--neon-sign-silver) / 55%)
+		);
+
+		// A small silver clip where each cable meets the sign.
+		&::after {
+			position: absolute;
+			bottom: -0.2rem;
+			left: 50%;
+			width: 0.45rem;
+			height: 0.4rem;
+			border-radius: var(--neon-sign-plug-radius, 0.1rem);
+			background: rgb(var(--neon-sign-silver) / 80%);
+			content: '';
+			transform: translateX(-50%);
+		}
+
+		&:nth-of-type(1) {
+			left: 22%;
+		}
+
+		&:nth-of-type(2) {
+			right: 22%;
+		}
+	}
+
+	.quote-content {
+		max-width: none;
+	}
+
+	@for $n from 1 through 4 {
+		.quote-line:nth-child(#{$n}) {
+			--neon-sign-line: #{$n - 1};
+		}
+	}
+
+	// The opening lines: thin small caps in a blush tube.
+	.quote-line {
+		margin: 0 0 0.35em;
+		font-family: var(--neon-sign-caps-font, var(--font-display, var(--font-body, serif)));
+		font-size: var(--neon-sign-line-size, clamp(1.125rem, 4.6vw, 1.5rem));
+		font-weight: 300;
+		font-variant-caps: all-small-caps;
+		letter-spacing: 0.22em;
+		line-height: 1.35;
+		color: var(--neon-sign-tube, var(--quote-text-color));
+		text-shadow:
+			0 0 0.15rem rgb(var(--neon-sign-glow) / 55%),
+			0 0 0.6rem rgb(var(--neon-sign-glow) / 35%);
+	}
+
+	// The neon: the last line in the calligraphy face, white-hot in a double rose glow.
+	.quote-line--neon {
+		margin: 0.15em 0 0;
+		font-family: var(--neon-sign-neon-font, var(--font-calligraphy, cursive));
+		font-size: var(--neon-sign-neon-size, clamp(2.25rem, 11vw, 5.25rem));
+		font-weight: 400;
+		font-variant-caps: normal;
+		letter-spacing: 0;
+		line-height: 1.1;
+		color: var(--neon-sign-neon-ink, rgb(255 240 244));
+		text-wrap: balance;
+		text-shadow:
+			0 0 0.12rem rgb(255 255 255 / 80%),
+			0 0 0.6rem rgb(var(--neon-sign-glow) / 90%),
+			0 0 1.5rem rgb(var(--neon-sign-glow) / 65%),
+			0 0 3rem rgb(var(--neon-sign-glow) / 35%);
+	}
+
+	// The closing line: a small silver label under the sign, between two stars.
+	.quote-closing-line {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75rem;
+		margin: clamp(1.75rem, 5svh, 2.5rem) 0 0;
+		font-family: var(--font-body, serif);
+		font-size: var(--neon-sign-closing-size, 0.9375rem);
+		letter-spacing: 0.06em;
+		color: rgb(var(--neon-sign-silver) / 92%);
+		text-shadow: none;
+
+		&::before,
+		&::after {
+			flex: none;
+			width: 0.6rem;
+			aspect-ratio: 1;
+			background: currentcolor;
+			mask: $neon-sign-star center / contain no-repeat;
+			content: '';
+		}
+	}
+
+	@include motion.motion-safe {
+		.neon-sign__specks {
+			animation: neon-sign-specks-drift 13s linear infinite;
+		}
+
+		.neon-sign__beams::before {
+			animation: neon-sign-sweep-left 9s ease-in-out infinite alternate;
+		}
+
+		.neon-sign__beams::after {
+			animation: neon-sign-sweep-right 11s ease-in-out infinite alternate;
+		}
+
+		.neon-sign__sparkle {
+			animation: neon-sign-twinkle 3.2s ease-in-out var(--neon-sign-sparkle-delay, 0s)
+				infinite;
+		}
+
+		&:has(.quote-line--neon.is-visible) .neon-sign__crown {
+			animation: neon-sign-flicker 560ms steps(1, end)
+				calc(var(--neon-sign-lines, 3) * var(--neon-sign-step) + 200ms) backwards;
+		}
+
+		&:has(.quote-line--neon.is-visible)::after {
+			animation: neon-sign-halo 900ms ease-out
+				calc(var(--neon-sign-lines, 3) * var(--neon-sign-step) + 200ms) backwards;
+		}
+
+		.quote-line.is-visible {
+			animation: neon-sign-flicker 560ms steps(1, end)
+				calc(var(--neon-sign-line, 0) * var(--neon-sign-step) + 200ms) backwards;
+		}
+
+		.quote-line--neon.is-visible {
+			animation:
+				neon-sign-flicker 560ms steps(1, end)
+					calc(var(--neon-sign-line, 0) * var(--neon-sign-step) + 200ms) backwards,
+				neon-sign-breath 4s ease-in-out
+					calc(var(--neon-sign-line, 0) * var(--neon-sign-step) + 760ms) infinite
+					alternate;
+		}
+	}
+
+	@keyframes neon-sign-flicker {
+		0% {
+			opacity: 12%;
+		}
+
+		18% {
+			opacity: 100%;
+		}
+
+		32% {
+			opacity: 20%;
+		}
+
+		52% {
+			opacity: 100%;
+		}
+
+		64% {
+			opacity: 40%;
+		}
+
+		76%,
+		100% {
+			opacity: 100%;
+		}
+	}
+
+	@keyframes neon-sign-breath {
+		to {
+			opacity: 82%;
+		}
+	}
+
+	@keyframes neon-sign-halo {
+		from {
+			opacity: 0%;
+		}
+	}
+
+	@keyframes neon-sign-sweep-left {
+		to {
+			transform: rotate(-30deg);
+		}
+	}
+
+	@keyframes neon-sign-sweep-right {
+		to {
+			transform: rotate(30deg);
+		}
+	}
+
+	@keyframes neon-sign-twinkle {
+		0%,
+		100% {
+			opacity: 100%;
+			transform: scale(1);
+		}
+
+		50% {
+			opacity: 35%;
+			transform: scale(0.6) rotate(45deg);
+		}
+	}
+
+	@keyframes neon-sign-specks-drift {
+		to {
+			background-position:
+				5rem 2.5rem,
+				-4.6rem 5.3rem;
+		}
+	}
+}
+
+// The words light by line, not by word: the editorial word rise is replaced by the line flicker.
+#invitation-sections-container
+	> .invitation-section-wrapper[data-reveal='editorial'].has-motion
+	.quote-section[data-variant='neon-sign']
+	.quote-line.is-visible
+	.word {
+	animation: none;
+}

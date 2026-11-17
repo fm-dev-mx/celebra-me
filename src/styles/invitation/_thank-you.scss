@@ -226,3 +226,21 @@
 	object-position: var(--thank-you-ornament-position, center bottom);
 	filter: var(--thank-you-ornament-filter, none);
 }
+
+// Optional closing loop (`thankYou.ambientVideo`): it lies over the portrait inside the shell and
+// fades in only once it plays; profiles set how it blends and how much of it shows.
+.thank-you-editorial__ambient-video {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	opacity: 0%;
+	mix-blend-mode: var(--thank-you-ambient-blend, normal);
+	pointer-events: none;
+	transition: opacity 1.2s ease;
+
+	&.is-playing {
+		opacity: var(--thank-you-ambient-opacity, 100%);
+	}
+}

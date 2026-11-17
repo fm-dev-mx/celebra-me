@@ -4,9 +4,12 @@
 import '@/styles/invitation/_countdown.scss';
 import CountdownTimer from '@/components/invitation/CountdownTimer.astro';
 import EventCalendar from '@/components/invitation/EventCalendar.astro';
+import CalendarOptions from '@/components/invitation/components/CalendarOptions.astro';
+import Icon from '@/components/common/icons/Icon.astro';
 import SplitWords from '@/components/invitation/SplitWords.astro';
 import StorybookLanternSky from '@/components/invitation/StorybookLanternSky.astro';
 import type { EventCalendarMonth } from '@/lib/invitation/event-calendar';
+import type { VenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
 import { plainImgSrc } from '@/lib/assets/image-delivery-policy';
 import type {
 	CountdownCalendarMark,
@@ -24,8 +27,8 @@ interface Props {
 	ornament?: ImageAsset;
 	visibleUnits?: CountdownUnit[];
 	dayUnit?: CountdownDayUnit;
-	/** Month calendar of the event; replaces the written date. */
-	calendar?: { mark: CountdownCalendarMark; month: EventCalendarMonth };
+	/** Month calendar of the event; replaces the written date. `links` adds a save-the-date button. */
+	calendar?: { mark: CountdownCalendarMark; month: EventCalendarMonth; links?: VenueCalendarLinks };
 	variant: CountdownVariant;
 	isDemo?: boolean;
 }
@@ -121,6 +124,16 @@ const writtenDate = isWrittenDays ? formatWrittenDate(targetIso, eventTimeZone) 
 			<footer class="countdown-footer">
 				<p class="countdown-invitation-text" data-reveal-role="lede">{footerText}</p>
 			</footer>
+		)}
+
+		{calendar?.links && (
+			<details class="event-location__calendar countdown-calendar-links">
+				<summary class="event-location__calendar-trigger">
+					<Icon name="Calendar" size={18} />
+					<span>Agendar en el calendario</span>
+				</summary>
+				<CalendarOptions calendar={calendar.links} />
+			</details>
 		)}
 	</div>
 </section>

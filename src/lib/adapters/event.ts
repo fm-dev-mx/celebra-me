@@ -26,6 +26,7 @@ import {
 	type CountdownCalendarMark,
 } from '@/lib/invitation/countdown-presentation';
 import { buildEventCalendarMonth, type EventCalendarMonth } from '@/lib/invitation/event-calendar';
+import { buildCalendarLinks, type VenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
 import { resolveGiftsPresentation } from '@/lib/invitation/gifts-presentation';
 import {
 	resolvePersonalizedAccessCheckInQr,
@@ -51,7 +52,7 @@ interface AdaptationContext {
 
 function pickVenueValue(
 	location: CanonicalEventContent['location'] | undefined,
-	key: 'venueName' | 'city',
+	key: 'venueName' | 'city' | 'address' | 'googleMapsUrl',
 ): string | undefined {
 	if (!location) return undefined;
 	const venues = location.venues;
@@ -203,6 +204,7 @@ function buildHero(context: AdaptationContext): HeroViewModel {
 		focalPointDesktop: data.hero.focalPointDesktop,
 		scrollLabel: data.hero.scrollLabel,
 		scrollCue: data.hero.scrollCue,
+		ambientVideo: data.hero.ambientVideo,
 		tagline: data.hero.tagline,
 		photoCredit: data.hero.photoCredit,
 	};
@@ -251,6 +253,7 @@ function buildEnvelope(context: AdaptationContext): EnvelopeViewModel {
 			teaserDetails,
 			sealStyle: data.envelope.sealStyle,
 			backdropImage: resolveAsset(eventSlug, data.envelope.backdropImage, ''),
+			openingVideo: data.envelope.openingVideo,
 			sealIcon: data.envelope.sealIcon,
 			sealInitials: data.envelope.sealInitials,
 			sealVariant: data.envelope.sealVariant,
@@ -330,7 +333,7 @@ function buildQuoteSectionData(context: AdaptationContext) {
 	if (!data.quote) return undefined;
 	return {
 		...data.quote,
-		variant: 'standard' as const,
+		variant: data.quote.variant ?? 'standard',
 	};
 }
 
@@ -365,20 +368,59 @@ function buildCountdownSectionData(context: AdaptationContext) {
 		eventTimeZone: data.eventTiming?.timeZone,
 		visibleUnits: resolveCountdownVisibleUnits(data.countdown?.presentationOptions),
 		dayUnit: data.countdown?.presentationOptions?.dayUnit,
-		calendar: buildCountdownCalendar(data),
+		calendar: buildCountdownCalendar(
+			data,
+			target.source === 'eventTiming' ? target.targetIso : undefined,
+		),
 		variant,
 		isDemo: data.isDemo,
 	};
 }
 
+// Only a public location may put its address and map link in the page; a gated one keeps the name.
+function buildCountdownCalendarLocation(
+	data: CanonicalEventContent,
+): { venueName?: string; address?: string; mapsUrl?: string } | undefined {
+	const venueName = pickVenueValue(data.location, 'venueName');
+	const locationVisibility = data.location?.accessPolicy?.visibility ?? data.location?.visibility;
+	const isPublicLocation = locationVisibility === 'public';
+	const address = isPublicLocation ? pickVenueValue(data.location, 'address') : undefined;
+	const mapsUrl = isPublicLocation ? pickVenueValue(data.location, 'googleMapsUrl') : undefined;
+	const location = {
+		...(venueName ? { venueName } : {}),
+		...(address ? { address } : {}),
+		...(mapsUrl ? { mapsUrl } : {}),
+	};
+	return Object.keys(location).length > 0 ? location : undefined;
+}
+
 function buildCountdownCalendar(
 	data: CanonicalEventContent,
-): { mark: CountdownCalendarMark; month: EventCalendarMonth } | undefined {
-	const mark = data.countdown?.presentationOptions?.calendar?.mark;
+	startsAt: string | undefined,
+):
+	| { mark: CountdownCalendarMark; month: EventCalendarMonth; links?: VenueCalendarLinks }
+	| undefined {
+	const calendarOptions = data.countdown?.presentationOptions?.calendar;
+	const mark = calendarOptions?.mark;
 	const localDateTime = data.eventTiming?.localDateTime;
 	if (!mark || !localDateTime) return undefined;
 	const month = buildEventCalendarMonth(localDateTime);
-	return month ? { mark, month } : undefined;
+	if (!month) return undefined;
+	// The save-the-date links are opt-in and need a real instant and a known zone, so the entry
+	// never lands at a guessed time (a legacy hero date is a floating day, not an instant).
+	const timeZone = data.eventTiming?.timeZone;
+	if (!calendarOptions?.addToCalendar || !timeZone || !startsAt) return { mark, month };
+	const location = buildCountdownCalendarLocation(data);
+	const links = buildCalendarLinks(
+		{
+			title: data.title,
+			startsAt,
+			timezone: timeZone,
+			...(location ? { location } : {}),
+		},
+		data.title,
+	);
+	return { mark, month, links };
 }
 
 function formatVenueLocation(
@@ -410,6 +452,21 @@ function toVenueEntry(v: VenueEntryInput, eventSlug: string, eventTitle: string)
 		wazeUrl: v.wazeUrl,
 		coordinates: v.coordinates,
 		image: resolveAsset(eventSlug, v.image, eventTitle),
+	};
+}
+
+function resolveIndicationsReference(
+	eventSlug: string,
+	reference:
+		{ image: AssetSource | string; label: string; alt: string; note?: string } | undefined,
+) {
+	if (!reference) return undefined;
+	const asset = resolveAsset(eventSlug, reference.image, reference.alt);
+	if (!asset) return undefined;
+	return {
+		image: { ...asset, alt: reference.alt },
+		label: reference.label,
+		note: reference.note,
 	};
 }
 
@@ -445,6 +502,10 @@ function buildLocationSectionData(context: AdaptationContext) {
 			? resolveAsset(eventSlug, data.location.ornament, data.title)
 			: undefined,
 		indicationsHeading: data.location.indicationsHeading ?? '',
+		indicationsReference: resolveIndicationsReference(
+			eventSlug,
+			data.location.indicationsReference,
+		),
 		indicationsLayout: data.location.presentationOptions?.indicationsLayout ?? 'list',
 		showCalendarLinks: data.location.presentationOptions?.showCalendarLinks ?? false,
 		scene: data.location.presentationOptions?.scene,

@@ -26,7 +26,9 @@ export type ApiErrorCode =
 	| 'password_change_required'
 	| 'temporary_password_expired'
 	| 'password_update_failed'
-	| 'metadata_update_failed';
+	| 'metadata_update_failed'
+	| 'rsvp_closed'
+	| 'deadline_in_past';
 
 export class ApiError extends Error {
 	readonly status: number;

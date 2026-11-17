@@ -11,7 +11,7 @@ interface AuthLoginPayload {
 }
 
 interface AuthChangePasswordPayload {
-	currentPassword: string;
+	currentPassword?: string;
 	newPassword: string;
 	confirmPassword: string;
 }

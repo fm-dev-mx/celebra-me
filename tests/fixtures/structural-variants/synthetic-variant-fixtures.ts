@@ -28,6 +28,8 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 	const { section, variant, themePreset = 'jewelry-box' } = overrides;
 
 	const envelopeVariant = themePreset === 'celestial-blue' ? 'celestial-blue' : 'jewelry-box';
+	// The section under test takes the requested variant; every other section stays standard.
+	const variantFor = (name: string): string => (section === name ? variant : 'standard');
 
 	const data: Record<string, unknown> = {
 		eventType: 'xv',
@@ -63,21 +65,24 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 			portrait: 'portrait',
 			focalPoint: '50% 40%',
 			focalPointMobile: '50% 35%',
-			variant: section === 'hero' ? variant : 'standard',
+			variant: variantFor('hero'),
 		},
 		quote: {
 			text: 'Hay momentos en la vida que son inolvidables, y compartirlos con quienes más amamos los hace eternos.',
 			author: 'Celebrante',
+			variant: variantFor('quote'),
 		},
 		countdown: {
 			title: '¡Falta muy poco!',
 			footerText: 'Prepárate para una noche inolvidable',
-			variant: section === 'countdown' ? variant : 'standard',
+			variant: variantFor('countdown'),
 		},
 		family: {
-			variant: section === 'family' ? variant : 'standard',
+			variant: variantFor('family'),
 			...(section === 'family' &&
-			(variant === 'split-groups' || variant === 'asymmetric-groups')
+			(variant === 'split-groups' ||
+				variant === 'asymmetric-groups' ||
+				variant === 'framed-groups')
 				? {
 						groups: [
 							{
@@ -100,7 +105,7 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 					}),
 		},
 		location: {
-			variant: section === 'location' ? variant : 'standard',
+			variant: variantFor('location'),
 			introEyebrow: 'Monterrey nos espera',
 			introHeading: 'Sábado, 21 de noviembre de 2026',
 			introLede: 'Acompáñanos a celebrar este día tan especial.',
@@ -164,7 +169,7 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 			mapStyle: 'dark',
 		},
 		itinerary: {
-			variant: section === 'itinerary' ? variant : 'standard',
+			variant: variantFor('itinerary'),
 			items: [
 				{
 					iconName: 'Church',
@@ -216,20 +221,26 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 									{ key: 'g2', image: 'gallery02', layoutRole: 'feature' },
 									{ key: 'g3', image: 'gallery03' },
 								]
-							: section === 'gallery' && variant === 'feature-stack'
+							: section === 'gallery' &&
+								  (variant === 'feature-stack' || variant === 'rising-stack')
 								? [
 										{ key: 'g1', image: 'gallery01', layoutRole: 'feature' },
 										{ key: 'g2', image: 'gallery02', layoutRole: 'standard' },
 										{ key: 'g3', image: 'gallery03', layoutRole: 'wide' },
 									]
-								: [
-										{ key: 'g1', image: 'gallery01', caption: 'Foto 1' },
-										{ key: 'g2', image: 'gallery02', caption: 'Foto 2' },
-										{ key: 'g3', image: 'gallery03', caption: 'Foto 3' },
-									],
+								: section === 'gallery' && variant === 'photo-booth'
+									? Array.from({ length: 8 }, (_, index) => ({
+											key: `g${index + 1}`,
+											image: `gallery0${(index % 3) + 1}`,
+										}))
+									: [
+											{ key: 'g1', image: 'gallery01', caption: 'Foto 1' },
+											{ key: 'g2', image: 'gallery02', caption: 'Foto 2' },
+											{ key: 'g3', image: 'gallery03', caption: 'Foto 3' },
+										],
 		},
 		gifts: {
-			variant: section === 'gifts' ? variant : 'standard',
+			variant: variantFor('gifts'),
 			title: 'Mesa de Regalos',
 			subtitle: 'Tu presencia es mi mejor regalo, pero si deseas tener un detalle:',
 			items: [
@@ -248,18 +259,18 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 			],
 		},
 		rsvp: {
-			variant: section === 'rsvp' ? variant : 'standard',
+			variant: variantFor('rsvp'),
 			title: 'Confirmación de Asistencia',
 			subcopy: 'Favor de confirmar tu asistencia antes del 1 de noviembre.',
 			personalizedAccess: {
-				variant: section === 'personalizedAccess' ? variant : 'standard',
+				variant: variantFor('personalizedAccess'),
 				title: 'Pase de Acceso',
 				subtitle: 'Este pase muestra los accesos asignados.',
 				footerText: 'Acceso válido para adultos y niños.',
 			},
 		},
 		thankYou: {
-			variant: section === 'thankYou' ? variant : 'standard',
+			variant: variantFor('thankYou'),
 			message: 'Gracias por acompañarme en este día tan especial e inolvidable.',
 			closingName: 'Celebrante Principal',
 			closingPhrase: 'Con cariño,',
@@ -300,9 +311,20 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 /** Gallery variants that need three photos; two make them incompatible. */
 const TWO_ITEM_INCOMPATIBLE_GALLERIES = new Set([
 	'feature-stack',
+	'rising-stack',
 	'mirrored-mosaic',
 	'album-assemble',
 	'pinned-track',
+	'photo-booth',
+]);
+
+/** Thank-you variants that require a photo. */
+const IMAGE_THANK_YOU_VARIANTS = new Set([
+	'full-bleed-photo',
+	'portrait-letter',
+	'portrait-keepsake',
+	'last-song',
+	'veiled-photo',
 ]);
 
 function makeLocationIncompatible(data: Record<string, unknown>, variant: string): void {
@@ -326,7 +348,7 @@ function makeLocationIncompatible(data: Record<string, unknown>, variant: string
 	) {
 		const location = data.location as Record<string, unknown>;
 		location.venues = [(location.venues as Array<unknown>)[0]];
-	} else if (variant === 'program-sheet') {
+	} else if (variant === 'program-sheet' || variant === 'pinned-program') {
 		const location = data.location as Record<string, unknown>;
 		location.venues = (location.venues as Array<Record<string, unknown>>).map((venue) => ({
 			...venue,
@@ -334,6 +356,10 @@ function makeLocationIncompatible(data: Record<string, unknown>, variant: string
 		}));
 	}
 }
+
+const GROUPED_FAMILY_VARIANTS = new Set(['split-groups', 'asymmetric-groups', 'framed-groups']);
+
+const ITEMIZED_GIFT_VARIANTS = new Set(['editorial-catalog', 'gift-tag', 'framed-card']);
 
 export function buildIncompatiblePrerequisiteEvent(
 	entry: CanonicalVariantRegistryEntry,
@@ -354,6 +380,7 @@ export function buildIncompatiblePrerequisiteEvent(
 					'framed-portrait',
 					'bleed-portrait',
 					'cased-portrait',
+					'disco-stage',
 					'ceremonial-portrait',
 				].includes(entry.variant)
 			) {
@@ -364,7 +391,7 @@ export function buildIncompatiblePrerequisiteEvent(
 		case 'family':
 			if (entry.variant === 'ceremonial-family')
 				delete (data.family as Record<string, unknown>).variant;
-			if (entry.variant === 'split-groups' || entry.variant === 'asymmetric-groups') {
+			if (GROUPED_FAMILY_VARIANTS.has(entry.variant)) {
 				const family = data.family as Record<string, unknown>;
 				family.groups = [{ title: 'Solo Uno', items: [{ name: 'Solo' }] }];
 			}
@@ -403,16 +430,12 @@ export function buildIncompatiblePrerequisiteEvent(
 			}
 			break;
 		case 'gifts':
-			if (entry.variant === 'editorial-catalog' || entry.variant === 'gift-tag') {
+			if (ITEMIZED_GIFT_VARIANTS.has(entry.variant)) {
 				(data.gifts as Record<string, unknown>).items = [{ type: 'invalid' }];
 			}
 			break;
 		case 'thankYou':
-			if (
-				entry.variant === 'full-bleed-photo' ||
-				entry.variant === 'portrait-letter' ||
-				entry.variant === 'portrait-keepsake'
-			) {
+			if (IMAGE_THANK_YOU_VARIANTS.has(entry.variant)) {
 				const thankYou = data.thankYou as Record<string, unknown>;
 				delete thankYou.image;
 			} else if (
@@ -432,6 +455,9 @@ export function buildIncompatiblePrerequisiteEvent(
 			break;
 		case 'memories':
 			delete (data.memories as Record<string, unknown>).publicSlug;
+			break;
+		case 'quote':
+			delete (data.quote as Record<string, unknown>).text;
 			break;
 	}
 
@@ -458,10 +484,10 @@ export function getIncompatiblePrerequisiteExpectation(
 					expectedMessageSubstring: 'split-map requires at least one visible venue',
 				};
 			}
-			if (entry.variant === 'program-sheet') {
+			if (entry.variant === 'program-sheet' || entry.variant === 'pinned-program') {
 				return {
 					expectedPath: ['location', 'variant'],
-					expectedMessageSubstring: 'program-sheet requires at least one visible venue',
+					expectedMessageSubstring: `${entry.variant} requires at least one visible venue`,
 				};
 			}
 			return {
@@ -491,10 +517,16 @@ export function getIncompatiblePrerequisiteExpectation(
 						'album-assemble requires three to eight gallery items',
 				};
 			}
-			if (entry.variant === 'feature-stack') {
+			if (entry.variant === 'photo-booth') {
 				return {
 					expectedPath: ['gallery', 'items'],
-					expectedMessageSubstring: 'feature-stack requires at least three gallery items',
+					expectedMessageSubstring: 'photo-booth requires exactly eight gallery items',
+				};
+			}
+			if (entry.variant === 'feature-stack' || entry.variant === 'rising-stack') {
+				return {
+					expectedPath: ['gallery', 'items'],
+					expectedMessageSubstring: `${entry.variant} requires at least three gallery items`,
 				};
 			}
 			if (entry.variant === 'pinned-track') {
@@ -514,11 +546,7 @@ export function getIncompatiblePrerequisiteExpectation(
 		case 'gifts':
 			return { expectedPath: ['gifts', 'items', 0] };
 		case 'thankYou':
-			if (
-				entry.variant === 'full-bleed-photo' ||
-				entry.variant === 'portrait-letter' ||
-				entry.variant === 'portrait-keepsake'
-			) {
+			if (IMAGE_THANK_YOU_VARIANTS.has(entry.variant)) {
 				return { expectedPath: ['thankYou', 'image'] };
 			}
 			return { expectedPath: ['thankYou', 'closingName'] };
@@ -529,5 +557,7 @@ export function getIncompatiblePrerequisiteExpectation(
 			return { expectedPath: ['rsvp', 'personalizedAccess'] };
 		case 'memories':
 			return { expectedPath: ['memories', 'publicSlug'] };
+		case 'quote':
+			return { expectedPath: ['quote', 'text'] };
 	}
 }

@@ -56,6 +56,13 @@ const PUBLIC_RSVP_RPC_ERROR_MAP: Record<
 		userMessage: 'El número de niños excede los pases para niños de la invitación.',
 		errorCode: 'children_count_exceeds_limit',
 	},
+	adult_count_exceeds_limit: {
+		httpStatus: 400,
+		code: 'bad_request',
+		userMessage:
+			'El número de adultos excede los lugares para adultos de la invitación; los lugares de niños no pueden usarse por adultos.',
+		errorCode: 'adult_count_exceeds_limit',
+	},
 	full_name_required: {
 		httpStatus: 400,
 		code: 'bad_request',

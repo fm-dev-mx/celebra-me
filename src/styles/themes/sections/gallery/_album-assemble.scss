@@ -22,6 +22,10 @@
 //   --gallery-album-lead                         Prints that land while the page scrolls in,
 //                                                before the scene pins (default 0), so the page
 //                                                never arrives empty
+//   --gallery-album-dusk                         A ground (any background) that rises behind
+//                                                the prints while they land, so the page
+//                                                falls into the next section's night (default
+//                                                none: the paper stays)
 // ==========================================================================
 
 $album-max-items: 8;
@@ -104,6 +108,39 @@ $album-land-share: 0.85;
 				@include m.respond-to(lg) {
 					--album-desktop-shift: #{$shift};
 				}
+			}
+		}
+	}
+
+	// Dusk: an optional ground behind the page that fades in with the landing prints.
+	.scroll-scene__stage {
+		@include scene.pinned {
+			isolation: isolate;
+
+			&::before {
+				content: '';
+				position: absolute;
+				inset: 0;
+				z-index: -1;
+				background: var(--gallery-album-dusk, none);
+				opacity: 0%;
+				pointer-events: none;
+			}
+		}
+
+		@include scene.timeline {
+			&::before {
+				animation: album-dusk linear both;
+				animation-timeline: --scroll-scene;
+				animation-range: contain 0% contain #{$album-land-share * 100%};
+			}
+		}
+
+		@include scene.scripted {
+			&::before {
+				--album-dusk-share: calc(var(--scene-progress, 0) / #{$album-land-share});
+
+				opacity: calc(var(--album-dusk-share) * 100%);
 			}
 		}
 	}
@@ -386,6 +423,12 @@ $album-land-share: 0.85;
 		translate: 0 0;
 		rotate: var(--album-rotate, 0deg);
 		scale: 1;
+	}
+}
+
+@keyframes album-dusk {
+	100% {
+		opacity: 100%;
 	}
 }
 

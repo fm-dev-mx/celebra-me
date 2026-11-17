@@ -42,34 +42,40 @@ audit tooling (`pnpm invitation:published-audit`).
 ## Canonical inventory
 
 - **Hero:** `standard`, `editorial-cover`, `split-cover`, `framed-portrait`, `bleed-portrait`,
-  `cased-portrait`, `ceremonial-portrait`, `night-arch` (the photograph inside an arched window on a
-  night sky, names below; wide screens put the arch on the right).
-- **Family:** `standard`, `split-groups`, `asymmetric-groups`, `ceremonial-family`; both group
-  layouts require at least two explicit `groups`.
+  `cased-portrait`, `disco-stage`, `ceremonial-portrait`, `night-arch` (the photograph inside an
+  arched window on a night sky, names below; wide screens put the arch on the right).
+- **Family:** `standard`, `split-groups`, `asymmetric-groups`, `ceremonial-family`, `framed-groups`;
+  the three group layouts require at least two explicit `groups`.
 - **Location:** `standard`, `split-map`, `stacked-venue-plates`, `night-route` (the venue plates as
   numbered stops on one rail under a night sky; editorial invitations draw the rail with scroll),
   `star-route` (editorial rows that alternate a large photo with the time and venue data around one
-  line with a star per venue; the intro lede moves to a footnote), `program-sheet`; prerequisites
-  are enforced by the owning schema. `stacked-venue-plates` and `night-route` need at least two
-  visible venues and accept `venueCard: 'compact'`; `star-route` also needs two visible venues.
+  line with a star per venue; the intro lede moves to a footnote), `program-sheet`, `pinned-program`
+  (one visible venue or more); prerequisites are enforced by the owning schema.
+  `stacked-venue-plates` and `night-route` need at least two visible venues and accept
+  `venueCard: 'compact'`; `star-route` also needs two visible venues.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
   `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`,
-  `narrative-stack`, `mirrored-mosaic`, `paired-portraits`, `album-assemble`, `pinned-track` (a
-  scroll scene: the photos travel sideways under a counter while the stage is pinned; the scene is
-  one screen plus `--gallery-track-pace` (0.2) screens per photo; at rest, a two-column grid).
-  `single-keepsake` requires exactly one item; `album-assemble` three to eight; feature layouts and
-  `pinned-track` enforce their item requirements.
+  `narrative-stack`, `mirrored-mosaic`, `paired-portraits`, `album-assemble`, `photo-booth`,
+  `rising-stack` (three items or more), `pinned-track` (a scroll scene: the photos travel sideways
+  under a counter while the stage is pinned; the scene is one screen plus `--gallery-track-pace`
+  (0.2) screens per photo; at rest, a two-column grid). `single-keepsake` requires exactly one item;
+  `album-assemble` three to eight; `photo-booth` exactly eight; feature layouts and `pinned-track`
+  enforce their item requirements.
 - **Itinerary:** `standard`, `timeline-paper`, `editorial-ledger`, `editorial-program`,
   `stacked-cards` (one sticky card per moment that recedes as the next arrives, using scroll-driven
   CSS where supported, otherwise a plain list; requires `itinerary.items`).
 - **Gifts:** `standard`, `editorial-catalog`, `gift-tag` (the whole registry fits one screen: a
   flush-left heading, beside the cards on wide screens; the store card as a tag with a bow and a
-  number pill; the cash gift as a strip; tokens `--gifts-tag-*`).
-- **RSVP:** `standard`, `editorial-press-pass`, `formal-register`, `reply-card`.
-- **Personalized Access:** `standard`, `ornamented`, `editorial-pass`, `formal-pass`, `reply-card`.
+  number pill; the cash gift as a strip; tokens `--gifts-tag-*`), `framed-card`.
+- **RSVP:** `standard`, `editorial-press-pass`, `formal-register`, `reply-card`, `framed-register`.
+- **Personalized Access:** `standard`, `ornamented`, `editorial-pass`, `formal-pass`, `reply-card`,
+  `framed-pass`.
 - **Thank You:** `standard`, `editorial-back-cover`, `portrait-letter`, `full-bleed-photo`,
-  `portrait-keepsake`, `ceremonial-closing`; `full-bleed-photo` requires `thankYou.image`.
-- **Countdown:** `standard`, `editorial-folio`, `magazine-folio`, `clock-face`, `written-days`.
+  `portrait-keepsake`, `last-song`, `ceremonial-closing`, `veiled-photo`; `full-bleed-photo` and
+  `veiled-photo` require `thankYou.image`.
+- **Countdown:** `standard`, `editorial-folio`, `magazine-folio`, `clock-face`, `written-days`,
+  `mirror-ball`, `framed-scene`.
+- **Quote:** `standard`, `neon-sign`, `veiled-photo`.
 - **Memories:** `card`; requires `memories.publicSlug`. It has no default variant, because the
   section exists only for invitations with a memory space.
 
@@ -196,6 +202,11 @@ invitation profiles.
   holds the cover photograph; when the hero is `night-arch`, that window flies onto the cover arch
   before the page opens. Profiles tune it only through optional `--night-envelope-*` tokens. Proven
   on the Olivia y Antonio invitation (`/boda/olivia-y-antonio`).
+- envelope.revealVariant disco-night: the night-envelope letter under a disco ceiling. It loads the
+  night-envelope sheet and adds a faceted mirror-ball seal, sequin sparks and a lit frame on the
+  card window; the colors still come from `--night-envelope-*`, and `--disco-night-*` (deep,
+  deep-rgb) tints the sparks and the frame glow. Proven on the Valeria Hernández invitation
+  (`/xv/valeria-hernandez`).
 - envelope.revealVariant celestial-letter: a letter drawn out of a night envelope. The flap turns on
   its hinge and shows a star-chart liner, the pocket sinks while a pearl letter with a crescent
   emblem and a double silver rule slides out of it, then the letter comes forward and settles where
@@ -207,6 +218,13 @@ invitation profiles.
   drift only without `prefers-reduced-motion`; generic dividers and venue drawings hidden. Ink
   follows `--color-ornament-gold`; tuned through `--ornament-*` (`--ornament-lights-*`,
   `--ornament-thread-*`).
+- composition.ornaments satin-ribbons: a keepsake dressing for the `storybook-lilac` palette that
+  restyles whole sections instead of adding motifs — a cover painted in with brush strokes between
+  floral corners, the quote inside a drawn ribbon, family names joined in a script hand, the gifts
+  chapter wrapped like a present, the reply card as a ticket, and a thank-you medallion with a pen
+  flourish over a signed footer. The page supplies the art (`--ornament-art-<name>`, as `url()`) and
+  the words (`--ornament-monogram`, `--ornament-family-joiner`, `--ornament-signature`) from its
+  profile; an ornament without its art or word is absent. Proven on `yireh-ana`.
 - countdown.presentationOptions.dayUnit nights: the day segment reads "noches" (same value) for
   evening celebrations, e.g. "Faltan 43 noches".
 - interludes dusk (profile token): `--interlude-dusk-<n>: interlude-dusk` darkens the nth interlude
@@ -236,12 +254,40 @@ invitation profiles.
 - location.presentationOptions.indicationsLayout enclosure: the details card of a suite — one small
   card with an inner hairline, short notes without icons or numbering, and a single color swatch for
   a `reserved` note. `--location-enclosure-*`.
+- location.pinned-program: the program-sheet entries on an editorial page with a gold rail and, from
+  tablets up, two columns whose cards pin while the page scrolls. It loads one sheet that carries
+  the program-sheet rules, so `presentationOptions.scene` keeps working. Requires one visible venue.
+  `--pinned-program-*` (stage-top, serif, rail, olive, olive-deep, gold, beige, ivory, paper and
+  their `-rgb` triplets).
+- family.framed-groups: one screen of stationery with an asymmetric column inside one fine frame,
+  the second group answering on the right and a sprig beside the heading; carries the
+  asymmetric-groups rules. Requires two groups. `--framed-groups-*` (light, wash-rgb, accent, ink,
+  rule-rgb, sprig, stage-top).
+- gallery.rising-stack: the feature-stack grid framed as one screen, the prints rising in a pinned
+  scroll scene. Requires three items. `--rising-stack-*` (paper, gold, gold-ink, gold-rgb, title,
+  stage-top).
+- gifts.framed-card: one page without cards; options as rows between hairlines with a fine emblem
+  and an outlined store button, closed by a thin frame. `--framed-card-*`.
+- rsvp.framed-register: the formal-register underline form as a one-screen centered composition.
+  `--framed-register-*`.
+- personalizedAccess.framed-pass: the formal-pass ticket inside a framed page with a corner sprig.
+  `--framed-pass-*` (art-corner, gold-ink, gold-rgb, olive, olive-deep, paper, stage-top).
+- thankYou.veiled-photo: full-bleed-photo markup under a deep veil on one screen. Requires
+  `thankYou.image`. `--veiled-photo-*` and the opt-in `--thank-you-bleed-*` tokens.
+- countdown.framed-scene: one dark screen in a double hairline frame; script title under a foil
+  sprig, the days large over hours, minutes and seconds, and the date between rules, as a pinned
+  scene. `--framed-scene-*` (accent, ink, light, light-rgb, rule, rule-rgb, sprig, sprig-display,
+  stage-top).
+- quote.veiled-photo: the photograph to the edges under a veil that deepens toward the text, the
+  closing line in script over a hairline; scroll-linked.
+  `--veiled-photo-{image,veil-rgb,veil-deep-rgb,rule,stage-top}`.
 - location.program-sheet: venues as printed-program entries (line drawing for ceremony/reception,
   label, time in words, venue, address, text links of 44 px for map, calendar and copy). No cards
   and no section nav button; two columns with a vertical hairline on wide screens.
   `--location-program-*`. Optional `presentationOptions.scene: 'lantern-route'` (night, lantern) or
-  `'butterfly-route'` (day, butterfly), two or more visible venues, sets the program in a pinned
-  route scene; see [Motion](motion.md#scroll-scenes). `--location-route-*`.
+  `'butterfly-route'` (day, butterfly) or `'mirror-ball-route'` (dance-floor night, mirror ball and
+  spotlight, two-screen pin), two or more visible venues, sets the program in a pinned route scene;
+  see [Motion](motion.md#scroll-scenes). `--location-route-*`.
 - hero.bleed-portrait: framed-portrait markup with the photograph to the edges (full width at its
   own proportion on phones, full-height left half on wide screens), written when/where facts and a
   silver scroll line. `--hero-bleed-*`.
@@ -249,6 +295,28 @@ invitation profiles.
   paper card). Geometry lives in `hero/_cased-portrait.scss`; a preset supplies only materials
   through `--case-*` tokens (lining, pool, gold, glow, sheen, ink, card background and mask), and
   every token has a neutral fallback so any preset renders it.
+- hero.disco-stage: framed-portrait markup on a disco stage — the arched portrait under a faceted
+  mirror ball on its thread, light beams and sequin stars on a night ground. Geometry and motion
+  live in `hero/_disco-stage.scss`; a profile supplies only `--disco-stage-*` tokens (glow-rgb,
+  silver-rgb, ground, ball-centre, ball-width), each with a neutral night fallback. Requires
+  `hero.backgroundImage`.
+- countdown.mirror-ball: a faceted mirror ball drops on its cable as the section enters, turns and
+  throws beams over the night; the numbers glow large, without boxes, over a lit dance floor in
+  perspective. `--mirror-ball-*` (glow-rgb, silver-rgb, ink, seam: the ground the section above ends
+  on, so the top edge fades instead of cutting).
+- thankYou.last-song: portrait-keepsake markup as the last song — the closing portrait is the label
+  of a vinyl record with a tonearm, on a night ground. Where scroll timelines are supported the
+  section is a pinned scene (260svh runway, 100svh sticky stage): the record rolls in, the needle
+  drops, mirror-ball spots and two beams come on, the copy rises and the closing name lights up as
+  neon; elsewhere a timed entrance plays, and reduced motion shows the still layout. Requires
+  `thankYou.image`. `--last-song-*` (dusk-rgb, glow-rgb, ground, ink, ink-rgb, credit, credit-size,
+  record-size, message-size, name-size).
+- quote.neon-sign: the quote as a neon sign on a dark wall — the lines in small caps, the last line
+  as a large script neon tube, a glowing frame with a crown star hung on two clipped cables, two
+  stage beams entering from past the section edges, twinkling sparkles, and the closing line as a
+  silver label between stars. Each line flickers on, then the tube breathes, the beams sweep and the
+  sparkles twinkle; static under reduced motion. `--neon-sign-*` (glow-rgb, silver-rgb, wall, seam,
+  ink, tube); `seam` is the ground the wall fades from at its top edge.
 - countdown.written-days: one composed fact — small-caps lead, a light display day count with an
   italic "días", and the date in lowercase with old-style numerals; no tiles, the timer updates once
   a minute. `--countdown-written-*`.
@@ -259,6 +327,12 @@ invitation profiles.
   drops onto the page in its own slice of the scroll, turned slightly by hand, with a 01 / NN
   counter and a progress line; otherwise the prints rest in a two- or three-column grid. Three to
   eight items. `--gallery-album-*`.
+- gallery.photo-booth: eight square prints as two black film strips of four, with sprocket holes and
+  a booth stamp at each foot. With scroll timelines the section pins one screen tall in a dark room:
+  a booth window framed by a marquee of chasing bulbs opens, the strips run through it in opposite
+  directions under two spotlights, mirror-ball spots and camera flashes, and the lights go down as
+  it leaves. Under reduced motion the strips rest side by side. Exactly eight items.
+  `--photo-booth-*` (glow, film, pale light, ink, cabinet, sign font and the two stamp strings).
 - rsvp.reply-card + personalizedAccess.reply-card: a printed reply card split across both sections
   and joined into one surface — seats written out above, then the heading, two 56 px answers in the
   stationery formula ("Con gusto asistiré" / "Lamento no poder asistir"), message and one button; no

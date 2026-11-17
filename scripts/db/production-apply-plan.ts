@@ -55,6 +55,8 @@ export interface ProductionApplyPlanItem {
 	patchPreview?: ProductionApplyPatchPreview;
 	/** Lower-cased `@tables` of a reviewed patch; decides whether it waits for the Worker. */
 	patchTables?: readonly string[];
+	/** True for a reviewed content repair both Workers resolve; it skips the Worker-first wait. */
+	patchWorkerCompatible?: boolean;
 	/** In-process only; stripped from public JSON. Not part of planId. */
 	preflight?: PromotionPreflightReport;
 }

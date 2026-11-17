@@ -1,0 +1,573 @@
+@use '../../../tools/motion';
+@use '../../../tools/disco-motifs' as disco;
+@use 'portrait-keepsake';
+
+// Last song: the portrait keepsake on a lit night ground, pressed as the label of a vinyl record,
+// with a neon closing line. Profiles map `--last-song-*` to their palette.
+.event-theme-wrapper .thank-you-section[data-variant='last-song'] {
+	// A solid wine night down to the footer, lit from below the portrait, as tall as its content so
+	// no empty night is left under the name.
+	min-height: auto;
+	background:
+		radial-gradient(
+			ellipse at 50% 70%,
+			rgb(var(--last-song-dusk-rgb, var(--color-surface-secondary-rgb)) / 55%),
+			transparent 65%
+		),
+		var(--last-song-ground, var(--color-surface-primary));
+
+	// The last song: the portrait is the label of a vinyl record. The hero's disco loop washes its
+	// lights over the label (screen blend keeps the face). Still, the record just rests.
+	--thank-you-ambient-blend: screen;
+	--thank-you-ambient-opacity: 55%;
+	--last-song-glow: var(--last-song-glow-rgb, var(--color-action-accent-rgb));
+
+	// Short screens keep the record, the credits and the signature on one screen.
+	--thank-you-keepsake-padding: clamp(2rem, 7svh, 5.5rem) clamp(1.15rem, 5vw, 2rem);
+
+	// The record on its platter: fine grooves, two track gaps, the smooth run-out around the label,
+	// a lit rim and a fixed sheen. Sized to the width and to the screen height.
+	.thank-you-editorial__media.photo-frame {
+		position: relative;
+		display: grid;
+		place-items: center;
+		width: var(--last-song-record-size, min(74vw, 21rem, 36svh));
+		aspect-ratio: 1;
+		border-radius: 50%;
+		background:
+			conic-gradient(
+				from 18deg,
+				transparent 0 3%,
+				rgb(255 255 255 / 9%) 7%,
+				rgb(255 255 255 / 26%) 10%,
+				rgb(255 255 255 / 9%) 13%,
+				transparent 18% 53%,
+				rgb(255 255 255 / 7%) 57%,
+				rgb(255 255 255 / 19%) 60%,
+				rgb(255 255 255 / 7%) 63%,
+				transparent 68%
+			),
+			radial-gradient(
+				circle closest-side,
+				transparent 96.5%,
+				rgb(255 255 255 / 20%) 98%,
+				rgb(0 0 0) 100%
+			),
+			radial-gradient(
+				circle closest-side,
+				rgb(16 10 13) 0 55%,
+				rgb(60 52 58) 55.4%,
+				transparent 56.2% 69.4%,
+				rgb(0 0 0 / 70%) 70% 70.8%,
+				transparent 71.4% 83.8%,
+				rgb(0 0 0 / 70%) 84.4% 85.2%,
+				transparent 85.8%
+			),
+			repeating-radial-gradient(
+				circle,
+				rgb(8 5 7) 0 0.6px,
+				rgb(34 27 31) 0.6px 1.3px,
+				rgb(14 9 12) 1.3px 2.1px
+			);
+		box-shadow:
+			0 0 0 0.3rem rgb(24 20 24),
+			0 0 0 0.38rem rgb(176 178 190 / 75%),
+			0 1.4rem 2.6rem rgb(0 0 0 / 60%),
+			0 0 4rem rgb(var(--last-song-glow) / 38%);
+	}
+
+	// The tonearm: counterweight, pivot, tube and headshell, cued on the first track.
+	.thank-you-editorial__media.photo-frame::before {
+		--last-song-arm-silver: linear-gradient(
+			90deg,
+			rgb(132 134 148),
+			rgb(246 246 250) 45%,
+			rgb(132 134 148)
+		);
+		--last-song-arm-dark: linear-gradient(
+			90deg,
+			rgb(30 30 38),
+			rgb(86 88 102) 45%,
+			rgb(30 30 38)
+		);
+
+		position: absolute;
+		top: calc(4% - 1.75rem);
+		right: calc(4% - 1.1rem);
+		z-index: 2;
+		width: 2.2rem;
+		height: calc(45% + 1.75rem);
+		background:
+			radial-gradient(
+				circle at 50% 1.75rem,
+				rgb(246 246 250) 0 0.2rem,
+				rgb(40 40 50) 0.22rem 0.5rem,
+				rgb(200 202 214) 0.52rem 0.76rem,
+				rgb(40 40 50) 0.78rem 1.04rem,
+				transparent 1.08rem
+			),
+			var(--last-song-arm-silver) 50% calc(100% - 1rem) / 0.9rem 0.12rem no-repeat,
+			var(--last-song-arm-dark) 50% 100% / 0.9rem 1.5rem no-repeat,
+			var(--last-song-arm-silver) 50% 1.75rem / 0.24rem calc(100% - 3.25rem) no-repeat,
+			var(--last-song-arm-dark) 50% 0 / 1.05rem 1rem no-repeat;
+		filter: drop-shadow(0.25rem 0.5rem 0.4rem rgb(0 0 0 / 55%));
+		transform: rotate(13deg);
+		transform-origin: 50% 1.75rem;
+		content: '';
+		pointer-events: none;
+	}
+
+	// The label: the portrait in a round, lifted because it was shot in low light.
+	.thank-you-editorial__image-shell {
+		width: 44%;
+		height: 44%;
+		border-radius: 50%;
+		box-shadow:
+			0 0 0 0.22rem rgb(var(--last-song-glow) / 90%),
+			0 0 0 0.28rem rgb(255 255 255 / 45%);
+		overflow: hidden;
+		mask: none;
+	}
+
+	.thank-you-editorial__media img {
+		filter: brightness(1.5) contrast(1.05);
+	}
+
+	// The spindle.
+	.thank-you-editorial__image-shell::after {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		z-index: 1;
+		width: 0.55rem;
+		aspect-ratio: 1;
+		border-radius: 50%;
+		background: radial-gradient(circle at 35% 30%, rgb(255 255 255), rgb(150 152 164) 70%);
+		box-shadow:
+			0 0 0 0.12rem rgb(16 10 13),
+			0 0.05rem 0.2rem rgb(0 0 0 / 60%);
+		transform: translate(-50%, -50%);
+		content: '';
+		pointer-events: none;
+	}
+
+	// The message reads as the credits of the last track, under a ruled side label.
+	.thank-you-editorial__copy::before {
+		margin-bottom: 0.9rem;
+		padding-inline: 1.5rem;
+		background:
+			linear-gradient(currentcolor, currentcolor) 0 50% / 1rem 1px no-repeat,
+			linear-gradient(currentcolor, currentcolor) 100% 50% / 1rem 1px no-repeat;
+		color: rgb(var(--last-song-ink-rgb, var(--color-text-primary-rgb)) / 78%);
+		font-family: var(--font-display);
+		font-size: var(--last-song-credit-size, 0.75rem);
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		content: var(--last-song-credit, 'Lado B · Última canción');
+	}
+
+	@include motion.motion-safe {
+		.thank-you-editorial__image-shell {
+			animation: last-song-record-spin 14s linear infinite;
+		}
+
+		@supports (animation-timeline: view()) {
+			.closing-name {
+				animation: last-song-closing-neon linear both;
+				animation-timeline: view();
+				animation-range: entry 30% cover 40%;
+			}
+		}
+	}
+
+	@keyframes last-song-record-spin {
+		to {
+			transform: rotate(1turn);
+		}
+	}
+
+	// The marquee tube flickers twice and then holds.
+	@keyframes last-song-closing-neon {
+		0%,
+		22%,
+		44% {
+			color: rgb(var(--last-song-ink-rgb, var(--color-text-primary-rgb)) / 45%);
+			text-shadow: none;
+		}
+
+		14%,
+		34%,
+		60%,
+		100% {
+			color: rgb(255 240 244);
+			text-shadow:
+				0 0 1.5rem rgb(var(--last-song-glow-rgb, var(--color-action-accent-rgb)) / 70%),
+				0 0 0.3rem rgb(var(--last-song-glow-rgb, var(--color-action-accent-rgb)) / 55%);
+		}
+	}
+
+	// The preset's tall keepsake grid splits its spare height into an empty second row; the photo
+	// and the name sit in one row here, so the grid only takes their height.
+	.thank-you-editorial {
+		grid-template-rows: auto;
+		min-height: auto;
+		row-gap: min(clamp(2.25rem, 8vw, 4.5rem), 4svh);
+	}
+
+	.thank-you-message {
+		font-size: var(--last-song-message-size, 1.25rem);
+	}
+
+	.closing-name {
+		color: var(--last-song-ink, var(--color-text-primary));
+		font-size: var(--last-song-name-size, min(clamp(5rem, 22vw, 7rem), 12svh));
+		line-height: 1;
+		text-shadow: 0 0 1.5rem rgb(var(--last-song-glow-rgb, var(--color-action-accent-rgb)) / 55%);
+
+		&::after {
+			display: block;
+			width: 9rem;
+			aspect-ratio: 104 / 16;
+			margin: 0.5rem auto 0;
+			background: disco.$sparkle-rule center / contain no-repeat;
+			content: '';
+		}
+	}
+
+	.signature-block {
+		margin-top: min(clamp(1.35rem, 5vw, 2.35rem), 2.5svh);
+	}
+}
+
+// The record drops onto the platter and the tonearm cues in, in place of the editorial clip (its
+// square inset would cut the round record). The selector outranks the editorial media entrance.
+$last-song-scene: "#invitation-sections-container > .invitation-section-wrapper[data-reveal='editorial'].has-motion .thank-you-section[data-variant='last-song']";
+
+@include motion.motion-safe {
+	@supports not (animation-timeline: view()) {
+		#{$last-song-scene} [data-reveal-role='media'] {
+			&[data-reveal-pending] {
+				opacity: 0%;
+				clip-path: none;
+			}
+
+			&.is-visible {
+				animation: last-song-record-drop 900ms var(--editorial-ease, ease-out) 150ms
+					backwards;
+			}
+
+			&.is-visible::before {
+				animation: last-song-arm-cue 1100ms cubic-bezier(0.3, 0, 0.2, 1) 900ms backwards;
+			}
+		}
+	}
+
+	// The scroll scene: the section is a runway and the record, the credits and the name hold on a
+	// pinned stage. The record rolls in, the tonearm drops, the club lights come on (mirror-ball
+	// spots, two swinging beams, sound rings off the record), the credits rise and the neon name
+	// flickers on. Without scroll timelines the timed entrance above stays.
+	@supports (animation-timeline: view()) {
+		#{$last-song-scene} {
+			min-block-size: 260svh;
+			padding-block: 0;
+			overflow: clip;
+			view-timeline-name: --last-song;
+
+			.thank-you-editorial {
+				position: sticky;
+				inset-block-start: 0;
+				align-content: center;
+				align-self: flex-start;
+				block-size: 100svh;
+				margin-block: 0;
+				padding-block: 4.5rem 1rem;
+			}
+
+			.thank-you-editorial::before,
+			.thank-you-editorial::after {
+				position: absolute;
+				inset-block: 0;
+				inset-inline-start: 50%;
+				z-index: -1;
+				inline-size: 100vw;
+				translate: -50% 0;
+				content: '';
+				pointer-events: none;
+			}
+
+			// Mirror-ball spots drifting over the walls, thinner behind the record and the copy.
+			.thank-you-editorial::before {
+				background:
+					radial-gradient(
+							ellipse 0.8rem 0.5rem at center,
+							rgb(255 255 255 / 55%),
+							transparent 72%
+						)
+						0 0 / 11rem 8rem,
+					radial-gradient(
+							ellipse 0.6rem 0.4rem at center,
+							rgb(var(--last-song-glow) / 80%),
+							transparent 72%
+						)
+						3rem 2rem / 7rem 9.5rem,
+					radial-gradient(
+							ellipse 1.1rem 0.7rem at center,
+							rgb(255 255 255 / 24%),
+							transparent 72%
+						)
+						5rem 4rem / 15rem 12rem;
+				mask: radial-gradient(
+					ellipse 70% 55% at 50% 50%,
+					rgb(0 0 0 / 28%) 35%,
+					rgb(0 0 0) 100%
+				);
+				animation:
+					last-song-spots-drift 26s linear infinite,
+					last-song-lights-on linear both;
+				animation-timeline: auto, --last-song;
+				animation-range:
+					normal,
+					contain 26% contain 44%;
+			}
+
+			// Two beams from the rig, swinging across the stage.
+			.thank-you-editorial::after {
+				background:
+					conic-gradient(
+						from calc(148deg + var(--last-song-beam)) at 10% -8%,
+						transparent 0deg,
+						rgb(var(--last-song-glow) / 30%) 8deg,
+						transparent 17deg 360deg
+					),
+					conic-gradient(
+						from calc(195deg - var(--last-song-beam)) at 90% -8%,
+						transparent 0deg,
+						rgb(255 255 255 / 15%) 8deg,
+						transparent 17deg 360deg
+					);
+				animation:
+					last-song-beam-swing 6s ease-in-out infinite alternate,
+					last-song-lights-on linear both;
+				animation-timeline: auto, --last-song;
+				animation-range:
+					normal,
+					contain 26% contain 44%;
+			}
+
+			[data-reveal-role='media'] {
+				animation:
+					last-song-record-roll linear both,
+					last-song-record-glow linear both;
+				animation-timeline: --last-song, --last-song;
+				animation-range:
+					entry 45% contain 10%,
+					contain 26% contain 44%;
+
+				&[data-reveal-pending] {
+					opacity: 100%;
+					clip-path: none;
+				}
+			}
+
+			[data-reveal-role='media']::before {
+				animation: last-song-arm-drop linear both;
+				animation-timeline: --last-song;
+				animation-range: contain 10% contain 28%;
+			}
+
+			// Sound rings leave the rim once the needle is down.
+			[data-reveal-role='media']::after {
+				position: absolute;
+				inset: 0;
+				z-index: -1;
+				border: 1px solid rgb(var(--last-song-glow) / 85%);
+				border-radius: 50%;
+				box-shadow:
+					0 0 1.2rem rgb(var(--last-song-glow) / 50%),
+					0 0 0 0.7rem rgb(var(--last-song-glow) / 10%);
+				animation:
+					last-song-sound-ring 2.4s ease-out infinite,
+					last-song-playing linear both;
+				animation-timeline: auto, --last-song;
+				animation-range:
+					normal,
+					contain 27% contain 29%;
+				content: '';
+				pointer-events: none;
+			}
+
+			.thank-you-editorial__copy::before {
+				animation: last-song-copy-rise linear both;
+				animation-timeline: --last-song;
+				animation-range: contain 36% contain 48%;
+			}
+
+			[data-reveal-role='lede'] {
+				animation: last-song-copy-rise linear both;
+				animation-timeline: --last-song;
+				animation-range: contain 42% contain 58%;
+			}
+
+			.closing-name {
+				animation:
+					last-song-copy-rise linear both,
+					last-song-closing-neon linear both;
+				animation-timeline: --last-song, --last-song;
+				animation-range:
+					contain 54% contain 64%,
+					contain 62% contain 84%;
+			}
+
+			.closing-name .word {
+				opacity: 100%;
+				animation: none;
+			}
+		}
+	}
+}
+
+@property --last-song-beam {
+	syntax: '<angle>';
+	inherits: false;
+	initial-value: 0deg;
+}
+
+@keyframes last-song-record-roll {
+	from {
+		translate: -100vw 0;
+		rotate: -220deg;
+		animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
+	}
+
+	to {
+		translate: 0 0;
+		rotate: 0deg;
+	}
+}
+
+@keyframes last-song-record-glow {
+	from {
+		box-shadow:
+			0 0 0 0.3rem rgb(24 20 24),
+			0 0 0 0.38rem rgb(176 178 190 / 75%),
+			0 1.4rem 2.6rem rgb(0 0 0 / 60%),
+			0 0 1rem rgb(var(--last-song-glow) / 0%);
+	}
+
+	to {
+		box-shadow:
+			0 0 0 0.3rem rgb(24 20 24),
+			0 0 0 0.38rem rgb(176 178 190 / 75%),
+			0 1.4rem 2.6rem rgb(0 0 0 / 60%),
+			0 0 5.5rem rgb(var(--last-song-glow) / 62%);
+	}
+}
+
+@keyframes last-song-arm-drop {
+	0% {
+		opacity: 0%;
+		transform: rotate(-16deg);
+	}
+
+	25% {
+		opacity: 100%;
+		transform: rotate(-16deg);
+	}
+
+	100% {
+		opacity: 100%;
+		transform: rotate(13deg);
+	}
+}
+
+@keyframes last-song-lights-on {
+	from {
+		opacity: 0%;
+	}
+
+	to {
+		opacity: 100%;
+	}
+}
+
+@keyframes last-song-playing {
+	from {
+		visibility: hidden;
+	}
+
+	to {
+		visibility: visible;
+	}
+}
+
+@keyframes last-song-sound-ring {
+	from {
+		opacity: 80%;
+		scale: 1;
+	}
+
+	to {
+		opacity: 0%;
+		scale: 1.55;
+	}
+}
+
+@keyframes last-song-spots-drift {
+	to {
+		background-position:
+			11rem 8rem,
+			-4rem 11.5rem,
+			20rem -8rem;
+	}
+}
+
+@keyframes last-song-beam-swing {
+	from {
+		--last-song-beam: -12deg;
+	}
+
+	to {
+		--last-song-beam: 12deg;
+	}
+}
+
+@keyframes last-song-copy-rise {
+	from {
+		opacity: 0%;
+		translate: 0 1.5rem;
+	}
+
+	to {
+		opacity: 100%;
+		translate: 0 0;
+	}
+}
+
+@keyframes last-song-record-drop {
+	from {
+		opacity: 0%;
+		translate: 0 1.5rem;
+		scale: 0.92;
+	}
+
+	to {
+		opacity: 100%;
+		translate: 0 0;
+		scale: 1;
+	}
+}
+
+@keyframes last-song-arm-cue {
+	from {
+		transform: rotate(-12deg);
+	}
+
+	to {
+		transform: rotate(13deg);
+	}
+}
+
+// The reply card is a ticket to the dance floor: a sequin edge with a glint that runs around it,
+// the invitation in the marquee script, and a perforated stub (notched sides, dashed tear line)
+// holding the note about the personal pass. Reduced motion keeps the edge without the glint.

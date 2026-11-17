@@ -26,7 +26,15 @@ const COMMERCIAL_DEMO_SHOWROOM_PATHS = new Set([
 	'/demos/bautizo',
 	'/demos/cumpleanos',
 ]);
-const EVENT_TYPES = new Set(['xv', 'boda', 'bautizo', 'cumple', 'baby-shower', 'primera-comunion']);
+const EVENT_TYPES = new Set([
+	'xv',
+	'boda',
+	'bautizo',
+	'cumple',
+	'baby-shower',
+	'primera-comunion',
+	'graduacion',
+]);
 
 function normalizePath(input: string | URL): {
 	pathname: string;

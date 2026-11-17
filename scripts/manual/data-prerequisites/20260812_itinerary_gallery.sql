@@ -1,4 +1,7 @@
--- Read-only verification of 20260812_p0_itinerary_gallery_structural_contracts.sql.
+-- Read-only verification of the itinerary and gallery variants that
+-- 20260812_p0_itinerary_gallery_structural_contracts.sql set. A row that still carries the
+-- non-schema itinerary.presentation key fails: the strict itinerary schema rejects it, and
+-- 20261112_itinerary_presentation_removal.sql removes it.
 -- Missing/ambiguous published targets fail; drafts are checked when present, as in the patch.
 -- It also checks the content shape every reader assumes (invitation.service.ts and
 -- invitation-access.repository.ts read content->rsvp, content->eventTiming and
@@ -36,7 +39,7 @@ WITH expected(slug, needs_gallery) AS (
     count(*) AS checked_rows,
     count(*) FILTER (WHERE
       content#>>'{itinerary,variant}' IS DISTINCT FROM 'timeline-paper'
-      OR content#>>'{itinerary,presentation,behavior}' IS DISTINCT FROM 'timeline-paper'
+      OR content->'itinerary' ? 'presentation'
       OR (needs_gallery AND content#>>'{gallery,variant}' IS DISTINCT FROM 'index-choreography')
     ) AS mismatched_rows
   FROM content_rows

@@ -1,0 +1,77 @@
+/* Dress-code section — the opt-in standalone home of location.indications.
+ *
+ * Base layout only; every visual value is a public `--dress-code-*` token so presets and
+ * profiles skin it without layout overrides.
+ */
+
+.dress-code {
+	--dress-code-bg: transparent;
+	--dress-code-color: var(--color-text-primary);
+	--dress-code-muted: var(--color-text-secondary, var(--color-text-primary));
+	--dress-code-accent: var(--color-action-accent);
+	--dress-code-heading-font: var(--font-display);
+	--dress-code-heading-size: clamp(2.25rem, 9vw, 3.25rem);
+	--dress-code-title-font: var(--font-body);
+	--dress-code-title-size: 0.85rem;
+	--dress-code-text-size: clamp(1rem, 3.8vw, 1.15rem);
+	--dress-code-gap: 1.75rem;
+
+	display: grid;
+	place-items: center;
+	min-height: 100svh;
+	padding: clamp(3rem, 10vh, 6rem) 1.5rem;
+	background: var(--dress-code-bg);
+	color: var(--dress-code-color);
+	text-align: center;
+}
+
+.dress-code__container {
+	display: grid;
+	gap: var(--dress-code-gap);
+	width: min(100%, 32rem);
+}
+
+.dress-code__heading {
+	margin: 0;
+	font-family: var(--dress-code-heading-font);
+	font-size: var(--dress-code-heading-size);
+	font-weight: 400;
+	line-height: 1.1;
+	color: var(--dress-code-accent);
+}
+
+.dress-code__items {
+	display: grid;
+	gap: var(--dress-code-gap);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.dress-code__item {
+	display: grid;
+	justify-items: center;
+	gap: 0.5rem;
+}
+
+.dress-code__icon {
+	display: inline-flex;
+	color: var(--dress-code-accent);
+}
+
+.dress-code__title {
+	margin: 0;
+	font-family: var(--dress-code-title-font);
+	font-size: var(--dress-code-title-size);
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--dress-code-accent);
+}
+
+.dress-code__text {
+	margin: 0;
+	max-width: 26rem;
+	font-size: var(--dress-code-text-size);
+	line-height: 1.6;
+	color: var(--dress-code-muted);
+}

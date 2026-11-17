@@ -60,6 +60,7 @@ function validateNarrativeStack(
 const MIN_THREE_ITEM_VARIANTS: ReadonlySet<string> = new Set([
 	'mirrored-mosaic',
 	'feature-stack',
+	'rising-stack',
 	'pinned-track',
 ]);
 
@@ -164,6 +165,15 @@ export const gallerySchema = z
 				code: 'custom',
 				path: ['items'],
 				message: 'gallery.variant=single-keepsake requires exactly one gallery item',
+			});
+		}
+
+		// Two film strips of four prints each.
+		if (gallery.variant === 'photo-booth' && gallery.items.length !== 8) {
+			context.addIssue({
+				code: 'custom',
+				path: ['items'],
+				message: 'gallery.variant=photo-booth requires exactly eight gallery items',
 			});
 		}
 

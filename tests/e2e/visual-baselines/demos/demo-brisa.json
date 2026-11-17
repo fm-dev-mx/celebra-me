@@ -10,7 +10,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/demo-boda-demo-brisa-mobile.png",
-            "sha256": "18bb173b9f98fa5a0cc364e04355029180953905b8529017386180435e918d51",
+            "sha256": "a75ccd5203fce26a9ae375154b770ff3d2fc1930e055d7dff5ba6b24e108e0f4",
             "contentHash": "9bc76dfa55251e31bdba4b5f4f4f26c9d57beb3771cb2977cbe28e313c86f93f",
             "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
             "comparisonResult": "ACCEPTED"
@@ -36,7 +36,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/demo-boda-demo-brisa-mobile.png",
-            "sha256": "18bb173b9f98fa5a0cc364e04355029180953905b8529017386180435e918d51",
+            "sha256": "a75ccd5203fce26a9ae375154b770ff3d2fc1930e055d7dff5ba6b24e108e0f4",
             "contentHash": "9bc76dfa55251e31bdba4b5f4f4f26c9d57beb3771cb2977cbe28e313c86f93f",
             "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
             "comparisonResult": "CANDIDATE"

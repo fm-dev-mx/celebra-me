@@ -43,12 +43,12 @@ describe('Authentication Validation Logic (Spanish UI)', () => {
 
 		test('should return Spanish error for invalid login identifier', () => {
 			const result = validateLoginForm({ ...baseInput, email: 'in valid' });
-			expect(result).toBe('Escribe un correo o usuario valido para continuar.');
+			expect(result).toBe('Escriba un correo o usuario válido para continuar.');
 		});
 
 		test('should return Spanish error for missing password', () => {
 			const result = validateLoginForm({ ...baseInput, password: '' });
-			expect(result).toBe('Ingresa tu contrasena para continuar con este metodo.');
+			expect(result).toBe('Ingrese su contraseña para continuar.');
 		});
 	});
 });

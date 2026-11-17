@@ -20,10 +20,14 @@ implementing these skills is never a live-release invocation.
   operation. **Worker first, content second:** publish content only after the Production Worker that
   can resolve it is activated and verified
   (`pnpm ops:release-status -- --sha <main-sha> --target production --wait` reports `VERIFIED`).
-  Content written earlier makes the serving Worker reject it and fails `/api/health/invitations`.
-  `prod:apply` enforces this for invitation content and owner patches before any backup, prompt or
-  write: it refuses unless the `build.commitSha` reported by `/api/health` on the Production alias
-  equals or contains the commit it publishes from.
+  Content written earlier makes the serving Worker reject it and fails `/api/health/invitations`. So
+  the Worker smoke runs before that content exists: while `/api/health/invitations` reports zero
+  failing invitations, a catalog invitation answering 404 is reported as pending content (Job
+  Summary and `POST_DEPLOY_PENDING_CONTENT`), not a failure; it is the list to publish next. A 404
+  without that proof, or on a demo, still fails the smoke. `prod:apply` enforces this for invitation
+  content and owner patches before any backup, prompt or write: it refuses unless the
+  `build.commitSha` reported by `/api/health` on the Production alias equals or contains the commit
+  it publishes from.
 - **Owner-only.** Running `deploy-production.yml`, activating the Production Worker version and
   `prod:apply --apply` are the owner's steps, in that order. Agents prepare the release and hand the
   owner the exact commands with their verification and rollback; they never run them. Read-only
@@ -31,8 +35,10 @@ implementing these skills is never a live-release invocation.
 - **Daily window = one command.** The owner runs `pnpm prod:window`
   (`scripts/ops/production-daily-window.ps1`): upload, activation, health and smoke checks, then
   `pnpm prod:apply -- --schema --all-ready`. It skips none of the deploy's or `prod:apply`'s
-  interactive confirmations. This is the single place the window is defined; other docs and skills
-  point here instead of listing the steps.
+  interactive confirmations. Before activating, it checks that the upload run (new, or resumed with
+  `-UploadRunId`) is a successful `step=upload` dispatch of `deploy-production.yml` on `main` for
+  the captured `main` SHA, and takes the Worker version only from that run's upload job. This is the
+  single place the window is defined; other docs and skills point here instead of listing the steps.
 - `Post-deploy Smoke` validates the correlated deployment, SHA, approved host and critical HTTP
   behavior. The scheduled/manual `Production Image Audit` separately reports published-media drift
   and never determines deployment health.

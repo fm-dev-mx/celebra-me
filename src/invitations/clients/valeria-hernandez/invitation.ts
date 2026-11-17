@@ -6,9 +6,16 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
  * night: cherry paper and wine ink by day, a deep wine night for the countdown and the closing,
  * with a mirror ball, fine stars and a cherry pair as the only motifs. The photographs are the
  * client's WhatsApp deliveries, cropped per role and never upscaled. Every guest-facing line is a
- * draft for the client's approval; the program, menu, song file, reply deadline and photo-QR
- * space are pending and stay out of the page until the client confirms them.
+ * draft for the client's approval, except the program, the snacks note and the envelope gift,
+ * which the client confirmed. The song is the client's YouTube pick, encoded at 64 kbps and hosted
+ * on the media domain. The client set the reply deadline (21 December) and the envelope phrase on
+ * 2026-11-14. The client paid the photo-QR memories add-on on 2026-11-14, so the memories card and
+ * the memories-sourced thank-you are on. Publication blocks on a `memories.publicSlug` without a
+ * space, so each environment needs its `valeria-hernandez` memory space before release.
  */
+// On since the QR add-on payment was confirmed; set back to false only if the add-on is withdrawn.
+const MEMORIES_PAID = true;
+
 const VALERIA_TIMING = {
 	localDateTime: '2027-01-09T17:45',
 	timeZone: 'America/Mexico_City',
@@ -29,22 +36,31 @@ const content: CanonicalEventContentInput = {
 		'quote',
 		'countdown',
 		'location',
+		'itinerary',
 		'family',
 		'gallery',
+		'gifts',
 		'personalizedAccess',
 		'rsvp',
+		...(MEMORIES_PAID ? (['memories'] as const) : []),
 		'thankYou',
 	],
 	composition: {
 		intersections: {
-			// Two joins: the night rises out of the quote, and the closing rises into the reply card.
+			// Every boundary is joined, each a different way: the night rises out of the quote, the
+			// route opens in a glow, the family page and the pass turn a corner on opposite sides,
+			// the album climbs a slope, and the closing rises into the reply card.
 			countdown: { family: 'overlap', source: 'quote' },
-			thankYou: { family: 'arch', source: 'rsvp' },
+			location: { family: 'atmospheric-blend', source: 'countdown' },
+			family: { family: 'folio', source: 'itinerary' },
+			gallery: { family: 'arch', source: 'family' },
+			'personalized-access': { family: 'folio', source: 'gifts' },
+			thankYou: { family: 'arch', source: MEMORIES_PAID ? 'memories' : 'rsvp' },
 		},
 	},
 	hero: {
 		// The close portrait stands in an arch over the name.
-		variant: 'framed-portrait',
+		variant: 'disco-stage',
 		name: CELEBRANT_NAME,
 		label: 'Mis XV Años',
 		// Hero formats its display date in UTC; eventTiming owns the real instant.
@@ -54,12 +70,18 @@ const content: CanonicalEventContentInput = {
 		focalPointMobile: '50% 35%',
 		presentation: { venueIndex: 0 },
 		scrollLabel: 'Deslice para descubrir',
+		// The same disco room as the opening clip, looping without the ball the hero draws itself.
+		ambientVideo: {
+			webm: '/videos/valeria-hernandez/hero-loop.webm',
+			mp4: '/videos/valeria-hernandez/hero-loop.mp4',
+			poster: '/videos/valeria-hernandez/hero-loop-poster.webp',
+		},
 	},
 	envelope: {
 		disabled: false,
 		variant: 'storybook-blush',
 		// The night envelope opens the cherry disco night; the profile recolors it to wine and silver.
-		revealVariant: 'night-envelope',
+		revealVariant: 'disco-night',
 		sealStyle: 'wax',
 		sealIcon: 'wax-monogram',
 		sealInitials: 'V',
@@ -68,9 +90,16 @@ const content: CanonicalEventContentInput = {
 		cardLabel: 'Mis XV Años',
 		guestLabel: 'Para',
 		microcopy: 'Abra su invitación',
+		// The rendered disco room plays behind the live letter as it opens.
+		openingVideo: {
+			webm: '/videos/valeria-hernandez/opening.webm',
+			mp4: '/videos/valeria-hernandez/opening.mp4',
+			poster: '/videos/valeria-hernandez/poster.webp',
+		},
 	},
 	quote: {
-		text: 'Quince años, una noche y una pista llena de luces.',
+		variant: 'neon-sign',
+		text: 'Quince años,\nuna noche\ny una pista llena de luces.',
 		closingLine: 'Me haría muy feliz que usted estuviera ahí.',
 	},
 	family: {
@@ -85,14 +114,14 @@ const content: CanonicalEventContentInput = {
 		godparents: [{ name: 'Rolando Flores Espinoza' }, { name: 'Cristina Canela Gómez' }],
 		labels: {
 			sectionTitle: 'Mi familia',
-			sectionSubtitle: '',
+			sectionSubtitle: 'Esta noche se presentan',
 			parentsTitle: 'Mis padres',
 			godparentsTitle: 'Mis padrinos',
 			sectionMessage: 'Gracias por acompañarme en cada paso hasta esta noche.',
 		},
 	},
 	countdown: {
-		variant: 'standard',
+		variant: 'mirror-ball',
 		title: 'Faltan',
 		footerText: 'para mi noche disco',
 		presentationOptions: { visibleUnits: ['days', 'hours', 'minutes', 'seconds'] },
@@ -104,16 +133,25 @@ const content: CanonicalEventContentInput = {
 		presentationOptions: {
 			showCalendarLinks: true,
 			indicationsLayout: 'enclosure',
+			// The mass and the party are club passes that stack over a dance-floor night.
+			scene: 'mirror-ball-route',
 		},
 		introHeading: 'Dos lugares, una noche',
 		introLede:
 			'A las 5:45 p. m. daré gracias en misa; a las 7:30 p. m. le espero en Las Barricas para celebrar.',
 		indicationsHeading: 'Cherry disco',
+		indicationsReference: {
+			image: 'dressCodeReference',
+			label: 'Ver inspiración',
+			alt: 'Ideas de vestimenta glam disco: vestidos y trajes con lentejuelas, satín y brillos en negro, plata y dorado',
+			note: 'El color vino queda reservado para la quinceañera.',
+		},
 		indications: [
 			{
 				iconName: 'DressCode',
 				styleVariant: 'default',
-				text: 'Lentejuelas en negro, plata, dorado o vino',
+				title: 'Código de vestimenta',
+				text: 'Glam disco: brillos y lentejuelas en negro, plata o dorado',
 			},
 			{
 				iconName: 'DressCode',
@@ -149,9 +187,87 @@ const content: CanonicalEventContentInput = {
 			},
 		],
 	},
+	itinerary: {
+		// Times, labels and order confirmed by the client; the night ends after midnight, on
+		// January 10. The snacks note is hers too.
+		variant: 'standard',
+		title: 'Así será mi noche',
+		subtitle: 'Nueve momentos para brillar juntos.',
+		items: [
+			{
+				time: '17:45',
+				iconName: 'Church',
+				label: 'Ceremonia',
+				description: 'Comenzamos dando gracias.',
+			},
+			{
+				time: '19:30',
+				iconName: 'Reception',
+				label: 'Recepción',
+				description: 'Se abren las puertas del salón.',
+			},
+			{
+				time: '20:00',
+				iconName: 'Crown',
+				label: 'Entrada XV',
+				description: 'Luces, música… y mi gran entrada.',
+			},
+			{
+				time: '20:30',
+				iconName: 'Taco',
+				label: 'Snacks',
+				description: 'Habrá snacks; no se servirá cena.',
+			},
+			{
+				time: '21:30',
+				iconName: 'Toast',
+				label: 'Brindis',
+				description: 'Copas en alto por mis quince.',
+			},
+			{
+				time: '22:00',
+				iconName: 'Waltz',
+				label: 'Vals familiar',
+				description: 'Un baile con quienes más quiero.',
+			},
+			{
+				time: '00:00',
+				iconName: 'Cake',
+				label: 'Pastel',
+				description: 'Algo dulce a la medianoche.',
+			},
+			{
+				time: '00:10',
+				iconName: 'Sparkles',
+				label: 'Sorpresa',
+				description: 'No se la pierda.',
+			},
+			{
+				time: '02:00',
+				iconName: 'Party',
+				label: 'Fin del evento',
+				description: 'Gracias por brillar conmigo.',
+			},
+		],
+		closingNote: 'Llegue puntual: la noche no espera.',
+	},
+	gifts: {
+		// The client asked for envelopes only, in her own words, with a mailbox at the reception.
+		variant: 'gift-tag',
+		title: 'Regalos',
+		presentation: 'catalog',
+		subtitle: 'Su presencia es mi mejor regalo.',
+		items: [
+			{
+				type: 'cash',
+				title: 'Lluvia de sobres',
+				text: 'Prefiero construir recuerdos que abrir cajas… Gracias por su cariño en sobre. Habrá un buzón durante la recepción.',
+			},
+		],
+	},
 	gallery: {
-		// An album page that assembles itself: from the baby photographs to the night of fifteen.
-		variant: 'album-assemble',
+		// Two film strips of four prints that run through a pinned photo-booth window.
+		variant: 'photo-booth',
 		eyebrow: '',
 		title: 'De niña a mis quince',
 		items: [
@@ -201,8 +317,8 @@ const content: CanonicalEventContentInput = {
 		// Pass and confirmation read as one printed reply card; seats are fixed per guest.
 		variant: 'reply-card',
 		title: '¿Me acompaña?',
-		// No deadline was given by the client, so the line asks for an early reply without a date.
-		subcopy: 'Le agradeceré confirmar su asistencia con tiempo.',
+		// Client-set: replies close on 21 December; the canonical RSVP block has no deadline field.
+		subcopy: 'Le agradeceré confirmar su asistencia a más tardar el 21 de diciembre.',
 		lockedMessage:
 			'Cada pase de esta noche lleva un nombre. Abra el enlace que le envié para ver el suyo.',
 		// Technical fallback only; every real pass carries the seats set per guest.
@@ -236,10 +352,29 @@ const content: CanonicalEventContentInput = {
 			},
 		},
 	},
+	...(MEMORIES_PAID
+		? {
+				memories: {
+					// Same card as Andrea's QR add-on; first person, like the rest.
+					variant: 'card',
+					publicSlug: 'valeria-hernandez',
+					title: 'Comparta sus fotos de mi noche',
+					description:
+						'Ayúdeme a guardar cada momento. Suba aquí sus fotos y videos; solo mi familia y usted podrán verlos.',
+					actionLabel: 'Subir fotos y videos',
+				},
+			}
+		: {}),
 	thankYou: {
 		// A smiling night photograph closes the page the way the party ends.
-		variant: 'portrait-keepsake',
+		variant: 'last-song',
 		image: 'thankYouPortrait',
+		// The last song: the hero's disco room plays its lights over the closing portrait.
+		ambientVideo: {
+			webm: '/videos/valeria-hernandez/hero-loop.webm',
+			mp4: '/videos/valeria-hernandez/hero-loop.mp4',
+			poster: '/videos/valeria-hernandez/hero-loop-poster.webp',
+		},
 		focalPoint: '50% 35%',
 		message: 'Gracias por ser parte de mis quince años. Le espero el 9 de enero.',
 		closingName: CELEBRANT_NAME,
@@ -251,6 +386,12 @@ const content: CanonicalEventContentInput = {
 		{ label: 'Galería', href: '#galeria' },
 		{ label: 'Confirmar', href: '#rsvp' },
 	],
+	music: {
+		url: 'https://media.celebra-me.com/invitations/xv/valeria-hernandez/music-a3568da6f8a9ced712575065bf378bf6c3ca223bc365aca31c84e4dbaec38d09.mp3',
+		title: 'Someone to Love (Piano Version) — Freya Skye',
+		control: 'equalizer',
+		autoPlay: true,
+	},
 	sharing: {
 		ogImage: 'ogShare',
 		ogDescription: `Sábado ${EVENT_DATE_LABEL} · Puebla, Puebla. Misa a las 5:45 p. m. y recepción a las 7:30 p. m.`,
@@ -283,6 +424,7 @@ export default defineCanonicalInvitation({
 	assetFiles: {
 		hero: 'hero.webp',
 		thankYouPortrait: 'thank-you.webp',
+		dressCodeReference: 'dress-code-reference.webp',
 		gallery01: 'gallery-01.webp',
 		gallery02: 'gallery-02.webp',
 		gallery03: 'gallery-03.webp',

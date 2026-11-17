@@ -10,6 +10,7 @@ const KNOWN_BASE_STYLE_FALLBACKS = [
 	"personalizedAccess: Contract variant 'standard' intentionally uses base section styles",
 	"thankYou: Contract variant 'standard' intentionally uses base section styles",
 	"countdown: Contract variant 'standard' intentionally uses base section styles",
+	"quote: Contract variant 'standard' intentionally uses base section styles",
 ];
 
 describe('validate-schema script', () => {

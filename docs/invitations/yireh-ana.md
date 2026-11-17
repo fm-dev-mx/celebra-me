@@ -144,6 +144,15 @@ None. Cover v4 and the oak seal were dropped by the owner on 2026-10-30.
     script, blessing line in serif; RSVP in first person
   - **basis:** client round 1 (owner-approved)
   - **status:** applied (2026-11-04)
+- **topic:** round3
+  - **recommendation:** Cover shows the date and the reception venue in one screen (supersedes the
+    round 1 «no date/venue» cover); envelope with the cover's floral corners, ribbons kept in view
+    and an inner card that reads «Para {invitado}» and the date; location headed by the date, with
+    an outlined «Ver mapa» and plum script titles; bow on the quote; framed gifts card; footer
+    always shown with a forward-looking thank-you and a date and place closing phrase; neutral RSVP
+    step titles for single-seat passes
+  - **basis:** critical review 2026-11-12 (round 3 proposal); footer copy is a draft
+  - **status:** applied (2026-11-12); footer copy pending client approval
 - **topic:** family
   - **recommendation:** Reference 181 layout on plain paper, no card: blessing line, Mamá (script)
     and her name in serif caps, «y de mi», Hermano and his name; the letter to Mamá closes the

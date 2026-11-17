@@ -53,6 +53,7 @@ interface Props {
 	variant: HeroVariant;
 	scrollLabel?: string;
 	scrollCue?: 'chevron' | 'constellation';
+	ambientVideo?: { webm: string; mp4?: string; poster: string };
 	tagline?: string;
 	photoCredit?: string;
 	focalPoint?: string;
@@ -90,7 +91,10 @@ const {
 
 const isEditorialCover = variant === 'editorial-cover';
 const isFramedPortrait =
-	variant === 'framed-portrait' || variant === 'bleed-portrait' || variant === 'cased-portrait';
+	variant === 'framed-portrait' ||
+	variant === 'bleed-portrait' ||
+	variant === 'cased-portrait' ||
+	variant === 'disco-stage';
 const isCeremonialPortrait = variant === 'ceremonial-portrait';
 const isNightArch = variant === 'night-arch';
 // The cover-approach scene pins the standard cover while its picture closes in.
@@ -196,7 +200,7 @@ if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
 	isCeremonialPortrait ? (
 	<CeremonialPortraitHero {...Astro.props} />
 	) : isFramedPortrait ? (
-	<FramedPortraitHero {...Astro.props} variant={variant === 'bleed-portrait' || variant === 'cased-portrait' ? variant : 'framed-portrait'} />
+	<FramedPortraitHero {...Astro.props} variant={variant === 'bleed-portrait' || variant === 'cased-portrait' || variant === 'disco-stage' ? variant : 'framed-portrait'} />
 	) : isEditorialCover ? (
 	<EditorialCoverHero
 		{...Astro.props}

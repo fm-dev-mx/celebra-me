@@ -2,16 +2,16 @@ import { findMexicanCity } from '@/lib/commercial/mexican-cities';
 import { normalizeCommercialPhone } from '@/lib/commercial/phone';
 
 /** Friend discount rate when ordering through a customer referral link (?ref=CODE). */
-export const REFERRAL_FRIEND_DISCOUNT_RATE = 0.1;
+const REFERRAL_FRIEND_DISCOUNT_RATE = 0.1;
 
 /** Friend discount percentage (10%). */
-export const REFERRAL_FRIEND_DISCOUNT_PERCENT = 10;
+const REFERRAL_FRIEND_DISCOUNT_PERCENT = 10;
 
 /** Credit in MXN awarded to the referring customer for each confirmed/paid referred order. */
-export const REFERRAL_REWARD_MXN = 200;
+const REFERRAL_REWARD_MXN = 200;
 
 /** Canonical customer referral code pattern (e.g. ANA24, CLB1001). */
-export const REFERRAL_CODE_PATTERN = /^[A-Z0-9]{4,16}$/;
+const REFERRAL_CODE_PATTERN = /^[A-Z0-9]{4,16}$/;
 
 /** Default public origin used when building customer referral links. */
 const DEFAULT_PUBLIC_ORIGIN = 'https://www.celebra-me.com';
@@ -49,30 +49,6 @@ export function readReferralCodeFromUrl(url: string): string | undefined {
 	} catch {
 		return undefined;
 	}
-}
-
-/**
- * Strips accents and non-ASCII letters to produce a short uppercase prefix for a referral code.
- */
-export function extractReferralPrefix(displayName: string): string {
-	const asciiLetters = displayName
-		.normalize('NFD')
-		.replace(/[\u0300-\u036f]/g, '')
-		.toUpperCase()
-		.replace(/[^A-Z]/g, '');
-	return asciiLetters.length >= 3 ? asciiLetters.slice(0, 4) : 'CLB';
-}
-
-/**
- * Generates a human-friendly referral code candidate such as `ANA24`.
- */
-export function generateReferralCodeCandidate(displayName: string, digitsSuffix?: string): string {
-	const prefix = extractReferralPrefix(displayName);
-	const suffix =
-		digitsSuffix && /^\d{2,4}$/.test(digitsSuffix)
-			? digitsSuffix
-			: String(Math.floor(Math.random() * 90) + 10);
-	return `${prefix}${suffix}`;
 }
 
 /**
@@ -147,7 +123,7 @@ export function buildPastClientReferralWhatsAppMessage(input: {
  * Splits a full customer display name into first name (`fn`) and last name (`ln`) for Meta's
  * Customer List CSV format.
  */
-export function splitCustomerNameForMetaCsv(displayName: string): {
+function splitCustomerNameForMetaCsv(displayName: string): {
 	firstName: string;
 	lastName: string;
 } {

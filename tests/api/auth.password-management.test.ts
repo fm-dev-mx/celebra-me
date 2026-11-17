@@ -127,9 +127,9 @@ describe('Password Management & Recovery', () => {
 	});
 
 	describe('1. Temporary Password Generator Contract', () => {
-		it('generates 12+ character CSPRNG temporary passwords', () => {
+		it('generates memorable word-based CSPRNG temporary passwords', () => {
 			const passwords = new Set<string>();
-			const pattern = /^[A-HJ-NP-Za-km-z2-9]{5}(-[A-HJ-NP-Za-km-z2-9]{5}){2}$/;
+			const pattern = /^([A-Z][a-z]+-){3}\d{3}$/;
 
 			for (let i = 0; i < 20; i += 1) {
 				const password = generateTemporaryPassword();
@@ -177,7 +177,7 @@ describe('Password Management & Recovery', () => {
 			const body = await response.json();
 			expect(body.userId).toBe('550e8400-e29b-41d4-a716-446655440000');
 			expect(body.credentials.temporaryPassword).toBeDefined();
-			expect(body.credentials.temporaryPassword).toMatch(/^[A-Za-z2-9-]{17}$/);
+			expect(body.credentials.temporaryPassword).toMatch(/^([A-Z][a-z]+-){3}\d{3}$/);
 			expect(adminResetAuthUserPasswordMock).toHaveBeenCalledWith(
 				expect.objectContaining({
 					userId: '550e8400-e29b-41d4-a716-446655440000',
@@ -265,7 +265,7 @@ describe('Password Management & Recovery', () => {
 					accessToken: 'current-token',
 					role: 'host_client',
 					isSuperAdmin: false,
-					mustChangePassword: true,
+					mustChangePassword: false,
 				});
 
 				signInWithPasswordMock
@@ -357,7 +357,7 @@ describe('Password Management & Recovery', () => {
 				accessToken: 'current-token',
 				role: 'host_client',
 				isSuperAdmin: false,
-				mustChangePassword: true,
+				mustChangePassword: false,
 			});
 
 			signInWithPasswordMock.mockRejectedValue(
@@ -446,7 +446,7 @@ describe('Password Management & Recovery', () => {
 				accessToken: 'current-token',
 				role: 'host_client',
 				isSuperAdmin: false,
-				mustChangePassword: true,
+				mustChangePassword: false,
 			});
 
 			signInWithPasswordMock.mockResolvedValue({
@@ -500,7 +500,7 @@ describe('Password Management & Recovery', () => {
 				accessToken: 'current-token',
 				role: 'host_client',
 				isSuperAdmin: false,
-				mustChangePassword: true,
+				mustChangePassword: false,
 			});
 
 			signInWithPasswordMock.mockRejectedValue(
@@ -532,7 +532,7 @@ describe('Password Management & Recovery', () => {
 				accessToken: 'current-token',
 				role: 'host_client',
 				isSuperAdmin: false,
-				mustChangePassword: true,
+				mustChangePassword: false,
 			});
 			signInWithPasswordMock.mockRejectedValue(
 				new AuthRequestError({ kind: 'timeout', operation: 'password_sign_in' }),
@@ -553,6 +553,135 @@ describe('Password Management & Recovery', () => {
 
 			expect(response.status).toBe(503);
 			expect(response.headers.get('Retry-After')).toBe('5');
+			expect(updateUserPasswordUserAuthMock).not.toHaveBeenCalled();
+			expect(adminSetUserMustChangePasswordMock).not.toHaveBeenCalled();
+		});
+
+		const callChange = (body: Record<string, string>) =>
+			changePassword({
+				request: createMockRequest(
+					body,
+					{ Origin: 'http://localhost:4321', Host: 'localhost:4321' },
+					'http://localhost:4321/api/auth/change-password',
+				),
+				url: new URL('http://localhost:4321/api/auth/change-password'),
+			} as never);
+
+		it('skips current-password verification for the forced first change', async () => {
+			requireSessionContextMock.mockResolvedValue({
+				userId: 'user-123',
+				email: 'client@example.com',
+				accessToken: 'current-token',
+				role: 'host_client',
+				isSuperAdmin: false,
+				mustChangePassword: true,
+			});
+			signInWithPasswordMock.mockResolvedValueOnce({
+				access_token: 'fresh-new-token',
+				refresh_token: 'fresh-refresh-token',
+				user: { id: 'user-123', email: 'client@example.com' },
+			});
+			updateUserPasswordUserAuthMock.mockResolvedValue({ id: 'user-123' });
+			adminSetUserMustChangePasswordMock.mockResolvedValue({ id: 'user-123' });
+
+			const response = await callChange({
+				newPassword: 'NewSecurePassword2026!',
+				confirmPassword: 'NewSecurePassword2026!',
+			});
+
+			expect(response.status).toBe(200);
+			expect(signInWithPasswordMock).toHaveBeenCalledTimes(1);
+			expect(signInWithPasswordMock).toHaveBeenCalledWith({
+				email: 'client@example.com',
+				password: 'NewSecurePassword2026!',
+			});
+			expect(updateUserPasswordUserAuthMock).toHaveBeenCalledWith({
+				accessToken: 'current-token',
+				password: 'NewSecurePassword2026!',
+			});
+			expect(adminSetUserMustChangePasswordMock).toHaveBeenCalledWith({
+				userId: 'user-123',
+				mustChangePassword: false,
+			});
+		});
+
+		const mustChangeSession = {
+			userId: 'user-123',
+			email: 'client@example.com',
+			accessToken: 'current-token',
+			role: 'host_client' as const,
+			isSuperAdmin: false,
+			mustChangePassword: true,
+		};
+
+		it.each([
+			[
+				'a new password shorter than 8 characters',
+				{ newPassword: 'corta', confirmPassword: 'corta' },
+			],
+			[
+				'a confirmation that does not match',
+				{ newPassword: 'NewSecurePassword2026!', confirmPassword: 'OtherPassword2026!' },
+			],
+		])('rejects the forced first change with %s', async (_case, body) => {
+			requireSessionContextMock.mockResolvedValue(mustChangeSession);
+
+			const response = await callChange(body);
+
+			expect(response.status).toBe(400);
+			expect(signInWithPasswordMock).not.toHaveBeenCalled();
+			expect(updateUserPasswordUserAuthMock).not.toHaveBeenCalled();
+			expect(adminSetUserMustChangePasswordMock).not.toHaveBeenCalled();
+		});
+
+		it('rejects the forced first change once the temporary password expired', async () => {
+			requireSessionContextMock.mockResolvedValue({
+				...mustChangeSession,
+				temporaryPasswordExpired: true,
+			});
+
+			const response = await callChange({
+				newPassword: 'NewSecurePassword2026!',
+				confirmPassword: 'NewSecurePassword2026!',
+			});
+
+			expect(response.status).toBe(401);
+			expect(signInWithPasswordMock).not.toHaveBeenCalled();
+			expect(updateUserPasswordUserAuthMock).not.toHaveBeenCalled();
+		});
+
+		it('fails closed on the forced first change when must_change_password cleanup fails', async () => {
+			requireSessionContextMock.mockResolvedValue(mustChangeSession);
+			updateUserPasswordUserAuthMock.mockResolvedValue({ id: 'user-123' });
+			adminSetUserMustChangePasswordMock.mockRejectedValue(new Error('metadata down'));
+
+			const response = await callChange({
+				newPassword: 'NewSecurePassword2026!',
+				confirmPassword: 'NewSecurePassword2026!',
+			});
+
+			expect(response.status).toBe(500);
+			expect(signInWithPasswordMock).not.toHaveBeenCalled();
+			expect(response.headers.get('set-cookie')).toBeNull();
+		});
+
+		it('requires the current password for a regular change', async () => {
+			requireSessionContextMock.mockResolvedValue({
+				userId: 'user-123',
+				email: 'client@example.com',
+				accessToken: 'current-token',
+				role: 'host_client',
+				isSuperAdmin: false,
+				mustChangePassword: false,
+			});
+
+			const response = await callChange({
+				newPassword: 'NewSecurePassword2026!',
+				confirmPassword: 'NewSecurePassword2026!',
+			});
+
+			expect(response.status).toBe(400);
+			expect(signInWithPasswordMock).not.toHaveBeenCalled();
 			expect(updateUserPasswordUserAuthMock).not.toHaveBeenCalled();
 			expect(adminSetUserMustChangePasswordMock).not.toHaveBeenCalled();
 		});

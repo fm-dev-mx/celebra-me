@@ -78,6 +78,7 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 	data-track-label={trackLabel || undefined}
 	data-start-at={startSeconds > 0 ? String(startSeconds) : undefined}
 	data-fade-in-ms={fadeInMs !== undefined ? String(fadeInMs) : undefined}
+	data-visual-capture={isVisualCapture ? 'true' : undefined}
 >
 	{hasAudio ? (
 		<audio
@@ -228,7 +229,8 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 		};
 
 		// Equalizer: the control fades to a low opacity after a few seconds without interaction
-		// and comes back on scroll, touch, pointer movement, keyboard use or focus.
+		// and comes back on scroll, touch, pointer movement, keyboard use or focus. Visual captures
+		// keep it awake: a timed fade would change the page between two consecutive screenshots.
 		const IDLE_MS = 4000;
 		let idleTimer: number | undefined = undefined;
 		const wake = () => {
@@ -236,7 +238,7 @@ const bufferAfterPaint = shouldBufferMusicAfterPaint({
 			window.clearTimeout(idleTimer);
 			idleTimer = window.setTimeout(() => player.classList.add('is-idle'), IDLE_MS);
 		};
-		if (isEqualizer) {
+		if (isEqualizer && player.dataset.visualCapture !== 'true') {
 			for (const type of ['scroll', 'touchstart', 'pointermove', 'keydown'] as const) {
 				window.addEventListener(type, wake, { passive: true });
 			}

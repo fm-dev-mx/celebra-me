@@ -124,18 +124,26 @@ export interface SharingConfig {
 	shareMessages?: ShareMessagesConfig;
 	reminderSettings?: ReminderSettings | null;
 	eventDate?: string | null;
+	/** IANA zone the event date is written in (default America/Chihuahua). */
+	eventTimeZone?: string;
 	rsvpDeadline?: string | null;
 	ogDescription?: string;
 }
 
 /** Event-local date (YYYY-MM-DD) with the same precedence as events.event_date. */
-function extractEventDate(data: Record<string, unknown> | undefined): string | null {
-	if (!data) return null;
-	const hero = data.hero as Record<string, unknown> | undefined;
-	return resolveInvitationSchedule('client', {
-		eventTiming: data.eventTiming,
+function extractSchedule(data: Record<string, unknown> | undefined): {
+	eventDate: string | null;
+	eventTimeZone: string;
+} {
+	const hero = data?.hero as Record<string, unknown> | undefined;
+	const schedule = resolveInvitationSchedule('client', {
+		eventTiming: data?.eventTiming,
 		heroDate: hero?.date,
-	}).eventDate;
+	});
+	return {
+		eventDate: data ? schedule.eventDate : null,
+		eventTimeZone: schedule.eventTimeZone,
+	};
 }
 
 function extractRsvpDeadline(data: Record<string, unknown> | undefined): string | null {
@@ -213,7 +221,7 @@ export async function getSharingConfigForSlug(
 			const sharingResult = extractSharingFromContent(published.content);
 			if (sharingResult) Object.assign(result, sharingResult);
 
-			result.eventDate = extractEventDate(published.content);
+			Object.assign(result, extractSchedule(published.content));
 			result.rsvpDeadline = extractRsvpDeadline(published.content);
 			return result;
 		}
@@ -225,7 +233,7 @@ export async function getSharingConfigForSlug(
 		const sharingResult = extractSharingFromContent({ sharing: demoSharing });
 		if (sharingResult) Object.assign(result, sharingResult);
 
-		result.eventDate = extractEventDate(entry?.data);
+		Object.assign(result, extractSchedule(entry?.data));
 		result.rsvpDeadline = extractRsvpDeadline(entry?.data);
 		return result;
 	}

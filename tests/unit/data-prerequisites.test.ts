@@ -168,39 +168,53 @@ describe('committed data prerequisite manifest', () => {
 		expect(() => requireDataPrerequisites(JSON.stringify(parsed), 'preview')).not.toThrow();
 	});
 
-	it.each(['production', 'preview'])(
-		'blocks %s until role synchronization is verified',
-		(environment) => {
-			const parsed = parseDataPrerequisiteManifest(committedManifest);
-			expect(parsed.authAppMetadataKeys.role).toEqual({
-				prerequisite: 'auth-role-app-metadata',
-			});
-			expect(
-				parsed.prerequisites.find(({ id }) => id === 'auth-role-app-metadata')
-					?.environments[environment].status,
-			).toBe('pending');
-			expect(() => requireDataPrerequisites(committedManifest, environment)).toThrow(
-				/auth-role-app-metadata: .*`pnpm auth:check-role-app-metadata`/,
-			);
-		},
-	);
+	it('records the role synchronization as verified in production', () => {
+		const production = parseDataPrerequisiteManifest(committedManifest).prerequisites.find(
+			({ id }) => id === 'auth-role-app-metadata',
+		)?.environments.production;
+		expect(production?.status).toBe('verified');
+		expect(production?.verifiedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/u);
+		expect(production?.evidence).toContain('ok=true');
+	});
 
-	it.each(['production', 'preview'])(
-		'blocks %s until pending password audit is verified',
-		(environment) => {
-			const parsed = parseDataPrerequisiteManifest(committedManifest);
-			expect(parsed.authAppMetadataKeys.must_change_password).toEqual({
-				prerequisite: 'auth-must-change-password',
-			});
-			expect(
-				parsed.prerequisites.find(({ id }) => id === 'auth-must-change-password')
-					?.environments[environment].status,
-			).toBe('pending');
-			expect(() => requireDataPrerequisites(committedManifest, environment)).toThrow(
-				/auth-must-change-password: .*`pnpm auth:check-pending-passwords`/,
-			);
-		},
-	);
+	it.each(['preview'])('blocks %s until role synchronization is verified', (environment) => {
+		const parsed = parseDataPrerequisiteManifest(committedManifest);
+		expect(parsed.authAppMetadataKeys.role).toEqual({
+			prerequisite: 'auth-role-app-metadata',
+		});
+		expect(
+			parsed.prerequisites.find(({ id }) => id === 'auth-role-app-metadata')?.environments[
+				environment
+			].status,
+		).toBe('pending');
+		expect(() => requireDataPrerequisites(committedManifest, environment)).toThrow(
+			/auth-role-app-metadata: .*`pnpm auth:check-role-app-metadata`/,
+		);
+	});
+
+	it('records the pending password audit as verified in production', () => {
+		const production = parseDataPrerequisiteManifest(committedManifest).prerequisites.find(
+			({ id }) => id === 'auth-must-change-password',
+		)?.environments.production;
+		expect(production?.status).toBe('verified');
+		expect(production?.verifiedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/u);
+		expect(production?.evidence).toContain('ok=true');
+	});
+
+	it.each(['preview'])('blocks %s until pending password audit is verified', (environment) => {
+		const parsed = parseDataPrerequisiteManifest(committedManifest);
+		expect(parsed.authAppMetadataKeys.must_change_password).toEqual({
+			prerequisite: 'auth-must-change-password',
+		});
+		expect(
+			parsed.prerequisites.find(({ id }) => id === 'auth-must-change-password')?.environments[
+				environment
+			].status,
+		).toBe('pending');
+		expect(() => requireDataPrerequisites(committedManifest, environment)).toThrow(
+			/auth-must-change-password: .*`pnpm auth:check-pending-passwords`/,
+		);
+	});
 });
 
 describe('app_metadata key scanner', () => {

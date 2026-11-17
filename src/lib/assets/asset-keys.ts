@@ -38,6 +38,7 @@ export const EVENT_KEYS = [
 	'interlude03',
 	'interlude04',
 	'thankYouPortrait',
+	'dressCodeReference',
 	'ogShare',
 ] as const;
 

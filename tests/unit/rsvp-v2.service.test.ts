@@ -1,4 +1,7 @@
-import { submitGuestRsvpByInviteId } from '@/lib/rsvp/services/rsvp-submission.service';
+import {
+	submitGuestRsvpByInviteId,
+	submitGuestRsvpByPublicEvent,
+} from '@/lib/rsvp/services/rsvp-submission.service';
 import {
 	findGuestByInviteIdPublic,
 	submitGuestRsvpPublicRpc,
@@ -9,8 +12,9 @@ import {
 } from '@/lib/rsvp/rsvp-operation-contract';
 import { assertObservedOperationCount } from '@/lib/invitation/delivery-contract';
 import { isEventInvitationUnavailable } from '@/lib/invitation/access/invitation-access.repository';
-import type { GuestInvitationRecord } from '@/interfaces/rsvp/domain.interface';
+import type { EventRecord, GuestInvitationRecord } from '@/interfaces/rsvp/domain.interface';
 
+jest.mock('@/lib/rsvp/repositories/event.repository');
 jest.mock('@/lib/rsvp/repositories/guest.repository');
 jest.mock('@/lib/invitation/access/invitation-access.repository', () => ({
 	...jest.requireActual('@/lib/invitation/access/invitation-access.repository'),
@@ -182,5 +186,257 @@ describe('rsvp service unit', () => {
 			expect(call.guestComment).toContain('Anterior mensaje');
 			expect(call.guestComment).toContain('Nuevo mensaje');
 		});
+	});
+
+	describe('children category and public availability', () => {
+		it('persists childrenCount when within maxAllowedChildren and forces 0 when declined', async () => {
+			findGuestByInviteIdPublicMock.mockResolvedValue(
+				makeGuestRecord({ maxAllowedAttendees: 4, maxAllowedChildren: 2 }),
+			);
+			submitGuestRsvpPublicRpcMock.mockResolvedValue(
+				makeGuestRecord({
+					attendanceStatus: 'confirmed',
+					attendeeCount: 3,
+					childrenCount: 2,
+					respondedAt: new Date().toISOString(),
+				}),
+			);
+
+			const confirmed = await submitGuestRsvpByInviteId('invite-1', {
+				attendanceStatus: 'confirmed',
+				attendeeCount: 3,
+				childrenCount: 2,
+				guestComment: '',
+			});
+			expect(confirmed.childrenCount).toBe(2);
+			expect(submitGuestRsvpPublicRpcMock).toHaveBeenLastCalledWith(
+				expect.objectContaining({
+					inviteId: 'invite-1',
+					attendeeCount: 3,
+					childrenCount: 2,
+				}),
+			);
+
+			submitGuestRsvpPublicRpcMock.mockResolvedValue(
+				makeGuestRecord({
+					attendanceStatus: 'declined',
+					attendeeCount: 0,
+					childrenCount: 0,
+					respondedAt: new Date().toISOString(),
+				}),
+			);
+			const declined = await submitGuestRsvpByInviteId('invite-1', {
+				attendanceStatus: 'declined',
+				attendeeCount: 3,
+				childrenCount: 2,
+				guestComment: '',
+			});
+			expect(declined.childrenCount).toBe(0);
+			expect(submitGuestRsvpPublicRpcMock).toHaveBeenLastCalledWith(
+				expect.objectContaining({
+					inviteId: 'invite-1',
+					attendeeCount: 0,
+					childrenCount: 0,
+				}),
+			);
+		});
+
+		it('rejects RSVP when childrenCount exceeds maxAllowedChildren or attendeeCount', async () => {
+			findGuestByInviteIdPublicMock.mockResolvedValue(
+				makeGuestRecord({ maxAllowedAttendees: 4, maxAllowedChildren: 1 }),
+			);
+
+			await expect(
+				submitGuestRsvpByInviteId('invite-1', {
+					attendanceStatus: 'confirmed',
+					attendeeCount: 3,
+					childrenCount: 2,
+				}),
+			).rejects.toMatchObject({
+				status: 400,
+				message: 'Children count exceeds the limit for this invitation.',
+			});
+
+			findGuestByInviteIdPublicMock.mockResolvedValue(
+				makeGuestRecord({ maxAllowedAttendees: 4, maxAllowedChildren: 3 }),
+			);
+			await expect(
+				submitGuestRsvpByInviteId('invite-1', {
+					attendanceStatus: 'confirmed',
+					attendeeCount: 1,
+					childrenCount: 2,
+				}),
+			).rejects.toMatchObject({
+				status: 400,
+				message: 'Children count exceeds the limit for this invitation.',
+			});
+		});
+
+		it('rejects a public RSVP when the event invitation is expired or unavailable', async () => {
+			(isEventInvitationUnavailable as jest.Mock).mockResolvedValueOnce(true);
+
+			await expect(
+				submitGuestRsvpByPublicEvent({
+					event: {
+						id: 'evt-1',
+						ownerUserId: 'host-1',
+						slug: 'evento',
+						eventType: 'xv',
+						title: 'XV',
+						status: 'published',
+						publishedAt: null,
+						invitationId: 'inv-1',
+						brandingRemovalGuestLimit: 0,
+						createdAt: new Date().toISOString(),
+						updatedAt: new Date().toISOString(),
+					} as EventRecord,
+					fullName: 'Invitada',
+					phone: '',
+					maxAllowedAttendees: 2,
+					payload: {
+						attendanceStatus: 'confirmed',
+						attendeeCount: 2,
+					},
+				}),
+			).rejects.toMatchObject({ status: 403, code: 'invitation_unavailable' });
+			expect(submitGuestRsvpPublicRpcMock).not.toHaveBeenCalled();
+		});
+	});
+});
+
+describe('rsvp service: adult-only passes never take children', () => {
+	afterEach(() => {
+		jest.clearAllMocks();
+	});
+
+	const adultOnlyPasses: Array<[string, number | null | undefined]> = [
+		['0', 0],
+		['null', null],
+		['undefined', undefined],
+	];
+
+	it.each(adultOnlyPasses)(
+		'rejects childrenCount > 0 end to end when maxAllowedChildren is %s',
+		async (_label, maxAllowedChildren) => {
+			findGuestByInviteIdPublicMock.mockResolvedValue(
+				makeGuestRecord({
+					maxAllowedChildren: maxAllowedChildren as number | undefined,
+				}),
+			);
+
+			await expect(
+				submitGuestRsvpByInviteId('invite-1', {
+					attendanceStatus: 'confirmed',
+					attendeeCount: 2,
+					childrenCount: 1,
+					guestComment: '',
+				}),
+			).rejects.toMatchObject({ status: 400, code: 'bad_request' });
+			expect(submitGuestRsvpPublicRpcMock).not.toHaveBeenCalled();
+		},
+	);
+
+	it.each(adultOnlyPasses)(
+		'sends childrenCount 0 to the RPC for an adults-only confirmation (%s)',
+		async (_label, maxAllowedChildren) => {
+			findGuestByInviteIdPublicMock.mockResolvedValue(
+				makeGuestRecord({ maxAllowedChildren: maxAllowedChildren as number | undefined }),
+			);
+			submitGuestRsvpPublicRpcMock.mockResolvedValue(
+				makeGuestRecord({ attendanceStatus: 'confirmed', attendeeCount: 2 }),
+			);
+
+			await submitGuestRsvpByInviteId('invite-1', {
+				attendanceStatus: 'confirmed',
+				attendeeCount: 2,
+				guestComment: '',
+			});
+
+			expect(submitGuestRsvpPublicRpcMock).toHaveBeenCalledWith(
+				expect.objectContaining({ attendeeCount: 2, childrenCount: 0 }),
+			);
+		},
+	);
+
+	it.each(adultOnlyPasses)(
+		'a decline resets children to 0 before the RPC (%s)',
+		async (_label, maxAllowedChildren) => {
+			findGuestByInviteIdPublicMock.mockResolvedValue(
+				makeGuestRecord({ maxAllowedChildren: maxAllowedChildren as number | undefined }),
+			);
+			submitGuestRsvpPublicRpcMock.mockResolvedValue(
+				makeGuestRecord({ attendanceStatus: 'declined', attendeeCount: 0 }),
+			);
+
+			await submitGuestRsvpByInviteId('invite-1', {
+				attendanceStatus: 'declined',
+				attendeeCount: 2,
+				childrenCount: 2,
+				guestComment: '',
+			});
+
+			expect(submitGuestRsvpPublicRpcMock).toHaveBeenCalledWith(
+				expect.objectContaining({ attendeeCount: 0, childrenCount: 0 }),
+			);
+		},
+	);
+
+	it('accepts children up to the reserved child places and no more', async () => {
+		findGuestByInviteIdPublicMock.mockResolvedValue(makeGuestRecord({ maxAllowedChildren: 1 }));
+		submitGuestRsvpPublicRpcMock.mockResolvedValue(
+			makeGuestRecord({ attendanceStatus: 'confirmed', attendeeCount: 3, childrenCount: 1 }),
+		);
+
+		await submitGuestRsvpByInviteId('invite-1', {
+			attendanceStatus: 'confirmed',
+			attendeeCount: 3,
+			childrenCount: 1,
+			guestComment: '',
+		});
+		expect(submitGuestRsvpPublicRpcMock).toHaveBeenCalledWith(
+			expect.objectContaining({ attendeeCount: 3, childrenCount: 1 }),
+		);
+
+		await expect(
+			submitGuestRsvpByInviteId('invite-1', {
+				attendanceStatus: 'confirmed',
+				attendeeCount: 3,
+				childrenCount: 2,
+				guestComment: '',
+			}),
+		).rejects.toMatchObject({ status: 400 });
+	});
+
+	it('rejects 4 adults and 0 children when 1 of 4 passes is a child place', async () => {
+		findGuestByInviteIdPublicMock.mockResolvedValue(
+			makeGuestRecord({ maxAllowedAttendees: 4, maxAllowedChildren: 1 }),
+		);
+		submitGuestRsvpPublicRpcMock.mockResolvedValue(
+			makeGuestRecord({ attendanceStatus: 'confirmed', attendeeCount: 3, childrenCount: 0 }),
+		);
+
+		await expect(
+			submitGuestRsvpByInviteId('invite-1', {
+				attendanceStatus: 'confirmed',
+				attendeeCount: 4,
+				childrenCount: 0,
+				guestComment: '',
+			}),
+		).rejects.toMatchObject({ status: 400, message: expect.stringContaining('3 adultos') });
+		expect(submitGuestRsvpPublicRpcMock).not.toHaveBeenCalled();
+
+		for (const [attendeeCount, childrenCount] of [
+			[3, 1],
+			[3, 0],
+			[2, 1],
+		]) {
+			await submitGuestRsvpByInviteId('invite-1', {
+				attendanceStatus: 'confirmed',
+				attendeeCount,
+				childrenCount,
+				guestComment: '',
+			});
+		}
+		expect(submitGuestRsvpPublicRpcMock).toHaveBeenCalledTimes(3);
 	});
 });

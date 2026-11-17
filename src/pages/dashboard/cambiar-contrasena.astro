@@ -1,6 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import Logo from '@/components/ui/Logo.astro';
+import PasswordField from '@/components/ui/PasswordField.astro';
 import '@/styles/auth.scss';
 import '@styles/auth/_login.scss';
 import ChangePasswordBehavior from '@/components/behavior/ChangePasswordBehavior';
@@ -36,25 +37,30 @@ const mustChange = session?.mustChangePassword === true;
 				)}
 			</div>
 
-			<form id="change-password-form" class="auth-form" novalidate>
-				<div class="auth-field">
-					<label for="current-password">Contraseña actual</label>
-					<input
-						id="current-password"
-						name="currentPassword"
-						type="password"
-						autocomplete="current-password"
-						placeholder="Ingrese su contraseña actual"
-					/>
-					<p id="current-password-error" class="field-error" aria-live="polite"></p>
-				</div>
+			<form
+				id="change-password-form"
+				class="auth-form"
+				data-must-change={mustChange ? 'true' : 'false'}
+				novalidate
+			>
+				{!mustChange && (
+					<div class="auth-field">
+						<label for="current-password">Contraseña actual</label>
+						<PasswordField
+							id="current-password"
+							name="currentPassword"
+							autocomplete="current-password"
+							placeholder="Ingrese su contraseña actual"
+						/>
+						<p id="current-password-error" class="field-error" aria-live="polite"></p>
+					</div>
+				)}
 
 				<div class="auth-field">
 					<label for="new-password">Nueva contraseña</label>
-					<input
+					<PasswordField
 						id="new-password"
 						name="newPassword"
-						type="password"
 						autocomplete="new-password"
 						placeholder="Mínimo 8 caracteres"
 					/>
@@ -63,10 +69,9 @@ const mustChange = session?.mustChangePassword === true;
 
 				<div class="auth-field">
 					<label for="confirm-password">Confirmar nueva contraseña</label>
-					<input
+					<PasswordField
 						id="confirm-password"
 						name="confirmPassword"
-						type="password"
 						autocomplete="new-password"
 						placeholder="Repita su nueva contraseña"
 					/>

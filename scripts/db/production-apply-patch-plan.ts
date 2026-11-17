@@ -6,7 +6,10 @@ import {
 	type PreparedProductionPatch,
 } from './run-prod-patch.ts';
 import { patchCallsOnlyBuiltinFunctions } from './sql-safety.ts';
-import { patchIsReviewedWorkerIndependent } from './production-worker-content-guard.ts';
+import {
+	patchIsReviewedWorkerCompatibleContent,
+	patchIsReviewedWorkerIndependent,
+} from './production-worker-content-guard.ts';
 import type { ProductionPatchPreviewAssessment } from './production-patch-preview.ts';
 import type { ProductionApplyPlanItem } from './production-apply-plan.ts';
 
@@ -91,6 +94,11 @@ export function inspectPatch(
 						.map((table) => table.trim().toLowerCase())
 						.filter(Boolean)
 				: undefined;
+		const patchWorkerCompatible =
+			patchIsReviewedWorkerCompatibleContent(prepared.manifest['script-id'], prepared.sql) &&
+			patchCallsOnlyBuiltinFunctions(prepared.sql)
+				? true
+				: undefined;
 		const expectedRowsMin = Number(prepared.manifest['expected-rows-min']);
 		const expectedRowsMax = Number(prepared.manifest['expected-rows-max']);
 		const patchPreview = {
@@ -119,6 +127,7 @@ export function inspectPatch(
 				summary: 'Parche no requerido: la vista previa LIVE devolvió 0 filas.',
 				binding: prepared.fingerprint,
 				patchTables,
+				patchWorkerCompatible,
 				detail,
 				patchPreview,
 			};
@@ -136,6 +145,7 @@ export function inspectPatch(
 						: 'PATCH_PREVIEW_ROW_COUNT_MISMATCH',
 				binding: prepared.fingerprint,
 				patchTables,
+				patchWorkerCompatible,
 				patchPreview,
 			};
 		}
@@ -146,6 +156,7 @@ export function inspectPatch(
 			summary: `Parche LIVE aplicable: ${assessment.evidence.total} filas dentro del rango aprobado ${expectedRowsMin}-${expectedRowsMax}.`,
 			binding: prepared.fingerprint,
 			patchTables,
+			patchWorkerCompatible,
 			detail,
 			patchPreview,
 		};
