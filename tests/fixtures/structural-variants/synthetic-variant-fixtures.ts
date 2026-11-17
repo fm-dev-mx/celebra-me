@@ -377,6 +377,7 @@ export function buildIncompatiblePrerequisiteEvent(
 					'editorial-cover',
 					'split-cover',
 					'night-arch',
+					'veiled-arch',
 					'framed-portrait',
 					'bleed-portrait',
 					'cased-portrait',

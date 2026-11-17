@@ -74,7 +74,10 @@ const sealPresentation = resolveSealPresentation({
 const isSeaside = revealVariant === 'seaside-lineart';
 const isStorybook = revealVariant === 'storybook-lanterns' || revealVariant === 'storybook-butterflies';
 const skyMotif = revealVariant === 'storybook-butterflies' ? 'butterflies' : 'lanterns';
-const isNight = revealVariant === 'night-envelope' || revealVariant === 'disco-night';
+const isNight =
+	revealVariant === 'night-envelope' ||
+	revealVariant === 'pocket-fold' ||
+	revealVariant === 'disco-night';
 const isCelestialLetter = revealVariant === 'celestial-letter';
 // Storybook, night, celestial and Enchanted Rose letters sit inside the envelope, behind the pocket
 // front, and rise out of it.
@@ -344,7 +347,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			const coverArch =
 				this.dataset.archHandoff === 'true'
 					? document.querySelector<HTMLElement>(
-							'.invitation-hero[data-variant="night-arch"] .invitation-hero__background, .invitation-hero[data-variant="framed-portrait"] .framed-portrait-hero__photograph, .invitation-hero[data-variant="disco-stage"] .framed-portrait-hero__photograph',
+							'.invitation-hero[data-variant="night-arch"] .invitation-hero__background, .invitation-hero[data-variant="veiled-arch"] .invitation-hero__background, .invitation-hero[data-variant="framed-portrait"] .framed-portrait-hero__photograph, .invitation-hero[data-variant="disco-stage"] .framed-portrait-hero__photograph',
 						)
 					: null;
 			const archWindow = this.querySelector<HTMLElement>('[data-arch-window]');
@@ -632,7 +635,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				}
 				// The night arch cover keeps its own hand-over: a copy of the window's photograph
 				// flies onto the arch while the cover underneath stays still.
-				if (hero.dataset.variant === 'night-arch') {
+				if (hero.dataset.variant === 'night-arch' || hero.dataset.variant === 'veiled-arch') {
 					const photo = archWindow.querySelector('img');
 					if (!photo) {
 						completeReveal();

@@ -96,7 +96,7 @@ const isFramedPortrait =
 	variant === 'cased-portrait' ||
 	variant === 'disco-stage';
 const isCeremonialPortrait = variant === 'ceremonial-portrait';
-const isNightArch = variant === 'night-arch';
+const isNightArch = variant === 'night-arch' || variant === 'veiled-arch';
 // The cover-approach scene pins the standard cover while its picture closes in.
 const isCoverApproach = scene === 'cover-approach' && variant === 'standard';
 const CoverStage = isCoverApproach ? ScrollScene : Fragment;

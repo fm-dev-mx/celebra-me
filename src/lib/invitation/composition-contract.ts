@@ -6,6 +6,10 @@ import {
 	SECTION_ORNAMENT_SETS,
 } from '@/lib/theme/theme-contract';
 
+/** Footer variants. The footer stays outside the section registry: it renders on every page. */
+export const FOOTER_VARIANTS = ['standard', 'framed-closing'] as const;
+export type FooterVariant = (typeof FOOTER_VARIANTS)[number];
+
 const RENDER_PLAN_TARGETS = [
 	...CONTENT_SECTION_KEYS,
 	'personalized-access',
@@ -32,6 +36,8 @@ export const invitationCompositionSchema = z
 			.partialRecord(z.enum(RENDER_PLAN_TARGETS), renderPlanIntersectionSchema)
 			.default({}),
 		ornaments: z.enum(SECTION_ORNAMENT_SETS).optional(),
+		/** Closing band variant; `framed-closing` loads `footer/_framed-closing.scss`. */
+		footerVariant: z.enum(FOOTER_VARIANTS).optional(),
 	})
 	.strict();
 

@@ -59,7 +59,7 @@ function portraitSource(image: ImageMetadata | ImageAsset): string | null {
 }
 
 /**
- * The night-arch and portrait photographs are the page's largest contentful paint, unlike
+ * The night-arch, veiled-arch and portrait photographs are the page's largest contentful paint, unlike
  * full-bleed covers (Chrome ignores viewport-sized images). Preloading lets them start before the
  * stylesheets and the envelope markup. Sources that go through the image service resolve their URL
  * while rendering, so they keep the plain `<img>` discovery.
@@ -74,7 +74,7 @@ export function buildHeroImagePreloads(hero: HeroImageInput): HeroImagePreload[]
 		const portrait = hero.backgroundImage && portraitSource(hero.backgroundImage);
 		return portrait ? [preload(portrait, undefined, PORTRAIT_HERO_SIZES)] : [];
 	}
-	if (hero.variant !== 'night-arch') return [];
+	if (hero.variant !== 'night-arch' && hero.variant !== 'veiled-arch') return [];
 	const links: HeroImagePreload[] = [];
 	const mobile = plainSource(
 		hero.backgroundImageMobile?.src,

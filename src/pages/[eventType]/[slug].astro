@@ -357,7 +357,7 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 								class={isDemoConversion ? 'demo-conversion-farewell' : undefined}
 								eventSlug={page.viewModel.id}
 								showEnvelope={page.wrapper.showEnvelope}
-								variant="standard"
+								variant={page.viewModel.composition?.footerVariant ?? 'standard'}
 								closingPhrase={page.footerClosingPhrase}
 								showFooterBranding={page.viewModel.brandingVisibility.showFooterBranding && !isDemoConversion}
 								showContactCta={page.viewModel.brandingVisibility.showContactCta && !isDemoConversion}
