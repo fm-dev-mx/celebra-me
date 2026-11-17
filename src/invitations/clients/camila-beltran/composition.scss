@@ -6,6 +6,16 @@
 	@include scenes.photo-cover(url('./assets/hero-date-arc.png'));
 }
 
+// Portrait: the music prompt reaches the centre of a phone, so the chevron rises above it.
+@media (aspect-ratio <= 5/4) {
+	body:has(.music-player__prompt)
+		.event--camila-beltran
+		.invitation-hero[data-variant]
+		.invitation-hero__scroll-indicator {
+		bottom: calc(2.5svh + 4.5rem);
+	}
+}
+
 .event--camila-beltran {
 	color: var(--jewel-ink);
 
