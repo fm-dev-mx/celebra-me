@@ -6,8 +6,6 @@
  * dashboard preview) the song waits for the tap: a framed preview rarely plays it.
  */
 
-export type MusicPreload = 'none' | 'auto';
-
 interface MusicPreloadInput {
 	hasAudio: boolean;
 	autoPlay: boolean;

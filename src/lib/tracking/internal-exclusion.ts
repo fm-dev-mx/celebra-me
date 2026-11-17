@@ -4,7 +4,7 @@ import type { TrackingRouteClass } from '@/lib/tracking/route-policy';
 export const COOKIE_NAME_IGNORE_TRACKING = 'cm_ignore_tracking';
 export const IGNORE_TRACKING_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
 
-export type IgnoreTrackingCookieOptions = {
+type IgnoreTrackingCookieOptions = {
 	path: string;
 	httpOnly: boolean;
 	sameSite: 'lax';

@@ -275,7 +275,7 @@ describe('submitLeadCapture', () => {
 	it.each([
 		['phone', { phone: '12345' }],
 		['eventDate', { eventDate: '2020-01-01' }],
-		['eventType', { eventType: 'graduacion' }],
+		['eventType', { eventType: 'unsupported-event' }],
 		['contactName', { contactName: 'A' }],
 		['demoSlug', { demoSlug: 'demo-desconocido' }],
 		['leadCode', { leadCode: 'CM-AB' }],

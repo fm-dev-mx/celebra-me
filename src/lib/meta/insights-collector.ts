@@ -14,9 +14,9 @@ import {
 import { SupabaseHttpError, supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { commercialPeriod } from '@/lib/tracking/commercial-period';
 
-export type MetaInsightsSource = 'ads' | 'page' | 'instagram';
+type MetaInsightsSource = 'ads' | 'page' | 'instagram';
 
-export type MetaSourceOutcome =
+type MetaSourceOutcome =
 	| { status: 'completed'; rows: number }
 	| { status: 'skipped'; reason: 'missing_config' | 'invalid_config' }
 	| {

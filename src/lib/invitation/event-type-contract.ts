@@ -38,6 +38,12 @@ const EVENT_TYPE_CONTRACTS: Record<EventType, Omit<EventTypeStructureContract, '
 		editionLabel: 'EDICIÓN XV',
 		editionMark: 'XV',
 	},
+	graduacion: {
+		eventType: 'graduacion',
+		requiredSections: ['location', 'gallery', ...CORE_SECTIONS],
+		editionLabel: 'EDICIÓN GRADUACIÓN',
+		editionMark: 'GRADO',
+	},
 	boda: {
 		eventType: 'boda',
 		requiredSections: ['family', 'location', ...CORE_SECTIONS],
