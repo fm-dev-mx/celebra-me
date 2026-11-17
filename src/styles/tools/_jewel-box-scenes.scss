@@ -143,6 +143,11 @@
 				stroke-width: 2.5;
 				animation-duration: 2.8s;
 			}
+
+			// A visible music prompt reaches the centre of a phone, so the chevron rises above it.
+			body:has(.music-player__prompt:not([hidden])) & {
+				bottom: calc(2.5svh + 4.5rem);
+			}
 		}
 
 		// Landscape: one thin centred line instead of the chevron.
