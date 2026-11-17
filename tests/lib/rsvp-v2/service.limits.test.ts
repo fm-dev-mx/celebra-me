@@ -4,6 +4,7 @@ import {
 	submitGuestRsvpPublicRpc,
 } from '@/lib/rsvp/repositories/guest.repository';
 
+jest.mock('@/lib/rsvp/repositories/event.repository');
 jest.mock('@/lib/rsvp/repositories/guest.repository');
 jest.mock('@/lib/invitation/access/invitation-access.repository', () => ({
 	...jest.requireActual('@/lib/invitation/access/invitation-access.repository'),

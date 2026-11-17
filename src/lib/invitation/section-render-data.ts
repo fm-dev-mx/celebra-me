@@ -114,6 +114,8 @@ type DescriptorData =
 				};
 				isDemoPreview?: boolean;
 				defaultCopy?: RsvpDefaultCopy;
+				rsvpDeadlineLabel?: string;
+				rsvpClosed?: boolean;
 			};
 	  }
 	| { component: 'gifts'; props: GiftsProps }
@@ -275,6 +277,12 @@ function renderRsvpSection(pageContext: InvitationPageContext): DescriptorData |
 					}
 				: undefined,
 			isDemoPreview: pageContext.isDemoPreview ?? false,
+			...(pageContext.rsvpWindow
+				? {
+						rsvpDeadlineLabel: pageContext.rsvpWindow.label,
+						rsvpClosed: pageContext.rsvpWindow.closed,
+					}
+				: {}),
 			// Only new invitations carry it, so a legacy one's island props stay as they were.
 			...(keepsLegacyRsvpDefaults(pageContext.viewModel.id)
 				? {}
