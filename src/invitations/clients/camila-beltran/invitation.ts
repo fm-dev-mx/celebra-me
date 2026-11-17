@@ -35,7 +35,6 @@ const content: CanonicalEventContentInput = {
 		'itinerary',
 		'dressCode',
 		'gifts',
-		'memories',
 		'gallery',
 		'personalizedAccess',
 		'rsvp',
@@ -197,14 +196,6 @@ const content: CanonicalEventContentInput = {
 			{ type: 'cash', title: 'Regalo sorpresa', medallionIconName: 'Gift' },
 		],
 		note: 'Habrá un baúl en la recepción para sus sobres.',
-	},
-	memories: {
-		variant: 'card',
-		publicSlug: 'camila-beltran',
-		title: 'Comparta sus recuerdos',
-		description: 'Escanee el código o toque el botón para compartir sus fotos de esta noche.',
-		actionLabel: 'Subir mis fotos',
-		footerText: 'Puede compartir sus fotos hasta el 26 de diciembre de 2026.',
 	},
 	gallery: {
 		variant: 'uniform-grid',

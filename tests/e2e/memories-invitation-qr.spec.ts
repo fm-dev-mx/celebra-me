@@ -7,7 +7,6 @@ import sharp from 'sharp';
 for (const [name, path] of [
 	['jewelry-box', '/test/variant?section=memories&variant=card&preset=jewelry-box'],
 	['editorial', '/test/variant?section=memories&variant=card&preset=editorial'],
-	['Camila', '/test/variant?full=1&slug=camila-beltran&eventType=xv&presentation=1'],
 ]) {
 	test(`invitation QR encodes the canonical link and the button its path (${name})`, async ({
 		page,
@@ -38,7 +37,10 @@ for (const [name, path] of [
 }
 
 for (const reducedMotion of ['no-preference', 'reduce'] as const) {
-	test(`Camila keeps the ceremony and photo QR readable (${reducedMotion})`, async ({ page }) => {
+	// Camila's memories section returns once her Production memory space exists.
+	test(`Camila keeps the ceremony readable without overflow (${reducedMotion})`, async ({
+		page,
+	}) => {
 		await page.emulateMedia({ reducedMotion });
 		for (const [width, height] of [
 			[360, 640],
@@ -54,7 +56,8 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
 			await expect(ceremony).toContainText(
 				'7:00 p. m. en Salón Áurea · Rev. Enrique Ruelas Carrillo',
 			);
-			for (const selector of ['#event-location', '#memories', '#galeria']) {
+			await expect(page.locator('#memories')).toHaveCount(0);
+			for (const selector of ['#event-location', '#galeria']) {
 				await page.locator(selector).scrollIntoViewIfNeeded();
 				expect(
 					await page.evaluate(
@@ -64,13 +67,6 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
 					),
 				).toBeLessThanOrEqual(1);
 			}
-			const card = page.locator('.memories-section__inner');
-			const bounds = await card.boundingBox();
-			expect(bounds?.height).toBeLessThanOrEqual(height);
-			await expect(page.locator('.memories-section__action')).toHaveAttribute(
-				'href',
-				'/r/camila-beltran',
-			);
 		}
 	});
 }
