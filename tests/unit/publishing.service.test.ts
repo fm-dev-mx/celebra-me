@@ -1033,7 +1033,6 @@ describe('publishDraft', () => {
 
 		expect(mockCommitAtomic).toHaveBeenCalledWith(
 			expect.objectContaining({
-				isDemo: false,
 				content: expect.objectContaining({
 					title: 'Test Project',
 					theme: expect.objectContaining({ preset: 'jewelry-box' }),

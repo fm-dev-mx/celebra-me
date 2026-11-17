@@ -827,7 +827,6 @@ export async function publishDraft(
 		idempotencyKey: reviewedPreflight.idempotencyKey,
 		slug: publishSlug,
 		eventType: invitation.eventType,
-		isDemo: false,
 		content: publishedContent,
 	});
 

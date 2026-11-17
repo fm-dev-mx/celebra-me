@@ -49,13 +49,13 @@ insert into public.invitations (id, slug, title, event_type, status, theme_id, c
   ('c2000000-0000-4000-8000-000000000004', 'v2-demo', 'Demo', 'xv', 'published', 'jewelry-box', 'c1000000-0000-4000-8000-000000000001', 'demo'),
   ('c2000000-0000-4000-8000-000000000005', 'v2-unpublished', 'Sin publicar', 'xv', 'in_production', 'jewelry-box', 'c1000000-0000-4000-8000-000000000001', 'client');
 
-insert into public.published_invitation_content (id, invitation_project_id, slug, event_type, is_demo, content, version, published_at) values
-  ('c3000000-0000-4000-8000-000000000001', 'c2000000-0000-4000-8000-000000000001', 'v2-measured', 'xv', false,
+insert into public.published_invitation_content (id, invitation_project_id, slug, event_type, content, version, published_at) values
+  ('c3000000-0000-4000-8000-000000000001', 'c2000000-0000-4000-8000-000000000001', 'v2-measured', 'xv',
    '{"theme":{"preset":"jewelry-box"},"rsvp":{"confirmationMode":"api"}}'::jsonb, 1, now()),
-  ('c3000000-0000-4000-8000-000000000002', 'c2000000-0000-4000-8000-000000000002', 'v2-quiet', 'boda', false,
+  ('c3000000-0000-4000-8000-000000000002', 'c2000000-0000-4000-8000-000000000002', 'v2-quiet', 'boda',
    '{"theme":{"preset":"jewelry-box-wedding","fontFamily":"serif"},"rsvp":{"confirmationMode":"whatsapp","accessMode":"hybrid"},"music":{"url":"https://example.test/a.mp3"}}'::jsonb, 1, now()),
-  ('c3000000-0000-4000-8000-000000000003', 'c2000000-0000-4000-8000-000000000003', 'v2-archived', 'xv', false, '{}'::jsonb, 1, now()),
-  ('c3000000-0000-4000-8000-000000000004', 'c2000000-0000-4000-8000-000000000004', 'v2-demo', 'xv', true, '{}'::jsonb, 1, now());
+  ('c3000000-0000-4000-8000-000000000003', 'c2000000-0000-4000-8000-000000000003', 'v2-archived', 'xv', '{}'::jsonb, 1, now()),
+  ('c3000000-0000-4000-8000-000000000004', 'c2000000-0000-4000-8000-000000000004', 'v2-demo', 'xv','{}'::jsonb, 1, now());
 
 -- Archive after publishing (archiving cascades to the published row).
 update public.invitations set archived_at = now() where id = 'c2000000-0000-4000-8000-000000000003';

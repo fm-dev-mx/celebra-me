@@ -14,7 +14,7 @@ update public.invitations set work_status = 'completed', owner_reviewed_at = '20
 where id = '20000000-0000-0000-0000-000000000001';
 
 select hasnt_function('public', 'publish_invitation_atomic', array['uuid','uuid','timestamp with time zone','text','text','boolean','jsonb'], 'retired seven-argument publication overload is absent');
-select has_function('public', 'publish_invitation_atomic', array['uuid','uuid','timestamp with time zone','integer','text','text','uuid','text','text','boolean','jsonb'], 'new eleven-argument publication RPC exists');
+select has_function('public', 'publish_invitation_atomic', array['uuid','uuid','timestamp with time zone','integer','text','text','uuid','text','text','jsonb'], 'ten-argument publication RPC exists');
 select has_function('public', 'replay_invitation_publication', array['uuid','uuid','timestamp with time zone','integer','text','text','uuid'], 'receipt replay RPC exists');
 select ok(not has_function_privilege('authenticated', 'public.replay_invitation_publication(uuid,uuid,timestamptz,integer,text,text,uuid)', 'EXECUTE'), 'authenticated cannot execute receipt replay');
 select ok(not has_table_privilege('authenticated', 'public.invitation_publication_idempotency', 'SELECT'), 'authenticated cannot read idempotency receipts');
@@ -23,7 +23,7 @@ select public.publish_invitation_atomic(
   i.id, d.id, d.updated_at, null,
   md5(md5(jsonb_build_object('archivedAt', i.archived_at, 'eventType', i.event_type, 'kind', i.kind, 'slug', i.slug, 'status', i.status, 'themeId', i.theme_id, 'title', i.title)::text) || chr(31) || md5('{}'::jsonb::text)),
   md5('{"title":"Publicación atómica"}'::jsonb::text),
-  '40000000-0000-0000-0000-000000000001', 'atomic-publish', 'xv', false, '{"title":"Publicación atómica"}'::jsonb
+  '40000000-0000-0000-0000-000000000001', 'atomic-publish', 'xv', '{"title":"Publicación atómica"}'::jsonb
 ) as result
 from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id = i.id
 where i.id = '20000000-0000-0000-0000-000000000001';
@@ -41,7 +41,7 @@ select is(
     i.id, d.id, (select draft_updated_at from public.invitation_publication_idempotency), null,
     (select public_metadata_hash from public.invitation_publication_idempotency),
     (select projection_hash from public.invitation_publication_idempotency),
-    '40000000-0000-0000-0000-000000000001', 'atomic-publish', 'xv', false, '{"title":"Publicación atómica"}'::jsonb
+    '40000000-0000-0000-0000-000000000001', 'atomic-publish', 'xv', '{"title":"Publicación atómica"}'::jsonb
   ) from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id=i.id where i.id='20000000-0000-0000-0000-000000000001'),
   (select result from publication_test_result), 'retry after approved draft replays the exact stored response'
 );
@@ -52,12 +52,12 @@ select is(
     i.id, d.id, (select draft_updated_at from public.invitation_publication_idempotency), null,
     (select public_metadata_hash from public.invitation_publication_idempotency),
     (select projection_hash from public.invitation_publication_idempotency),
-    '40000000-0000-0000-0000-000000000001', 'atomic-publish', 'xv', false, '{"title":"Publicación atómica"}'::jsonb
+    '40000000-0000-0000-0000-000000000001', 'atomic-publish', 'xv', '{"title":"Publicación atómica"}'::jsonb
   ) from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id=i.id where i.id='20000000-0000-0000-0000-000000000001'),
   (select result from publication_test_result), 'later repair cannot change a prior replay result'
 );
 select throws_like(
-  $$select public.publish_invitation_atomic('20000000-0000-0000-0000-000000000001','30000000-0000-0000-0000-000000000001',now(),1,'bad','bad','40000000-0000-0000-0000-000000000001','other','xv',false,'{}')$$,
+  $$select public.publish_invitation_atomic('20000000-0000-0000-0000-000000000001','30000000-0000-0000-0000-000000000001',now(),1,'bad','bad','40000000-0000-0000-0000-000000000001','other','xv','{}')$$,
   '%publish_idempotency_key_reused%', 'same key with different request fails deterministically'
 );
 select is((select relrowsecurity from pg_class where oid='public.invitation_publication_idempotency'::regclass), true, 'idempotency table has RLS enabled');
@@ -118,8 +118,8 @@ insert into public.invitations (id, slug, title, event_type, status, theme_id, c
 values ('20000000-0000-0000-0000-000000000003', 'editor-atomic', 'Título anterior', 'xv', 'published', 'jewelry-box', '10000000-0000-0000-0000-000000000001', 'client');
 insert into public.invitation_content_drafts (id, invitation_project_id, content, status)
 values ('30000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000003', '{"title":"Borrador anterior"}'::jsonb, 'approved');
-insert into public.published_invitation_content (id, invitation_project_id, slug, event_type, is_demo, content, version, published_at)
-values ('50000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000003', 'editor-atomic', 'xv', false, '{"title":"Título público","description":"Publicado"}'::jsonb, 1, now());
+insert into public.published_invitation_content (id, invitation_project_id, slug, event_type, content, version, published_at)
+values ('50000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000003', 'editor-atomic', 'xv','{"title":"Título público","description":"Publicado"}'::jsonb, 1, now());
 create temporary table editor_atomic_baseline as
 select i.updated_at as invitation_updated_at, d.updated_at as draft_updated_at
 from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id=i.id

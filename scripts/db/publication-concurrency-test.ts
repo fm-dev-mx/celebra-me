@@ -36,7 +36,7 @@ async function main(): Promise<void> {
 		create trigger test_pause_idempotency_insert before insert on public.invitation_publication_idempotency for each row execute function public.test_pause_idempotency_insert();
 	`);
 
-	const rpc = `select public.publish_invitation_atomic(i.id, d.id, d.updated_at, null, ${metadataHash}, md5(${content}::text), '${key}', '${slug}', 'xv', true, ${content}) from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id = i.id where i.id = '${invitationId}';`;
+	const rpc = `select public.publish_invitation_atomic(i.id, d.id, d.updated_at, null, ${metadataHash}, md5(${content}::text), '${key}', '${slug}', 'xv', ${content}) from public.invitations i join public.invitation_content_drafts d on d.invitation_project_id = i.id where i.id = '${invitationId}';`;
 	try {
 		const [first, second] = await Promise.all([runConcurrentPsql(rpc), runConcurrentPsql(rpc)]);
 		if (!first.includes('"version": 1') || !second.includes('"version": 1')) {

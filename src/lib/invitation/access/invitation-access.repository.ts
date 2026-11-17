@@ -20,6 +20,24 @@ const ACCESS_EMBED = 'access:invitation_access_controls(payment_status,public_ac
 /** PostgREST embed fragment for `published_invitation_content` rows (one read). */
 export const PUBLISHED_ACCESS_EMBED = `invitation:invitations(${ACCESS_EMBED})`;
 
+/**
+ * Same embed plus `invitations.kind`, the only source of the demo/client classification,
+ * for published-content reads that also need to classify the row.
+ */
+export const PUBLISHED_KIND_ACCESS_EMBED = `invitation:invitations(kind,${ACCESS_EMBED})`;
+
+/** Embed fragment with only the invitation kind, for reads that do not need access. */
+export const PUBLISHED_KIND_EMBED = 'invitation:invitations(kind)';
+
+/** True when the embedded invitation under a published row is a demo (`kind = 'demo'`). */
+export function readEmbeddedInvitationIsDemo(row: unknown): boolean {
+	if (!row || typeof row !== 'object') return false;
+	const invitation = (row as { invitation?: unknown }).invitation;
+	const candidate = Array.isArray(invitation) ? invitation[0] : invitation;
+	if (!candidate || typeof candidate !== 'object') return false;
+	return (candidate as { kind?: unknown }).kind === 'demo';
+}
+
 /** Access state embedded under a published row's `invitation` relation, if any. */
 export function readEmbeddedInvitationAccess(row: unknown): InvitationAccessState | null {
 	if (!row || typeof row !== 'object') return null;
@@ -52,15 +70,15 @@ async function isPublishedInvitationExpired(
 	now = new Date(),
 ): Promise<boolean> {
 	const rows = await supabaseRestRequest<
-		Array<{ is_demo?: boolean; eventTiming?: unknown; heroDate?: unknown }>
+		Array<{ invitation?: unknown; eventTiming?: unknown; heroDate?: unknown }>
 	>({
-		pathWithQuery: `published_invitation_content?select=is_demo,eventTiming:content->eventTiming,heroDate:content->hero->>date&invitation_project_id=eq.${encodeURIComponent(invitationId)}&${ACTIVE_FILTER}&limit=1`,
+		pathWithQuery: `published_invitation_content?select=${PUBLISHED_KIND_EMBED},eventTiming:content->eventTiming,heroDate:content->hero->>date&invitation_project_id=eq.${encodeURIComponent(invitationId)}&${ACTIVE_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	const row = Array.isArray(rows) ? rows[0] : undefined;
 	if (!row) return false;
 	return resolveInvitationContentValidity(
-		row.is_demo === true ? 'demo' : 'client',
+		readEmbeddedInvitationIsDemo(row) ? 'demo' : 'client',
 		{ eventTiming: row.eventTiming, heroDate: row.heroDate },
 		now,
 	).expired;

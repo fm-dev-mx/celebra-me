@@ -18,7 +18,7 @@ const publishedRow = {
 	invitation_project_id: 'invitation-123',
 	slug: 'maria-y-jose',
 	event_type: 'boda',
-	is_demo: false,
+	invitation: { kind: 'client' },
 	content: { title: 'Maria y Jose' },
 	version: 3,
 	published_at: '2026-09-01T00:00:00Z',
@@ -66,7 +66,7 @@ describe('findPublishedWithAccessBySlugAndEventType', () => {
 		expect(mockSupabaseRequest).toHaveBeenCalledTimes(1);
 		const [request] = mockSupabaseRequest.mock.calls[0];
 		expect(request.pathWithQuery).toContain(
-			'invitation:invitations(access:invitation_access_controls(payment_status,public_access))',
+			'invitation:invitations(kind,access:invitation_access_controls(payment_status,public_access))',
 		);
 		expect(request.pathWithQuery).toContain('slug=eq.maria-y-jose');
 		expect(request.pathWithQuery).toContain('event_type=eq.boda');
