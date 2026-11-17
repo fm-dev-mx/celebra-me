@@ -1,0 +1,725 @@
+@use '../../../global/a11y' as a11y;
+
+// RSVP framed-register: promoted from a client composition. Base formal-register rules (underline
+// register on a dark chapter), then the one-screen centered composition. Fonts and the chapter
+// default tokens come from the preset bundle that already loads formal-register. Profiles set the
+// --framed-register-* tokens.
+
+.invitation-section-wrapper[data-section-kind='rsvp']:has(.rsvp[data-variant='framed-register']) {
+	--color-text-primary: var(--formal-chapter-cream);
+	--color-text-primary-rgb: var(--formal-chapter-cream-rgb);
+	--color-text-secondary: rgb(var(--formal-chapter-cream-rgb) / 82%);
+	--color-text-muted: rgb(var(--formal-chapter-cream-rgb) / 64%);
+
+	padding-block: 0;
+	background: var(--formal-register-band-bg, var(--formal-chapter-band));
+	color: var(--formal-chapter-cream);
+}
+
+// Match every shell that contains the register, including the nested
+// `.rsvp-section` wrappers used by the interactive island. A child combinator
+// would leave the outer shell on the shared full-viewport RSVP padding.
+.rsvp-section:has(.rsvp[data-variant='framed-register']) {
+	--rsvp-bg-fallback: var(--formal-chapter-band);
+
+	display: grid;
+	grid-template-columns: minmax(0, var(--formal-register-shell-width, 64rem));
+	justify-content: center;
+	justify-items: start;
+	min-block-size: auto;
+	padding-block: var(--formal-register-shell-padding, clamp(3rem, 6vh, 4.75rem));
+	background: var(--rsvp-bg, var(--rsvp-bg-fallback));
+}
+
+.rsvp[data-variant='framed-register'] {
+	--formal-chapter-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+	--formal-chapter-body: 'Instrument Sans Variable', system-ui, sans-serif;
+	--formal-chapter-label:
+		var(--formal-chapter-label-font, 'Bodoni Moda Variable'), 'Playfair Display Variable',
+		georgia, serif;
+	--formal-chapter-measure: min(100%, 34rem);
+	--formal-chapter-control-radius: var(--formal-register-control-radius, 2px);
+	--rsvp-radio-columns: minmax(0, 1fr);
+	--rsvp-label-color: rgb(var(--formal-chapter-cream-rgb) / 92%);
+	--rsvp-placeholder-color: rgb(var(--formal-chapter-cream-rgb) / 58%);
+	--rsvp-radio-indicator-border: rgb(var(--formal-chapter-metal-rgb) / 75%);
+	--rsvp-radio-indicator-dot: var(--formal-chapter-metal);
+	--rsvp-radio-selected-border: var(--formal-chapter-metal);
+	--rsvp-radio-label-color: rgb(var(--formal-chapter-cream-rgb) / 95%);
+	--rsvp-radio-label-color-selected: var(--formal-chapter-cream);
+	--rsvp-field-bg-focus: transparent;
+	--rsvp-editorial-gold-glow: none;
+	--color-border-light: rgb(var(--formal-chapter-metal-rgb) / 28%);
+	--rsvp-button-color: var(--formal-chapter-button-color, var(--formal-chapter-band));
+	--rsvp-button-color-hover: var(--formal-chapter-button-color-hover, var(--formal-chapter-band));
+	--rsvp-button-bg: var(--formal-chapter-button-bg, var(--formal-chapter-metal));
+	--rsvp-button-bg-hover: var(
+		--formal-chapter-button-bg-hover,
+		rgb(var(--formal-chapter-metal-rgb) / 88%)
+	);
+	--rsvp-button-border: var(--formal-chapter-button-border, var(--formal-chapter-metal));
+	--rsvp-button-border-hover: var(
+		--formal-chapter-button-border-hover,
+		var(--formal-chapter-metal)
+	);
+	--rsvp-title-letter-spacing: normal;
+
+	width: min(100%, 40rem);
+	max-width: 40rem;
+	margin: 0;
+	padding: var(--formal-register-surface-padding, 0 0 var(--formal-chapter-padding-end, 0));
+	overflow: visible;
+
+	// Opt-in panel around the register (`--formal-register-surface-*`); the defaults keep the
+	// open, unframed chapter.
+	background: var(--formal-register-surface-bg, transparent);
+	border: var(--formal-register-surface-border, 0);
+	border-radius: var(--formal-register-surface-radius, 0);
+	box-shadow: var(--formal-register-surface-shadow, none);
+	backdrop-filter: none;
+	color: var(--formal-chapter-cream);
+
+	.rsvp__header {
+		max-width: 36rem;
+		margin-bottom: clamp(1.75rem, 3.5vw, 2.5rem);
+		text-align: left;
+	}
+
+	.rsvp__eyebrow {
+		font-family: var(--formal-chapter-label);
+		font-size: var(--formal-register-eyebrow-size, 0.68rem);
+		font-weight: var(--formal-register-eyebrow-weight, 500);
+		letter-spacing: var(--formal-register-eyebrow-tracking, 0.24em);
+		color: rgb(var(--formal-chapter-metal-rgb) / 88%);
+	}
+
+	.rsvp__separator {
+		display: none;
+	}
+
+	.rsvp__title {
+		font-family: var(--formal-chapter-display);
+		font-size: var(--formal-register-title-size, clamp(2rem, 4.4vw, 3.25rem));
+		font-weight: var(--formal-register-title-weight, 600);
+		letter-spacing: normal;
+		line-height: var(--formal-register-title-line-height, 1.06);
+		color: var(--formal-chapter-cream);
+		text-align: left;
+		text-wrap: balance;
+		overflow-wrap: anywhere;
+
+		&::after {
+			display: none;
+		}
+	}
+
+	.rsvp__subcopy {
+		max-width: var(--formal-chapter-measure);
+		margin-inline: 0;
+		font-family: var(--formal-chapter-body);
+		font-size: var(--formal-register-body-size, clamp(0.9rem, 1.6vw, 0.98rem));
+		line-height: 1.55;
+		color: rgb(var(--formal-chapter-cream-rgb) / 78%);
+		text-align: left;
+		text-wrap: pretty;
+		overflow-wrap: anywhere;
+	}
+
+	.rsvp__form {
+		width: var(--formal-chapter-measure);
+		max-width: 100%;
+		min-width: 0;
+	}
+
+	.rsvp__field,
+	.rsvp__radio-group,
+	.rsvp__attendance-summary {
+		width: 100%;
+		min-width: 0;
+		min-inline-size: 0;
+		max-width: 100%;
+	}
+
+	.rsvp__label,
+	.rsvp__legend {
+		font-family: var(--formal-chapter-label);
+		font-size: var(--formal-register-label-size, 0.7rem);
+		font-weight: 500;
+		letter-spacing: 0.16em;
+		color: var(--rsvp-label-color);
+	}
+
+	.rsvp__legend {
+		margin-bottom: 0.35rem;
+		text-align: left;
+	}
+
+	.rsvp__radio-group {
+		gap: 0;
+		margin: 0;
+	}
+
+	.rsvp__radio-group .rsvp__radio-card {
+		width: 100%;
+		min-width: 0;
+		min-height: 3.25rem;
+		justify-content: flex-start;
+		gap: 0.95rem;
+		padding: 1.05rem 0.35rem;
+		background: transparent;
+		border: 0;
+		border-top: 1px solid rgb(var(--formal-chapter-metal-rgb) / 22%);
+		border-radius: 0;
+
+		&:last-child {
+			border-bottom: 1px solid rgb(var(--formal-chapter-metal-rgb) / 22%);
+		}
+
+		&:hover {
+			background: rgb(var(--formal-chapter-cream-rgb) / 8%);
+			border-color: rgb(var(--formal-chapter-metal-rgb) / 22%);
+		}
+
+		&:focus-within {
+			outline: none;
+			box-shadow: inset 0 0 0 2px rgb(var(--formal-chapter-metal-rgb) / 55%);
+		}
+
+		&:has(input:checked) {
+			background: rgb(var(--formal-chapter-cream-rgb) / 12%);
+			border-color: rgb(var(--formal-chapter-metal-rgb) / 22%);
+			box-shadow: none;
+		}
+	}
+
+	.rsvp__radio-label {
+		min-width: 0;
+		font-family: var(--formal-chapter-body);
+		font-size: var(--framed-register-radio-label-size, clamp(0.95rem, 1.6vw, 1.05rem));
+		font-weight: 500;
+		letter-spacing: 0.01em;
+		color: var(--rsvp-radio-label-color);
+		overflow-wrap: anywhere;
+	}
+
+	.rsvp__field:focus-within .rsvp__field-line {
+		background: var(--formal-chapter-metal);
+	}
+
+	.rsvp__field input[type='text'],
+	.rsvp__field input[type='tel'],
+	.rsvp__field input[type='number'],
+	.rsvp__field textarea {
+		padding-inline: 0.15rem;
+		background: transparent;
+		border: 0;
+		border-radius: 0;
+		color: var(--formal-chapter-cream);
+		caret-color: var(--formal-chapter-metal);
+
+		&::placeholder {
+			color: var(--rsvp-placeholder-color);
+		}
+	}
+
+	.rsvp__field input[type='text']:focus,
+	.rsvp__field input[type='tel']:focus,
+	.rsvp__field input[type='number']:focus {
+		background: transparent;
+		box-shadow: 0 1px 0 0 var(--formal-chapter-metal);
+	}
+
+	.rsvp__field textarea {
+		border-bottom: 1px solid rgb(var(--formal-chapter-metal-rgb) / 28%);
+	}
+
+	.rsvp__field textarea:focus {
+		background: transparent;
+		border-bottom-color: var(--formal-chapter-metal);
+		box-shadow: none;
+	}
+
+	.rsvp__field--notes {
+		margin-top: clamp(0.5rem, 1.2vw, 0.85rem);
+
+		.rsvp__notes-label,
+		label {
+			display: block;
+			margin-bottom: 0.35rem;
+			font-family: var(--formal-chapter-label);
+			font-size: var(--formal-register-label-size, 0.74rem);
+			font-weight: 600;
+			letter-spacing: 0.18em;
+			color: var(--formal-chapter-metal);
+		}
+
+		textarea {
+			width: 100%;
+			height: auto;
+			min-height: clamp(3.5rem, 8vh, 5.5rem);
+			max-height: 12rem;
+			padding: 0.4rem 0.15rem;
+			border: none;
+			border-bottom: 1px solid rgb(var(--formal-chapter-metal-rgb) / 28%);
+			background: transparent;
+			color: var(--formal-chapter-cream);
+			font-family: var(--formal-chapter-body);
+			font-size: var(--framed-register-textarea-size, clamp(0.92rem, 1.4vw, 1rem));
+			line-height: 1.6;
+			resize: vertical;
+
+			&::placeholder {
+				color: var(--rsvp-placeholder-color);
+				font-style: italic;
+			}
+
+			&:focus {
+				border-bottom-color: var(--formal-chapter-metal);
+				outline: none;
+			}
+		}
+	}
+
+	.rsvp__field--phone .rsvp__country-code {
+		background: transparent;
+		border: 0;
+		border-bottom: 1px solid rgb(var(--formal-chapter-metal-rgb) / 28%);
+		border-radius: 0;
+		color: var(--formal-chapter-cream);
+
+		&:focus {
+			border-bottom-color: var(--formal-chapter-metal);
+			box-shadow: none;
+		}
+	}
+
+	.rsvp__guest-hint {
+		padding: 0;
+		color: rgb(var(--formal-chapter-cream-rgb) / 58%);
+	}
+
+	.rsvp__attendance-summary {
+		padding: 0.85rem 0.15rem;
+		background: transparent;
+		border: 0;
+		border-block: 1px solid rgb(var(--formal-chapter-metal-rgb) / 22%);
+		border-radius: 0;
+	}
+
+	.rsvp__attendance-summary-label {
+		color: rgb(var(--formal-chapter-cream-rgb) / 72%);
+	}
+
+	.rsvp__attendance-change {
+		padding: 0.2rem 0;
+		border: 0;
+		color: var(--formal-chapter-metal);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+
+		&:hover {
+			color: rgb(var(--formal-chapter-cream-rgb) / 92%);
+		}
+	}
+
+	.rsvp__button {
+		color: var(--rsvp-button-color);
+		background: var(--rsvp-button-bg);
+		border-color: var(--rsvp-button-border);
+		border-radius: var(--formal-chapter-control-radius);
+		box-shadow: none;
+		letter-spacing: 0.24em;
+	}
+
+	.rsvp__button:hover:not(:disabled) {
+		color: var(--rsvp-button-color-hover);
+		background: var(--rsvp-button-bg-hover);
+		border-color: var(--rsvp-button-border-hover);
+		transform: none;
+	}
+
+	.rsvp__calendar-popover {
+		background: rgb(var(--formal-chapter-cream-rgb) / 98%);
+		border: 1px solid rgb(var(--formal-chapter-metal-rgb) / 35%);
+		border-radius: var(--formal-chapter-control-radius);
+		box-shadow: 0 12px 32px rgb(0 0 0 / 35%);
+	}
+
+	.rsvp__calendar-option {
+		color: var(--formal-chapter-ink, var(--color-text-on-light, rgb(16 24 32)));
+		font-family: var(--formal-chapter-label, var(--font-label));
+		font-size: var(--framed-register-calendar-option-size, 0.76rem);
+		font-weight: 600;
+		letter-spacing: 0.12em;
+
+		&:hover,
+		&:focus-visible {
+			background: rgb(var(--formal-chapter-metal-rgb) / 14%);
+			border-color: rgb(var(--formal-chapter-metal-rgb) / 40%);
+			color: var(--formal-chapter-ink, var(--color-text-on-light, rgb(16 24 32)));
+		}
+	}
+
+	.rsvp__secondary-button {
+		background: transparent;
+		border: 1px solid rgb(var(--formal-chapter-metal-rgb) / 40%);
+		border-radius: var(--formal-chapter-control-radius);
+		color: var(--formal-chapter-cream);
+		font-family: var(--formal-chapter-body);
+		font-size: var(--framed-register-secondary-button-size, 0.78rem);
+		letter-spacing: 0.12em;
+		transition: all 0.2s ease;
+
+		&:hover,
+		&:focus-visible {
+			background: rgb(var(--formal-chapter-cream-rgb) / 10%);
+			border-color: var(--formal-chapter-cream);
+			color: var(--formal-chapter-cream);
+		}
+	}
+
+	.rsvp__whatsapp-cta {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		background: transparent;
+		border: 1px solid rgb(var(--formal-chapter-metal-rgb) / 50%);
+		border-radius: var(--formal-chapter-control-radius);
+		color: var(--formal-chapter-cream);
+		font-family: var(--formal-chapter-label);
+		font-size: var(--framed-register-whatsapp-cta-size, 0.78rem);
+		font-weight: 600;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		text-decoration: none;
+		padding: 0.75rem 1.25rem;
+		transition: all 0.2s ease;
+
+		.rsvp__whatsapp-icon {
+			width: 1.15rem;
+			height: 1.15rem;
+			fill: currentcolor;
+		}
+
+		&:hover,
+		&:focus-visible {
+			background: rgb(var(--formal-chapter-metal-rgb) / 16%);
+			border-color: var(--formal-chapter-cream);
+			color: var(--formal-chapter-cream);
+		}
+	}
+
+	.rsvp__revealed-location {
+		background: rgb(var(--formal-chapter-cream-rgb) / 6%);
+		border: 1px solid rgb(var(--formal-chapter-metal-rgb) / 28%);
+		border-radius: var(--formal-chapter-control-radius);
+		color: var(--formal-chapter-cream);
+
+		&-title {
+			color: var(--formal-chapter-metal);
+		}
+
+		&-name {
+			color: var(--formal-chapter-cream);
+		}
+
+		&-address,
+		&-time {
+			color: rgb(var(--formal-chapter-cream-rgb) / 82%);
+		}
+
+		&-link {
+			color: var(--formal-chapter-metal);
+
+			&:hover,
+			&:focus-visible {
+				color: var(--formal-chapter-cream);
+			}
+		}
+	}
+
+	.rsvp__greeting-icon {
+		color: var(--formal-chapter-metal);
+	}
+
+	.rsvp__greeting-message {
+		color: var(--formal-chapter-cream);
+	}
+
+	.rsvp__demo-footer {
+		margin-bottom: var(--formal-chapter-footer-margin-end, 1em);
+		color: rgb(var(--formal-chapter-cream-rgb) / 55%);
+	}
+
+	&[data-state='locked'] {
+		max-width: 40rem;
+
+		.rsvp__locked-card {
+			display: grid;
+			gap: 0.9rem;
+			padding: 0;
+			background: transparent;
+			border: 0;
+			border-radius: 0;
+			box-shadow: none;
+			backdrop-filter: none;
+			text-align: left;
+			overflow: visible;
+
+			&::before {
+				display: none;
+			}
+		}
+
+		.rsvp__locked-message {
+			max-width: var(--formal-chapter-measure);
+			margin: 0;
+			font-family: var(--formal-chapter-display);
+			font-size: var(--framed-register-locked-message-size, clamp(1.35rem, 3.2vw, 1.85rem));
+			font-weight: 500;
+			line-height: 1.2;
+			color: var(--formal-chapter-cream);
+			text-align: left;
+		}
+
+		.rsvp__locked-detail {
+			max-width: var(--formal-chapter-measure);
+			margin: 0;
+			font-family: var(--formal-chapter-body);
+			font-size: var(--formal-register-body-size, clamp(0.9rem, 1.6vw, 0.98rem));
+			line-height: 1.55;
+			color: rgb(var(--formal-chapter-cream-rgb) / 78%);
+			text-align: left;
+		}
+	}
+}
+
+// Opt-in «register opens»: as the chapter scrolls in, its header and card unfold from the top
+// edge like a page of the register. Profiles turn it on with
+// `--framed-register-open: framed-register-open`; the default `none` keeps the static chapter.
+@supports (animation-timeline: view()) {
+	@include a11y.motion-safe {
+		.rsvp[data-variant='framed-register'] {
+			.rsvp__header,
+			.rsvp__form,
+			.rsvp__locked-card {
+				animation: var(--framed-register-open, none) linear both;
+				animation-timeline: view();
+				animation-range: entry 10% cover 40%;
+			}
+		}
+	}
+}
+
+@keyframes framed-register-open {
+	from {
+		opacity: 0%;
+		clip-path: inset(0 0 100% 0);
+		translate: 0 1.25rem;
+	}
+
+	to {
+		opacity: 100%;
+		clip-path: inset(0 0 -2rem 0);
+		translate: 0 0;
+	}
+}
+
+// Confirmation: one screen with light type, centred like the cover. Visitors without a personal
+// link see the locked note; the eyebrow reads «Confirmación» instead of the acronym.
+// The outer wrapper only holds the confirmation; without its preset padding the section is
+// exactly one screen.
+.event-theme-wrapper .rsvp-section:has(> div > #rsvp > .rsvp[data-variant='framed-register']) {
+	padding: 0;
+
+	// The preset paints it rust and centers a narrow column; the ground runs edge to edge.
+	background: var(--framed-register-ground, rgb(62 72 40));
+	grid-template-columns: 100%;
+
+	> div,
+	#rsvp {
+		width: 100%;
+		max-width: none;
+	}
+}
+
+// The :has() matches the preset's own selector so this rule wins on specificity. The child
+// combinator keeps it off the outer wrapper, which also carries the class.
+.event-theme-wrapper .rsvp-section:has(> .rsvp[data-variant='framed-register']) {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100svh;
+	padding: var(
+			--framed-register-stage-top,
+			calc(var(--header-height-scrolled, 70px) + var(--preview-banner-height, 0px) + 0.75rem)
+		)
+		clamp(1.75rem, 8vw, 4rem) clamp(2rem, 6svh, 3.5rem);
+	background: radial-gradient(
+		120% 80% at 50% 0%,
+		rgb(var(--framed-register-olive-rgb, 92 104 62) / 100%) 0%,
+		rgb(var(--framed-register-olive-deep-rgb, 62 72 40) / 100%) 100%
+	);
+	color: var(--framed-register-ivory, rgb(251 249 243));
+	text-align: center;
+
+	.rsvp {
+		position: relative;
+		z-index: 1;
+		width: 100%;
+		max-width: 32rem;
+		margin: 0 auto;
+		padding: 0;
+		background: none;
+		border: 0;
+		box-shadow: none;
+		color: inherit;
+	}
+
+	.rsvp__header {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin-bottom: clamp(1.5rem, 4svh, 2.5rem);
+	}
+
+	.rsvp__eyebrow {
+		margin: 0;
+		font-size: var(--framed-register-eyebrow-size, 0);
+		letter-spacing: 0;
+
+		&::after {
+			content: 'Confirmación';
+			font-size: var(--framed-register-eyebrow-after-size, 0.7rem);
+			font-weight: 500;
+			letter-spacing: 0.32em;
+			text-transform: uppercase;
+			color: rgb(var(--framed-register-gold-rgb, 201 174 118) / 100%);
+		}
+	}
+
+	.rsvp__separator {
+		display: block;
+		width: 2rem;
+		height: 1px;
+		margin: 1rem auto;
+		font-size: var(--framed-register-separator-size, 0);
+		background: rgb(var(--framed-register-gold-rgb, 201 174 118) / 80%);
+	}
+
+	.rsvp__title {
+		margin: 0;
+		font-family: 'Cormorant Garamond Variable', serif;
+		font-size: var(--framed-register-title-size, clamp(2.6rem, 2.1rem + 2.4vw, 3.8rem));
+		font-style: italic;
+		font-weight: 500;
+		line-height: 1.05;
+		color: var(--framed-register-ivory, rgb(251 249 243));
+		text-align: center;
+		justify-content: center;
+	}
+
+	.rsvp__locked-card {
+		margin: 0 auto;
+		padding: 0;
+		max-width: 24rem;
+		background: none;
+		border: 0;
+		box-shadow: none;
+	}
+
+	.rsvp__locked-message,
+	.rsvp__locked-detail {
+		margin: 0;
+		font-size: var(--framed-register-locked-detail-size, 1.05rem);
+		line-height: 1.6;
+		color: rgb(251 249 243 / 88%);
+		text-align: center;
+	}
+
+	.rsvp__subcopy {
+		margin: 0.9rem auto 0;
+		max-width: 22rem;
+		font-size: var(--framed-register-subcopy-size, 1rem);
+		line-height: 1.55;
+		color: rgb(251 249 243 / 85%);
+		text-align: center;
+	}
+
+	// Each step already shows its heading; the legend repeats it, so it stays for screen
+	// readers only.
+	.rsvp__legend,
+	.rsvp__notes-label {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	.rsvp-steps__heading {
+		font-family: 'Cormorant Garamond Variable', serif;
+		font-size: var(--framed-register-heading-size, 1.7rem);
+		font-style: italic;
+		font-weight: 500;
+		color: var(--framed-register-ivory, rgb(251 249 243));
+		text-align: center;
+	}
+
+	// The accent stays a hairline: the send button is an outlined light label, not a block.
+	.rsvp__submit,
+	button[type='submit'] {
+		background: transparent;
+		border: 1px solid rgb(var(--framed-register-gold-rgb, 201 174 118) / 85%);
+		box-shadow: none;
+		color: var(--framed-register-ivory, rgb(251 249 243));
+	}
+
+	// Past the first step the welcome line drops and the total and the children sit side by side,
+	// so each step and its buttons stay on one screen.
+	.rsvp:has(.rsvp-steps:not([data-step-index='0'])) .rsvp__subcopy {
+		display: none;
+	}
+
+	.rsvp-steps[data-step='details'] .rsvp__extra-fields-inner {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		column-gap: 1.25rem;
+		align-items: end;
+	}
+
+	.rsvp__guest-hint {
+		grid-column: 1 / -1;
+		grid-row: 2;
+		margin: 0.6rem 0 0;
+		font-size: var(--framed-register-guest-hint-size, 0.85rem);
+	}
+
+	@media (height <= 44rem) {
+		.rsvp__header {
+			margin-bottom: 1rem;
+		}
+
+		.rsvp__separator {
+			margin: 0.6rem auto;
+		}
+
+		.rsvp__title {
+			font-size: var(--framed-register-title-size, 2.3rem);
+		}
+	}
+}
+
+// The shared wrappers paint a rust ground and a 24px bottom pad under the confirmation; on paper
+// they read as a stray band below the screen. The repeated class outranks the preset's :has()
+// selector.
+.event-theme-wrapper
+	.invitation-section-wrapper.invitation-section-wrapper[data-section-kind='rsvp']:has(
+		.rsvp[data-variant='framed-register']
+	) {
+	padding-bottom: 0;
+	background: var(--framed-register-paper, rgb(255 255 255));
+}

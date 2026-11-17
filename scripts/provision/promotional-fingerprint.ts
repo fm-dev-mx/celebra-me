@@ -24,6 +24,7 @@ import {
 import type { EnvironmentPromotionState } from '../../src/lib/status/types.ts';
 import { InvitationContentDraftContentSchema } from '../../src/lib/intake/schemas/invitation-content-draft.schema.ts';
 import { mapNestedToDraftContent } from '../../src/lib/intake/services/draft-content-mapper.ts';
+import { isRecord } from '../../src/lib/shared/data-utils.ts';
 import { sha256Hex } from '../shared/hash.ts';
 
 export { rewriteUploadedAssetReferences };
@@ -90,10 +91,6 @@ export type LiveFingerprintResult =
 
 function sha256Canonical(value: unknown): string {
 	return sha256Hex(canonicalize(value));
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
 function assetDigest(managedSha256: string | null, sha256: string | null): string | null {

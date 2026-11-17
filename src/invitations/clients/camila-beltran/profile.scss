@@ -1,0 +1,561 @@
+@use './composition';
+@use '../../../styles/fonts/parisienne';
+
+// Camila: flat stationery in rose gold, beige, gold and white. A plain rose envelope closed with a
+// gold wax seal, a full photograph for the cover, then cream paper with dusty-rose script
+// headings, small-caps gold eyebrows, thin gold rules and white cards. Tokens only; layout stays
+// with the variants.
+
+// A thin gold rule with a centre dot, for the section breaks.
+$camila-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 8' fill='none' stroke='%23C2A063' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M4 4h48M68 4h48'/%3E%3Ccircle cx='60' cy='4' r='2' fill='%23C2A063' stroke='none'/%3E%3C/svg%3E");
+$camila-flourish: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 12' fill='%23C2A063'%3E%3Cpath d='M6 6 66 5.3v1.4zM154 6 94 5.3v1.4z'/%3E%3Ccircle cx='71' cy='6' r='1'/%3E%3Ccircle cx='89' cy='6' r='1'/%3E%3Cpath d='M80 1.2 84.8 6 80 10.8 75.2 6z' fill='none' stroke='%23C2A063' stroke-width='.9'/%3E%3Cpath d='M80 4 82 6 80 8 78 6z'/%3E%3C/svg%3E");
+
+// Cotton paper: a fine tooth plus faint long fibres, in a deep rose so it reads on pink.
+$camila-paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.2 0 0 0 0 0.25 0 0 0 0.16 0'/%3E%3C/filter%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.06' numOctaves='3' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.97 0 0 0 0 0.96 0 0 0 0.16 -0.05'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23t)'/%3E%3Crect width='240' height='240' filter='url(%23f)'/%3E%3C/svg%3E");
+
+// Poured wax: dark and light mottling over the gold.
+$camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.2 0 0 0 0 0.06 0 0 0 0.14 0'/%3E%3C/filter%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.05' numOctaves='2' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.95 0 0 0 0 0.8 0 0 0 0.5 -0.18'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23w)'/%3E%3Crect width='160' height='160' filter='url(%23s)'/%3E%3C/svg%3E");
+
+.event--camila-beltran.theme-preset--jewelry-box {
+	--dress-code-artwork: url('./assets/evening-attire.svg');
+
+	// Palette.
+	--jewel-cream: rgb(250 245 238);
+	--jewel-cream-rgb: 250 245 238;
+	--jewel-backdrop: rgb(198 185 183);
+	--jewel-beige: rgb(241 231 218);
+	--jewel-beige-rgb: 241 231 218;
+	--jewel-white: rgb(255 253 250);
+	--jewel-white-rgb: 255 253 250;
+	--jewel-petal: rgb(240 172 180);
+	--jewel-petal-deep: rgb(234 158 168);
+	--jewel-petal-light: rgb(245 186 192);
+	--jewel-petal-shade-rgb: 176 96 108;
+	--jewel-flap-paper: linear-gradient(
+		270deg,
+		var(--jewel-petal-light) 0%,
+		var(--jewel-petal) 100%
+	);
+	--jewel-rose: rgb(190 128 122);
+	--jewel-rose-rgb: 190 128 122;
+	--jewel-rose-deep: rgb(158 96 92);
+	--jewel-rose-deep-rgb: 158 96 92;
+	--jewel-blush: rgb(236 204 198);
+	--jewel-blush-rgb: 236 204 198;
+	--jewel-blush-deep: rgb(226 186 180);
+	--jewel-gold: rgb(194 160 99);
+	--jewel-gold-rgb: 194 160 99;
+	--jewel-gold-light: rgb(226 201 148);
+	--jewel-gold-deep: rgb(150 116 60);
+	--jewel-gold-ink: rgb(122 92 44);
+	--jewel-gold-ink-deep: rgb(104 77 35);
+	--jewel-wax-shine: rgb(252 232 172);
+	--jewel-wax-gold: rgb(214 168 74);
+	--jewel-wax-deep: rgb(150 104 34);
+	--jewel-wax-edge: rgb(108 72 22);
+	--jewel-bronze: rgb(98 64 26);
+	--jewel-script: 'Parisienne', var(--font-calligraphy), cursive;
+	--jewel-serif: 'EB Garamond Variable', 'EB Garamond', georgia, serif;
+	--jewel-title-size: clamp(2.6rem, 11vw, 3.4rem);
+	--jewel-ink: rgb(84 66 60);
+	--jewel-ink-rgb: 84 66 60;
+	--jewel-ink-soft: rgb(120 100 92);
+	--jewel-ink-soft-rgb: 120 100 92;
+	--jewel-rule: #{$camila-rule};
+	--jewel-flourish: #{$camila-flourish};
+	--jewel-paper-grain: #{$camila-paper-grain};
+	--jewel-wax-grain: #{$camila-wax-grain};
+
+	// Grounds and inks.
+	--invitation-paper: var(--jewel-cream);
+	--color-surface-primary: var(--jewel-cream);
+	--color-surface-primary-rgb: var(--jewel-cream-rgb);
+	--color-surface-secondary: var(--jewel-beige);
+	--color-surface-secondary-rgb: var(--jewel-beige-rgb);
+	--color-surface-soft: var(--jewel-beige);
+	--color-surface-elevated: var(--jewel-white);
+	--color-action-accent: var(--jewel-gold);
+	--color-action-accent-rgb: var(--jewel-gold-rgb);
+	--color-text-primary: var(--jewel-ink);
+	--color-text-primary-rgb: var(--jewel-ink-rgb);
+	--color-text-secondary: var(--jewel-ink-soft);
+	--color-text-secondary-rgb: var(--jewel-ink-soft-rgb);
+	--color-text-emphasis: var(--jewel-gold-ink);
+	--color-text-on-light: var(--jewel-ink);
+
+	// The envelope: flat pink paper, no sky, a gold wax seal struck with a script initial.
+	--storybook-field: var(--jewel-petal);
+	--storybook-envelope-paper: linear-gradient(
+		180deg,
+		var(--jewel-petal) 0%,
+		var(--jewel-petal-deep) 100%
+	);
+	--storybook-liner-paper: var(--jewel-cream);
+	--storybook-paper-grain: var(--jewel-paper-grain);
+	--storybook-seal-rim-spread: -10%;
+	--storybook-seal-rim-shape: 44% 56% 47% 53% / 55% 43% 57% 45%;
+	--storybook-seal-rim-bg:
+		var(--jewel-wax-grain),
+		radial-gradient(
+			circle at 34% 28%,
+			var(--jewel-wax-shine) 0%,
+			var(--jewel-wax-gold) 38%,
+			var(--jewel-wax-deep) 82%,
+			var(--jewel-wax-edge) 100%
+		);
+	--storybook-seal-rim-shadow:
+		0 1px 1px rgb(var(--jewel-petal-shade-rgb) / 50%),
+		0 10px 18px -6px rgb(var(--jewel-petal-shade-rgb) / 60%),
+		inset 0 1.5px 1px rgb(var(--jewel-white-rgb) / 55%),
+		inset 0 -2px 4px rgb(var(--jewel-ink-rgb) / 35%);
+	--storybook-ink: var(--jewel-gold);
+	--storybook-instruction-ink: var(--jewel-rose-deep);
+	--storybook-wax-light: var(--jewel-gold-light);
+	--storybook-wax: var(--jewel-gold);
+	--storybook-wax-deep: var(--jewel-gold-deep);
+	--storybook-wax-press: var(--jewel-gold-ink);
+	--storybook-seal-icon-opacity: 0%;
+	--storybook-seal-monogram-font: var(--jewel-script);
+	--storybook-card-bg: var(--jewel-white);
+	--storybook-card-ornament-display: none;
+
+	// The cover: the name in script on the photograph, cream on a soft warm shade.
+	--hero-title-color-start-fallback: var(--jewel-white);
+	--hero-title-color-mid-fallback: var(--jewel-white);
+	--hero-title-color-end-fallback: var(--jewel-white);
+	--hero-label-color: var(--jewel-white);
+	--hero-badge-text-fallback: var(--jewel-white);
+	--hero-badge-text: var(--jewel-white);
+	--hero-heading-paint: none;
+	--hero-heading-fill: var(--jewel-white);
+	--hero-heading-size: clamp(4.6rem, 23vw, 6.4rem);
+	--hero-heading-weight: 400;
+	--hero-heading-line-height: 1;
+	--hero-eyebrow-font: var(--font-label, var(--font-body));
+	--hero-eyebrow-size: 0.78rem;
+	--hero-eyebrow-weight: 500;
+	--hero-eyebrow-tracking: 0.34em;
+	--hero-date-size: 0.86rem;
+	--hero-date-tracking: 0.28em;
+	--hero-date-weight: 500;
+	--hero-date-transform: uppercase;
+	--hero-divider-fill: var(--jewel-gold-light);
+	--hero-divider-margin: 0.9rem auto 1rem;
+	--hero-overlay: rgb(var(--jewel-ink-rgb) / 0%);
+	--hero-overlay-gradient: linear-gradient(
+		180deg,
+		rgb(var(--jewel-ink-rgb) / 36%) 0%,
+		rgb(var(--jewel-ink-rgb) / 0%) 22%,
+		rgb(var(--jewel-ink-rgb) / 0%) 46%,
+		rgb(var(--jewel-ink-rgb) / 62%) 100%
+	);
+	--hero-copy-shadow: 0 1px 16px rgb(var(--jewel-ink-rgb) / 62%);
+
+	// Section grounds.
+	--quote-bg-fallback: var(--jewel-cream);
+	--quote-text-color-fallback: var(--jewel-ink);
+	--quote-author-color-fallback: var(--jewel-gold-ink);
+	--quote-accent-color-fallback: var(--jewel-gold);
+	--countdown-section-background: var(--jewel-beige);
+	--family-bg-fallback: var(--jewel-cream);
+	--family-panel-bg-fallback: transparent;
+	--family-panel-border-fallback: 0;
+	--family-panel-shadow-fallback: none;
+	--family-text-primary-fallback: var(--jewel-rose-deep);
+	--family-text-muted-fallback: var(--jewel-ink-soft);
+	--family-accent-fallback: var(--jewel-gold);
+	--family-divider: var(--jewel-rule) center / contain no-repeat;
+	--gallery-section-bg-fallback: var(--jewel-cream);
+	--gallery-title-color-fallback: var(--jewel-rose-deep);
+
+	// Location: cream ground, warm ink, gold accents and white cards.
+	--location-bg: var(--jewel-cream);
+	--location-bg-fallback: var(--jewel-cream);
+	--location-text-color: var(--jewel-ink);
+	--location-title-color: var(--jewel-gold-ink);
+	--location-place-color: var(--jewel-ink);
+	--location-place-color-fallback: var(--jewel-ink);
+	--location-date-color: var(--jewel-gold);
+	--location-hour-color-fallback: var(--jewel-gold-ink);
+	--location-address-color-fallback: var(--jewel-ink-soft);
+	--location-flourish-color-fallback: var(--jewel-gold);
+	--location-outer-frame-bg: var(--jewel-gold);
+	--location-inner-frame-bg: var(--jewel-white);
+	--location-card-bg-fallback: var(--jewel-white);
+	--location-card-border-fallback: 1px solid rgb(var(--jewel-gold-rgb) / 22%);
+	--location-card-shadow-fallback: 0 12px 30px rgb(var(--jewel-rose-deep-rgb) / 10%);
+	--location-card-hover-shadow-fallback: 0 12px 32px rgb(var(--jewel-rose-deep-rgb) / 14%);
+	--location-indications-panel-bg-fallback: rgb(var(--jewel-white-rgb) / 70%);
+	--location-indications-panel-border-fallback: 1px solid rgb(var(--jewel-gold-rgb) / 22%);
+	--location-indications-heading-color-fallback: var(--jewel-gold-ink);
+	--location-indication-text-color-fallback: var(--jewel-ink);
+	--location-indication-strong-color: var(--jewel-ink);
+	--location-indication-icon-color-fallback: var(--jewel-gold);
+	--location-copy-button-color: var(--jewel-gold-ink);
+	--location-copy-button-border: 1px solid rgb(var(--jewel-gold-rgb) / 30%);
+	--location-copy-button-hover-color: var(--jewel-gold-deep);
+	--location-nav-bg: rgb(var(--jewel-gold-rgb) / 8%);
+	--location-nav-color: var(--jewel-ink);
+	--location-nav-border: 1px solid rgb(var(--jewel-gold-rgb) / 30%);
+	--location-nav-hover-bg: var(--jewel-gold);
+	--location-nav-hover-color: var(--jewel-white);
+	--location-nav-primary-bg: var(--jewel-gold);
+	--location-nav-primary-color: var(--jewel-white);
+	--location-nav-apple-bg: var(--jewel-white);
+	--location-nav-apple-color: var(--jewel-ink);
+	--location-nav-apple-border: rgb(var(--jewel-gold-rgb) / 30%);
+	--location-nav-apple-hover-bg: var(--jewel-cream);
+	--location-nav-apple-hover-border-color: rgb(var(--jewel-gold-rgb) / 50%);
+	--location-nav-maps-bg: rgb(var(--jewel-gold-rgb) / 10%);
+	--location-nav-maps-color: var(--jewel-ink);
+	--location-nav-maps-border: rgb(var(--jewel-gold-rgb) / 50%);
+	--location-nav-maps-hover-bg: rgb(var(--jewel-gold-rgb) / 20%);
+	--location-nav-maps-hover-border-color: var(--jewel-gold);
+
+	// The interlude photograph waits on cream, not black.
+	--interlude-bg: var(--jewel-cream);
+	--color-surface-dark: var(--jewel-ink);
+	--color-surface-dark-rgb: var(--jewel-ink-rgb);
+	--color-text-on-dark: var(--jewel-white);
+
+	// Footer pull cue: a wax-gold orb with a soft rose pool and invitation label at the bottom edge.
+	--footer-pull-shape: 50%;
+	--footer-pull-color: var(--jewel-gold);
+	--footer-pull-body: radial-gradient(
+		circle at 36% 30%,
+		var(--jewel-wax-shine) 0%,
+		var(--jewel-wax-gold) 45%,
+		var(--jewel-wax-deep) 100%
+	);
+	--footer-pull-glow: rgb(var(--jewel-gold-rgb) / 50%);
+	--footer-pull-pool: radial-gradient(
+		ellipse 65% 100% at 50% 100%,
+		rgb(var(--jewel-rose-rgb) / 22%),
+		transparent 72%
+	);
+	--footer-pull-label: 'Deslice hacia arriba';
+	--footer-pull-label-color: var(--jewel-gold-ink);
+	--footer-pull-label-size: 0.875rem;
+	--footer-pull-breathe: footer-pull-breathe;
+}
+
+// Gifts: two compact white tiles with a gold-ringed beige medallion, and an italic note. The
+// section declares its own defaults, so these are restated on it.
+.event--camila-beltran.theme-preset--jewelry-box .gifts-section {
+	--gifts-bg: var(--jewel-cream);
+	--gifts-padding-block: clamp(4rem, 12vw, 6rem);
+	--gifts-container-max-width: 34rem;
+	--gifts-header-margin-bottom: 2rem;
+	--gifts-flourish-display: none;
+	--gifts-separator-display: none;
+	--gifts-subtitle-size: 1.05rem;
+	--gifts-subtitle-color: var(--jewel-ink);
+	--gifts-subtitle-max-width: 26rem;
+	--gifts-grid-min-column: 8.5rem;
+	--gifts-grid-gap: 1rem;
+	--gifts-card-bg: var(--jewel-white);
+	--gifts-card-border: 1px solid rgb(var(--jewel-gold-rgb) / 45%);
+	--gifts-card-radius: 6px;
+	--gifts-card-shadow: 0 12px 24px -18px rgb(var(--jewel-rose-deep-rgb) / 45%);
+	--gifts-card-hover-transform: none;
+	--gifts-card-hover-shadow: var(--gifts-card-shadow);
+	--gifts-card-padding: 1.6rem 0.75rem;
+	--gifts-card-title-font: var(--jewel-serif);
+	--gifts-card-title-size: 1.15rem;
+	--gifts-card-title-color: var(--jewel-rose-deep);
+	--gifts-card-title-tracking: 0.01em;
+	--gifts-icon-size: 3.25rem;
+	--gifts-icon-bg: var(--jewel-beige);
+	--gifts-icon-border: 1px solid rgb(var(--jewel-gold-rgb) / 60%);
+	--gifts-icon-shadow: none;
+	--gifts-icon-color: var(--jewel-gold-deep);
+	--gifts-note-font: var(--jewel-serif);
+	--gifts-note-size: 1.1rem;
+	--gifts-note-color: var(--jewel-ink);
+	--gifts-note-gap: 1.75rem;
+}
+
+// Header and menu: white over the cover, warm ink on cream once scrolled; a cream drawer. The
+// preset sets these on the header itself, so they are restated there.
+.event--camila-beltran.theme-preset--jewelry-box .header-base {
+	--header-nav-color-fallback: var(--jewel-ink);
+	--header-nav-color-transparent-fallback: var(--jewel-white);
+	--header-nav-shadow-transparent: 0 1px 4px rgb(var(--jewel-ink-rgb) / 30%);
+	--header-nav-title-color-fallback: var(--jewel-rose-deep);
+	--header-nav-hover-color-fallback: var(--jewel-rose-deep);
+	--header-nav-login-color: var(--jewel-ink);
+	--header-nav-cta-color-fallback: var(--jewel-gold-ink);
+	--header-nav-cta-border-fallback: var(--jewel-gold);
+	--hamburger-color-fallback: var(--jewel-ink);
+	--hamburger-color-menu-open-fallback: var(--jewel-rose-deep);
+	--mobile-drawer-bg: var(--jewel-cream);
+	--mobile-drawer-border: rgb(var(--jewel-gold-rgb) / 36%);
+	--mobile-drawer-shadow: -20px 0 60px rgb(var(--jewel-ink-rgb) / 25%);
+	--mobile-drawer-sheen: none;
+	--mobile-drawer-link-color-fallback: var(--jewel-ink);
+	--mobile-drawer-link-hover-fallback: var(--jewel-rose-deep);
+	--mobile-drawer-login-color: var(--jewel-ink-soft);
+	--mobile-drawer-login-hover-color: var(--jewel-ink);
+	--mobile-drawer-footer-copy: var(--jewel-ink-soft);
+	--mobile-drawer-cta-bg-fallback: var(--jewel-gold);
+	--mobile-drawer-cta-color-fallback: var(--jewel-white);
+	--mobile-drawer-cta-border-fallback: 1px solid var(--jewel-gold);
+	--mobile-drawer-cta-shadow: 0 4px 16px rgb(var(--jewel-gold-rgb) / 30%);
+	--mobile-drawer-cta-hover-bg-fallback: var(--jewel-gold-deep);
+	--mobile-drawer-cta-hover-color-fallback: var(--jewel-white);
+	--mobile-drawer-cta-hover-border: 1px solid var(--jewel-gold-deep);
+	--mobile-drawer-cta-hover-shadow: 0 8px 22px rgb(var(--jewel-gold-rgb) / 36%);
+}
+
+// RSVP: white fields on cream with gold hairlines, the two answers side by side as pills, the
+// chosen one blushed; the lantern and its track in gold.
+.event--camila-beltran.theme-preset--jewelry-box .rsvp {
+	--rsvp-subcopy-color: var(--jewel-ink);
+	--rsvp-subcopy-size: 1rem;
+	--rsvp-label-color: var(--jewel-gold-ink);
+	--rsvp-field-bg: var(--jewel-white);
+	--rsvp-field-bg-focus: var(--jewel-white);
+	--rsvp-field-border: rgb(var(--jewel-gold-rgb) / 55%);
+	--rsvp-placeholder-color: var(--jewel-ink-soft);
+	--rsvp-radius-field: 999px;
+	--rsvp-input-padding: 0.72rem 1.1rem;
+	--rsvp-radius-card: 18px;
+	--rsvp-radio-columns: 1fr 1fr;
+	--rsvp-radio-card-justify: center;
+	--rsvp-radio-bg: var(--jewel-white);
+	--rsvp-radio-bg-hover: rgb(var(--jewel-blush-rgb) / 35%);
+	--rsvp-radio-border: rgb(var(--jewel-gold-rgb) / 55%);
+	--rsvp-radio-selected-bg: rgb(var(--jewel-blush-rgb) / 60%);
+	--rsvp-radio-selected-border: var(--jewel-rose);
+	--rsvp-radio-selected-shadow: none;
+	--rsvp-radio-label-color: var(--jewel-ink);
+	--rsvp-radio-label-color-selected: var(--jewel-rose-deep);
+	--rsvp-radio-indicator-border: var(--jewel-rose);
+	--rsvp-radio-indicator-dot: var(--jewel-rose);
+	--rsvp-steps-track: rgb(var(--jewel-gold-rgb) / 40%);
+	--rsvp-steps-lantern: var(--jewel-gold);
+	--rsvp-steps-ink: var(--jewel-rose);
+	--rsvp-steps-muted: var(--jewel-gold-ink);
+	--rsvp-steps-heading-align: center;
+}
+
+// Reserved passes: a flat white card with a gold hairline on cream, the title in rose script and
+// the seat count in a thin gold frame, matching the RSVP stationery below it.
+.event--camila-beltran.theme-preset--jewelry-box .personalized-access {
+	--pa-card-bg-color-fallback: var(--jewel-white);
+	--pa-card-bg-image: none;
+	--pa-card-bg-image-fallback: none;
+	--pa-card-border-fallback: 1px solid rgb(var(--jewel-gold-rgb) / 45%);
+	--pa-card-inner-border-fallback: 1px solid rgb(var(--jewel-gold-rgb) / 25%);
+	--pa-card-border-radius: 18px;
+	--pa-card-inner-radius: 12px;
+	--pa-card-shadow: 0 18px 40px rgb(var(--jewel-rose-deep-rgb) / 12%);
+	--pa-card-shadow-fallback: 0 18px 40px rgb(var(--jewel-rose-deep-rgb) / 12%);
+	--pa-card-glow: none;
+	--pa-card-glow-fallback: none;
+	--pa-corner-color: var(--jewel-gold);
+	--pa-corner-color-fallback: var(--jewel-gold);
+	--pa-corner-glow-blur: 0;
+	--pa-corner-glow-blur-fallback: 0;
+	--pa-title-font: var(--jewel-script);
+	--pa-title-size: clamp(2.6rem, 11vw, 3.2rem);
+	--pa-title-transform: none;
+	--pa-title-tracking: 0;
+	--pa-title-tracking-fallback: 0;
+	--pa-title-shadow: none;
+	--pa-title-color: var(--jewel-rose-deep);
+	--pa-title-color-fallback: var(--jewel-rose-deep);
+	--pa-subtitle-color-fallback: var(--jewel-gold-ink);
+	--pa-subtitle-size: 1rem;
+	--pa-label-size: 0.8125rem;
+	--pa-eyebrow-size: 0.8125rem;
+	--pa-footer-size: 1rem;
+	--pa-subtitle-font: var(--jewel-serif);
+	--pa-subtitle-font-style: italic;
+	--pa-eyebrow-color: var(--jewel-gold-ink);
+	--pa-eyebrow-color-fallback: var(--jewel-gold-ink);
+	--pa-guest-font: var(--jewel-serif);
+	--pa-guest-color: var(--jewel-ink);
+	--pa-guest-color-fallback: var(--jewel-ink);
+	--pa-divider-diamond-bg-fallback: var(--jewel-gold);
+	--pa-divider-diamond-shadow-fallback: none;
+	--pa-count-color: var(--jewel-rose-deep);
+	--pa-count-color-fallback: var(--jewel-rose-deep);
+	--pa-count-shadow: none;
+	--pa-count-frame-border-fallback: 1px solid rgb(var(--jewel-gold-rgb) / 55%);
+	--pa-count-frame-inner-border-fallback: 1px solid rgb(var(--jewel-gold-rgb) / 25%);
+	--pa-count-frame-shadow: none;
+	--pa-count-frame-shadow-fallback: none;
+	--pa-label-color: var(--jewel-gold-ink);
+	--pa-label-color-fallback: var(--jewel-gold-ink);
+	--pa-label-opacity: 1;
+	--pa-footer-bg: transparent;
+	--pa-footer-bg-fallback: transparent;
+	--pa-footer-border-top-fallback: 1px solid rgb(var(--jewel-gold-rgb) / 30%);
+	--pa-footer-text-color-fallback: var(--jewel-ink);
+	--pa-footer-text-font-style: italic;
+	--pa-seal-color: var(--jewel-gold);
+	--pa-padding-block-lg: clamp(2rem, 7svh, 5rem);
+
+	// Short phones keep the whole pass on one screen.
+	@media (height <= 700px) {
+		--pa-padding-block: 1.5rem;
+		--pa-title-size: 2.5rem;
+		--pa-count-size: 2.75rem;
+	}
+}
+
+// Thank-you: centred stationery copy with a plain initial, and tighter padding so the portrait,
+// the message and the signature share one screen on phones.
+.event--camila-beltran.theme-preset--jewelry-box .thank-you-section {
+	--thank-you-keepsake-padding: clamp(3rem, 9svh, 5rem) 1.25rem clamp(2.5rem, 7svh, 4rem);
+	--thank-you-keepsake-padding-block-lg: clamp(2.5rem, 7svh, 4rem);
+	--thank-you-keepsake-copy-align: center;
+	--thank-you-keepsake-text-align: center;
+	--thank-you-drop-cap-float: none;
+	--thank-you-drop-cap-size: 1em;
+	--thank-you-drop-cap-size-desktop: 1em;
+	--thank-you-drop-cap-weight: inherit;
+	--thank-you-drop-cap-line-height: inherit;
+	--thank-you-drop-cap-margin: 0;
+}
+
+// Modern held footer: pull cue into an optional reply prompt under a wax-gold orb, closing script,
+// gold rule and restrained platform row.
+.event--camila-beltran.theme-preset--jewelry-box .invitation-footer {
+	--invitation-footer-reveal: held;
+	--footer-open-glide: 720ms;
+	--footer-reveal-duration: 520ms;
+	--footer-reveal-stagger: 0ms;
+	--footer-reveal-rise: 0.25rem;
+	--footer-reply-overshoot: 0;
+	--invitation-footer-reply: on;
+	--footer-reply-eyebrow: 'Su lugar está apartado';
+	--footer-reply-question: '¿Me acompaña el 11 de diciembre?';
+	--footer-reply-note: 'Antes del miércoles 25 de noviembre';
+	--footer-reply-answered: 'Gracias por ser parte de este día.';
+	--footer-reply-eyebrow-size: 0.78rem;
+	--footer-reply-question-font: var(--jewel-serif);
+	--footer-reply-question-size: clamp(1.5rem, 6vw, 1.9rem);
+	--footer-reply-note-size: 0.9375rem;
+	--footer-reply-ink: var(--jewel-white);
+	--footer-reply-muted: rgb(var(--jewel-beige-rgb) / 82%);
+	--footer-reply-accent: var(--jewel-gold-light);
+	--footer-reply-lantern-height: 1.4rem;
+	--footer-reply-lantern-glow: rgb(var(--jewel-gold-rgb) / 40%);
+	--footer-reply-lantern: radial-gradient(
+		circle at 36% 30%,
+		var(--jewel-wax-shine) 0%,
+		var(--jewel-wax-gold) 45%,
+		var(--jewel-wax-deep) 100%
+	);
+	--footer-reply-button-bg: linear-gradient(
+		to bottom,
+		var(--jewel-wax-shine) 0%,
+		var(--jewel-gold-light) 55%,
+		var(--jewel-gold) 100%
+	);
+	--footer-reply-button-ink: rgb(48 36 30);
+	--footer-reply-button-font: var(--font-label, var(--font-body));
+	--footer-reply-button-size: 0.8125rem;
+	--footer-reply-glint: linear-gradient(
+		105deg,
+		transparent 40%,
+		rgb(255 255 255 / 50%) 50%,
+		transparent 60%
+	);
+	--footer-reply-gap: 2.5rem;
+	--footer-bg: var(--jewel-ink);
+	--footer-sky: radial-gradient(
+		ellipse 65% 40% at 50% 0%,
+		rgb(var(--jewel-rose-rgb) / 14%),
+		transparent 70%
+	);
+	--footer-border-color: rgb(var(--jewel-gold-rgb) / 45%);
+	--footer-closing-font: var(--jewel-script);
+	--footer-closing-style: normal;
+	--footer-closing-size: clamp(2rem, 6vw, 2.5rem);
+	--footer-closing-color: var(--jewel-petal-light);
+	--footer-divider-display: block;
+	--footer-divider-line: rgb(var(--jewel-gold-rgb) / 55%);
+	--footer-divider-glow: none;
+	--footer-logo-claro: none;
+	--footer-logo-oscuro: block;
+	--footer-logo-width: 100px;
+	--footer-logo-opacity: 82%;
+	--footer-powered-size: 0.75rem;
+	--footer-powered-opacity: 75%;
+	--footer-rights-size: 0.75rem;
+	--footer-link-tap-padding: 0.875rem;
+	--footer-content-gap: 0.9rem;
+	--footer-primary-row-direction: column;
+	--footer-primary-row-direction-sm: column;
+	--footer-primary-row-gap-sm: 0.9rem;
+	--footer-platform-rule: none;
+	--footer-platform-rule-space: 0;
+	--footer-contact-bg: none;
+	--footer-contact-border: 0;
+	--footer-contact-padding: 0.55rem 1.35rem;
+	--footer-contact-color: rgb(var(--jewel-beige-rgb) / 85%);
+	--footer-contact-weight: 400;
+	--footer-contact-icon-filter: brightness(0) saturate(0) invert(92%) sepia(10%) saturate(300%)
+		hue-rotate(350deg);
+	--color-action-accent: var(--jewel-gold-light);
+	--color-text-primary: var(--jewel-beige);
+	--color-text-on-light: rgb(48 36 30);
+	--footer-control-font-size: 0.75rem;
+	--footer-replay-order: 0;
+	--footer-replay-color: var(--jewel-gold-light);
+	--footer-replay-font-size: 0.75rem;
+	--footer-replay-opacity: 100%;
+	--footer-padding-bottom: 3rem;
+}
+
+// Preserve the mobile mosaic and give the same crops more room on desktop.
+.event--camila-beltran.theme-preset--jewelry-box .gallery-section {
+	--gallery-section-padding-block: clamp(1rem, 3svh, 1.5rem);
+	--gallery-section-padding-inline: 1rem;
+	--gallery-header-gap: clamp(0.5rem, 2svh, 1.25rem);
+	--gallery-container-max-width: min(30rem, 90vw, calc((100svh - 12rem) / 2));
+	--gallery-grid-columns-mobile: 2;
+	--gallery-grid-columns-tablet: 2;
+	--gallery-grid-columns-desktop: 2;
+	--gallery-grid-column-gap: 0.25rem;
+	--gallery-grid-row-gap: 0.25rem;
+	--gallery-item-aspect-ratio: 3 / 4;
+	--gallery-item-radius: 0;
+	--gallery-item-border: 0;
+	--gallery-item-shadow: none;
+	--gallery-item-emphasis-shadow: none;
+	--gallery-item-emphasis-border-color: transparent;
+
+	@media (width >= 1024px) {
+		--gallery-container-max-width: min(64rem, 90vw, calc((100svh - 12rem) * 1.125));
+		--gallery-grid-columns-desktop: 3;
+	}
+}
+
+.event--camila-beltran .floating-cta {
+	--floating-cta-avoid-content: on;
+	--floating-cta-bg: var(--jewel-rose-deep);
+	--floating-cta-ink: var(--jewel-white);
+	--floating-cta-border: 1px solid rgb(var(--jewel-gold-rgb) / 55%);
+	--floating-cta-shadow: 0 10px 26px -8px rgb(var(--jewel-ink-rgb) / 45%);
+	--floating-cta-panel-bg: var(--jewel-white);
+	--floating-cta-panel-ink: var(--jewel-ink);
+	--floating-cta-panel-muted: var(--jewel-gold-ink);
+	--floating-cta-glint: linear-gradient(
+		105deg,
+		transparent 40%,
+		rgb(255 255 255 / 40%) 50%,
+		transparent 60%
+	);
+}
+
+.event--camila-beltran .memories-section[data-variant='card'] {
+	--memories-action-bg: var(--jewel-rose-deep);
+	--memories-action-ink: var(--jewel-white);
+	--memories-action-radius: 999px;
+	--memories-action-font: var(--jewel-serif);
+	--memories-action-size: 1rem;
+}

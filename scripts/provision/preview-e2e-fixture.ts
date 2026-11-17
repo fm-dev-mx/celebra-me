@@ -6,7 +6,8 @@
  * Does NOT restore Dashboard/API creation. Production is rejected.
  */
 
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
+import { sha256Hex } from '../shared/hash.ts';
 import {
 	PREVIEW_FIXTURE_EVENT_TYPE,
 	PREVIEW_FIXTURE_SLUG,
@@ -24,7 +25,7 @@ export const PREVIEW_E2E_FIXTURE_OPERATION = 'e2e-fixture';
 export const PREVIEW_E2E_FIXTURE_POSTCONDITION = 'published_with_draft_divergence';
 
 function deriveDeterministicUuid(namespace: string, seed: string): string {
-	const hash = createHash('sha256').update(`celebra-me:${namespace}:${seed}`).digest('hex');
+	const hash = sha256Hex(`celebra-me:${namespace}:${seed}`);
 	return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-a${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
 }
 
@@ -175,12 +176,11 @@ function ensurePublishedContent(dbUrl: string, invitationId: string, apply: bool
 	const content = JSON.stringify(buildPreviewFixtureContent());
 	const insert = runPsql(
 		`insert into public.published_invitation_content (
-			invitation_project_id, slug, event_type, is_demo, content, version
+			invitation_project_id, slug, event_type, content, version
 		) values (
 			${sqlLiteral(invitationId)}::uuid,
 			${sqlLiteral(PREVIEW_FIXTURE_SLUG)},
 			${sqlLiteral(PREVIEW_FIXTURE_EVENT_TYPE)},
-			false,
 			${sqlLiteral(content)}::jsonb,
 			1
 		)
@@ -273,7 +273,7 @@ export function ensurePreviewE2eFixture(options: {
 					 where invitation_project_id = ${sqlLiteral(existing.id)}::uuid
 					   and slug = ${sqlLiteral(PREVIEW_FIXTURE_SLUG)}
 					   and event_type = ${sqlLiteral(PREVIEW_FIXTURE_EVENT_TYPE)}
-					   and is_demo = false and deleted_at is null
+					   and deleted_at is null
 					   and content is distinct from ${sqlLiteral(JSON.stringify(content))}::jsonb;`,
 					dbUrl,
 					{ tuplesOnly: true, throwOnError: false },

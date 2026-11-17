@@ -453,16 +453,12 @@ function hashTargetAssetState(
 	targetDbAssets: TargetAssetRecord[],
 	observedStorage: Record<string, ObservedStorageState>,
 ): string {
-	return createHash('sha256')
-		.update(
-			JSON.stringify({
-				rows: [...targetDbAssets].sort((a, b) =>
-					a.storagePath.localeCompare(b.storagePath),
-				),
-				observedStorage,
-			}),
-		)
-		.digest('hex');
+	return sha256Hex(
+		JSON.stringify({
+			rows: [...targetDbAssets].sort((a, b) => a.storagePath.localeCompare(b.storagePath)),
+			observedStorage,
+		}),
+	);
 }
 
 export function assertReconciledMutationTargets(
@@ -1020,7 +1016,7 @@ function buildPublicationRpcSql(
 		},
 		livePub?.content as Record<string, unknown> | undefined,
 	);
-	return `select row_to_json(t) from (select publish_invitation_atomic(p_invitation_id => '${targetInvitationId}'::uuid, p_draft_id => ${draftIdSql}::uuid, p_expected_draft_updated_at => ${draftUpdatedAtSql}::timestamptz, p_expected_published_version => ${expectedPublishedVersion ?? 'null'}, p_public_metadata_hash => ${sqlLiteral(publicMetadataHash)}, p_projection_hash => ${sqlLiteral(hashPublicationProjection(targetPublishedContent))}, p_idempotency_key => '${randomUUID()}'::uuid, p_slug => ${sqlLiteral(slug)}, p_event_type => ${sqlLiteral(eventType)}, p_is_demo => false, p_content => ${sqlLiteral(JSON.stringify(targetPublishedContent))}::jsonb)) t;`;
+	return `select row_to_json(t) from (select publish_invitation_atomic(p_invitation_id => '${targetInvitationId}'::uuid, p_draft_id => ${draftIdSql}::uuid, p_expected_draft_updated_at => ${draftUpdatedAtSql}::timestamptz, p_expected_published_version => ${expectedPublishedVersion ?? 'null'}, p_public_metadata_hash => ${sqlLiteral(publicMetadataHash)}, p_projection_hash => ${sqlLiteral(hashPublicationProjection(targetPublishedContent))}, p_idempotency_key => '${randomUUID()}'::uuid, p_slug => ${sqlLiteral(slug)}, p_event_type => ${sqlLiteral(eventType)}, p_content => ${sqlLiteral(JSON.stringify(targetPublishedContent))}::jsonb)) t;`;
 }
 
 // eslint-disable-next-line complexity -- Hosted adapter applies one verified plan across related DB resources while preserving target-owned fields.
@@ -1815,15 +1811,13 @@ function computeTargetAssetFingerprint(targetDbUrl: string, invitationId: string
 		return refs.sort();
 	};
 
-	return createHash('sha256')
-		.update(
-			JSON.stringify({
-				dbRows,
-				draftRefs: extractRefs(draftContent),
-				pubRefs: extractRefs(pubContent),
-			}),
-		)
-		.digest('hex');
+	return sha256Hex(
+		JSON.stringify({
+			dbRows,
+			draftRefs: extractRefs(draftContent),
+			pubRefs: extractRefs(pubContent),
+		}),
+	);
 }
 
 // ---------------------------------------------------------------------------

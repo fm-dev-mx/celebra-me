@@ -141,7 +141,7 @@
     "rsvp": {
         "title": "Confirme su asistencia.",
         "guestCap": 8,
-        "demoMaxChildren": 2,
+        "demoMaxChildren": 0,
         "confirmationMessage": "Será un honor contar con su presencia.",
         "confirmationMode": "both",
         "whatsappConfig": {

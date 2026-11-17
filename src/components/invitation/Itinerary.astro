@@ -18,9 +18,10 @@ interface Props {
 	closingNote?: string;
 	/** Pinned scroll scene; the schema allows it on the standard variant only. */
 	scene?: ItineraryScene;
+	timeFormat?: '12h' | '12h-es';
 }
 
-const { title = "Itinerario", items, variant, monogram, subtitle, closingNote, scene } = Astro.props;
+const { title = "Itinerario", items, variant, monogram, subtitle, closingNote, scene, timeFormat } = Astro.props;
 const isRibbonRoute = scene === 'ribbon-route' && variant === 'standard' && items.length >= 2;
 ---
 
@@ -52,7 +53,7 @@ const isRibbonRoute = scene === 'ribbon-route' && variant === 'standard' && item
 			) : variant === 'stacked-cards' ? (
 				<ItineraryStackedCards items={items} />
 			) : (
-				<TimelineList items={items} />
+				<TimelineList items={items} timeFormat={timeFormat} />
 			)}
 
 			<div class="itinerary__line-end" aria-hidden="true"></div>

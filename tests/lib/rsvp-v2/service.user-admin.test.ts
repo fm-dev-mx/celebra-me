@@ -1,3 +1,4 @@
+import { TEMPORARY_PASSWORD_WORDS } from '@/lib/rsvp/auth/temporary-password-words';
 import {
 	createAdminUser,
 	listAdminUsers,
@@ -247,8 +248,8 @@ describe('rsvp user admin service', () => {
 		expect(logAdminActionMock).not.toHaveBeenCalled();
 	});
 
-	it('generates 17-character temporary passwords from a CSPRNG', () => {
-		const pattern = /^[A-HJ-NP-Za-km-z2-9]{5}(-[A-HJ-NP-Za-km-z2-9]{5}){2}$/;
+	it('generates memorable temporary passwords from a CSPRNG word list', () => {
+		const pattern = /^([A-Z][a-z]+-){3}\d{3}$/;
 		const passwords = Array.from({ length: 200 }, () => generateTemporaryPassword());
 		for (const password of passwords) {
 			expect(password).toMatch(pattern);
@@ -258,6 +259,19 @@ describe('rsvp user admin service', () => {
 			expect(password).toMatch(/\d/);
 		}
 		expect(new Set(passwords).size).toBe(passwords.length);
+	});
+
+	it('builds temporary passwords only from the 256-word list', () => {
+		expect(TEMPORARY_PASSWORD_WORDS).toHaveLength(256);
+		expect(new Set(TEMPORARY_PASSWORD_WORDS).size).toBe(256);
+		for (const word of TEMPORARY_PASSWORD_WORDS) expect(word).toMatch(/^[a-z]+$/);
+		for (let i = 0; i < 50; i += 1) {
+			const parts = generateTemporaryPassword().split('-');
+			expect(parts).toHaveLength(4);
+			for (const word of parts.slice(0, 3)) {
+				expect(TEMPORARY_PASSWORD_WORDS).toContain(word.toLowerCase());
+			}
+		}
 	});
 
 	describe('resetUserPasswordAdmin outcomes', () => {

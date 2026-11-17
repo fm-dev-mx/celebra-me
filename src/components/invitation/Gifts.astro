@@ -51,6 +51,7 @@ interface GiftCash {
 	title: string;
 	text?: string;
 	iconName?: string;
+	medallionIconName?: string;
 }
 
 type Gift = GiftStore | GiftBank | GiftPaypal | GiftCash;
@@ -67,6 +68,8 @@ interface Props {
 	editionLabel?: string;
 	/** Decorative cutout above the heading. */
 	ornament?: ImageAsset;
+	/** Closing note printed below the gift cards. */
+	note?: string;
 	labels?: {
 		copy?: string;
 		copied?: string;
@@ -87,6 +90,7 @@ const {
 	folioMark,
 	editionLabel = 'EDICIÓN XV',
 	ornament,
+	note,
 	subtitle = 'Su presencia es nuestro mayor regalo, pero si desean tener un detalle, aquí les compartimos algunas opciones.',
 	labels = {
 		copy: 'Copiar',
@@ -122,6 +126,10 @@ function getSafeGiftLinks(gift: Gift): GiftStoreLink[] {
 function getSafeGiftUrl(gift: Gift): string | null {
 	if (gift.type !== 'store' && gift.type !== 'paypal') return null;
 	return isSafeHttpUrl(gift.url) ? gift.url : null;
+}
+
+function getCashIconNames(gift: Gift): { title?: string; medallion?: string } {
+	return gift.type === 'cash' ? { title: gift.iconName, medallion: gift.medallionIconName } : {};
 }
 
 function getGiftHeaderDescription(gift: Gift): { className: string; text: string } | null {
@@ -226,7 +234,7 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 					const headerDescription = getGiftHeaderDescription(gift);
 					const safeLinks = safeGiftLinks[index] ?? [];
 					const safeGiftUrl = safeGiftUrls[index] ?? null;
-					const titleIconName = gift.type === 'cash' ? gift.iconName : undefined;
+					const { title: titleIconName, medallion: medallionIconName } = getCashIconNames(gift);
 					return (
 						<div class={`gift-card gift-card--${gift.type}`} data-reveal-item>
 							<div class="gift-card__inner">
@@ -246,7 +254,11 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 
 									<div class="gift-card__icon-medallion">
 										<div class="gift-card__icon-inner">
-											<Icon size={24} />
+											{medallionIconName ? (
+												<CatalogIcon name={medallionIconName} size={24} />
+											) : (
+												<Icon size={24} />
+											)}
 										</div>
 									</div>
 
@@ -355,6 +367,7 @@ const safeGiftUrls = gifts.map(getSafeGiftUrl);
 				})
 			}
 		</div>
+		{note && <p class="gifts-section__note" data-reveal-role="lede">{note}</p>}
 			</>
 		)}
 	</div>

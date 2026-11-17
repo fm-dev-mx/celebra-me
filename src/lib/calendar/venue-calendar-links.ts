@@ -57,12 +57,18 @@ export function buildVenueCalendarLinks(
 			...(venue.googleMapsUrl ? { mapsUrl: venue.googleMapsUrl } : {}),
 		},
 	};
-	const icsFileName = `${toFileStem(`${context.eventTitle}-${venue.venueEvent}`)}.ics`;
+	return buildCalendarLinks(input, `${context.eventTitle}-${venue.venueEvent}`);
+}
 
+/** Calendar links for one already-resolved event instant (the .ics name comes from `fileStem`). */
+export function buildCalendarLinks(
+	input: CalendarEventInput,
+	fileStem: string,
+): VenueCalendarLinks {
 	return {
 		googleUrl: buildGoogleCalendarUrl(input),
 		outlookUrl: buildOutlookCalendarUrl(input),
 		icsHref: `data:text/calendar;charset=utf-8,${encodeURIComponent(generateIcsString(input))}`,
-		icsFileName,
+		icsFileName: `${toFileStem(fileStem)}.ics`,
 	};
 }

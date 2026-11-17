@@ -336,7 +336,7 @@ describe('listMemorySpaceCandidatesAdmin', () => {
 				uploadStartsLocal: '2026-10-23T00:00',
 				uploadEndsLocal: '2026-11-07T00:00',
 				retentionEndsLocal: '2027-01-06T00:00',
-				limits: MEMORIES_LIMIT_PROFILES.standard,
+				limits: MEMORIES_LIMIT_PROFILES.extended,
 			},
 		});
 		expect(candidates[1].defaults).toMatchObject({

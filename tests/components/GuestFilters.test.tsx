@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import GuestFilters from '@/components/dashboard/guests/GuestFilters';
 import {
 	computeGroupMetrics,
@@ -13,7 +13,7 @@ const groupMetrics = computeGroupMetrics([
 	makeGuest({ guestId: '4', tags: [] }),
 ]);
 
-describe('GuestFilters — group chips', () => {
+describe('GuestFilters — group select', () => {
 	const baseProps = {
 		search: '',
 		group: 'all',
@@ -23,28 +23,28 @@ describe('GuestFilters — group chips', () => {
 		onGroupChange: jest.fn(),
 	};
 
-	it('shows one chip per group with counts, plus "Todos" and "Sin grupo"', () => {
+	it('offers one option per group with counts, plus "Todos" and "Sin grupo"', () => {
 		render(<GuestFilters {...baseProps} />);
 
-		const chips = within(screen.getByRole('group', { name: 'Grupo' })).getAllByRole('button');
-		expect(chips.map((chip) => chip.textContent)).toEqual([
-			'Todos4',
-			'Familia2',
-			'VIP1',
-			'Sin grupo1',
+		const select = screen.getByLabelText('Grupo') as HTMLSelectElement;
+		expect(Array.from(select.options).map((option) => option.textContent)).toEqual([
+			'Todos (4)',
+			'Familia (2)',
+			'VIP (1)',
+			'Sin grupo (1)',
 		]);
-		expect(chips[0]).toHaveAttribute('aria-pressed', 'true');
+		expect(select).toHaveValue('all');
 	});
 
-	it('selects a group and toggles back to all', () => {
+	it('selects a group and back to all', () => {
 		const onGroupChange = jest.fn();
 		const { rerender } = render(<GuestFilters {...baseProps} onGroupChange={onGroupChange} />);
 
-		fireEvent.click(screen.getByRole('button', { name: /^Sin grupo/ }));
+		fireEvent.change(screen.getByLabelText('Grupo'), { target: { value: NO_GROUP_FILTER } });
 		expect(onGroupChange).toHaveBeenLastCalledWith(NO_GROUP_FILTER);
 
 		rerender(<GuestFilters {...baseProps} group="VIP" onGroupChange={onGroupChange} />);
-		fireEvent.click(screen.getByRole('button', { name: /^VIP/ }));
+		fireEvent.change(screen.getByLabelText('Grupo'), { target: { value: 'all' } });
 		expect(onGroupChange).toHaveBeenLastCalledWith('all');
 	});
 

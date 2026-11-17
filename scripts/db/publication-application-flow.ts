@@ -84,7 +84,6 @@ async function main(): Promise<void> {
 		invitation_project_id: invitationId,
 		slug,
 		event_type: 'xv',
-		is_demo: false,
 		content: { ...baseline, isDemo: false, title: 'Prueba de reintento' },
 		version: 1,
 	});

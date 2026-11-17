@@ -3,7 +3,7 @@ import { BRAND_ICONS } from '@/lib/brand/brand-logo';
 
 export const DEFAULT_SITE_ORIGIN = 'https://www.celebra-me.com';
 
-export interface SchemaQuestion {
+interface SchemaQuestion {
 	'@type': 'Question';
 	name: string;
 	acceptedAnswer: {

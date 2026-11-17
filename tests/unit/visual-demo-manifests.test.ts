@@ -98,7 +98,11 @@ describe('per-demo visual manifests', () => {
 		}
 	});
 
-	it('keeps one accepted manifest per demo and none in the root manifest', () => {
+	// Branch-level pin: a new demo's accepted manifest can only be generated from the commit that
+	// adds the demo, so the commit hook (CELEBRA_TEST_SCOPE=commit) skips it and `validate:changed`
+	// plus Repository CI enforce it before integration.
+	const branchLevel = process.env.CELEBRA_TEST_SCOPE === 'commit' ? it.skip : it;
+	branchLevel('keeps one accepted manifest per demo and none in the root manifest', () => {
 		const root = JSON.parse(readFileSync(ACCEPTED_MANIFEST, 'utf8')) as {
 			captures: { kind: string }[];
 			pageManifest: { captures: { kind: string }[] };

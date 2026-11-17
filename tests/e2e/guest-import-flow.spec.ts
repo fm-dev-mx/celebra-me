@@ -133,12 +133,10 @@ test.describe('Guest import flow', () => {
 		page,
 		baseURL,
 	}) => {
-		await page
-			.context()
-			.addCookies([
-				{ name: 'sb-access-token', value: CANONICAL_HOST_ACCESS_TOKEN, url: baseURL },
-				{ name: 'sb-idle-seen', value: String(Math.floor(Date.now() / 1000)), url: baseURL },
-			]);
+		await page.context().addCookies([
+			{ name: 'sb-access-token', value: CANONICAL_HOST_ACCESS_TOKEN, url: baseURL },
+			{ name: 'sb-idle-seen', value: String(Math.floor(Date.now() / 1000)), url: baseURL },
+		]);
 		const { imports, unexpected } = await mockDashboard(page);
 
 		// The guests request leaves from an effect of the hydrated island, so its handlers are ready.
@@ -149,7 +147,7 @@ test.describe('Guest import flow', () => {
 		]);
 		await expect(page).toHaveURL(new RegExp(`/dashboard/invitados\\?eventId=${EVENT_ID}`));
 
-		await page.getByRole('button', { name: 'Más acciones', exact: true }).click();
+		await page.getByRole('button', { name: 'Opciones', exact: true }).click();
 		await page.getByRole('menuitem', { name: 'Importar' }).click();
 		const dialog = page.getByRole('dialog').filter({ hasText: 'Importación de invitados' });
 		await expect(dialog).toBeVisible();

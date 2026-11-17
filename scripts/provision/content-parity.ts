@@ -501,7 +501,6 @@ export function buildSemanticInvitationSnapshot(input: {
 	draftContent?: unknown | null;
 	published?: {
 		content?: unknown;
-		is_demo?: boolean;
 		slug?: string;
 		event_type?: string;
 	} | null;
@@ -513,7 +512,7 @@ export function buildSemanticInvitationSnapshot(input: {
 	}>;
 	event?: { slug?: string; event_type?: string } | null;
 }): SemanticInvitationSnapshot {
-	const isDemo = input.published?.is_demo === true || input.invitation.kind === 'demo';
+	const isDemo = input.invitation.kind === 'demo';
 	const assetIdToKey = toAssetIdToKey(input.assets ?? []);
 	const hasAssetIds = (input.assets ?? []).some((asset) => String(asset.id || '').trim());
 	const referencedKeys = hasAssetIds

@@ -20,6 +20,8 @@ export type InvitationCssResolverInput = {
 	editorialCover?: 'standard' | 'collector';
 	/** Ornament set from `composition.ornaments`. */
 	ornamentSet?: string;
+	/** Closing variant from `composition.footerVariant`; `standard` needs no sheet. */
+	footerVariant?: string;
 };
 
 type InvitationCssOwner =
@@ -43,6 +45,7 @@ const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'celestial-letter': 'celestial-letter',
 	'disco-night': 'disco-night',
 	'night-envelope': 'night-envelope',
+	'pocket-fold': 'pocket-fold',
 	'satin-filigree': 'satin-filigree',
 	'seaside-lineart': 'seaside-lineart',
 	'storybook-lanterns': 'storybook-lanterns',
@@ -199,6 +202,19 @@ function resolveSectionVariantLoadItems(
 	});
 }
 
+/** The footer has no registry entry: its non-standard variants own `footer/_<variant>.scss`. */
+function resolveFooterVariantLoadItem(
+	sectionUrlMap: SectionUrlMap,
+	input: InvitationCssResolverInput,
+): InvitationCssLoadItem | undefined {
+	const variant = input.footerVariant;
+	if (!variant || variant === 'standard') return undefined;
+	const canonicalPath = `src/styles/themes/sections/footer/_${variant}.scss`;
+	const href = sectionUrlMap.__canonicalPaths?.[canonicalPath];
+	if (!href) throw new Error(`Missing CSS delivery for footer.${variant}: ${canonicalPath}`);
+	return { href, owner: 'section-variant', blocking: false, canonicalPath };
+}
+
 export function resolveInvitationCssLoadPlan(
 	sectionBundleUrlMap: SectionBundleUrlMap,
 	sectionUrlMap: SectionUrlMap,
@@ -230,6 +246,8 @@ export function resolveInvitationCssLoadPlan(
 	for (const item of resolveSectionVariantLoadItems(sectionUrlMap, input)) {
 		push(item);
 	}
+
+	push(resolveFooterVariantLoadItem(sectionUrlMap, input));
 
 	const profileUrl = resolveVisualProfileCssUrl(profileUrlMap, input);
 	push(profileUrl ? { href: profileUrl, owner: 'visual-profile', blocking: true } : undefined);

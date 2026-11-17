@@ -1,4 +1,4 @@
-import { maxConfirmableChildren } from '@/lib/rsvp/guest-cap';
+import { formatParty, maxConfirmableAdults } from '@/lib/rsvp/guest-cap';
 import { motion } from 'framer-motion';
 import { useRef, type RefObject } from 'react';
 import { useRsvpContext } from '@/components/invitation/rsvp-context';
@@ -301,6 +301,48 @@ export function AttendanceField(props: {
 	);
 }
 
+/**
+ * Props of the guest-count field. With child places it counts adults only (never the child
+ * places), and the children field next to it carries the rest of the party.
+ */
+function resolveGuestCountField(input: {
+	split: boolean;
+	guestCountLabel: string;
+	effectiveGuestCap: number;
+	maxChildren: number;
+	attendeeCount: number | string;
+	childrenCount: number | string;
+	onGuestCountChange: (value: string) => void;
+}) {
+	const { effectiveGuestCap, maxChildren } = input;
+	if (!input.split) {
+		return {
+			label: input.guestCountLabel,
+			labelSuffix: effectiveGuestCap <= 10 ? ` (Máx. ${effectiveGuestCap})` : '',
+			value: String(input.attendeeCount),
+			onChange: input.onGuestCountChange,
+			min: 1,
+			max: effectiveGuestCap,
+			hint: undefined as string | undefined,
+		};
+	}
+	const children = Math.min(Number(input.childrenCount) || 0, maxChildren);
+	const adultsCap = maxConfirmableAdults(effectiveGuestCap, maxChildren);
+	const party = formatParty(effectiveGuestCap, { children: maxChildren, unit: 'persona' });
+	return {
+		label: 'Adultos',
+		labelSuffix: ` (Máx. ${adultsCap})`,
+		value: String(Math.max(0, (Number(input.attendeeCount) || 0) - children)),
+		onChange: (value: string) =>
+			input.onGuestCountChange(
+				String(Math.max(0, Number.parseInt(value, 10) || 0) + children),
+			),
+		min: 0,
+		max: adultsCap,
+		hint: `Su pase incluye ${party}. Los lugares de niños no pueden usarse por adultos.`,
+	};
+}
+
 export function ConfirmedFields(props: {
 	/** Renders only the party size or only the message; both when omitted. */
 	part?: 'guests' | 'notes';
@@ -355,9 +397,15 @@ export function ConfirmedFields(props: {
 		attendanceStatus === 'confirmed' &&
 		maxChildren > 0 &&
 		onChildrenCountChange;
-	// Same confirmed count the validation uses: a single pass when plus-ones are off.
-	const confirmedCount = supportsPlusOnes ? Number(attendeeCount) || 1 : 1;
-	const childrenCap = maxConfirmableChildren(confirmedCount, maxChildren);
+	const countField = resolveGuestCountField({
+		split: Boolean(showChildren),
+		guestCountLabel,
+		effectiveGuestCap,
+		maxChildren,
+		attendeeCount,
+		childrenCount,
+		onGuestCountChange,
+	});
 	const showGuests = part !== 'notes' && attendanceStatus === 'confirmed' && supportsPlusOnes;
 	const showNotes = part !== 'guests';
 
@@ -372,26 +420,24 @@ export function ConfirmedFields(props: {
 						<FloatingField
 							id="guestCount"
 							type="number"
-							label={guestCountLabel}
-							labelSuffix={
-								effectiveGuestCap <= 10 ? ` (Máx. ${effectiveGuestCap})` : ''
-							}
-							value={String(attendeeCount)}
+							label={countField.label}
+							labelSuffix={countField.labelSuffix}
+							value={countField.value}
 							error={errors.guestCount}
 							touched={touched.guestCount}
 							prefersReducedMotion={prefersReducedMotion}
 							fieldRef={guestCountRef}
-							onChange={onGuestCountChange}
+							onChange={countField.onChange}
 							onBlur={onBlur}
-							min={1}
-							max={effectiveGuestCap}
+							min={countField.min}
+							max={countField.max}
 						/>
 						<p className="rsvp__guest-hint">
-							{(guestHint ?? getDefaultGuestHint(defaultCopy)).replaceAll(
-								'{count}',
-								String(effectiveGuestCap),
-							)}
-							{showChildren && ' Abajo indique cuántos de ellos son niños.'}
+							{countField.hint ??
+								(guestHint ?? getDefaultGuestHint(defaultCopy)).replaceAll(
+									'{count}',
+									String(effectiveGuestCap),
+								)}
 						</p>
 					</>
 				)}
@@ -400,8 +446,8 @@ export function ConfirmedFields(props: {
 						id="childrenCount"
 						fieldRef={childrenRef}
 						type="number"
-						label="De ellos, niños"
-						labelSuffix={` (Máx. ${childrenCap})`}
+						label="Niños"
+						labelSuffix={` (Máx. ${maxChildren})`}
 						value={String(childrenCount)}
 						error={errors.childrenCount}
 						touched={touched.childrenCount}
@@ -409,7 +455,7 @@ export function ConfirmedFields(props: {
 						onChange={onChildrenCountChange}
 						onBlur={onBlur}
 						min={0}
-						max={childrenCap}
+						max={maxChildren}
 					/>
 				)}
 				{showNotes && (

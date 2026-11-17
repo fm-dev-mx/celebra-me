@@ -29,7 +29,9 @@ export function holdPageAtTopWhileGated(): () => void {
 	} catch {
 		// Some sandboxed frames refuse; the scroll below still applies.
 	}
-	window.scrollTo(0, 0);
+	// `instant`, not the default: the page's CSS `scroll-behavior: smooth` would otherwise animate
+	// the jump from the restored position, and the guest would watch the whole invitation scroll by.
+	window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 
 	let released = false;
 	return () => {

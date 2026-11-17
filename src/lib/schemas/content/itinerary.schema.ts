@@ -20,10 +20,19 @@ export const itinerarySchema = z
 		variant: z.enum(ITINERARY_VARIANTS),
 		items: z.array(itineraryItemSchema),
 		closingNote: z.string().optional(),
+		timeFormat: z.enum(['12h', '12h-es']).optional(),
 		scene: z.enum(ITINERARY_SCENES).optional(),
 	})
 	.strict()
 	.superRefine((itinerary, context) => {
+		if (itinerary.timeFormat && (itinerary.variant !== 'standard' || itinerary.scene)) {
+			context.addIssue({
+				code: 'custom',
+				path: ['timeFormat'],
+				message:
+					'itinerary.timeFormat requires the standard timeline without a pinned scene',
+			});
+		}
 		if (!itinerary.scene) return;
 		if (itinerary.variant === 'standard' && itinerary.items.length >= 2) return;
 		context.addIssue({

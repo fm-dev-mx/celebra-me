@@ -251,8 +251,8 @@ values ('f6000000-0000-4000-8000-000000000001', 'eng-event', 'Engagement event',
   'jewelry-box', 'f1000000-0000-4000-8000-000000000001', 'client');
 update public.events set invitation_project_id = 'f6000000-0000-4000-8000-000000000001'
 where id = 'f2000000-0000-4000-8000-000000000001';
-insert into public.published_invitation_content (invitation_project_id, slug, event_type, is_demo, content, version, published_at)
-values ('f6000000-0000-4000-8000-000000000001', 'eng-event', 'xv', false,
+insert into public.published_invitation_content (invitation_project_id, slug, event_type, content, version, published_at)
+values ('f6000000-0000-4000-8000-000000000001', 'eng-event', 'xv',
   '{"eventTiming":{"localDateTime":"2027-01-09T18:00","timeZone":"America/Chihuahua"}}', 1, now());
 select is((select event_date from public.events where id = 'f2000000-0000-4000-8000-000000000001'),
   '2027-01-09'::date, 'publishing content sets events.event_date');

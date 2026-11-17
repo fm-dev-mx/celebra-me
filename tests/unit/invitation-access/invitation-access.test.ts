@@ -106,7 +106,7 @@ describe('invitation access repository', () => {
 		invitation: { access: { payment_status: 'paid', public_access: 'enabled' } },
 	};
 	const timing = (localDateTime: string) => ({
-		is_demo: false,
+		invitation: { kind: 'client' },
 		eventTiming: { localDateTime, timeZone: 'America/Mazatlan' },
 		heroDate: null,
 	});
@@ -120,7 +120,9 @@ describe('invitation access repository', () => {
 		).resolves.toBe(true);
 		const [request] = mockSupabaseRequest.mock.calls[1];
 		expect(request.useServiceRole).toBe(true);
-		expect(request.pathWithQuery).toContain('published_invitation_content?select=is_demo,');
+		expect(request.pathWithQuery).toContain(
+			'published_invitation_content?select=invitation:invitations(kind),',
+		);
 		expect(request.pathWithQuery).toContain('invitation_project_id=eq.inv-1');
 		expect(request.pathWithQuery).toContain('deleted_at=is.null');
 	});
@@ -134,12 +136,16 @@ describe('invitation access repository', () => {
 
 		mockSupabaseRequest
 			.mockResolvedValueOnce([enabledEvent])
-			.mockResolvedValueOnce([{ ...timing('2020-01-01T18:00'), is_demo: true }]);
+			.mockResolvedValueOnce([
+				{ ...timing('2020-01-01T18:00'), invitation: { kind: 'demo' } },
+			]);
 		await expect(isEventInvitationUnavailable('event-1', now)).resolves.toBe(false);
 
 		mockSupabaseRequest
 			.mockResolvedValueOnce([enabledEvent])
-			.mockResolvedValueOnce([{ is_demo: false, eventTiming: null, heroDate: null }]);
+			.mockResolvedValueOnce([
+				{ invitation: { kind: 'client' }, eventTiming: null, heroDate: null },
+			]);
 		await expect(isEventInvitationUnavailable('event-1', now)).resolves.toBe(false);
 
 		mockSupabaseRequest.mockResolvedValueOnce([enabledEvent]).mockResolvedValueOnce([]);

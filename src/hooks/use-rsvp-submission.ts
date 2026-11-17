@@ -97,7 +97,11 @@ export function useRsvpSubmission({
 				? resolveChildrenCap(demoMaxChildren, effectiveGuestCap)
 				: (initialData?.maxAllowedChildren ?? 0);
 	const initialChildrenCount =
-		initialAttendanceStatus === 'confirmed' ? (initialData?.childrenCount ?? 0) : 0;
+		initialAttendanceStatus === 'confirmed'
+			? (initialData?.childrenCount ?? 0)
+			: initialAttendanceStatus === 'declined'
+				? 0
+				: maxChildren;
 	const [childrenCount, setChildrenCount] = useState<number | string>(initialChildrenCount);
 	const [attendeeCount, setAttendeeCount] = useState<number | string>(initialAttendeeCount);
 	const [notes, setNotes] = useState(initialGuestComment);

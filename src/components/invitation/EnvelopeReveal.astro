@@ -74,7 +74,10 @@ const sealPresentation = resolveSealPresentation({
 const isSeaside = revealVariant === 'seaside-lineart';
 const isStorybook = revealVariant === 'storybook-lanterns' || revealVariant === 'storybook-butterflies';
 const skyMotif = revealVariant === 'storybook-butterflies' ? 'butterflies' : 'lanterns';
-const isNight = revealVariant === 'night-envelope' || revealVariant === 'disco-night';
+const isNight =
+	revealVariant === 'night-envelope' ||
+	revealVariant === 'pocket-fold' ||
+	revealVariant === 'disco-night';
 const isCelestialLetter = revealVariant === 'celestial-letter';
 // Storybook, night, celestial and Enchanted Rose letters sit inside the envelope, behind the pocket
 // front, and rise out of it.
@@ -344,7 +347,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			const coverArch =
 				this.dataset.archHandoff === 'true'
 					? document.querySelector<HTMLElement>(
-							'.invitation-hero[data-variant="night-arch"] .invitation-hero__background, .invitation-hero[data-variant="framed-portrait"] .framed-portrait-hero__photograph, .invitation-hero[data-variant="disco-stage"] .framed-portrait-hero__photograph',
+							'.invitation-hero[data-variant="night-arch"] .invitation-hero__background, .invitation-hero[data-variant="veiled-arch"] .invitation-hero__background, .invitation-hero[data-variant="framed-portrait"] .framed-portrait-hero__photograph, .invitation-hero[data-variant="disco-stage"] .framed-portrait-hero__photograph',
 						)
 					: null;
 			const archWindow = this.querySelector<HTMLElement>('[data-arch-window]');
@@ -519,9 +522,10 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				window.requestAnimationFrame(() => {
 					const hero = document.getElementById('inicio');
 					const prefersReducedMotion = getMotionPreference();
-					const scrollBehavior: ScrollBehavior = prefersReducedMotion
-						? 'auto'
-						: 'smooth';
+					// Always `instant`: the gate still covers the page, so the guest never sees the
+					// invitation scroll by on its way to the hero (`auto` would inherit the page's
+					// CSS smooth scrolling).
+					const scrollBehavior: ScrollBehavior = 'instant';
 					const sceneFadeRaw = getComputedStyle(invitationRoot)
 						.getPropertyValue('--motion-scene-fade')
 						.trim();
@@ -561,6 +565,9 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					};
 
 					if (sceneFadeMs > 0) {
+						// Land on the hero while the scene still covers it, then once more after
+						// the fade in case the hand-off shifted the layout.
+						settleScroll();
 						window.setTimeout(settleScroll, sceneFadeMs);
 					} else {
 						settleScroll();
@@ -632,7 +639,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				}
 				// The night arch cover keeps its own hand-over: a copy of the window's photograph
 				// flies onto the arch while the cover underneath stays still.
-				if (hero.dataset.variant === 'night-arch') {
+				if (hero.dataset.variant === 'night-arch' || hero.dataset.variant === 'veiled-arch') {
 					const photo = archWindow.querySelector('img');
 					if (!photo) {
 						completeReveal();
@@ -755,6 +762,10 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					playEnvelopeOpenChime();
 				}
 
+				// The opening uncovers the page behind it, so start it from the top: a page that
+				// drifted (accidental scroll, layout growth) would otherwise show mid-invitation
+				// through the opening and then jump to the hero at the end.
+				window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 				this.classList.add('is-opening');
 				const openingVideo = this.querySelector<HTMLVideoElement>(
 					'[data-envelope-opening-video]',

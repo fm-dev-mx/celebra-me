@@ -17,12 +17,15 @@ interface GuestDashboardSummaryProps {
 	groupMetrics: GroupMetric[];
 	activeGroup: string;
 	onSelectGroup: (group: string) => void;
+	/** Invitations with a guest message; opens the message wall from the strip. */
+	messageCount?: number;
+	newMessageCount?: number;
 }
 
 /**
- * Event summary above the guest list. Compact screens lead with the strip and the
- * next step, and fold the full overview and "Por grupo" behind "Ver resumen completo";
- * wide screens always show the full overview. An empty event keeps it unfolded.
+ * Event summary above the guest list: progress and the next step stay in view,
+ * and the detail (pass tiles, stages, deadline, "Por grupo") folds behind
+ * "Más datos" at every width. An empty event keeps the overview unfolded.
  */
 const GuestDashboardSummary: React.FC<GuestDashboardSummaryProps> = ({
 	showOverview,
@@ -30,6 +33,8 @@ const GuestDashboardSummary: React.FC<GuestDashboardSummaryProps> = ({
 	groupMetrics,
 	activeGroup,
 	onSelectGroup,
+	messageCount = 0,
+	newMessageCount = 0,
 }) => {
 	const [expanded, setExpanded] = useGuestSummaryExpanded();
 	const showStrip = showOverview && overview.summary.invitations > 0;
@@ -41,11 +46,13 @@ const GuestDashboardSummary: React.FC<GuestDashboardSummaryProps> = ({
 				<div className="dashboard-guests__lead">
 					<GuestOverviewStrip
 						summary={overview.summary}
-						activeFilter={overview.activeFilter}
-						onFilterChange={overview.onFilterChange}
 						expanded={expanded}
 						onToggleExpanded={() => setExpanded(!expanded)}
 						fullSummaryId={FULL_SUMMARY_ID}
+						activeFilter={overview.activeFilter}
+						onFilterChange={overview.onFilterChange}
+						messageCount={messageCount}
+						newMessageCount={newMessageCount}
 					/>
 					<GuestNextStep
 						placement="strip"
@@ -63,7 +70,7 @@ const GuestDashboardSummary: React.FC<GuestDashboardSummaryProps> = ({
 				id={FULL_SUMMARY_ID}
 				className={`dashboard-guests__summary${showStrip && !expanded ? ' dashboard-guests__summary--folded' : ''}`}
 			>
-				{showOverview && <GuestStatusOverview {...overview} />}
+				{showOverview && <GuestStatusOverview {...overview} hideNextStep={showStrip} />}
 				<GuestGroupMetrics
 					metrics={groupMetrics}
 					activeGroup={activeGroup}

@@ -1,5 +1,6 @@
 import type { RsvpFlow } from '@/lib/invitation/rsvp-flow';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import type { VenueCalendarLinks } from '@/lib/calendar/venue-calendar-links';
 import type {
 	IndicationStyleVariant,
 	InvitationRenderSectionKey,
@@ -335,7 +336,12 @@ export interface InvitationViewModel {
 			ornament?: ImageAsset;
 			visibleUnits: CountdownUnit[];
 			dayUnit?: CountdownDayUnit;
-			calendar?: { mark: CountdownCalendarMark; month: EventCalendarMonth };
+			/** `links`: save-the-date destinations, present when the event time zone is known. */
+			calendar?: {
+				mark: CountdownCalendarMark;
+				month: EventCalendarMonth;
+				links?: VenueCalendarLinks;
+			};
 			variant: CountdownVariant;
 			/** Demo-only: if true, countdown uses a random target 30-60 days ahead */
 			isDemo?: boolean;
@@ -385,6 +391,7 @@ export interface InvitationViewModel {
 			variant: ItineraryVariant;
 			closingNote?: string;
 			scene?: ItineraryScene;
+			timeFormat?: '12h' | '12h-es';
 		};
 		rsvp?: {
 			eventSlug: string;
@@ -443,6 +450,8 @@ export interface InvitationViewModel {
 			presentation: GiftsPresentation;
 			items: GiftItem[];
 			variant: GiftsVariant;
+			/** Closing note printed below the gift cards. */
+			note?: string;
 		};
 		thankYou?: {
 			message: string;

@@ -16,7 +16,7 @@ export type PublicSectionId = (typeof PUBLIC_SECTION_IDS)[number];
  * reorders them, and every draft round-trip must preserve them (see
  * `reconcileManagedSectionOrder`).
  */
-export const MANAGED_ONLY_SECTION_KEYS = ['memories'] as const;
+export const MANAGED_ONLY_SECTION_KEYS = ['memories', 'dressCode'] as const;
 
 export type ManagedOnlySectionKey = (typeof MANAGED_ONLY_SECTION_KEYS)[number];
 
@@ -182,6 +182,18 @@ export const PUBLIC_SECTION_DEFINITIONS: Record<PublicSectionId, EditorSectionDe
 		isOrderable: false,
 		isToggleable: false,
 		previewAnchor: '#memories',
+	},
+	dressCode: {
+		id: 'dressCode',
+		label: 'Código de vestimenta',
+		sidebarGroup: 'public',
+		editorCardId: undefined,
+		saveSectionKey: undefined,
+		draftContentKeys: [],
+		isRequired: false,
+		isOrderable: false,
+		isToggleable: false,
+		previewAnchor: '#codigo-vestimenta',
 	},
 	personalizedAccess: {
 		id: 'personalizedAccess',

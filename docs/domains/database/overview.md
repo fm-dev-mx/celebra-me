@@ -171,7 +171,6 @@ erDiagram
         uuid invitation_project_id FK
         text slug
         text event_type
-        boolean is_demo
         jsonb content
         int version
         timestamptz published_at

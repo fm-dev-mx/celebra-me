@@ -35,8 +35,10 @@ implementing these skills is never a live-release invocation.
 - **Daily window = one command.** The owner runs `pnpm prod:window`
   (`scripts/ops/production-daily-window.ps1`): upload, activation, health and smoke checks, then
   `pnpm prod:apply -- --schema --all-ready`. It skips none of the deploy's or `prod:apply`'s
-  interactive confirmations. This is the single place the window is defined; other docs and skills
-  point here instead of listing the steps.
+  interactive confirmations. Before activating, it checks that the upload run (new, or resumed with
+  `-UploadRunId`) is a successful `step=upload` dispatch of `deploy-production.yml` on `main` for
+  the captured `main` SHA, and takes the Worker version only from that run's upload job. This is the
+  single place the window is defined; other docs and skills point here instead of listing the steps.
 - `Post-deploy Smoke` validates the correlated deployment, SHA, approved host and critical HTTP
   behavior. The scheduled/manual `Production Image Audit` separately reports published-media drift
   and never determines deployment health.

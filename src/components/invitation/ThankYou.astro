@@ -68,7 +68,8 @@ const IMAGE_CONFIGS = {
 	},
 } as const;
 
-const needsLargePhoto = hasSubjectAwareOverlay || variant === 'full-bleed-photo';
+const needsLargePhoto =
+	hasSubjectAwareOverlay || variant === 'full-bleed-photo' || variant === 'veiled-photo';
 const configKey: keyof typeof IMAGE_CONFIGS = needsLargePhoto ? 'subject-aware' : 'standard';
 const imageConfig = IMAGE_CONFIGS[configKey];
 

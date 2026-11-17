@@ -1,0 +1,186 @@
+// Footer variant `framed-closing`: the modern closing in olive, always shown under the thank-you, leading
+// with the reply. Profile tokens: --framed-closing-reply-eyebrow, -reply-question, -reply-note,
+// -reply-answered (strings) and the palette tokens. Cormorant Garamond must be loaded by the page.
+
+.event-theme-wrapper {
+	// Footer: the modern closing of the latest invitations, in olive, always shown right under the
+	// thank-you (no pull gesture, no «Deslice hacia arriba»). The thank-you above already
+	// signs with the couple's names, so the footer leads with the reply, then the date and the city
+	// under one gold point, and the platform credits sit apart under a short rule.
+	.invitation-footer[data-variant='framed-closing'] {
+		--footer-reveal-duration: 520ms;
+		--footer-reveal-stagger: 0ms;
+		--footer-reveal-rise: 0.25rem;
+		--footer-reply-overshoot: 0;
+		--invitation-footer-reply: on;
+		--footer-bg: var(--framed-closing-olive-deep, rgb(62 72 40));
+		--footer-reply-eyebrow: var(--framed-closing-reply-eyebrow, '');
+		--footer-reply-question: var(--framed-closing-reply-question, '');
+		--footer-reply-note: var(--framed-closing-reply-note, '');
+		--footer-reply-answered: var(--framed-closing-reply-answered, '');
+		--footer-reply-ink: var(--framed-closing-ivory, rgb(251 249 243));
+		--footer-reply-muted: rgb(var(--framed-closing-beige-rgb, 233 224 205) / 82%);
+		--footer-reply-accent: var(--framed-closing-gold, rgb(201 174 118));
+		--footer-reply-button-bg: var(--framed-closing-gold, rgb(201 174 118));
+		--footer-reply-button-ink: var(--framed-closing-olive-deep, rgb(62 72 40));
+		--footer-reply-button-size: 0.8125rem;
+		--footer-reply-eyebrow-size: 0.72rem;
+		--footer-reply-note-size: 0.9rem;
+		--footer-reply-gap: 2.5rem;
+		--footer-sky: radial-gradient(
+			ellipse 75% 15rem at 50% 0,
+			rgb(var(--framed-closing-gold-rgb, 201 174 118) / 10%),
+			transparent 72%
+		);
+		--footer-border-color: rgb(var(--framed-closing-gold-rgb, 201 174 118) / 22%);
+		--footer-closing-color: rgb(var(--framed-closing-beige-rgb, 233 224 205) / 86%);
+		--footer-contact-color: rgb(var(--framed-closing-beige-rgb, 233 224 205) / 90%);
+		--footer-replay-color: rgb(var(--framed-closing-beige-rgb, 233 224 205) / 90%);
+		--footer-rights-size: 0.75rem;
+		--footer-powered-size: 0.75rem;
+		--footer-replay-font-size: 0.75rem;
+		--footer-control-font-size: 0.75rem;
+		--footer-link-tap-padding: 0.875rem;
+		--footer-padding-bottom: 5.5rem;
+		--footer-divider-display: none;
+		--footer-replay-order: -1;
+		--footer-replay-opacity: 85%;
+		--footer-content-gap: 1rem;
+		--footer-primary-row-direction: row;
+		--footer-platform-rule: linear-gradient(
+			to right,
+			transparent,
+			rgb(var(--framed-closing-gold-rgb, 201 174 118) / 40%),
+			transparent
+		);
+		--footer-platform-rule-space: 1.75rem;
+		--footer-logo-width: 104px;
+		--footer-logo-opacity: 80%;
+		--footer-logo-claro: none;
+		--footer-logo-oscuro: block;
+		--footer-contact-border: 1px solid rgb(var(--framed-closing-beige-rgb, 233 224 205) / 40%);
+		--footer-contact-bg: transparent;
+		--footer-contact-padding: 0.5rem 1.125rem;
+		--footer-contact-weight: 400;
+		--color-text-primary: rgb(var(--framed-closing-beige-rgb, 233 224 205) / 90%);
+		--color-text-secondary: rgb(var(--framed-closing-beige-rgb, 233 224 205) / 90%);
+		--color-action-accent: var(--framed-closing-gold, rgb(201 174 118));
+
+		// Short phones keep the whole footer on one screen.
+		@media (height < 45rem) {
+			--footer-platform-rule-space: 1.25rem;
+			--footer-reply-gap: 1.75rem;
+		}
+
+		// The wedding has no lantern: the reply opens on its eyebrow.
+		.footer-reply__lantern {
+			display: none;
+		}
+
+		.footer-reply__eyebrow {
+			margin-top: 3rem;
+			margin-bottom: 0.75rem;
+
+			@media (height < 45rem) {
+				margin-top: 2rem;
+			}
+
+			padding-inline: 2.5rem;
+			background:
+				linear-gradient(
+						to right,
+						transparent,
+						rgb(var(--framed-closing-gold-rgb, 201 174 118) / 60%)
+					)
+					left center / 1.75rem 1px no-repeat,
+				linear-gradient(
+						to left,
+						transparent,
+						rgb(var(--framed-closing-gold-rgb, 201 174 118) / 60%)
+					)
+					right center / 1.75rem 1px no-repeat;
+			font-weight: 500;
+			letter-spacing: 0.22em;
+
+			@media (width < 22.5rem) {
+				padding-inline: 0;
+				background: none;
+				letter-spacing: 0.18em;
+			}
+		}
+
+		.footer-reply__question {
+			margin-bottom: 1.5rem;
+			font-family: 'Cormorant Garamond Variable', var(--font-display);
+			font-size: var(--framed-closing-question-size, 1.625rem);
+			font-weight: 500;
+		}
+
+		.footer-reply__button {
+			min-width: min(100%, 17rem);
+			min-height: 3.25rem;
+			font-weight: 600;
+			letter-spacing: 0.2em;
+		}
+
+		.footer-reply__note {
+			margin-top: 0.875rem;
+			opacity: 85%;
+		}
+
+		// The date and the city, small, under a hairline with one gold point.
+		.footer__closing-phrase {
+			max-width: 21rem;
+			margin-bottom: 0.5rem;
+			font-family: var(--font-body);
+			font-size: var(--framed-closing-closing-phrase-size, 0.75rem);
+			font-style: normal;
+			letter-spacing: 0.2em;
+			line-height: 1.85;
+			text-transform: uppercase;
+			text-wrap: balance;
+			white-space: pre-line;
+
+			&::before {
+				content: '';
+				display: block;
+				width: 9rem;
+				height: 7px;
+				margin: 0 auto 1rem;
+				background:
+					radial-gradient(
+							circle,
+							var(--framed-closing-gold, rgb(201 174 118)) 0 1.6px,
+							transparent 2.2px
+						)
+						center / 7px 7px no-repeat,
+					linear-gradient(
+							to right,
+							transparent,
+							rgb(var(--framed-closing-gold-rgb, 201 174 118) / 50%) 38%,
+							transparent 38% 62%,
+							rgb(var(--framed-closing-gold-rgb, 201 174 118) / 50%) 62%,
+							transparent
+						)
+						center / 9rem 1px no-repeat;
+			}
+		}
+
+		.footer__primary-row {
+			flex-wrap: wrap;
+			justify-content: center;
+			gap: 1rem 1.5rem;
+		}
+
+		.footer__replay-link {
+			text-decoration: underline;
+			text-decoration-color: rgb(var(--framed-closing-gold-rgb, 201 174 118) / 45%);
+			text-decoration-thickness: 1px;
+			text-underline-offset: 0.45em;
+		}
+
+		.whatsapp-button {
+			text-decoration: none;
+		}
+	}
+}

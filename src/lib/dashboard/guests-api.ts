@@ -1,7 +1,10 @@
 import { dashboardApi, type ApiResult } from '@/lib/dashboard/api-client';
 import { goToLoginAfterSessionEnded } from '@/lib/dashboard/session-ended';
 import { isDebugMode } from '@/utils/debug';
-import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
+import type {
+	DashboardGuestItem,
+	DashboardRsvpWindow,
+} from '@/interfaces/dashboard/guest.interface';
 import type { DashboardEventListResponse } from '@/interfaces/dashboard/admin.interface';
 import type {
 	GuestsListResponse,
@@ -209,6 +212,18 @@ class GuestsApi {
 			...(payload.reminderSettings ? { reminderSettings: payload.reminderSettings } : {}),
 		});
 		return this.handleResponse(result, 'guests.updateShareMessages');
+	}
+
+	/** Raw result: callers read the 409 `deadline_in_past` to ask the host to confirm. */
+	updateRsvpDeadline(payload: {
+		eventId: string;
+		deadline: string | null;
+		confirmPast?: boolean;
+	}): Promise<ApiResult<DashboardRsvpWindow>> {
+		return dashboardApi.post<DashboardRsvpWindow>(
+			'/api/dashboard/guests/rsvp-deadline',
+			payload,
+		);
 	}
 }
 

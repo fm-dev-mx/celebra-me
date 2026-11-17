@@ -37,7 +37,10 @@ const SECTION_KEYS = [
 function expectedDescriptorComponents(content: Record<string, unknown>): string[] {
 	const sectionOrder = content.sectionOrder;
 	if (Array.isArray(sectionOrder)) {
-		return sectionOrder.filter((section) => section !== 'personalizedAccess').map(String);
+		// Derived sections render under a kebab-case descriptor (`dressCode` → `dress-code`).
+		return sectionOrder
+			.filter((section) => section !== 'personalizedAccess')
+			.map((section) => (section === 'dressCode' ? 'dress-code' : String(section)));
 	}
 	// `music` often exists as an empty/disabled object and is intentionally absent from descriptors.
 	return SECTION_KEYS.filter(

@@ -1,8 +1,10 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { ACTIVE_FILTER } from '@/lib/intake/repositories/_constants';
 import {
-	PUBLISHED_ACCESS_EMBED,
+	PUBLISHED_KIND_ACCESS_EMBED,
+	PUBLISHED_KIND_EMBED,
 	readEmbeddedInvitationAccess,
+	readEmbeddedInvitationIsDemo,
 } from '@/lib/invitation/access/invitation-access.repository';
 import type { InvitationAccessState } from '@/lib/invitation/access/invitation-access';
 
@@ -11,7 +13,8 @@ interface PublishedInvitationContentRow {
 	invitation_project_id: string;
 	slug: string;
 	event_type: string;
-	is_demo: boolean;
+	/** PostgREST embed of the linked invitation (`kind` and, on public reads, access). */
+	invitation?: unknown;
 	content: Record<string, unknown>;
 	version: number;
 	published_at: string;
@@ -38,7 +41,7 @@ function toRow(row: PublishedInvitationContentRow): PublishedInvitationContent {
 		invitationId: row.invitation_project_id,
 		slug: row.slug,
 		eventType: row.event_type,
-		isDemo: row.is_demo,
+		isDemo: readEmbeddedInvitationIsDemo(row),
 		content: row.content,
 		version: row.version,
 		publishedAt: row.published_at,
@@ -48,13 +51,16 @@ function toRow(row: PublishedInvitationContentRow): PublishedInvitationContent {
 }
 
 const SELECT_COLUMNS =
-	'id,invitation_project_id,slug,event_type,is_demo,content,version,published_at,created_at,updated_at';
+	'id,invitation_project_id,slug,event_type,content,version,published_at,created_at,updated_at';
+
+/** Columns plus the linked invitation's kind, which classifies the row as demo or client. */
+const SELECT_WITH_KIND = `${SELECT_COLUMNS},${PUBLISHED_KIND_EMBED}`;
 
 export async function findPublishedByInvitationId(
 	invitationId: string,
 ): Promise<PublishedInvitationContent | null> {
 	const rows = await supabaseRestRequest<PublishedInvitationContentRow[]>({
-		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS}&invitation_project_id=eq.${encodeURIComponent(invitationId)}&${ACTIVE_FILTER}&limit=1`,
+		pathWithQuery: `published_invitation_content?select=${SELECT_WITH_KIND}&invitation_project_id=eq.${encodeURIComponent(invitationId)}&${ACTIVE_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toRow(rows[0]) : null;
@@ -65,7 +71,7 @@ export async function findPublishedBySlugAndEventType(
 	eventType: string,
 ): Promise<PublishedInvitationContent | null> {
 	const rows = await supabaseRestRequest<PublishedInvitationContentRow[]>({
-		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS}&slug=eq.${encodeURIComponent(slug)}&event_type=eq.${encodeURIComponent(eventType)}&${ACTIVE_FILTER}&limit=1`,
+		pathWithQuery: `published_invitation_content?select=${SELECT_WITH_KIND}&slug=eq.${encodeURIComponent(slug)}&event_type=eq.${encodeURIComponent(eventType)}&${ACTIVE_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	return rows[0] ? toRow(rows[0]) : null;
@@ -84,10 +90,8 @@ export async function findPublishedWithAccessBySlugAndEventType(
 	slug: string,
 	eventType: string,
 ): Promise<PublicPublishedInvitationContent | null> {
-	const rows = await supabaseRestRequest<
-		(PublishedInvitationContentRow & { invitation?: unknown })[]
-	>({
-		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS},${PUBLISHED_ACCESS_EMBED}&slug=eq.${encodeURIComponent(slug)}&event_type=eq.${encodeURIComponent(eventType)}&${ACTIVE_FILTER}&limit=1`,
+	const rows = await supabaseRestRequest<PublishedInvitationContentRow[]>({
+		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS},${PUBLISHED_KIND_ACCESS_EMBED}&slug=eq.${encodeURIComponent(slug)}&event_type=eq.${encodeURIComponent(eventType)}&${ACTIVE_FILTER}&limit=1`,
 		useServiceRole: true,
 	});
 	const row = rows[0];
@@ -101,10 +105,13 @@ export async function findPublishedWithAccessBySlugAndEventType(
 export async function listPublishedClientEntriesWithAccess(
 	timeoutMs?: number,
 ): Promise<PublicPublishedInvitationContent[]> {
-	const rows = await supabaseRestRequest<
-		(PublishedInvitationContentRow & { invitation?: unknown })[]
-	>({
-		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS},${PUBLISHED_ACCESS_EMBED}&is_demo=eq.false&${ACTIVE_FILTER}`,
+	// `!inner` plus the kind filter drops demo rows: the invitation kind decides demo vs client.
+	const clientAccessEmbed = PUBLISHED_KIND_ACCESS_EMBED.replace(
+		'invitations(',
+		'invitations!inner(',
+	);
+	const rows = await supabaseRestRequest<PublishedInvitationContentRow[]>({
+		pathWithQuery: `published_invitation_content?select=${SELECT_COLUMNS},${clientAccessEmbed}&invitation.kind=neq.demo&${ACTIVE_FILTER}`,
 		useServiceRole: true,
 		timeoutMs,
 	});
@@ -118,7 +125,7 @@ export async function updatePublishedContentSnapshot(input: {
 	publishedAt: string;
 }): Promise<PublishedInvitationContent> {
 	const rows = await supabaseRestRequest<PublishedInvitationContentRow[]>({
-		pathWithQuery: `published_invitation_content?id=eq.${encodeURIComponent(input.id)}&select=${SELECT_COLUMNS}`,
+		pathWithQuery: `published_invitation_content?id=eq.${encodeURIComponent(input.id)}&select=${SELECT_WITH_KIND}`,
 		method: 'PATCH',
 		useServiceRole: true,
 		prefer: 'return=representation',

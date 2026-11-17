@@ -70,6 +70,34 @@ describe('RSVP Component', () => {
 		} as unknown as typeof ResizeObserver;
 	});
 
+	describe('Children on the pass', () => {
+		const passFor = (maxAllowedChildren: number) => ({
+			...defaultProps,
+			guestCap: 4,
+			defaultCopy: 'usted' as const,
+			initialGuestData: {
+				inviteId: 'mock-invite-id',
+				maxAllowedAttendees: 4,
+				maxAllowedChildren,
+			},
+		});
+
+		it('never mentions children when the pass has no child places', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...passFor(0)} />);
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			expect(screen.queryByLabelText(/Niños/i)).not.toBeInTheDocument();
+			expect(screen.queryByText(/niñ/i)).not.toBeInTheDocument();
+		});
+
+		it('asks how many children come when the pass includes children', async () => {
+			const user = userEvent.setup();
+			render(<RSVP {...passFor(2)} />);
+			await user.click(screen.getByLabelText(/Sí, asistiré/i));
+			expect(screen.getByLabelText(/Niños/i)).toBeInTheDocument();
+		});
+	});
+
 	describe('Initial Render', () => {
 		it('should render the title', () => {
 			render(<RSVP {...defaultProps} />);
@@ -1709,7 +1737,7 @@ describe('RSVP Component', () => {
 			);
 
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
-			const childrenInput = screen.getByLabelText(/De ellos, niños/i);
+			const childrenInput = screen.getByLabelText(/Niños/i);
 			await user.clear(childrenInput);
 			await user.type(childrenInput, '1');
 
@@ -1724,7 +1752,7 @@ describe('RSVP Component', () => {
 				const body = JSON.parse(submitCall[1].body);
 				expect(body).toMatchObject({
 					attendanceStatus: 'confirmed',
-					attendeeCount: 4,
+					attendeeCount: 3,
 					childrenCount: 1,
 				});
 			});
@@ -1763,7 +1791,7 @@ describe('RSVP Component', () => {
 			});
 		});
 
-		it('blocks submission and shows error when childrenCount exceeds confirmed attendees', async () => {
+		it('blocks 4 adults when one of the 4 passes is a child place', async () => {
 			const user = userEvent.setup();
 			render(
 				<RSVP
@@ -1773,25 +1801,39 @@ describe('RSVP Component', () => {
 						inviteId: 'mock-invite-id',
 						fullName: 'Familia López',
 						maxAllowedAttendees: 4,
-						maxAllowedChildren: 2,
+						maxAllowedChildren: 1,
 					}}
 				/>,
 			);
 
 			await user.click(screen.getByLabelText(/Sí, asistiré/i));
-			const childrenInput = screen.getByLabelText(/De ellos, niños/i);
-			await user.clear(childrenInput);
-			await user.type(childrenInput, '2');
+			// The pass opens as 3 adults + 1 child; the adults field is capped at 3.
+			const adultsInput = screen.getByLabelText(/Adultos/i);
+			expect(adultsInput).toHaveValue(3);
+			expect(adultsInput).toHaveAttribute('max', '3');
+			expect(screen.getByLabelText(/Niños/i)).toHaveValue(1);
 
-			const guestInput = screen.getByLabelText(/Número de asistentes/i);
-			await user.clear(guestInput);
-			await user.type(guestInput, '1');
+			const childrenInput = screen.getByLabelText(/Niños/i);
+			await user.clear(childrenInput);
+			await user.type(childrenInput, '0');
+			await user.clear(adultsInput);
+			await user.type(adultsInput, '4');
 
 			await user.click(screen.getByRole('button', { name: /Confirmar/i }));
 
 			await waitFor(() => {
-				expect(screen.getByText('Pueden venir hasta 1 niño.')).toBeInTheDocument();
+				expect(
+					screen.getByText(
+						'Este pase incluye 1 lugar para niño; solo puede confirmar hasta 3 adultos.',
+					),
+				).toBeInTheDocument();
 			});
+			expect(
+				(global.fetch as jest.Mock).mock.calls.some(
+					([url, init]) =>
+						typeof url === 'string' && PERSONALIZED_RSVP_URL.test(url) && init?.body,
+				),
+			).toBe(false);
 		});
 	});
 });

@@ -22,7 +22,7 @@ describe('reveal gate scroll hold', () => {
 		holdPageAtTopWhileGated();
 
 		expect(history.scrollRestoration).toBe('manual');
-		expect(scrollTo).toHaveBeenCalledWith(0, 0);
+		expect(scrollTo).toHaveBeenCalledWith({ top: 0, left: 0, behavior: 'instant' });
 	});
 
 	it('puts the previous restoration back once the gate opens', () => {

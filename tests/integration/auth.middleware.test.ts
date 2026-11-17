@@ -611,6 +611,21 @@ describe('Middleware: Authentication & Authorization', () => {
 		expect(context.locals.session).toBeUndefined();
 	});
 
+	it('rejects a valid bearer without a role on dashboard APIs with a no-store 401', async () => {
+		const context = createContext('/api/dashboard/guests');
+		context.request.headers.set('authorization', 'Bearer valid-token');
+		mockCookies.get.mockReturnValue(undefined);
+		mockSupabaseResponse({ id: 'user-1', app_metadata: {} });
+
+		const response = await middleware(context as unknown as APIContext, mockNext);
+		expect(response).toBeInstanceOf(Response);
+		if (!(response instanceof Response)) throw new Error('Expected an API error response.');
+		expect(response.status).toBe(401);
+		expect(response.headers.get('Cache-Control')).toContain('no-store');
+		expect(mockNext).not.toHaveBeenCalled();
+		expect(context.locals.session).toBeUndefined();
+	});
+
 	it('allows normal user (aal1) access to dashboard', async () => {
 		const context = createContext('/dashboard/invitados');
 		mockCookies.get.mockReturnValue({ value: 'valid-token' });

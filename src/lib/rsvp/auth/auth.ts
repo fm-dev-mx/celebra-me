@@ -28,7 +28,7 @@ export interface SessionDebugSnapshot {
 	context: SessionContext | null;
 }
 
-function getTokenFromAuthorizationHeader(authorizationHeader: string | null): string {
+export function getTokenFromAuthorizationHeader(authorizationHeader: string | null): string {
 	if (!authorizationHeader || !authorizationHeader.startsWith('Bearer ')) return '';
 	return sanitize(authorizationHeader.slice('Bearer '.length), 4096);
 }

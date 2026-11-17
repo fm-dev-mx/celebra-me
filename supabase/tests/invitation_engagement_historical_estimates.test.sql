@@ -46,9 +46,9 @@ insert into public.invitations (id, slug, title, event_type, status, theme_id, c
   ('d2000000-0000-4000-8000-000000000001', 'hist-xv', 'Histórica', 'xv', 'published', 'jewelry-box', 'd1000000-0000-4000-8000-000000000001', 'client'),
   ('d2000000-0000-4000-8000-000000000002', 'hist-archived', 'Archivada', 'boda', 'published', 'jewelry-box', 'd1000000-0000-4000-8000-000000000001', 'client');
 
-insert into public.published_invitation_content (id, invitation_project_id, slug, event_type, is_demo, content, version, published_at) values
-  ('d3000000-0000-4000-8000-000000000001', 'd2000000-0000-4000-8000-000000000001', 'hist-xv', 'xv', false, '{}'::jsonb, 1, now()),
-  ('d3000000-0000-4000-8000-000000000002', 'd2000000-0000-4000-8000-000000000002', 'hist-archived', 'boda', false, '{}'::jsonb, 1, now());
+insert into public.published_invitation_content (id, invitation_project_id, slug, event_type, content, version, published_at) values
+  ('d3000000-0000-4000-8000-000000000001', 'd2000000-0000-4000-8000-000000000001', 'hist-xv', 'xv', '{}'::jsonb, 1, now()),
+  ('d3000000-0000-4000-8000-000000000002', 'd2000000-0000-4000-8000-000000000002', 'hist-archived', 'boda','{}'::jsonb, 1, now());
 
 insert into public.events (id, owner_user_id, slug, event_type, title, status, invitation_project_id) values
   ('d4000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000001', 'hist-xv', 'xv', 'Histórica', 'published', 'd2000000-0000-4000-8000-000000000001'),

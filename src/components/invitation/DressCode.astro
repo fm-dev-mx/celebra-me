@@ -1,0 +1,38 @@
+---
+/*
+  DressCode Component
+  Renders location.indications as their own section when the invitation opts in with
+  'dressCode' in its section order; EventLocation then omits them.
+ */
+import '@/styles/invitation/_dress-code.scss';
+import Icon from '@/components/common/icons/Icon.astro';
+import { sanitizeIndicationHtml } from '@/lib/invitation/indication-html';
+import type { DressCodeProps } from '@/lib/invitation/section-render-data';
+
+type Props = DressCodeProps;
+
+const { heading, indications } = Astro.props;
+---
+
+<section
+	id="codigo-vestimenta"
+	class="dress-code"
+	data-screenshot-section="dress-code"
+	aria-labelledby={heading ? 'codigo-vestimenta-heading' : undefined}
+	aria-label={heading ? undefined : 'Código de vestimenta'}
+>
+	<div class="dress-code__container">
+		{heading && <h2 id="codigo-vestimenta-heading" class="dress-code__heading">{heading}</h2>}
+		<ul class="dress-code__items">
+			{indications.map((indication) => (
+				<li class:list={['dress-code__item', { 'dress-code__item--reserved': indication.styleVariant === 'reserved' }]}>
+					<span class="dress-code__icon" aria-hidden="true">
+						<Icon name={indication.iconName} size={28} />
+					</span>
+					{indication.title && <p class="dress-code__title">{indication.title}</p>}
+					<div class="dress-code__text" set:html={sanitizeIndicationHtml(indication.text)} />
+				</li>
+			))}
+		</ul>
+	</div>
+</section>

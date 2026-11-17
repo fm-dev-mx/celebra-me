@@ -231,11 +231,34 @@
 
 	&__subcopy {
 		font-family: var(--font-body);
-		font-size: 0.88rem;
+		font-size: var(--rsvp-subcopy-size, 0.88rem);
 		line-height: 1.45;
 		color: var(--rsvp-subcopy-color, var(--color-text-secondary));
 		max-width: 30rem;
 		margin-inline: auto;
+	}
+
+	// Host-set deadline under the subcopy, and the closed notice that replaces the form.
+	&__deadline {
+		font-family: var(--font-body);
+		font-size: 0.8em;
+		line-height: 1.4;
+		letter-spacing: 0.02em;
+		color: var(--rsvp-subcopy-color, var(--color-text-secondary));
+		margin-block-start: 0.5rem;
+		margin-inline: auto;
+		max-width: 30rem;
+	}
+
+	&__closed {
+		font-family: var(--font-body);
+		font-size: 0.95em;
+		line-height: 1.5;
+		color: var(--color-text-primary);
+		max-width: 26rem;
+		margin-inline: auto;
+		padding-block: 1rem;
+		text-align: center;
 	}
 
 	&__form {

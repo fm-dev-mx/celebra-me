@@ -23,14 +23,14 @@ describe('rsvp login UI helpers', () => {
 				email: 'host@test.com',
 				password: '',
 			}),
-		).toBe('Ingresa tu contrasena para continuar con este metodo.');
+		).toBe('Ingrese su contraseña para continuar.');
 
 		expect(
 			validateLoginFormUi({
 				email: '',
 				password: 'Pass123!',
 			}),
-		).toBe('Escribe tu correo o usuario para continuar.');
+		).toBe('Escriba su correo o usuario para continuar.');
 
 		expect(
 			validateLoginFormUi({

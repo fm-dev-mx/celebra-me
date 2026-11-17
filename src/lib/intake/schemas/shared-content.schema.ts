@@ -141,12 +141,14 @@ export const gallerySchema = z
 			});
 		}
 
-		if (gallery.variant === 'feature-stack' && gallery.items.length < 3) {
+		if (
+			(gallery.variant === 'feature-stack' || gallery.variant === 'rising-stack') &&
+			gallery.items.length < 3
+		) {
 			context.addIssue({
 				code: 'custom',
 				path: ['items'],
-				message:
-					'La variante feature-stack requiere al menos tres elementos en la galería.',
+				message: `La variante ${gallery.variant} requiere al menos tres elementos en la galería.`,
 			});
 		}
 
@@ -213,6 +215,7 @@ export const giftsSchema = z
 		folioMark: optionalText(12),
 		presentation: z.enum(GIFTS_PRESENTATIONS).optional(),
 		items: z.array(giftItemSchema).optional(),
+		note: optionalText(300),
 	})
 	.strict()
 	.superRefine((gifts, context) => {
@@ -238,7 +241,11 @@ export const countdownEditorSchema = z
 				dayUnit: z.enum(COUNTDOWN_DAY_UNITS).optional(),
 				/** Month calendar of the event, its day circled by the mark; replaces the written date. */
 				calendar: z
-					.object({ mark: z.enum(COUNTDOWN_CALENDAR_MARKS) })
+					.object({
+						mark: z.enum(COUNTDOWN_CALENDAR_MARKS),
+						/** Opt-in "Agendar en el calendario" links under the calendar. */
+						addToCalendar: z.boolean().optional(),
+					})
 					.strict()
 					.optional(),
 			})
