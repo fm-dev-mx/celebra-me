@@ -86,6 +86,8 @@ export const DEFAULT_REMINDER_MESSAGE_CONFIRMED = `Hola {{invitado}},\n\n{{hora_
 // ─── Event-specific Professional Defaults (Formal / "Usted" Register) ────────────
 
 export const EVENT_SPECIFIC_INVITATION_MESSAGES: Record<EventType, string> = {
+	graduacion:
+		'Hola {{invitado}}, le comparto la invitación a mi graduación: {{enlace}}. Será un honor celebrar este logro con usted.',
 	boda: 'Hola {{invitado}}, nos llena de alegría compartirle la invitación a nuestra boda:\n\n{{enlace}}\n\nLe invitamos a conocer todos los detalles y confirmar su asistencia. ¡Será un honor contar con su compañía en este día tan especial!',
 	xv: 'Hola {{invitado}}, le comparto con mucha ilusión la invitación a mis XV años:\n\n{{enlace}}\n\nLe invito a conocer todos los detalles y confirmar su asistencia. ¡Me dará mucha alegría que me acompañe a celebrar!',
 	bautizo:
@@ -98,6 +100,8 @@ export const EVENT_SPECIFIC_INVITATION_MESSAGES: Record<EventType, string> = {
 };
 
 export const EVENT_SPECIFIC_REMINDER_MESSAGES: Record<EventType, string> = {
+	graduacion:
+		'Hola {{invitado}}, le recuerdo mi celebración de graduación. {{hora_evento}} {{limite_confirmacion}} {{enlace}}',
 	boda: 'Hola {{invitado}}, le recordamos con mucha ilusión que se acerca la celebración de nuestro matrimonio.\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\nPuede consultar la ubicación y detalles del evento en el siguiente enlace:\n{{enlace}}',
 	xv: 'Hola {{invitado}}, le recuerdo con mucho cariño que se acerca la fiesta de mis XV años.\n\n{{hora_evento}}\n\n{{limite_confirmacion}}\n\nPuede consultar el itinerario y detalles del evento en el siguiente enlace:\n{{enlace}}',
 	bautizo:
@@ -110,6 +114,8 @@ export const EVENT_SPECIFIC_REMINDER_MESSAGES: Record<EventType, string> = {
 };
 
 export const EVENT_SPECIFIC_REMINDER_CONFIRMED: Record<EventType, string> = {
+	graduacion:
+		'Hola {{invitado}}, le esperamos para celebrar mi graduación. {{hora_evento}} {{enlace}}',
 	boda: 'Hola {{invitado}}, ¡nos emociona mucho que se acerque el día de nuestro matrimonio!\n\n{{hora_evento}}\n\nYa tenemos registrada su asistencia y será un honor compartir este momento juntos. Puede consultar nuevamente el itinerario y la ubicación aquí:\n{{enlace}}',
 	xv: 'Hola {{invitado}}, ¡la cuenta regresiva para mis XV años continúa!\n\n{{hora_evento}}\n\nYa tenemos registrada su asistencia. Muchas gracias por acompañarme, le comparto nuevamente los detalles de la fiesta y la ubicación:\n{{enlace}}',
 	bautizo:
@@ -254,6 +260,8 @@ export interface MessagePreset {
 
 function getEventMention(eventType?: EventType | string): string {
 	switch (eventType) {
+		case 'graduacion':
+			return 'a mi graduación';
 		case 'boda':
 			return 'a nuestra boda';
 		case 'xv':
@@ -273,6 +281,8 @@ function getEventMention(eventType?: EventType | string): string {
 
 function getEventApproaching(eventType?: EventType | string): string {
 	switch (eventType) {
+		case 'graduacion':
+			return 'que se acerca mi graduación';
 		case 'boda':
 			return 'que se acerca nuestra boda';
 		case 'xv':

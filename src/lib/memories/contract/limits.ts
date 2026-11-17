@@ -125,6 +125,12 @@ export const MEMORIES_LIMIT_PROFILES = {
 
 export type MemoriesLimitProfile = keyof typeof MEMORIES_LIMIT_PROFILES;
 
+/**
+ * Profile that pre-fills a new space. Memories is sold without a visible cap, so new
+ * spaces start with the larger quota; the first real event used about 0.65 GB.
+ */
+export const MEMORIES_DEFAULT_LIMIT_PROFILE: MemoriesLimitProfile = 'extended';
+
 /** Planning inputs stored with a space; never enforced by the reservation RPC. */
 export const MEMORIES_EXPECTED_GUESTS_MAX = 5_000;
 export const MEMORIES_ADMIN_NOTE_MAX_LENGTH = 500;

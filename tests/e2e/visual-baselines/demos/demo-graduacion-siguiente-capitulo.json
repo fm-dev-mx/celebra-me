@@ -1,0 +1,57 @@
+{
+    "version": 1,
+    "slug": "demo-graduacion-siguiente-capitulo",
+    "eventType": "graduacion",
+    "captures": [
+        {
+            "kind": "demo",
+            "slug": "demo-graduacion-siguiente-capitulo",
+            "eventType": "graduacion",
+            "preset": "editorial",
+            "viewport": "mobile",
+            "file": "pages/demo-graduacion-demo-graduacion-siguiente-capitulo-mobile.png",
+            "sha256": "d2893bd7dcf55ac06134c26b74bfe01c3f598e6803835c0185c30c70c408e614",
+            "contentHash": "8738414f6725efd0e2474608dccabaee31700fe0c09fea836c92abb02b9dbbe5",
+            "assetHash": "2faae26ab3c02944603d307288cbf5c76ce7c19c440cb629980e1818c29bba44",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-graduacion-siguiente-capitulo",
+            "eventType": "graduacion",
+            "preset": "editorial",
+            "viewport": "desktop",
+            "file": "pages/demo-graduacion-demo-graduacion-siguiente-capitulo-desktop.png",
+            "sha256": "5101ab42ebc020c548e866705e35ccbe00d5d3d26c7e7d17738f2a209f78466d",
+            "contentHash": "8738414f6725efd0e2474608dccabaee31700fe0c09fea836c92abb02b9dbbe5",
+            "assetHash": "2faae26ab3c02944603d307288cbf5c76ce7c19c440cb629980e1818c29bba44",
+            "comparisonResult": "ACCEPTED"
+        }
+    ],
+    "pageCaptures": [
+        {
+            "kind": "demo",
+            "slug": "demo-graduacion-siguiente-capitulo",
+            "eventType": "graduacion",
+            "preset": "editorial",
+            "viewport": "mobile",
+            "file": "pages/demo-graduacion-demo-graduacion-siguiente-capitulo-mobile.png",
+            "sha256": "d2893bd7dcf55ac06134c26b74bfe01c3f598e6803835c0185c30c70c408e614",
+            "contentHash": "8738414f6725efd0e2474608dccabaee31700fe0c09fea836c92abb02b9dbbe5",
+            "assetHash": "2faae26ab3c02944603d307288cbf5c76ce7c19c440cb629980e1818c29bba44",
+            "comparisonResult": "CANDIDATE"
+        },
+        {
+            "kind": "demo",
+            "slug": "demo-graduacion-siguiente-capitulo",
+            "eventType": "graduacion",
+            "preset": "editorial",
+            "viewport": "desktop",
+            "file": "pages/demo-graduacion-demo-graduacion-siguiente-capitulo-desktop.png",
+            "sha256": "5101ab42ebc020c548e866705e35ccbe00d5d3d26c7e7d17738f2a209f78466d",
+            "contentHash": "8738414f6725efd0e2474608dccabaee31700fe0c09fea836c92abb02b9dbbe5",
+            "assetHash": "2faae26ab3c02944603d307288cbf5c76ce7c19c440cb629980e1818c29bba44",
+            "comparisonResult": "CANDIDATE"
+        }
+    ]
+}

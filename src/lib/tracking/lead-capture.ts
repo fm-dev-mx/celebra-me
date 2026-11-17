@@ -11,6 +11,7 @@ export const LEAD_CAPTURE_EVENT_TYPES = [
 	{ value: 'bautizo', label: 'Bautizo' },
 	{ value: 'primera-comunion', label: 'Primera comunión' },
 	{ value: 'cumple', label: 'Cumpleaños' },
+	{ value: 'graduacion', label: 'Graduación' },
 	{ value: 'baby-shower', label: 'Baby shower' },
 	{ value: 'otro', label: 'Otro evento' },
 ] as const;
