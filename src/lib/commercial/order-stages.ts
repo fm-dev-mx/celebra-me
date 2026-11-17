@@ -33,7 +33,7 @@ export interface OrderStageInput {
 	invitationStatus?: LinkedInvitationStatus | null;
 }
 
-export interface OrderStageStep {
+interface OrderStageStep {
 	key: OrderStageKey;
 	label: string;
 	done: boolean;

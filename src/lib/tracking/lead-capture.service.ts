@@ -83,7 +83,7 @@ const LeadCaptureSchema = TrackingEventSchema.pick({
 	elapsedMs: z.number().int().nonnegative().max(86_400_000),
 });
 
-export type LeadCaptureInput = z.output<typeof LeadCaptureSchema>;
+type LeadCaptureInput = z.output<typeof LeadCaptureSchema>;
 
 export interface SubmitLeadCaptureInput {
 	request: Request;

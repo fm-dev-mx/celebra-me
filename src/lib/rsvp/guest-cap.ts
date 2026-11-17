@@ -48,8 +48,6 @@ export const guestReservationSchema = z
 		if (message) ctx.addIssue({ code: 'custom', path: ['maxAllowedChildren'], message });
 	});
 
-export type GuestReservation = z.infer<typeof guestReservationSchema>;
-
 /** Children passes clamped into [0, passes]; tolerant of missing or legacy values. */
 export function resolveChildrenCap(children: number | undefined, passes: number): number {
 	const n = typeof children === 'number' && Number.isFinite(children) ? Math.trunc(children) : 0;
