@@ -48,7 +48,9 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
 			await page.evaluate(() => document.fonts.ready);
 			const ceremony = page.locator('.event-location__lede');
 			await expect(ceremony).toBeVisible();
-			await expect(ceremony).toContainText('7:00 p. m. · Rev. Enrique Ruelas Carrillo');
+			await expect(ceremony).toContainText(
+				'7:00 p. m. en Salón Áurea · Rev. Enrique Ruelas Carrillo',
+			);
 			for (const selector of ['#event-location', '#memories', '#galeria']) {
 				await page.locator(selector).scrollIntoViewIfNeeded();
 				expect(
