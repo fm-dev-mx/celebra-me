@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-17T00:17:08.876Z",
+    "generatedAt": "2026-11-17T00:15:33.947Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,15 +12,15 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "29510c0d7e8805f27b9bcb0af8d33bd3d767cd12f5d7cb5abe2ff43cd3ccb50c",
-        "cssSha256": "b4a01fb92a4617c915c94fe60ae89194837e3f9aabe5d419d6751c46db0caf01",
+        "cssSha256": "61cdcc5ff64ebf00bb3bdf8d4bc87f70b022a083bba343e797ed3fd0b31222a8",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 230,
-    "matrixHash": "ff095fcb05f39e1bb17d707c31d1a845fbae2cbc5145fbf60bdd59f22f242186",
+    "totalCaptures": 232,
+    "matrixHash": "b3f1241927b0d5bb982d029810549ba339d236738f8b2a34880f2bb28e8ae280",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2842,6 +2842,30 @@
         },
         {
             "kind": "invitation",
+            "slug": "camila-beltran",
+            "eventType": "xv",
+            "preset": "jewelry-box",
+            "viewport": "mobile",
+            "file": "pages/invitation-xv-camila-beltran-mobile.png",
+            "sha256": "cfede663cf4886a96c52dd3f157447ea90244939c057aa16772ef1bbdb4511f6",
+            "contentHash": "6bb96c211009ddbd92ae2e5ac52dde5956624ec15153f68a33ecbf399259555c",
+            "assetHash": "6094e55aad049cf869379ba037fa01a86feaac712e7b7843e24057ce69ad161f",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "camila-beltran",
+            "eventType": "xv",
+            "preset": "jewelry-box",
+            "viewport": "desktop",
+            "file": "pages/invitation-xv-camila-beltran-desktop.png",
+            "sha256": "54a3c8c0253f9f9c1df6b48f92cbb0b372767deb5dc181dc3ef4496368749500",
+            "contentHash": "6bb96c211009ddbd92ae2e5ac52dde5956624ec15153f68a33ecbf399259555c",
+            "assetHash": "6094e55aad049cf869379ba037fa01a86feaac712e7b7843e24057ce69ad161f",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
             "slug": "naomi-huerta",
             "eventType": "xv",
             "preset": "storybook-blush",
@@ -2913,9 +2937,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "4a2154c11b7f88b202399224b8dbd40314e03fd2",
+    "referenceSha": "541da1b2b178c39ad211dcb756ad8e0c1a67c1e0",
     "variantManifest": {
-        "generatedAt": "2026-11-17T00:17:08.876Z",
+        "generatedAt": "2026-11-17T00:15:33.947Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2928,7 +2952,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "29510c0d7e8805f27b9bcb0af8d33bd3d767cd12f5d7cb5abe2ff43cd3ccb50c",
-            "cssSha256": "b4a01fb92a4617c915c94fe60ae89194837e3f9aabe5d419d6751c46db0caf01",
+            "cssSha256": "61cdcc5ff64ebf00bb3bdf8d4bc87f70b022a083bba343e797ed3fd0b31222a8",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -5349,10 +5373,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "4a2154c11b7f88b202399224b8dbd40314e03fd2"
+        "referenceSha": "541da1b2b178c39ad211dcb756ad8e0c1a67c1e0"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-17T00:17:08.910Z",
+        "generatedAt": "2026-11-17T00:15:34.020Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -5365,16 +5389,16 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "29510c0d7e8805f27b9bcb0af8d33bd3d767cd12f5d7cb5abe2ff43cd3ccb50c",
-            "cssSha256": "b4a01fb92a4617c915c94fe60ae89194837e3f9aabe5d419d6751c46db0caf01",
+            "cssSha256": "61cdcc5ff64ebf00bb3bdf8d4bc87f70b022a083bba343e797ed3fd0b31222a8",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 58,
-        "matrixHash": "397d4cd507c91c82adf0478d9c60a81cbbed0cd8a3f188f785d1d1f67804410b",
-        "cases": 29,
+        "totalCaptures": 60,
+        "matrixHash": "fc2cc73927585691899dea2466beebd6670ae21bbc93412250aa92089a3a4f27",
+        "cases": 30,
         "captures": [
             {
                 "kind": "invitation",
@@ -5786,6 +5810,30 @@
             },
             {
                 "kind": "invitation",
+                "slug": "camila-beltran",
+                "eventType": "xv",
+                "preset": "jewelry-box",
+                "viewport": "mobile",
+                "file": "pages/invitation-xv-camila-beltran-mobile.png",
+                "sha256": "cfede663cf4886a96c52dd3f157447ea90244939c057aa16772ef1bbdb4511f6",
+                "contentHash": "6bb96c211009ddbd92ae2e5ac52dde5956624ec15153f68a33ecbf399259555c",
+                "assetHash": "6094e55aad049cf869379ba037fa01a86feaac712e7b7843e24057ce69ad161f",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "camila-beltran",
+                "eventType": "xv",
+                "preset": "jewelry-box",
+                "viewport": "desktop",
+                "file": "pages/invitation-xv-camila-beltran-desktop.png",
+                "sha256": "54a3c8c0253f9f9c1df6b48f92cbb0b372767deb5dc181dc3ef4496368749500",
+                "contentHash": "6bb96c211009ddbd92ae2e5ac52dde5956624ec15153f68a33ecbf399259555c",
+                "assetHash": "6094e55aad049cf869379ba037fa01a86feaac712e7b7843e24057ce69ad161f",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
                 "slug": "naomi-huerta",
                 "eventType": "xv",
                 "preset": "storybook-blush",
@@ -5857,9 +5905,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "4a2154c11b7f88b202399224b8dbd40314e03fd2"
+        "referenceSha": "541da1b2b178c39ad211dcb756ad8e0c1a67c1e0"
     },
-    "candidateManifestSha256": "966c7c369926e5c716ed0d4190f59f68b00d8d1c03beb6c604f08ce1e9f0faa1",
-    "acceptedFromCommit": "4a2154c11b7f88b202399224b8dbd40314e03fd2",
-    "acceptedAt": "2026-11-17T00:18:24.742Z"
+    "candidateManifestSha256": "cbe97a454a14291d8101b473f35f233e842e2fa5959cf0734ace4d8f67ef2812",
+    "acceptedFromCommit": "541da1b2b178c39ad211dcb756ad8e0c1a67c1e0",
+    "acceptedAt": "2026-11-17T00:16:37.463Z"
 }
