@@ -6,6 +6,8 @@ import {
 	GuestLoadError,
 	GuestOverviewSkeleton,
 } from '@/components/dashboard/guests/GuestDashboardStates';
+import GuestRsvpDeadlineEditor from '@/components/dashboard/guests/GuestRsvpDeadlineEditor';
+import type { DashboardRsvpWindow } from '@/interfaces/dashboard/guest.interface';
 import GuestDeleteConfirmModal from '@/components/dashboard/guests/GuestDeleteConfirmModal';
 import GuestDetailSheet from '@/components/dashboard/guests/GuestDetailSheet';
 import GuestBatchConfirm from '@/components/dashboard/guests/GuestBatchConfirm';
@@ -79,6 +81,22 @@ function formatReminderHint(
 		: `${days} · ${count} invitado${s(count)} activo${s(count)} con invitación enviada`;
 }
 
+function renderDeadlineEditor(
+	eventId: string | null | undefined,
+	rsvpWindow: DashboardRsvpWindow | null,
+	onSaved: () => unknown,
+): React.ReactNode {
+	if (!rsvpWindow || !eventId) return undefined;
+	return (
+		<GuestRsvpDeadlineEditor
+			key={`${eventId}:${rsvpWindow.deadline ?? ''}`}
+			eventId={eventId}
+			window={rsvpWindow}
+			onSaved={() => void onSaved()}
+		/>
+	);
+}
+
 const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId }) => {
 	const [detailGuestId, setDetailGuestId] = useState<string | null>(null);
 	const [shareMessagesModalOpen, setShareMessagesModalOpen] = useState(false);
@@ -95,6 +113,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 		loadGuests,
 		memoriesReminder,
 		reminderSettings,
+		rsvpWindow,
 		setEventId,
 		setItems,
 		setReminderSettings,
@@ -384,6 +403,7 @@ const GuestDashboardApp: React.FC<GuestDashboardAppProps> = ({ initialEventId })
 						reminderCount: showReminderCta ? eligibleGuestIds.size : 0,
 						reminderHint,
 						rsvpDeadline: shareDateContext.rsvpDeadline,
+						deadlineEditor: renderDeadlineEditor(eventId, rsvpWindow, loadGuests),
 						eventTitle: currentEventTitle,
 						engagement,
 						nextStepScope: groupScope ?? undefined,

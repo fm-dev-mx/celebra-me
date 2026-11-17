@@ -246,6 +246,57 @@ $ov-of-size: 1.125rem;
 	}
 }
 
+/* Host RSVP deadline: read-only line plus an inline date editor */
+.guest-deadline {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+
+	&--editing {
+		flex-direction: column;
+		align-items: stretch;
+	}
+}
+
+.guest-deadline__label {
+	color: var(--color-text-primary);
+	font-size: $ov-small-size;
+	font-weight: 600;
+}
+
+.guest-deadline__input {
+	min-height: 2.75rem;
+	padding: 0.5rem 0.75rem;
+	border: 1px solid var(--color-border-control);
+	border-radius: var(--radius-md);
+	background: var(--color-surface-primary);
+	color: var(--color-text-primary);
+	font: inherit;
+}
+
+.guest-deadline__status,
+.guest-deadline__feedback {
+	margin: 0;
+	font-size: $ov-small-size;
+}
+
+.guest-deadline__status,
+.guest-deadline__feedback--warning {
+	color: var(--color-state-warning-text);
+}
+
+.guest-deadline__feedback--error {
+	color: var(--color-state-danger-text);
+}
+
+.guest-deadline__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+}
+
 /* Share the summary: a label and one button per way to send it */
 .guest-overview__share {
 	display: flex;
