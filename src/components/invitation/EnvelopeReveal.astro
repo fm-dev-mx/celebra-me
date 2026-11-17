@@ -522,9 +522,10 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				window.requestAnimationFrame(() => {
 					const hero = document.getElementById('inicio');
 					const prefersReducedMotion = getMotionPreference();
-					const scrollBehavior: ScrollBehavior = prefersReducedMotion
-						? 'auto'
-						: 'smooth';
+					// Always `instant`: the gate still covers the page, so the guest never sees the
+					// invitation scroll by on its way to the hero (`auto` would inherit the page's
+					// CSS smooth scrolling).
+					const scrollBehavior: ScrollBehavior = 'instant';
 					const sceneFadeRaw = getComputedStyle(invitationRoot)
 						.getPropertyValue('--motion-scene-fade')
 						.trim();
@@ -564,6 +565,9 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					};
 
 					if (sceneFadeMs > 0) {
+						// Land on the hero while the scene still covers it, then once more after
+						// the fade in case the hand-off shifted the layout.
+						settleScroll();
 						window.setTimeout(settleScroll, sceneFadeMs);
 					} else {
 						settleScroll();
@@ -758,6 +762,10 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					playEnvelopeOpenChime();
 				}
 
+				// The opening uncovers the page behind it, so start it from the top: a page that
+				// drifted (accidental scroll, layout growth) would otherwise show mid-invitation
+				// through the opening and then jump to the hero at the end.
+				window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 				this.classList.add('is-opening');
 				const openingVideo = this.querySelector<HTMLVideoElement>(
 					'[data-envelope-opening-video]',

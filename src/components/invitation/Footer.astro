@@ -180,7 +180,7 @@ const rightsYear = new Date().getFullYear();
 				localStorage.removeItem(`envelope-opened-${slug}`);
 				// The replayed opening lands on the hero, not back here at the footer; the gate
 				// itself holds the reloaded page at the top.
-				window.scrollTo(0, 0);
+				window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 				window.location.reload();
 			});
 		}

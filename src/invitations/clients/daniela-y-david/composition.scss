@@ -6,3 +6,140 @@
 // framed-pass, rsvp framed-register, footer framed-closing). The client keeps only its palette,
 // art and strings, set as tokens in the profile. The variants expect Cormorant Garamond, loaded
 // here.
+
+// Family: the sprig is a quiet rule under the heading, smaller than the variant default and with
+// more air above the first group, so the names lead.
+.event--daniela-y-david.theme-preset--jewelry-box-wedding
+	.family[data-variant='framed-groups']
+	.family__header-divider {
+	width: clamp(6.75rem, 32vw, 9.5rem);
+	margin: clamp(0.6rem, 1.6svh, 0.9rem) 0 clamp(0.4rem, 1.4svh, 0.9rem) -0.2rem;
+}
+
+// Reveal: the guest's name leads. The "Entrega especial para" label and the closing line step
+// back to small, light ivory type so they frame the name instead of competing with it.
+.event--daniela-y-david.theme-preset--jewelry-box-wedding
+	.envelope-wrapper[data-variant='pocket-fold'] {
+	.personalized-label {
+		font-size: 0.6875rem;
+		letter-spacing: 0.26em;
+	}
+
+	.personalized-name {
+		margin-top: 0.15rem;
+		line-height: 1.05;
+	}
+
+	.envelope-external-instruction__button {
+		font-size: 0.6875rem;
+		font-weight: 400;
+		letter-spacing: 0.28em;
+		color: rgb(var(--dyd-ivory-rgb) / 62%);
+	}
+}
+
+// Frames: only the guest pass and the thank-you photograph keep a gold hairline. The cover has
+// none, and the full-screen frames the shared variants draw around the countdown (doubled), the
+// location, the gallery and the gifts are dropped, so the page does not read as a stack of boxes.
+.event--daniela-y-david.theme-preset--jewelry-box-wedding {
+	.countdown-section::before,
+	.countdown-section::after,
+	.event-location::after,
+	.gallery-section::after,
+	.gifts-section::after {
+		display: none;
+	}
+
+	// The gift list keeps a single rule between its two entries, none above or under it.
+	.gifts-section[data-variant='framed-card'] {
+		.gifts-grid {
+			border-top-width: 0;
+		}
+
+		.gift-card:last-child {
+			border-bottom-width: 0;
+		}
+	}
+}
+
+// Location: the small lines step up to a readable size and each event gets more air, so the
+// screen reads as a calm program instead of a packed list.
+.event--daniela-y-david.theme-preset--jewelry-box-wedding
+	.event-location[data-variant='pinned-program'] {
+	--pinned-program-lede-size: 0.75rem;
+	--pinned-program-program-label-size: 0.75rem;
+	--pinned-program-program-address-size: 0.9375rem;
+	--pinned-program-program-link-size: 0.6875rem;
+	--location-enclosure-heading-size: 0.75rem;
+	--location-enclosure-last-text-size: 0.9375rem;
+
+	.event-location__lede {
+		margin-bottom: 1rem;
+	}
+
+	.event-location__program {
+		margin-top: clamp(1.75rem, 5svh, 3rem);
+		gap: clamp(1.75rem, 4.5svh, 2.5rem);
+	}
+
+	.event-location__program-place {
+		margin-top: 0.6rem;
+	}
+
+	.event-location__program-address {
+		margin-top: 0.4rem;
+	}
+
+	.event-location__program-actions {
+		margin-top: 1.25rem;
+	}
+
+	.event-location__indications-container {
+		margin-top: clamp(2rem, 5.5svh, 3rem);
+	}
+
+	.event-location__enclosure .event-location__indications-heading {
+		margin-bottom: 0.45rem;
+	}
+
+	.event-location__indications-container .event-location__enclosure {
+		--location-enclosure-last-text-size: 0.875rem;
+	}
+}
+
+// The program numerals: smaller solid gold seals with white figures instead of outlined rings.
+.event--daniela-y-david.theme-preset--jewelry-box-wedding
+	#invitation-sections-container
+	> .invitation-section-wrapper.has-motion[data-section-kind='location']
+	.event-location[data-variant='pinned-program']
+	.event-location__program {
+	&::before,
+	&::after {
+		width: 1.5rem;
+		height: 1.5rem;
+		border-color: var(--dyd-gold);
+		background: var(--dyd-gold);
+		font-size: 0.8rem;
+		color: var(--dyd-paper);
+	}
+
+	&::after {
+		top: 2.1rem;
+	}
+
+	// Each event starts level with its own numeral, so the reception sits as close to the II as
+	// the ceremony does to the I.
+	.event-location__program-entry + .event-location__program-entry {
+		padding-top: 2.1rem;
+	}
+}
+
+// Footer: only the reply and the credits. The note under the button repeats the question, and
+// the date and the city already lead the cover and the countdown.
+.event--daniela-y-david.theme-preset--jewelry-box-wedding
+	.invitation-footer[data-variant='framed-closing'] {
+	.footer-reply__note,
+	.footer__closing-phrase {
+		display: none;
+	}
+}
