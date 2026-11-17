@@ -8,7 +8,7 @@
 
 // Portrait: the music prompt reaches the centre of a phone, so the chevron rises above it.
 @media (aspect-ratio <= 5/4) {
-	body:has(.music-player__prompt)
+	body:has(.music-player__prompt:not([hidden]))
 		.event--camila-beltran
 		.invitation-hero[data-variant]
 		.invitation-hero__scroll-indicator {
