@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-17T00:15:33.947Z",
+    "generatedAt": "2026-11-17T03:00:28.162Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,15 +12,15 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "29510c0d7e8805f27b9bcb0af8d33bd3d767cd12f5d7cb5abe2ff43cd3ccb50c",
-        "cssSha256": "f83cea6c3e3848d16b289b072ff3ee2f173b37e27b564c1d711651f7e9dafc77",
+        "cssSha256": "e925b4fe3cdae688535b6668c3b6f17750c46b423c1aacfeedddd83a0144a04a",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 230,
-    "matrixHash": "8c1e840d2518b9125e51af010367f34106d5c8bc668a66ec3d0e9c3408e4d1cd",
+    "totalCaptures": 232,
+    "matrixHash": "ed46bd82a3a86425dcd3bf8514a1bb03720293702787a846beb4bbd4f9604d4e",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2820,8 +2820,8 @@
             "viewport": "mobile",
             "file": "pages/invitation-xv-camila-beltran-mobile.png",
             "sha256": "cfede663cf4886a96c52dd3f157447ea90244939c057aa16772ef1bbdb4511f6",
-            "contentHash": "6bb96c211009ddbd92ae2e5ac52dde5956624ec15153f68a33ecbf399259555c",
-            "assetHash": "6094e55aad049cf869379ba037fa01a86feaac712e7b7843e24057ce69ad161f",
+            "contentHash": "a659288d14b6067fa8a7b652bf5b2d330377027b79ac7013a0a0fcb77abaadc9",
+            "assetHash": "28e8b28c92b7aed0ab502fe66daf39a2d3517c882ed368fbc40a9646a35909cb",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2832,8 +2832,8 @@
             "viewport": "desktop",
             "file": "pages/invitation-xv-camila-beltran-desktop.png",
             "sha256": "54a3c8c0253f9f9c1df6b48f92cbb0b372767deb5dc181dc3ef4496368749500",
-            "contentHash": "6bb96c211009ddbd92ae2e5ac52dde5956624ec15153f68a33ecbf399259555c",
-            "assetHash": "6094e55aad049cf869379ba037fa01a86feaac712e7b7843e24057ce69ad161f",
+            "contentHash": "a659288d14b6067fa8a7b652bf5b2d330377027b79ac7013a0a0fcb77abaadc9",
+            "assetHash": "28e8b28c92b7aed0ab502fe66daf39a2d3517c882ed368fbc40a9646a35909cb",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2909,9 +2909,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "541da1b2b178c39ad211dcb756ad8e0c1a67c1e0",
+    "referenceSha": "c3433aa38c570bb2d277ec576c844dbab30a4dad",
     "variantManifest": {
-        "generatedAt": "2026-11-17T00:15:33.947Z",
+        "generatedAt": "2026-11-17T03:00:28.162Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2924,7 +2924,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "29510c0d7e8805f27b9bcb0af8d33bd3d767cd12f5d7cb5abe2ff43cd3ccb50c",
-            "cssSha256": "f83cea6c3e3848d16b289b072ff3ee2f173b37e27b564c1d711651f7e9dafc77",
+            "cssSha256": "e925b4fe3cdae688535b6668c3b6f17750c46b423c1aacfeedddd83a0144a04a",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -5317,10 +5317,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "541da1b2b178c39ad211dcb756ad8e0c1a67c1e0"
+        "referenceSha": "c3433aa38c570bb2d277ec576c844dbab30a4dad"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-17T00:15:34.020Z",
+        "generatedAt": "2026-11-17T03:00:28.168Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -5333,16 +5333,16 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "29510c0d7e8805f27b9bcb0af8d33bd3d767cd12f5d7cb5abe2ff43cd3ccb50c",
-            "cssSha256": "f83cea6c3e3848d16b289b072ff3ee2f173b37e27b564c1d711651f7e9dafc77",
+            "cssSha256": "e925b4fe3cdae688535b6668c3b6f17750c46b423c1aacfeedddd83a0144a04a",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 60,
-        "matrixHash": "fc2cc73927585691899dea2466beebd6670ae21bbc93412250aa92089a3a4f27",
-        "cases": 30,
+        "totalCaptures": 62,
+        "matrixHash": "3cbc5d9c33f7c24eaf1b20f7c87053a3ed440f84f8ff8e32cadba7b93b89f2db",
+        "cases": 31,
         "captures": [
             {
                 "kind": "invitation",
@@ -5760,8 +5760,8 @@
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-camila-beltran-mobile.png",
                 "sha256": "cfede663cf4886a96c52dd3f157447ea90244939c057aa16772ef1bbdb4511f6",
-                "contentHash": "6bb96c211009ddbd92ae2e5ac52dde5956624ec15153f68a33ecbf399259555c",
-                "assetHash": "6094e55aad049cf869379ba037fa01a86feaac712e7b7843e24057ce69ad161f",
+                "contentHash": "a659288d14b6067fa8a7b652bf5b2d330377027b79ac7013a0a0fcb77abaadc9",
+                "assetHash": "28e8b28c92b7aed0ab502fe66daf39a2d3517c882ed368fbc40a9646a35909cb",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -5772,8 +5772,8 @@
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-camila-beltran-desktop.png",
                 "sha256": "54a3c8c0253f9f9c1df6b48f92cbb0b372767deb5dc181dc3ef4496368749500",
-                "contentHash": "6bb96c211009ddbd92ae2e5ac52dde5956624ec15153f68a33ecbf399259555c",
-                "assetHash": "6094e55aad049cf869379ba037fa01a86feaac712e7b7843e24057ce69ad161f",
+                "contentHash": "a659288d14b6067fa8a7b652bf5b2d330377027b79ac7013a0a0fcb77abaadc9",
+                "assetHash": "28e8b28c92b7aed0ab502fe66daf39a2d3517c882ed368fbc40a9646a35909cb",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -5849,9 +5849,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "541da1b2b178c39ad211dcb756ad8e0c1a67c1e0"
+        "referenceSha": "c3433aa38c570bb2d277ec576c844dbab30a4dad"
     },
-    "candidateManifestSha256": "cbe97a454a14291d8101b473f35f233e842e2fa5959cf0734ace4d8f67ef2812",
-    "acceptedFromCommit": "541da1b2b178c39ad211dcb756ad8e0c1a67c1e0",
-    "acceptedAt": "2026-11-17T00:16:37.463Z"
+    "candidateManifestSha256": "0abfc1a0a45b2a364798188e73448ee597fa8267555c97ad40b57b45fb9d8d4d",
+    "acceptedFromCommit": "c3433aa38c570bb2d277ec576c844dbab30a4dad",
+    "acceptedAt": "2026-11-17T03:01:25.662Z"
 }
