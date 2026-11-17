@@ -67,6 +67,7 @@ export type EventRow = {
 	invitation_project_id: string | null;
 	branding_removal_guest_limit?: number | null;
 	guest_code_links?: boolean | null;
+	rsvp_deadline?: string | null;
 	created_at: string;
 	updated_at: string;
 };
@@ -136,6 +137,7 @@ const EVENT_COLUMN_LIST = [
 	'invitation_project_id',
 	'branding_removal_guest_limit',
 	'guest_code_links',
+	'rsvp_deadline',
 	'created_at',
 	'updated_at',
 ] as const;
@@ -156,6 +158,7 @@ export function toEventRecord(row: EventRow): EventRecord {
 		invitationId: row.invitation_project_id,
 		brandingRemovalGuestLimit: row.branding_removal_guest_limit ?? 0,
 		guestCodeLinks: row.guest_code_links ?? false,
+		rsvpDeadline: row.rsvp_deadline ?? null,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 	};

@@ -8,6 +8,8 @@ export interface RsvpContextValue {
 	maxChildren?: number;
 	childrenCount?: number | string;
 	onChildrenCountChange?: (value: string) => void;
+	/** Host-set RSVP deadline, already formatted ("20 de noviembre de 2026"). */
+	deadlineLabel?: string;
 }
 
 const RsvpContext = createContext<RsvpContextValue>({});

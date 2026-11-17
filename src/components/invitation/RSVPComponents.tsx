@@ -70,7 +70,8 @@ export function RsvpVisibleHeader({
 	const isEditorialPressPass = variant === 'editorial-press-pass';
 	// The reply card is titled by its own heading; system eyebrows do not belong on it.
 	const isReplyCard = variant === 'reply-card';
-	const edition = resolveEventEdition(useRsvpContext().eventType);
+	const { eventType, deadlineLabel } = useRsvpContext();
+	const edition = resolveEventEdition(eventType);
 
 	return (
 		<>
@@ -90,10 +91,29 @@ export function RsvpVisibleHeader({
 				<p className="rsvp__edition-label">ACCESO PRIVADO · {edition.label}</p>
 			)}
 			{subcopy !== undefined && <p className="rsvp__subcopy">{subcopy}</p>}
+			{deadlineLabel && (
+				<p className="rsvp__deadline">Fecha límite para confirmar: {deadlineLabel}</p>
+			)}
 		</>
 	);
 }
 RsvpVisibleHeader.displayName = 'RsvpVisibleHeader';
+
+/** Shown instead of the form once the host deadline has passed. */
+export function RsvpClosedState({ title, variant }: { title: string; variant?: RsvpVariant }) {
+	return (
+		<RsvpShell
+			state="form"
+			variant={variant}
+			header={<RsvpVisibleHeader title={title} eyebrow="RSVP" variant={variant} />}
+		>
+			<p className="rsvp__closed" role="status">
+				El plazo para confirmar asistencia terminó. Si necesita ayuda, comuníquese con el
+				anfitrión.
+			</p>
+		</RsvpShell>
+	);
+}
 
 function RsvpStatusHeader({ title }: { title: string }) {
 	return <h2 className="sr-only">{title}</h2>;

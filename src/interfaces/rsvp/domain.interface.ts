@@ -19,6 +19,8 @@ export interface EventRecord {
 	brandingRemovalGuestLimit: number;
 	/** Guest links use /{slug}/{guestCode}; false keeps /i/{shortId} (events before 2026-10-20). */
 	guestCodeLinks?: boolean;
+	/** Host-set last RSVP day (YYYY-MM-DD, event time zone, inclusive); null = none. */
+	rsvpDeadline?: string | null;
 	createdAt: string;
 	updatedAt: string;
 }
