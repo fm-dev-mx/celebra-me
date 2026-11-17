@@ -238,8 +238,8 @@ export default defineCanonicalInvitation({
 	eventTiming: TIMING,
 	content,
 	managedIdentityId: '23f6782c-3bae-487c-9bb7-67925cf4f6d3',
-	managedIdentityProvenance: 'owner-approved',
-	lifecycle: 'in_progress',
+	managedIdentityProvenance: 'persisted',
+	lifecycle: 'published',
 	hostLoginAlias: 'camila_beltran',
 	assetDir: 'src/invitations/clients/camila-beltran/assets',
 	assetFiles: {

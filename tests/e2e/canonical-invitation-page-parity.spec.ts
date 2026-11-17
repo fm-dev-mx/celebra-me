@@ -195,10 +195,13 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 					) as { sectionOrder?: unknown };
 					const expectedSectionOrder = Array.isArray(publishedContent.sectionOrder)
 						? publishedContent.sectionOrder.map((section) =>
+								// Mirrors the section kinds the render plan emits.
 								String(
 									section === 'personalizedAccess'
 										? 'personalized-access'
-										: section,
+										: section === 'dressCode'
+											? 'dress-code'
+											: section,
 								),
 							)
 						: [];
