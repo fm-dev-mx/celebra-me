@@ -9,7 +9,9 @@ for (const [name, path] of [
 	['editorial', '/test/variant?section=memories&variant=card&preset=editorial'],
 	['Camila', '/test/variant?full=1&slug=camila-beltran&eventType=xv&presentation=1'],
 ]) {
-	test(`invitation QR and button target the serving environment (${name})`, async ({ page }) => {
+	test(`invitation QR encodes the canonical link and the button its path (${name})`, async ({
+		page,
+	}) => {
 		await page.goto(path);
 		const section = page.locator('#memories');
 		await expect(section).toBeVisible();
@@ -24,9 +26,10 @@ for (const [name, path] of [
 			.toBuffer({ resolveWithObject: true });
 		const decoded = jsQR(new Uint8ClampedArray(data), info.width, info.height);
 		const action = section.locator('.memories-section__action');
-		const expected = new URL((await action.getAttribute('href'))!, page.url());
-		expect(expected.pathname).toMatch(/^\/r\/[a-z0-9-]+$/);
-		expect(decoded?.data).toBe(expected.href);
+		const href = (await action.getAttribute('href'))!;
+		expect(href).toMatch(/^\/r\/[a-z0-9-]+$/);
+		// A printed QR must resolve for years, so it always names the canonical domain.
+		expect(decoded?.data).toBe(`https://celebra-me.com${href}`);
 		await expect(section.locator('.memories-section__download')).toHaveAttribute(
 			'href',
 			source!,
