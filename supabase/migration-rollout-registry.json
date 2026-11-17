@@ -384,6 +384,11 @@
             "phase": "contract",
             "requiresDeployedAppCapabilities": ["guest_link_code_client"],
             "notes": "Replaces submit_guest_rsvp_public with the same 12-argument signature and adds one check: confirmed adults (attendee_count - children_count) cannot exceed the adult passes (max_allowed_attendees - max_allowed_children). Registered as contract only because the privilege reset REVOKEs then re-GRANTs the same service_role access. No columns, rows or signatures change; deployed clients keep working and only responses that put adults in child places are now rejected."
+        },
+        "20261117120000": {
+            "phase": "contract",
+            "requiresDeployedAppCapabilities": ["published_content_is_demo_retired_client"],
+            "notes": "Retires published_invitation_content.is_demo in favor of invitations.kind: recreates sync_event_date_from_published_content and its trigger to read invitations.kind, replaces the 11-argument publish_invitation_atomic with a 10-argument signature without p_is_demo (same service_role grant), and drops the is_demo column. Contract because it drops a column and an RPC signature. Apply only after the Production app that neither reads is_demo nor passes p_is_demo is deployed."
         }
     },
     "appCapabilities": {
@@ -431,6 +436,9 @@
         },
         "order_invitation_drafts_client": {
             "requiresDbCapabilities": ["order_invitation_drafts"]
+        },
+        "published_content_is_demo_retired_client": {
+            "requiresDbCapabilities": []
         },
         "invitation_data_link_client": {
             "requiresDbCapabilities": [
