@@ -27,6 +27,9 @@ module.exports = {
 	setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
 
 	transform: {
+		// Agent TypeScript consumers share this ESM helper with native Node guard CLIs.
+		'[/\\\\]scripts[/\\\\]agent[/\\\\]git-helpers\\.mjs$':
+			'<rootDir>/scripts/jest-esm-to-cjs-transform.cjs',
 		'^.+\\.tsx?$': [
 			'ts-jest',
 			{

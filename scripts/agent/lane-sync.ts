@@ -19,6 +19,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { runGit, isMainModule } from './git-helpers.mjs';
 
 export interface LaneSyncOptions {
 	cwd?: string;
@@ -50,16 +51,7 @@ function defaultRunGit(
 	args: string[],
 	cwd: string,
 ): { status: number; stdout: string; stderr: string } {
-	const result = spawnSync('git', args, {
-		cwd,
-		encoding: 'utf8',
-		stdio: ['ignore', 'pipe', 'pipe'],
-	});
-	return {
-		status: result.status ?? 1,
-		stdout: result.stdout ?? '',
-		stderr: result.stderr ?? '',
-	};
+	return runGit(args, cwd, { stdio: ['ignore', 'pipe', 'pipe'] });
 }
 
 function defaultRunStatus(cwd: string): { status: number; stdout: string; stderr: string } {
@@ -390,7 +382,6 @@ function main(): void {
 	process.exit(result.gitOk ? 0 : 1);
 }
 
-const isMainModule = process.argv[1]?.replaceAll('\\', '/').endsWith('lane-sync.ts');
-if (isMainModule) {
+if (isMainModule(undefined, { suffix: 'lane-sync.ts' })) {
 	main();
 }
