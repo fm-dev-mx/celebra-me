@@ -2,12 +2,15 @@
  * Rollout registry integrity for hosted migration candidates.
  *
  * Policy: every non-synthetic registry migration key must have a matching SQL file.
+ * Every SQL file must also pass the static rollout risk gate, including unregistered ones.
  * Hosted apply fail-closes on unspecified phase (covered by compatibility unit tests).
  * This suite keeps registry ↔ filesystem synchronized for declared hosted candidates.
  */
 import { describe, expect, it } from '@jest/globals';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import type { MigrationRolloutRegistry } from '../../scripts/db/migration-deployment-compatibility';
+import { evaluateMigrationSqlRisk } from '../../scripts/db/migration-sql-risk';
 
 describe('migration-rollout-registry integrity', () => {
 	const registryPath = resolve(process.cwd(), 'supabase/migration-rollout-registry.json');
@@ -46,6 +49,27 @@ describe('migration-rollout-registry integrity', () => {
 					),
 				),
 			).toBe(true);
+		}
+	});
+
+	it('every SQL migration passes the rollout risk gate, even without a registry entry', () => {
+		const registry = JSON.parse(readFileSync(registryPath, 'utf8')) as MigrationRolloutRegistry;
+		const failures: string[] = [];
+		for (const filename of readdirSync(migrationsDir).filter((name) => name.endsWith('.sql'))) {
+			const version = filename.split('_')[0];
+			const result = evaluateMigrationSqlRisk({
+				version,
+				registry,
+				sqlPath: resolve(migrationsDir, filename),
+			});
+			if (result.blocked) {
+				failures.push(`${filename}: ${result.reasons.join(' ')}`);
+			}
+		}
+		if (failures.length > 0) {
+			throw new Error(
+				`Fix supabase/migration-rollout-registry.json:\n${failures.join('\n')}`,
+			);
 		}
 	});
 
