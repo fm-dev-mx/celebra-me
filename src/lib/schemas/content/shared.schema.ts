@@ -165,6 +165,7 @@ export const thankYouSchema = z
 	.superRefine((thankYou, context) => {
 		if (
 			(thankYou.variant === 'full-bleed-photo' ||
+				thankYou.variant === 'veiled-photo' ||
 				thankYou.variant === 'portrait-letter' ||
 				thankYou.variant === 'portrait-keepsake' ||
 				thankYou.variant === 'last-song') &&

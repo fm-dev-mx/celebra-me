@@ -81,6 +81,7 @@ export const familySchema = z
 		familyBaseSchema.strict().extend({ variant: z.literal(FAMILY_VARIANTS[0]) }),
 		structuredFamilySchema.strict().extend({ variant: z.literal(FAMILY_VARIANTS[1]) }),
 		structuredFamilySchema.strict().extend({ variant: z.literal(FAMILY_VARIANTS[2]) }),
+		structuredFamilySchema.strict().extend({ variant: z.literal('framed-groups') }),
 	])
 	.superRefine((data, ctx) => {
 		if (data.godparents && data.godparentGroups) {
@@ -90,7 +91,11 @@ export const familySchema = z
 				path: ['godparentGroups'],
 			});
 		}
-		if (data.variant === 'split-groups' || data.variant === 'asymmetric-groups') {
+		if (
+			data.variant === 'split-groups' ||
+			data.variant === 'asymmetric-groups' ||
+			data.variant === 'framed-groups'
+		) {
 			const hasParents = Boolean(
 				data.parents && (data.parents.father || data.parents.mother),
 			);

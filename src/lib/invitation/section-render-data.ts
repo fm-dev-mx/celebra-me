@@ -11,10 +11,7 @@ import type { PersonalizedAccessPassStyle } from '@/lib/invitation/personalized-
 import { getContactPhone, isPlaceholderContactPhone } from '@/utils/whatsapp';
 import { getLatestMessage } from '@/lib/rsvp/core/guest-message';
 import { DEMO_GUEST_NAME, type RsvpDefaultCopy } from '@/components/invitation/rsvp-logic';
-import {
-	keepsLegacyPassText,
-	keepsLegacyRsvpDefaults,
-} from '@/lib/invitation/legacy-rsvp-defaults';
+import { keepsLegacyRsvpDefaults } from '@/lib/invitation/legacy-rsvp-defaults';
 
 type Sections = InvitationPageContext['viewModel']['sections'];
 type SectionData<K extends keyof Sections> = NonNullable<Sections[K]>;
@@ -43,8 +40,6 @@ type PersonalizedAccessProps = {
 	guestName: string;
 	maxAllowedAttendees: number;
 	maxAllowedChildren?: number;
-	/** Says «Pase solo para adultos» on a pass with no child places; off for published invitations. */
-	adultsOnlyLabel?: boolean;
 	eventYear?: string;
 	editionMark?: string;
 	isDemoPreview?: boolean;
@@ -119,6 +114,8 @@ type DescriptorData =
 				};
 				isDemoPreview?: boolean;
 				defaultCopy?: RsvpDefaultCopy;
+				rsvpDeadlineLabel?: string;
+				rsvpClosed?: boolean;
 			};
 	  }
 	| { component: 'gifts'; props: GiftsProps }
@@ -193,11 +190,6 @@ function resolvePassChildren(
 	return isDemoPreview ? (demoChildren ?? 0) : 0;
 }
 
-/** Every invitation outside the legacy published list shows the adults-only line on childless passes. */
-function resolveAdultsOnlyLabel(slug: string): boolean {
-	return !keepsLegacyPassText(slug);
-}
-
 function renderPersonalizedAccess(pageContext: InvitationPageContext): DescriptorData | null {
 	const config = resolvePersonalizedAccessConfig(pageContext);
 	if (!config) return null;
@@ -226,7 +218,6 @@ function renderPersonalizedAccess(pageContext: InvitationPageContext): Descripto
 				isDemoPreview,
 				rsvpSection?.demoMaxChildren,
 			),
-			adultsOnlyLabel: resolveAdultsOnlyLabel(pageContext.viewModel.id),
 			eventYear,
 			editionMark: pageContext.edition?.mark,
 			isDemoPreview,
@@ -286,6 +277,12 @@ function renderRsvpSection(pageContext: InvitationPageContext): DescriptorData |
 					}
 				: undefined,
 			isDemoPreview: pageContext.isDemoPreview ?? false,
+			...(pageContext.rsvpWindow
+				? {
+						rsvpDeadlineLabel: pageContext.rsvpWindow.label,
+						rsvpClosed: pageContext.rsvpWindow.closed,
+					}
+				: {}),
 			// Only new invitations carry it, so a legacy one's island props stay as they were.
 			...(keepsLegacyRsvpDefaults(pageContext.viewModel.id)
 				? {}
@@ -498,7 +495,11 @@ function resolveSectionReveal(
 	if (descriptor.component === 'itinerary' && descriptor.props.variant === 'editorial-ledger') {
 		return 'fade-up';
 	}
-	if (descriptor.component === 'family' && descriptor.props.variant === 'asymmetric-groups') {
+	if (
+		descriptor.component === 'family' &&
+		(descriptor.props.variant === 'asymmetric-groups' ||
+			descriptor.props.variant === 'framed-groups')
+	) {
 		return 'fade-up';
 	}
 	return REVEAL_RECIPES[descriptor.component];

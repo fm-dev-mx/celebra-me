@@ -38,6 +38,35 @@ function Esperar-Run([string]$id) {
     Write-Host "  run $id : success"
 }
 
+function Version-Del-Upload([string]$id, [string]$headSha) {
+    # Returns the Worker version uploaded by run $id after checking that the run is a successful
+    # `step=upload` dispatch of deploy-production.yml on main for $headSha. It covers both a run
+    # this script dispatched and one passed with -UploadRunId, so nothing reaches traffic otherwise.
+    $workflowId = [string](gh api "repos/$repo/actions/workflows/deploy-production.yml" --jq .id)
+    if (-not $workflowId) { throw 'No pude leer el id del workflow deploy-production.yml.' }
+    $r = gh run view $id --repo $repo --json databaseId,headSha,headBranch,event,workflowDatabaseId,status,conclusion,jobs | ConvertFrom-Json
+    if (-not $r) { throw "No pude leer el run $id." }
+    if ([string]$r.workflowDatabaseId -ne $workflowId) { throw "El run $id no es de deploy-production.yml." }
+    if ($r.headBranch -ne 'main' -or $r.event -ne 'workflow_dispatch') {
+        throw "El run $id no es un workflow_dispatch en main ($($r.event) en $($r.headBranch))."
+    }
+    if ($r.headSha -ne $headSha) { throw "El run $id es de $($r.headSha), no de la main $headSha." }
+    if ($r.status -ne 'completed' -or $r.conclusion -ne 'success') {
+        throw "El run $id no terminó en success ($($r.status)/$($r.conclusion))."
+    }
+    $job = @($r.jobs | Where-Object { $_.name -eq 'Cloudflare production upload' })
+    if ($job.Count -ne 1 -or $job[0].conclusion -ne 'success') { throw "El run $id no tiene un upload exitoso." }
+    foreach ($paso in 'Upload Worker version', 'Smoke the uploaded version') {
+        $s = @($job[0].steps | Where-Object { $_.name -eq $paso })
+        if ($s.Count -ne 1 -or $s[0].conclusion -ne 'success') { throw "En el run $id el paso '$paso' no terminó en success." }
+    }
+    $ids = @(gh run view $id --repo $repo --log --job $job[0].databaseId |
+        Select-String 'Worker Version ID: ([0-9a-f-]{36})' -AllMatches |
+        ForEach-Object { $_.Matches } | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)
+    if ($ids.Count -ne 1) { throw "El log del upload del run $id tiene $($ids.Count) Worker Version ID; espero 1." }
+    return $ids[0]
+}
+
 # 1. Checkout en la main nueva.
 git fetch origin
 $sha = git rev-parse origin/main
@@ -54,9 +83,7 @@ if (-not $UploadRunId) {
     $UploadRunId = Nuevo-Run $previos $sha
 }
 Esperar-Run $UploadRunId
-$linea = gh run view $UploadRunId --repo $repo --log | Select-String 'Worker Version ID: ([0-9a-f-]{36})' | Select-Object -First 1
-if (-not $linea) { throw 'No encontré el Worker Version ID en el log.' }
-$ver = $linea.Matches[0].Groups[1].Value
+$ver = Version-Del-Upload $UploadRunId $sha
 Write-Host "Versión subida: $ver"
 
 # 3. Activarla al 100 % y comprobarla.

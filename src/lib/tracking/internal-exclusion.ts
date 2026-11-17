@@ -12,7 +12,7 @@ export type IgnoreTrackingCookieOptions = {
 	secure: boolean;
 };
 
-export function buildIgnoreTrackingCookieOptions(isLocal = false): IgnoreTrackingCookieOptions {
+function buildIgnoreTrackingCookieOptions(isLocal = false): IgnoreTrackingCookieOptions {
 	return {
 		path: '/',
 		httpOnly: false,

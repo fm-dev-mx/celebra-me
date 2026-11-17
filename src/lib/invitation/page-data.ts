@@ -41,6 +41,8 @@ export interface InvitationPageContext {
 		scopedStyles: string;
 	};
 	guestName?: string;
+	/** Host-set RSVP deadline (client invitations only); absent = no deadline. */
+	rsvpWindow?: { label: string; closed: boolean };
 	heroTime?: string;
 	heroVenueName?: string;
 	heroVenueEvent?: string;

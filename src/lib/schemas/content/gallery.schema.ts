@@ -60,6 +60,7 @@ function validateNarrativeStack(
 const MIN_THREE_ITEM_VARIANTS: ReadonlySet<string> = new Set([
 	'mirrored-mosaic',
 	'feature-stack',
+	'rising-stack',
 	'pinned-track',
 ]);
 

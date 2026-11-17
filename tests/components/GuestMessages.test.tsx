@@ -120,13 +120,12 @@ describe('GuestMessageWall', () => {
 			/>,
 		);
 
-		const wall = screen.getByRole('region', { name: 'Mensajes de sus invitados' });
-		expect(within(wall).getByText('Del más reciente al más antiguo.')).toBeInTheDocument();
+		const wall = screen.getByRole('region', { name: 'Mensajes de sus invitados (1)' });
 		const card = within(wall).getByRole('article', { name: 'Familia Ruiz' });
 		expect(within(card).getByText(LONG_MESSAGE)).toBeInTheDocument();
 		expect(within(card).getByText('Mensaje nuevo')).toBeInTheDocument();
 
-		fireEvent.click(within(card).getByRole('button', { name: 'Ver detalles de Familia Ruiz' }));
+		fireEvent.click(within(card).getByRole('button', { name: 'Ver invitado: Familia Ruiz' }));
 		expect(onOpen).toHaveBeenCalledWith(guest);
 		expect(within(card).queryByText('Mensaje nuevo')).not.toBeInTheDocument();
 		expect(window.localStorage.getItem(GUEST_MESSAGE_READ_STORAGE_KEY)).toContain('g-ruiz');
@@ -145,7 +144,7 @@ describe('GuestMessageWall', () => {
 		const { rerender } = render(
 			<GuestMessageWall items={[initial]} onOpenDetails={jest.fn()} />,
 		);
-		fireEvent.click(screen.getByRole('button', { name: 'Ver detalles de Familia Ruiz' }));
+		fireEvent.click(screen.getByRole('button', { name: 'Ver invitado: Familia Ruiz' }));
 		expect(screen.queryByText('Mensaje nuevo')).not.toBeInTheDocument();
 
 		const updated = makeGuest({
@@ -157,14 +156,16 @@ describe('GuestMessageWall', () => {
 		expect(screen.getByText('Mensaje nuevo')).toBeInTheDocument();
 	});
 
-	it('renders nothing when no guest left a message', () => {
-		const { container } = render(
+	it('says so when no message matches the search', () => {
+		render(
 			<GuestMessageWall
 				items={[makeGuest({ guestComment: '' })]}
 				onOpenDetails={jest.fn()}
 			/>,
 		);
-		expect(container).toBeEmptyDOMElement();
+		const wall = screen.getByRole('region', { name: 'Mensajes de sus invitados' });
+		expect(wall).toHaveTextContent('Ningún mensaje coincide con su búsqueda.');
+		expect(within(wall).queryByRole('article')).not.toBeInTheDocument();
 	});
 });
 

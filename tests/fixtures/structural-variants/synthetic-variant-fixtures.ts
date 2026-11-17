@@ -80,7 +80,9 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 		family: {
 			variant: variantFor('family'),
 			...(section === 'family' &&
-			(variant === 'split-groups' || variant === 'asymmetric-groups')
+			(variant === 'split-groups' ||
+				variant === 'asymmetric-groups' ||
+				variant === 'framed-groups')
 				? {
 						groups: [
 							{
@@ -219,7 +221,8 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 									{ key: 'g2', image: 'gallery02', layoutRole: 'feature' },
 									{ key: 'g3', image: 'gallery03' },
 								]
-							: section === 'gallery' && variant === 'feature-stack'
+							: section === 'gallery' &&
+								  (variant === 'feature-stack' || variant === 'rising-stack')
 								? [
 										{ key: 'g1', image: 'gallery01', layoutRole: 'feature' },
 										{ key: 'g2', image: 'gallery02', layoutRole: 'standard' },
@@ -308,6 +311,7 @@ export function buildSyntheticVariantEvent(overrides: SyntheticVariantOverrides)
 /** Gallery variants that need three photos; two make them incompatible. */
 const TWO_ITEM_INCOMPATIBLE_GALLERIES = new Set([
 	'feature-stack',
+	'rising-stack',
 	'mirrored-mosaic',
 	'album-assemble',
 	'pinned-track',
@@ -320,6 +324,7 @@ const IMAGE_THANK_YOU_VARIANTS = new Set([
 	'portrait-letter',
 	'portrait-keepsake',
 	'last-song',
+	'veiled-photo',
 ]);
 
 function makeLocationIncompatible(data: Record<string, unknown>, variant: string): void {
@@ -343,7 +348,7 @@ function makeLocationIncompatible(data: Record<string, unknown>, variant: string
 	) {
 		const location = data.location as Record<string, unknown>;
 		location.venues = [(location.venues as Array<unknown>)[0]];
-	} else if (variant === 'program-sheet') {
+	} else if (variant === 'program-sheet' || variant === 'pinned-program') {
 		const location = data.location as Record<string, unknown>;
 		location.venues = (location.venues as Array<Record<string, unknown>>).map((venue) => ({
 			...venue,
@@ -351,6 +356,10 @@ function makeLocationIncompatible(data: Record<string, unknown>, variant: string
 		}));
 	}
 }
+
+const GROUPED_FAMILY_VARIANTS = new Set(['split-groups', 'asymmetric-groups', 'framed-groups']);
+
+const ITEMIZED_GIFT_VARIANTS = new Set(['editorial-catalog', 'gift-tag', 'framed-card']);
 
 export function buildIncompatiblePrerequisiteEvent(
 	entry: CanonicalVariantRegistryEntry,
@@ -382,7 +391,7 @@ export function buildIncompatiblePrerequisiteEvent(
 		case 'family':
 			if (entry.variant === 'ceremonial-family')
 				delete (data.family as Record<string, unknown>).variant;
-			if (entry.variant === 'split-groups' || entry.variant === 'asymmetric-groups') {
+			if (GROUPED_FAMILY_VARIANTS.has(entry.variant)) {
 				const family = data.family as Record<string, unknown>;
 				family.groups = [{ title: 'Solo Uno', items: [{ name: 'Solo' }] }];
 			}
@@ -421,7 +430,7 @@ export function buildIncompatiblePrerequisiteEvent(
 			}
 			break;
 		case 'gifts':
-			if (entry.variant === 'editorial-catalog' || entry.variant === 'gift-tag') {
+			if (ITEMIZED_GIFT_VARIANTS.has(entry.variant)) {
 				(data.gifts as Record<string, unknown>).items = [{ type: 'invalid' }];
 			}
 			break;
@@ -475,10 +484,10 @@ export function getIncompatiblePrerequisiteExpectation(
 					expectedMessageSubstring: 'split-map requires at least one visible venue',
 				};
 			}
-			if (entry.variant === 'program-sheet') {
+			if (entry.variant === 'program-sheet' || entry.variant === 'pinned-program') {
 				return {
 					expectedPath: ['location', 'variant'],
-					expectedMessageSubstring: 'program-sheet requires at least one visible venue',
+					expectedMessageSubstring: `${entry.variant} requires at least one visible venue`,
 				};
 			}
 			return {
@@ -514,10 +523,10 @@ export function getIncompatiblePrerequisiteExpectation(
 					expectedMessageSubstring: 'photo-booth requires exactly eight gallery items',
 				};
 			}
-			if (entry.variant === 'feature-stack') {
+			if (entry.variant === 'feature-stack' || entry.variant === 'rising-stack') {
 				return {
 					expectedPath: ['gallery', 'items'],
-					expectedMessageSubstring: 'feature-stack requires at least three gallery items',
+					expectedMessageSubstring: `${entry.variant} requires at least three gallery items`,
 				};
 			}
 			if (entry.variant === 'pinned-track') {

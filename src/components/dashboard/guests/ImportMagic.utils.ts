@@ -383,7 +383,9 @@ export function validateGuestRow(guest: ParsedGuest): {
 		guest.maxAllowedAttendees ?? 2,
 		guest.maxAllowedChildren ?? 0,
 	);
-	if (childrenIssue) {
+	if ((guest.maxAllowedChildren ?? 0) < 0) {
+		fieldErrors.maxAllowedChildren = 'Los niños no pueden ser un número negativo.';
+	} else if (childrenIssue) {
 		fieldErrors.maxAllowedChildren = childrenIssue;
 	}
 

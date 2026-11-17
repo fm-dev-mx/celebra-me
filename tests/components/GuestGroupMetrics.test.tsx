@@ -22,7 +22,7 @@ describe('GuestGroupMetrics', () => {
 		fireEvent.click(screen.getByRole('button', { name: /Por grupo/ }));
 		const rows = screen.getAllByRole('button', { pressed: false });
 		expect(rows[0]).toHaveTextContent('Familia2 de 6');
-		expect(rows[0]).toHaveTextContent('4 sin respuesta');
+		expect(rows[0]).toHaveTextContent('4 sin confirmar');
 		expect(rows[1]).toHaveTextContent('Sin grupo4 de 4');
 		expect(rows[1]).toHaveTextContent('Todos respondieron');
 	});

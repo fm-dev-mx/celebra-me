@@ -6,6 +6,7 @@ import type {
 	DashboardGuestListResponse,
 	DashboardEngagementSummary,
 	DashboardMemoriesReminder,
+	DashboardRsvpWindow,
 } from '@/interfaces/dashboard/guest.interface';
 import type { DashboardEventListDebug } from '@/interfaces/dashboard/admin.interface';
 import type { EventRecord } from '@/interfaces/rsvp/domain.interface';
@@ -85,6 +86,7 @@ export const useGuestDashboardRealtime = ({ initialEventId }: UseGuestDashboardR
 	const [shareDateContext, setShareDateContext] = useState<ShareMessageDateContext>(
 		buildShareMessageDateContext(null, null, '', new Date()),
 	);
+	const [rsvpWindow, setRsvpWindow] = useState<DashboardRsvpWindow | null>(null);
 	const [updatedAt, setUpdatedAt] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [eventsError, setEventsError] = useState('');
@@ -144,6 +146,7 @@ export const useGuestDashboardRealtime = ({ initialEventId }: UseGuestDashboardR
 				setReminderSettings(resolveReminderSettings(data.reminderSettings));
 			}
 			setShareDateContext(data.shareDateContext);
+			setRsvpWindow(data.rsvpWindow ?? null);
 			setUpdatedAt(data.updatedAt);
 		} catch (error) {
 			if (isDebugMode()) {
@@ -214,6 +217,7 @@ export const useGuestDashboardRealtime = ({ initialEventId }: UseGuestDashboardR
 		memoriesReminder,
 		realtimeState,
 		reminderSettings,
+		rsvpWindow,
 		setEventId,
 		setItems,
 		setReminderSettings,
