@@ -65,8 +65,8 @@ are not discovered or rewritten; verify them separately if the agent uses them.
   not every process or file access. Keep filesystem/sandbox safeguards enabled.
 - **Claude:** emits Bash and PowerShell command rules, ask rules, and Read denies. Deny takes
   precedence over allow. Gated operations like `gh pr merge` land in ask so the coordinator can
-  merge approved PRs with owner approval; Codex and Gemini keep them denied. File tools and
-  recognizable shell reads get path protection, but arbitrary scripts can still read files
+  merge approved Production PRs with owner approval; Codex and Gemini keep them denied. File tools
+  and recognizable shell reads get path protection, but arbitrary scripts can still read files
   indirectly. Existing Ask rules can continue prompting. Settings are merged as JSON; unrelated
   values survive, though formatting is normalized when additions are necessary.
 - **Gemini:** emits user TOML policies with allow priority 10 and deny priority 999, including

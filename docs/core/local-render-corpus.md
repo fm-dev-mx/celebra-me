@@ -42,8 +42,11 @@ pnpm visual:parity:accept [-- --reference-sha=<sha> --matrix-hash=<hash> --candi
 ```
 
 Candidate files are ignored under `.tmp/visual-parity/candidate/`. Compare never modifies accepted
-files. Acceptance is human-only and unavailable in CI. Accepted PNGs belong under
-`tests/e2e/visual-baselines/` and are governed by `.gitattributes` for Git LFS.
+files. Visual acceptance in Local and Preview is owned by the agent when inspecting the certified
+candidate and retaining diffs, matrix hash and candidate-manifest SHA-256; it is unavailable in CI.
+Accepted PNGs belong under `tests/e2e/visual-baselines/` and are governed by `.gitattributes` for
+Git LFS. Step ownership: Local and Preview steps are owned by the agent; Production steps remain
+exclusively owned by the owner.
 
 ## Adding a supported invitation
 

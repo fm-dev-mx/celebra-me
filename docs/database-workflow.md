@@ -63,7 +63,7 @@ Operating rules around any host or routing change:
 - No schema redesign rides with a platform change: it would make any regression impossible to
   attribute.
 
-### Candidate follow-ups (separate programs, owner approval each)
+### Candidate follow-ups (separate programs, Production owner approval each)
 
 | Candidate                                                                                                                          | Value                                                                                | Note                                                                                                              |
 | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |

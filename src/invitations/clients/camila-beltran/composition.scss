@@ -376,8 +376,11 @@
 		transition-duration: 550ms;
 
 		.envelope-tease {
-			grid-template-rows: auto auto 1fr auto;
-			padding-top: calc(6svh + env(safe-area-inset-top));
+			grid-template: '.' auto '.' auto 'stamp' 1fr '.' auto / minmax(0, 1fr);
+		}
+
+		.envelope-zone--seal {
+			grid-area: auto;
 		}
 
 		.envelope-zone--identity {
@@ -385,19 +388,17 @@
 		}
 
 		.envelope-name {
-			grid-row: 1;
-			align-self: start;
+			place-self: start center;
 		}
 
 		.tease-details-group {
-			grid-row: 2;
-			align-self: start;
+			place-self: start center;
 			margin-top: 0.35rem;
 		}
 
 		.guest-personalized {
 			grid-row: 4;
-			align-self: end;
+			place-self: end center;
 			margin-top: 0;
 		}
 

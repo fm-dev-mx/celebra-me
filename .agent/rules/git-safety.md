@@ -45,13 +45,20 @@ This section is the single source for that authority; other documents link here.
   `pnpm invitation:release -- --slug <slug> --targets preview --apply` and
   `pnpm db:preview:sync-invitations --apply` are allowed in Preview without asking. Production stays
   gated.
-- **Visual acceptance in Preview:** `pnpm visual:parity:accept` is allowed only with all of this
-  evidence: a certified candidate (`pnpm visual:parity:candidate:certified -- --sha <40-hex>`);
-  diffs limited to the task's scope; zero geometry errors; `referenceSha`, `matrixHash` and
-  `candidateManifestSha256` recorded with the candidate diffs kept. CI still rejects `accept`.
-- **Still the owner's:** Production (merging or deploying `main`, the daily production window),
-  money and external accounts, secrets (`.env*`, `.secrets/`, `.backups/` and the retired host's
-  config folder), force push, `--no-verify` and `--admin`.
+- **Visual acceptance in Local and Preview:** the agent accepts (`pnpm visual:parity:accept`) when
+  it has inspected the certified candidate
+  (`pnpm visual:parity:candidate:certified -- --sha <40-hex>`) and retained the diffs, `matrixHash`,
+  and `candidateManifestSha256` (with zero geometry errors and diffs limited to the task's scope). A
+  regenerated manifest requires renewed acceptance of that exact artifact; never transfer approval
+  to a different hash. CI still rejects `accept`.
+- **Preview approval:** the agent approves Preview
+  (`pnpm invitation:release -- --package-hash <hash> --approve`) when hosted validation evidence for
+  the exact `packageHash` is verified. An approval never transfers to a different hash.
+- **Step ownership:** Local and Preview steps are owned by the agent; Production steps remain
+  exclusively owned by the owner.
+- **Still the owner's:** Production (merging or deploying `main`, the daily production window,
+  `pnpm prod:apply --apply`), money and external accounts, secrets (`.env*`, `.secrets/`,
+  `.backups/` and the retired host's config folder), force push, `--no-verify` and `--admin`.
 
 ---
 

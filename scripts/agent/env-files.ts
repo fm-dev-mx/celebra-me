@@ -13,6 +13,7 @@
  *   pnpm env:sync -- --target f11-preview --purpose preview --apply
  *   pnpm env:audit                      # templates vs code: unread, undocumented, stale names
  */
+import { isMainModule } from './git-helpers.mjs';
 import { randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import {
@@ -587,7 +588,7 @@ function main(): void {
 	);
 }
 
-if (process.argv[1] && /^env-files\.(?:ts|js)$/.test(basename(process.argv[1]))) {
+if (isMainModule(undefined, { pattern: /^env-files\.(?:ts|js)$/, basenameOnly: true })) {
 	try {
 		main();
 	} catch (error: unknown) {

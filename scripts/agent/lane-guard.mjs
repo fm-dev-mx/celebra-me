@@ -10,10 +10,9 @@
  * Usage: node scripts/agent/lane-guard.mjs [--commit]
  */
 
-import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import process from 'node:process';
-import { fileURLToPath } from 'node:url';
+import { gitOutput, isMainModule } from './git-helpers.mjs';
 import {
 	checkLaneWorkPolicy,
 	detectWorktreeLane,
@@ -21,28 +20,26 @@ import {
 	gitInspectionEnv,
 } from '../shared/worktree-lane.ts';
 
-/** @param {string} cwd @param {string[]} args */
-function gitOutput(cwd, args) {
-	const result = spawnSync('git', args, { cwd, env: gitInspectionEnv(), encoding: 'utf8' });
-	return result.status === 0 ? String(result.stdout).trim() : null;
-}
-
 /**
  * @param {string} [cwd] checkout to inspect (defaults to the current Git top level)
  * @param {'session' | 'commit'} [operation]
  * @returns {{ ok: boolean, laneId: string, branch: string | null, message: string | null }}
  */
 export function evaluateLaneGuard(cwd = process.cwd(), operation = 'session') {
-	const topLevel = gitOutput(cwd, ['rev-parse', '--show-toplevel']) ?? cwd;
+	const topLevel = gitOutput(cwd, ['rev-parse', '--show-toplevel'], gitInspectionEnv()) ?? cwd;
 	const checkout = resolve(topLevel);
 	const lane = detectWorktreeLane(checkout, findRepoRoot(checkout));
-	const branch = gitOutput(checkout, ['symbolic-ref', '--quiet', '--short', 'HEAD']) || null;
-	const merging = gitOutput(checkout, ['rev-parse', '-q', '--verify', 'MERGE_HEAD']) !== null;
+	const branch =
+		gitOutput(checkout, ['symbolic-ref', '--quiet', '--short', 'HEAD'], gitInspectionEnv()) ||
+		null;
+	const merging =
+		gitOutput(checkout, ['rev-parse', '-q', '--verify', 'MERGE_HEAD'], gitInspectionEnv()) !==
+		null;
 	const message = checkLaneWorkPolicy({ lane, branch, merging, operation });
 	return { ok: message === null, laneId: lane.id, branch, message };
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (isMainModule(import.meta.url)) {
 	const verdict = evaluateLaneGuard(
 		process.cwd(),
 		process.argv.includes('--commit') ? 'commit' : 'session',

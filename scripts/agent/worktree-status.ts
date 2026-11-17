@@ -1,4 +1,4 @@
-import { spawnSync } from 'node:child_process';
+import { runGit as executeGit, isMainModule } from './git-helpers.mjs';
 import { existsSync } from 'node:fs';
 import { findRepoRoot, listExpectedLanePaths } from '../shared/worktree-lane';
 
@@ -49,16 +49,7 @@ export const LANES: LaneConfig[] = listExpectedLanePaths(REPO_ROOT).map((lane) =
 }));
 
 function runGit(args: string[], cwd: string): GitCommandResult {
-	const result = spawnSync('git', args, {
-		cwd,
-		encoding: 'utf8',
-		stdio: ['ignore', 'pipe', 'pipe'],
-	});
-	return {
-		status: result.status ?? 1,
-		stdout: String(result.stdout ?? '').trim(),
-		stderr: String(result.stderr ?? '').trim(),
-	};
+	return executeGit(args, cwd, { stdio: ['ignore', 'pipe', 'pipe'], trim: 'both' });
 }
 
 function firstSuccessful(runner: GitRunner, commands: string[][], cwd: string): GitCommandResult {
@@ -233,4 +224,4 @@ function main(): void {
 	if (unavailable.length > 0) process.exitCode = 2;
 }
 
-if (process.argv[1]?.replaceAll('\\', '/').endsWith('worktree-status.ts')) main();
+if (isMainModule(undefined, { suffix: 'worktree-status.ts' })) main();
