@@ -531,7 +531,7 @@ const shouldRenderHidden =
 				window.requestAnimationFrame(() => {
 					const hero = document.getElementById('inicio');
 					if (hero instanceof HTMLElement) {
-						hero.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'auto' });
+						hero.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'instant' });
 						if (shouldMoveFocus) {
 							if (!hero.hasAttribute('tabindex')) {
 								hero.setAttribute('tabindex', '-1');
@@ -539,7 +539,7 @@ const shouldRenderHidden =
 							hero.focus({ preventScroll: true });
 						}
 					} else {
-						window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+						window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 					}
 
 					this.hidden = true;

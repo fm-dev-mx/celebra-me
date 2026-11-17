@@ -13,10 +13,10 @@ import ts from 'typescript';
 export const DATA_PREREQUISITES_PATH = 'supabase/data-prerequisites.json';
 export const DATA_PREREQUISITE_DOCS = 'docs/core/release-process.md ("Data prerequisites")';
 
-export type DataPrerequisiteStatus = 'verified' | 'pending' | 'not-applicable';
+type DataPrerequisiteStatus = 'verified' | 'pending' | 'not-applicable';
 const STATUSES: ReadonlySet<string> = new Set(['verified', 'pending', 'not-applicable']);
 
-export interface DataPrerequisiteEnvironment {
+interface DataPrerequisiteEnvironment {
 	status: DataPrerequisiteStatus;
 	verifiedAt?: string;
 	evidence?: string;
@@ -30,7 +30,7 @@ export interface DataPrerequisite {
 	environments: Record<string, DataPrerequisiteEnvironment>;
 }
 
-export type AuthAppMetadataKeyDeclaration =
+type AuthAppMetadataKeyDeclaration =
 	{ prerequisite: string } | { migration: 'none'; reason: string };
 
 export interface DataPrerequisiteManifest {

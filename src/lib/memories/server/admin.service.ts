@@ -21,6 +21,7 @@ import type {
 } from '@/lib/memories/contract/catalog';
 import {
 	MEMORIES_ADMIN_NOTE_MAX_LENGTH,
+	MEMORIES_DEFAULT_LIMIT_PROFILE,
 	MEMORIES_ENTITLEMENTS,
 	MEMORIES_EXPECTED_GUESTS_MAX,
 	MEMORIES_LIMIT_PROFILES,
@@ -251,7 +252,7 @@ export async function listMemorySpaceCandidatesAdmin(
 					uploadStartsLocal: `${shiftLocalDate(eventDate, -DEFAULT_DAYS_BEFORE_EVENT)}T00:00`,
 					uploadEndsLocal: `${uploadEndsDate}T00:00`,
 					retentionEndsLocal: `${shiftLocalDate(uploadEndsDate, DEFAULT_RETENTION_DAYS)}T00:00`,
-					limits: { ...MEMORIES_LIMIT_PROFILES.standard },
+					limits: { ...MEMORIES_LIMIT_PROFILES[MEMORIES_DEFAULT_LIMIT_PROFILE] },
 				},
 			};
 		}),

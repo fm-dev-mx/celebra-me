@@ -131,6 +131,7 @@ export const EVENT_TYPE_LABELS: Record<EventType, string> = {
 	boda: 'Boda',
 	bautizo: 'Bautizo',
 	cumple: 'Cumpleaños',
+	graduacion: 'Graduación',
 	'baby-shower': 'Baby Shower',
 	'primera-comunion': 'Primera Comunión',
 };

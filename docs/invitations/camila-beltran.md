@@ -185,7 +185,11 @@ the client's four colours. Own components and art only; nothing is copied from t
 
 ## Creative Direction & Acceptance
 
-**Human creative outcome:** `PENDING`
+**Human creative outcome:** `ACCEPTED`
+
+The owner accepted every section one at a time and approved publishing the invitation to Preview on
+2026-11-16. The gallery keeps its current photographs until the AI photographs are approved;
+swapping them is a content update, not a new acceptance round.
 
 - **concern:** Typography roles — script for the name and headings, spaced small capitals in gold
   for eyebrows, serif body. **status:** accepted

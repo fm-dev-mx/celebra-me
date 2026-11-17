@@ -452,7 +452,7 @@ function Field({
 	);
 }
 
-export interface InvitationDataFormProps {
+interface InvitationDataFormProps {
 	token: string;
 }
 

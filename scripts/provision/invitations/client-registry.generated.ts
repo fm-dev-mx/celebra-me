@@ -3,9 +3,10 @@
 import type { InvitationDefinition } from './invitation-definition.ts';
 import invitation0 from '../../../src/invitations/clients/andrea/invitation.ts';
 import invitation1 from '../../../src/invitations/clients/camila-beltran/invitation.ts';
-import invitation2 from '../../../src/invitations/clients/naomi-huerta/invitation.ts';
-import invitation3 from '../../../src/invitations/clients/valeria-hernandez/invitation.ts';
-import invitation4 from '../../../src/invitations/clients/yireh-ana/invitation.ts';
+import invitation2 from '../../../src/invitations/clients/daniela-y-david/invitation.ts';
+import invitation3 from '../../../src/invitations/clients/naomi-huerta/invitation.ts';
+import invitation4 from '../../../src/invitations/clients/valeria-hernandez/invitation.ts';
+import invitation5 from '../../../src/invitations/clients/yireh-ana/invitation.ts';
 
 export const CLIENT_INVITATION_DEFINITIONS: readonly InvitationDefinition[] = [
 	invitation0,
@@ -13,4 +14,5 @@ export const CLIENT_INVITATION_DEFINITIONS: readonly InvitationDefinition[] = [
 	invitation2,
 	invitation3,
 	invitation4,
+	invitation5,
 ];

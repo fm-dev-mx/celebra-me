@@ -26,6 +26,10 @@ const strategies: Record<string, Strategy> = {
 		featureIndices: [0],
 		wideIndices: [],
 	},
+	'rising-stack': {
+		featureIndices: [0],
+		wideIndices: [],
+	},
 	'index-choreography': {
 		featureIndices: [0, 5, 6],
 		wideIndices: [2, 3, 7],

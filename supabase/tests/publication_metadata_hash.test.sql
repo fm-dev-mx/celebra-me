@@ -42,7 +42,7 @@ language sql
 as $$
   select public.publish_invitation_atomic(
     i.id, d.id, d.updated_at, null, p_metadata_hash, md5(d.content::text),
-    p_idempotency_key, i.slug, i.event_type, false, d.content
+    p_idempotency_key, i.slug, i.event_type, d.content
   )
   from public.invitations i
   join public.invitation_content_drafts d on d.invitation_project_id = i.id

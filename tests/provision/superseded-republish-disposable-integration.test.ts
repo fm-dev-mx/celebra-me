@@ -69,8 +69,8 @@ describe('disposable republish without superseded Published shapes', () => {
 			VALUES ('${INVITATION_UUID}', '${SLUG}', '${definition.title.replace(/'/g, "''")}',
 				'published', '${definition.eventType}', 'editorial-magazine', 'client', '${OWNER_UUID}');
 			INSERT INTO public.published_invitation_content
-				(invitation_project_id, slug, event_type, is_demo, content, version, published_at)
-			VALUES ('${INVITATION_UUID}', '${SLUG}', '${definition.eventType}', false, ${jsonLiteral(legacy)}, 1, now());
+				(invitation_project_id, slug, event_type, content, version, published_at)
+			VALUES ('${INVITATION_UUID}', '${SLUG}', '${definition.eventType}', ${jsonLiteral(legacy)}, 1, now());
 			INSERT INTO public.invitation_content_drafts (id, invitation_project_id, content, status)
 			VALUES ('${DRAFT_UUID}', '${INVITATION_UUID}', ${jsonLiteral(republished)}, 'draft');
 		`);
@@ -98,7 +98,7 @@ describe('disposable republish without superseded Published shapes', () => {
 					'archivedAt', inv.archived_at, 'eventType', inv.event_type, 'kind', inv.kind,
 					'slug', inv.slug, 'status', inv.status, 'themeId', inv.theme_id, 'title', inv.title
 				)::text) || chr(31) || md5((SELECT content FROM pub)::text)) FROM inv),
-				'${'0'.repeat(64)}', '${IDEMPOTENCY_UUID}', '${SLUG}', '${definition.eventType}', false,
+				'${'0'.repeat(64)}', '${IDEMPOTENCY_UUID}', '${SLUG}', '${definition.eventType}',
 				${jsonLiteral(republished)}
 			)->'publishedContent'->>'version';
 		`);

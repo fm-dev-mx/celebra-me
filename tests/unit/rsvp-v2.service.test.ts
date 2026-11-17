@@ -14,6 +14,7 @@ import { assertObservedOperationCount } from '@/lib/invitation/delivery-contract
 import { isEventInvitationUnavailable } from '@/lib/invitation/access/invitation-access.repository';
 import type { EventRecord, GuestInvitationRecord } from '@/interfaces/rsvp/domain.interface';
 
+jest.mock('@/lib/rsvp/repositories/event.repository');
 jest.mock('@/lib/rsvp/repositories/guest.repository');
 jest.mock('@/lib/invitation/access/invitation-access.repository', () => ({
 	...jest.requireActual('@/lib/invitation/access/invitation-access.repository'),

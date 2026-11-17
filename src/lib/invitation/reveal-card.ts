@@ -78,6 +78,7 @@ const STANDALONE_REVEAL_VARIANTS = [
 	'celestial-letter',
 	'disco-night',
 	'night-envelope',
+	'pocket-fold',
 	'satin-filigree',
 	'seaside-lineart',
 	'storybook-lanterns',

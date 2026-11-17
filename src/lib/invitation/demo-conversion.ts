@@ -20,6 +20,7 @@ const CELEBRATION_LABELS: Record<EventType, string> = {
 	bautizo: 'su bautizo',
 	'primera-comunion': 'su primera comunión',
 	cumple: 'su cumpleaños',
+	graduacion: 'su graduación',
 	'baby-shower': 'su baby shower',
 };
 
@@ -32,7 +33,7 @@ const CLOSING_IMAGE_KEYS: readonly EventAssetKey[] = [
 ];
 
 /** Where a demo quotes: the floating button (extra, discreet) and the two sales panels. */
-export type DemoQuotePlacement = 'floating' | 'gallery' | 'closing';
+type DemoQuotePlacement = 'floating' | 'gallery' | 'closing';
 
 const QUOTE_ENTRIES: Record<DemoQuotePlacement, VitrinaEntry> = {
 	floating: 'FLOTANTE',

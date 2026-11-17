@@ -4,15 +4,13 @@
  * holds no server code; the answer schema lives in `answers-schema.ts`.
  */
 
-export type InvitationDataFieldKind = 'text' | 'textarea' | 'date' | 'time' | 'url' | 'photos';
+type InvitationDataFieldKind = 'text' | 'textarea' | 'date' | 'time' | 'url' | 'photos';
 
 export const INVITATION_DATA_ALLOWED_MIME_TYPES = [
 	'image/jpeg',
 	'image/png',
 	'image/webp',
 ] as const;
-
-export type InvitationDataAllowedMimeType = (typeof INVITATION_DATA_ALLOWED_MIME_TYPES)[number];
 
 export const INVITATION_DATA_MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 export const INVITATION_DATA_MAX_PHOTOS = 10;

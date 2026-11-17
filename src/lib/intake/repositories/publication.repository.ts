@@ -120,7 +120,6 @@ export async function commitAtomicPublication(input: {
 	idempotencyKey: string;
 	slug: string;
 	eventType: string;
-	isDemo: boolean;
 	content: Record<string, unknown>;
 }): Promise<AtomicPublicationResult> {
 	try {
@@ -138,7 +137,6 @@ export async function commitAtomicPublication(input: {
 				p_idempotency_key: input.idempotencyKey,
 				p_slug: input.slug,
 				p_event_type: input.eventType,
-				p_is_demo: input.isDemo,
 				p_content: input.content,
 			},
 		});

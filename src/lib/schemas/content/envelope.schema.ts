@@ -9,6 +9,7 @@ export const envelopeRevealVariantSchema = z.enum([
 	'disco-night',
 	'editorial-cover',
 	'night-envelope',
+	'pocket-fold',
 	'satin-filigree',
 	'seaside-lineart',
 	'storybook-lanterns',

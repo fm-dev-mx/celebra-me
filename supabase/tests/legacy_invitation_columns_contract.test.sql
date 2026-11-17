@@ -31,7 +31,7 @@ select lives_ok(
   $$select public.publish_invitation_atomic(
       i.id, d.id, d.updated_at, null,
       md5(md5(jsonb_build_object('archivedAt', i.archived_at, 'eventType', i.event_type, 'kind', i.kind, 'slug', i.slug, 'status', i.status, 'themeId', i.theme_id, 'title', i.title)::text) || chr(31) || md5('{}'::jsonb::text)),
-      md5(d.content::text), '40000000-0000-0000-0000-0000000000c1', i.slug, i.event_type, false, d.content
+      md5(d.content::text), '40000000-0000-0000-0000-0000000000c1', i.slug, i.event_type, d.content
     )
     from public.invitations i
     join public.invitation_content_drafts d on d.invitation_project_id = i.id
@@ -56,8 +56,8 @@ select lives_ok(
 );
 
 -- A published invitation without a draft: the restore inserts a new draft.
-insert into public.published_invitation_content (id, invitation_project_id, slug, event_type, is_demo, content, version, published_at)
-values ('50000000-0000-0000-0000-0000000000c3', '20000000-0000-0000-0000-0000000000c3', 'column-contract-restore', 'xv', false, '{"title":"Restauración"}'::jsonb, 1, now());
+insert into public.published_invitation_content (id, invitation_project_id, slug, event_type, content, version, published_at)
+values ('50000000-0000-0000-0000-0000000000c3', '20000000-0000-0000-0000-0000000000c3', 'column-contract-restore', 'xv','{"title":"Restauración"}'::jsonb, 1, now());
 select lives_ok(
   $$select public.restore_invitation_from_published_atomic(
       '70000000-0000-0000-0000-0000000000c1', i.id, i.updated_at, null, p.id, p.version,

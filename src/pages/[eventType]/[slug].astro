@@ -38,6 +38,7 @@ import { getDemoRouteSlug } from '@/lib/invitation/demo-routes';
 import { getDemoMetadata } from '@/lib/seo/demo-metadata';
 import { safeErr } from '@/lib/server/safe-error';
 import { keepsLegacyRsvpDefaults } from '@/lib/invitation/legacy-rsvp-defaults';
+import { loadPublicRsvpWindow } from '@/lib/rsvp/services/rsvp-deadline.service';
 
 const slug = Astro.params.slug!;
 const eventType = Astro.params.eventType!;
@@ -155,6 +156,15 @@ try {
 					eventType: routeEventType,
 					screenshotMode,
 				});
+				if (!viewModel.isDemo) {
+					// A deadline lookup failure must not take the invitation down.
+					try {
+						const rsvpWindow = await loadPublicRsvpWindow(slug);
+						if (rsvpWindow) page.rsvpWindow = rsvpWindow;
+					} catch (error) {
+						console.error(`[PublicRoute] RSVP deadline lookup failed slug="${slug}":`, safeErr(error));
+					}
+				}
 			}
 		}
 	}
@@ -357,7 +367,7 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 								class={isDemoConversion ? 'demo-conversion-farewell' : undefined}
 								eventSlug={page.viewModel.id}
 								showEnvelope={page.wrapper.showEnvelope}
-								variant="standard"
+								variant={page.viewModel.composition?.footerVariant ?? 'standard'}
 								closingPhrase={page.footerClosingPhrase}
 								showFooterBranding={page.viewModel.brandingVisibility.showFooterBranding && !isDemoConversion}
 								showContactCta={page.viewModel.brandingVisibility.showContactCta && !isDemoConversion}

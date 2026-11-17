@@ -5,6 +5,7 @@ export const EVENT_TYPES = [
 	'cumple',
 	'baby-shower',
 	'primera-comunion',
+	'graduacion',
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
@@ -52,7 +53,7 @@ export const THEME_PRESET_METADATA = {
 	'jewelry-box': { portrait: false, eventTypes: ['xv'] },
 	'jewelry-box-wedding': { portrait: false, eventTypes: ['boda'] },
 	'luxury-hacienda': { portrait: false, eventTypes: ['cumple'] },
-	editorial: { portrait: true, eventTypes: ['xv'] },
+	editorial: { portrait: true, eventTypes: ['xv', 'graduacion'] },
 	'editorial-magazine': { portrait: true, eventTypes: ['xv', 'cumple'] },
 	'premiere-floral': { portrait: true, eventTypes: ['xv'] },
 	'celestial-blue': { portrait: false, eventTypes: ['xv', 'baby-shower'] },
