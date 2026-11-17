@@ -35,40 +35,42 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 
 ## Fact Register
 
-| field                | value                                                                      | classification | source        | notes                                                        |
-| -------------------- | -------------------------------------------------------------------------- | -------------- | ------------- | ------------------------------------------------------------ |
-| slug                 | camila-beltran                                                             | verified       | owner-session | Route `/xv/camila-beltran`                                   |
-| celebrantName        | Camila                                                                     | verified       | wa-export     | Full name Camila Beltrán; seal initial «C»                   |
-| eventLabel           | Mis XV Años                                                                | inferred       | wa-export     | XV event; client gave no title                               |
-| eventDate            | 2026-12-11                                                                 | verified       | wa-export     | Friday; the reference prints another weekday, never copied   |
-| eventTime            | 19:00                                                                      | verified       | wa-export     | «Ceremonia de XV años», non-Catholic service                 |
-| receptionTime        | 20:00                                                                      | verified       | wa-export     | Reception                                                    |
-| timeZone             | America/Mazatlan                                                           | inferred       | wa-export     | Venue is in Los Mochis, Sinaloa                              |
-| sourceAssetPath      | source:hr-photos                                                           | verified       | owner-session | Opaque label only                                            |
-| sectionOrder         | quote, family, countdown, location, gallery, personalizedAccess, rsvp, end | inferred       | owner-session | Follows the reference order; dress code sits with location   |
-| primaryVenueName     | Salón Áurea                                                                | verified       | wa-export     | Accent pending confirmation (client typed it without)        |
-| primaryVenueAddress  | Carretera Los Mochis - Topolobampo Km 5, Col. Morelos, Los Mochis, Sin.    | verified       | wa-export     |                                                              |
-| distinctVenues       | false                                                                      | inferred       | wa-export     | Only one venue given; see [[PENDIENTE:CEREMONY_PLACE]]       |
-| ceremonyMapUrl       | Map search for the venue                                                   | inferred       | owner-session | The client sent no pin; the owner confirms the pin           |
-| officiant            | Rev. Enrique Ruelas Carrillo                                               | verified       | wa-export     | Never «misa», «parroquia» or «ceremonia religiosa»           |
-| motherName           | Anahy Soto Acosta                                                          | verified       | wa-export     | Listed first by the client; order kept                       |
-| fatherName           | Rosario Beltrán Rabago                                                     | verified       | wa-export     | Accent pending: [[PENDIENTE:NAME_ACCENTS]]                   |
-| familyLabel          | Con el amor de mis padres                                                  | inferred       | owner-session | Agent draft                                                  |
-| godparents           | [[PENDIENTE:PADRINOS]]                                                     | pending        | wa-export     | The client will send them; block hidden until then           |
-| dressCode            | [[PENDIENTE:DRESS_LEVEL]]                                                  | pending        | wa-export     | Only the reserved colour was given                           |
-| reservedColor        | Rose gold — reservado para la quinceañera                                  | verified       | wa-export     | Client's own note                                            |
-| clientColors         | Rose gold, beige, dorado, blanco                                           | verified       | wa-export     |                                                              |
-| dressColor           | Rose gold                                                                  | verified       | wa-export     |                                                              |
-| rsvpConfirmationMode | api                                                                        | inferred       | owner-session | See [[PENDIENTE:PASS_RULES]]                                 |
-| rsvpGuestCap         | 2                                                                          | inferred       | owner-session | Technical fallback only                                      |
-| rsvpWhatsappPhone    | —                                                                          | not_applicable | owner-session | No WhatsApp confirmation flow                                |
-| rsvpDeadline         | [[PENDIENTE:RSVP_DEADLINE]]                                                | pending        | owner-session | Proposal 2026-12-04; until confirmed the copy states no date |
-| gifts                | [[PENDIENTE:GIFTS]]                                                        | pending        | wa-export     | Not mentioned; section hidden                                |
-| itinerary            | [[PENDIENTE:ITINERARY]]                                                    | pending        | wa-export     | Only the two times are known; section hidden                 |
-| musicUrl             | [[PENDIENTE:SONG_LINK]]                                                    | pending        | wa-export     | Song title given («No crezcas más»), no link; music omitted  |
-| checkInQr            | —                                                                          | not_applicable | wa-export     | Not requested                                                |
-| memoriesQr           | —                                                                          | not_applicable | owner-session | The reference's photo upload is out of scope                 |
-| specialMessages      | [[PENDIENTE:CELEBRANT_MESSAGE]]                                            | pending        | owner-session | Quote and closing are agent drafts                           |
+| field                 | value                                                                                                           | classification | source        | notes                                                                                                                   |
+| --------------------- | --------------------------------------------------------------------------------------------------------------- | -------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| slug                  | camila-beltran                                                                                                  | verified       | owner-session | Route `/xv/camila-beltran`                                                                                              |
+| celebrantName         | Camila                                                                                                          | verified       | wa-export     | Full name Camila Beltrán; seal initial «C»                                                                              |
+| eventLabel            | Mis XV Años                                                                                                     | inferred       | wa-export     | XV event; client gave no title                                                                                          |
+| eventDate             | 2026-12-11                                                                                                      | verified       | wa-export     | Friday; the reference prints another weekday, never copied                                                              |
+| eventTime             | 19:00                                                                                                           | verified       | wa-export     | «Ceremonia de XV años», non-Catholic service                                                                            |
+| receptionTime         | 20:00                                                                                                           | verified       | wa-export     | Reception                                                                                                               |
+| timeZone              | America/Mazatlan                                                                                                | inferred       | wa-export     | Venue is in Los Mochis, Sinaloa                                                                                         |
+| sourceAssetPath       | source:hr-photos                                                                                                | verified       | owner-session | Opaque label only                                                                                                       |
+| sectionOrder          | quote, family, countdown, location, itinerary, dressCode, memories, gallery, personalizedAccess, rsvp, thankYou | verified       | owner-session | Local composition; the reference order includes guest photo upload                                                      |
+| primaryVenueName      | Salón Áurea                                                                                                     | verified       | wa-export     | Accent pending confirmation (client typed it without)                                                                   |
+| primaryVenueAddress   | Carretera Los Mochis - Topolobampo Km 5, Col. Morelos, Los Mochis, Sin.                                         | verified       | wa-export     |                                                                                                                         |
+| receptionVenueName    | Salón Áurea                                                                                                     | verified       | wa-export     | Reception only; ceremony venue remains unconfirmed                                                                      |
+| receptionVenueAddress | Carretera Los Mochis - Topolobampo Km 5, Col. Morelos, Los Mochis, Sinaloa                                      | verified       | wa-export     | Confirmed reception address                                                                                             |
+| distinctVenues        | [[PENDIENTE:CEREMONY_PLACE]]                                                                                    | pending        | owner-session | Salón Áurea is confirmed for reception only                                                                             |
+| ceremonyMapUrl        | [[PENDIENTE:CEREMONY_PLACE]]                                                                                    | pending        | owner-session | Ceremony venue and exact map pin remain unconfirmed                                                                     |
+| officiant             | Rev. Enrique Ruelas Carrillo                                                                                    | verified       | wa-export     | Never «misa», «parroquia» or «ceremonia religiosa»                                                                      |
+| motherName            | Anahy Soto Acosta                                                                                               | verified       | wa-export     | Listed first by the client; order kept                                                                                  |
+| fatherName            | Rosario Beltrán Rabago                                                                                          | verified       | wa-export     | Accent pending: [[PENDIENTE:NAME_ACCENTS]]                                                                              |
+| familyLabel           | Con el amor de mis padres                                                                                       | inferred       | owner-session | Agent draft                                                                                                             |
+| godparents            | [[PENDIENTE:PADRINOS]]                                                                                          | pending        | wa-export     | The client will send them; block hidden until then                                                                      |
+| dressCode             | [[PENDIENTE:DRESS_LEVEL]]                                                                                       | pending        | wa-export     | Only the reserved colour was given                                                                                      |
+| reservedColor         | Rose gold — reservado para la quinceañera                                                                       | verified       | wa-export     | Client's own note                                                                                                       |
+| clientColors          | Rose gold, beige, dorado, blanco                                                                                | verified       | wa-export     |                                                                                                                         |
+| dressColor            | Rose gold                                                                                                       | verified       | wa-export     |                                                                                                                         |
+| rsvpConfirmationMode  | api                                                                                                             | inferred       | owner-session | See [[PENDIENTE:PASS_RULES]]                                                                                            |
+| rsvpGuestCap          | 2                                                                                                               | inferred       | owner-session | Technical fallback only                                                                                                 |
+| rsvpWhatsappPhone     | —                                                                                                               | not_applicable | owner-session | No WhatsApp confirmation flow                                                                                           |
+| rsvpDeadline          | 2026-11-25                                                                                                      | verified       | owner-session | Client confirmed; displayed in RSVP copy, not an automatic API cutoff                                                   |
+| gifts                 | Lluvia de sobres, regalo sorpresa; baúl en la recepción                                                         | verified       | owner-session | Owner request; shown after the dress code, before memories                                                              |
+| itinerary             | [[PENDIENTE:ITINERARY]]                                                                                         | pending        | wa-export     | 19:00 and 20:00 confirmed; later times proposed by the owner-authorized draft; estimate labels removed at owner request |
+| musicUrl              | Tercer Cielo — No crezcas más                                                                                   | verified       | owner-session | 64 kbps MP3 (silence-trimmed) staged on R2 preview (`media-staging.celebra-me.com`, sha `2a99b268…`)                    |
+| checkInQr             | —                                                                                                               | not_applicable | wa-export     | Not requested                                                                                                           |
+| memoriesQr            | camila-beltran                                                                                                  | verified       | owner-session | Client-managed; uploads 2026-11-16 through 2026-12-26. Local active; hosted activation pending.                         |
+| specialMessages       | [[PENDIENTE:CELEBRANT_MESSAGE]]                                                                                 | pending        | owner-session | Quote and closing are agent drafts                                                                                      |
 
 ---
 
@@ -79,15 +81,25 @@ content the client has not supplied stays hidden; nothing is invented.
 
 ### Missing blockers
 
-- None in the fact register.
+- Preparing the local version is possible; final delivery still requires the ceremony venue and
+  exact pin, padrinos, copying the staged song MP3 to Production R2 (`media.celebra-me.com`), and
+  acceptance of the remaining copy/omissions.
+- Local photo space is active and has an event owner. Both local upload services must be running
+  with their ignored local configuration and the application origin allowed. Guest uploads work
+  locally; hosted activation and access with the client's owner account remain delivery checks.
 
 ### Non-blocking gaps
 
-- Ceremony place: only one venue was given, so one venue card shows both times.
-- Padrinos, gifts and itinerary: hidden until the client sends them; each can be switched on without
-  rework.
-- Dress level, RSVP deadline, pass rules, song link and name accents: asked to the client in one
-  message.
+- Reception: Salón Áurea at 20:00. Ceremony at 19:00 with Rev. Enrique Ruelas Carrillo is stated
+  separately, without assigning an unconfirmed venue.
+- Padrinos remain hidden until the client supplies them. Gifts are shown at the owner's request:
+  envelope shower, surprise gift and a note about the reception trunk.
+- The owner requested an estimated itinerary: ceremony at 19:00 and reception at 20:00 are
+  confirmed; entrance at 20:30, dinner at 21:00, waltz at 21:30 and dancing at 22:00 are proposed
+  times. Estimate labels are omitted at the owner’s request.
+- RSVP deadline: 25 November 2026. The client captures the guest list and assigns pass counts in the
+  host dashboard; no list import is required from the owner.
+- Dress level, song version and copy acceptance remain pending.
 - Map pin: an address search until the owner confirms the pin.
 
 Deterministic question: **Is the available information sufficient to prepare this invitation?**
@@ -97,33 +109,37 @@ Answer: `yes`.
 
 ## Placeholders
 
-| token                           | field           | guest-facing effect                                  |
-| ------------------------------- | --------------- | ---------------------------------------------------- |
-| [[PENDIENTE:CEREMONY_PLACE]]    | distinctVenues  | One venue card with both times                       |
-| [[PENDIENTE:PADRINOS]]          | godparents      | Padrinos block omitted                               |
-| [[PENDIENTE:DRESS_LEVEL]]       | dressCode       | Only the reserved-colour note is shown               |
-| [[PENDIENTE:NAME_ACCENTS]]      | fatherName      | Names shown as the client typed them, venue accented |
-| [[PENDIENTE:RSVP_DEADLINE]]     | rsvpDeadline    | RSVP copy states no date                             |
-| [[PENDIENTE:PASS_RULES]]        | rsvpGuestCap    | Per-guest links set by the host; fallback cap of 2   |
-| [[PENDIENTE:GIFTS]]             | gifts           | Gifts section omitted                                |
-| [[PENDIENTE:ITINERARY]]         | itinerary       | Itinerary section omitted                            |
-| [[PENDIENTE:SONG_LINK]]         | musicUrl        | No music                                             |
-| [[PENDIENTE:CELEBRANT_MESSAGE]] | specialMessages | Agent-drafted quote and closing are shown            |
+| token                           | field           | guest-facing effect                                                |
+| ------------------------------- | --------------- | ------------------------------------------------------------------ |
+| [[PENDIENTE:CEREMONY_PLACE]]    | distinctVenues  | Reception card only; ceremony time and officiant stated separately |
+| [[PENDIENTE:PADRINOS]]          | godparents      | Padrinos block omitted                                             |
+| [[PENDIENTE:DRESS_LEVEL]]       | dressCode       | Only the reserved-colour note is shown                             |
+| [[PENDIENTE:NAME_ACCENTS]]      | fatherName      | Names shown as the client typed them, venue accented               |
+| [[PENDIENTE:PASS_RULES]]        | rsvpGuestCap    | Per-guest links set by the host; fallback cap of 2                 |
+| [[PENDIENTE:ITINERARY]]         | itinerary       | Estimated programme shown; final client schedule pending           |
+| [[PENDIENTE:SONG_LINK]]         | musicUrl        | No music                                                           |
+| [[PENDIENTE:CELEBRANT_MESSAGE]] | specialMessages | Agent-drafted quote and closing are shown                          |
 
-Tokens live in this document only; no token is rendered to guests. All are non-blocking.
+Tokens live in this document only; no token is rendered to guests. Their temporary omission does not
+constitute client approval of final delivery.
 
 ---
 
 ## Owner Decisions
 
-| id  | category              | issue          | evidence         | options                               | outcome                                       |
-| --- | --------------------- | -------------- | ---------------- | ------------------------------------- | --------------------------------------------- |
-| D1  | demo-design-decisions | Look           | client-reference | Storybook preset / flat stationery    | Flat stationery in the order of the reference |
-| D2  | missing-client-facts  | Missing blocks | wa-export        | Placeholders / hide until data exists | Hide padrinos, gifts and itinerary            |
-| D3  | photograph-acceptance | Crops          | hr-photos        | Derive now / owner approves first     | Owner approves every crop before assets exist |
-| D4  | other-blocking        | Photo upload   | client-reference | Build / leave out                     | Left out; the owner tells the client          |
+| id  | category              | issue          | evidence         | options                               | outcome                                                                                                         |
+| --- | --------------------- | -------------- | ---------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| D1  | demo-design-decisions | Look           | client-reference | Storybook preset / flat stationery    | Flat stationery in the order of the reference                                                                   |
+| D2  | missing-client-facts  | Missing blocks | wa-export        | Placeholders / hide until data exists | Hide padrinos and gifts; owner subsequently requested a proposed itinerary without guest-facing estimate labels |
+| D3  | photograph-acceptance | Crops          | hr-photos        | Derive now / owner approves first     | Owner approves every crop before assets exist                                                                   |
+| D4  | other-blocking        | Photo upload   | owner-session    | Include / omit                        | Include the existing Memories flow; client administers it; receive from 16 November through 26 December 2026    |
 
-Release scope: up to develop; Production is the owner's decision.
+Current scope: local implementation and validation only. Preview follows local acceptance;
+Production remains an owner operation.
+
+Current review round preserves the envelope, cover, introductory phrase, photo interludes and
+date/calendar/countdown unchanged. Only the family ornament centering, rectangular location card
+with centered headings, and itinerary are awaiting visual acceptance.
 
 ---
 
@@ -134,19 +150,19 @@ Release scope: up to develop; Production is the owner's decision.
 | preset  | `jewelry-box` retinted in the slug profile; no illustrated ornament | client-reference | applied               |
 | palette | Beige ground, white cards, rose gold script, gold rules and buttons | client colours   | applied               |
 | voice   | Camila in the first person, plural forms («los espero»)             | client-reference | applied               |
-| venue   | One card, two times                                                 | single venue     | applied               |
-| rsvp    | Deadline Friday 4 December 2026                                     | event date       | pending client answer |
+| venue   | Reception venue only; ceremony venue remains unconfirmed            | owner-session    | applied locally       |
+| rsvp    | Deadline 25 November 2026; client manages guests and passes         | owner-session    | applied to local copy |
 
 ---
 
 ## Sections
 
-| bucket                 | section keys                                                        |
-| ---------------------- | ------------------------------------------------------------------- |
-| requested              | envelope, hero, quote, family, countdown, location, gallery, rsvp   |
-| inferred / recommended | interlude photo band, dress-code note, personalizedAccess, thankYou |
-| omitted                | itinerary, gifts, padrinos (pending data), music (pending link)     |
-| unresolved             | —                                                                   |
+| bucket                 | section keys                                                                                  |
+| ---------------------- | --------------------------------------------------------------------------------------------- |
+| requested              | envelope, hero, quote, family, countdown, location, itinerary, gifts, memories, gallery, rsvp |
+| inferred / recommended | interlude photo band, dress-code note, personalizedAccess, thankYou                           |
+| omitted                | padrinos (pending data), music (pending link)                                                 |
+| unresolved             | —                                                                                             |
 
 ---
 
@@ -226,13 +242,17 @@ approval before it is published; that approval is recorded here.
   `profile.scss`, slug-scoped `composition.scss`, `assets/`).
 - No new preset and no storybook art; the envelope uses the `storybook-lanterns` reveal, never the
   base `storybook-blush` reveal.
-- Music omitted until the client sends the link.
+- Music: 64 kbps MP3 («No crezcas más — Tercer Cielo», YouTube `BDwEyfgClF4`, trimmed edges) staged
+  on Preview R2 at
+  `https://media-staging.celebra-me.com/invitations/xv/camila-beltran/music-2a99b2682dba29919f8fd021a8672c3d40128a0742509fadd8be0c2d7469496a.mp3`.
 - Every date string is typed from the fact register.
 
 ### Shared changes made for this invitation
 
 - Countdown: an optional calendar month with a marked day (`presentationOptions.calendar.mark`).
-- Dress code: the shared dress-code section (`DressCode.astro`, `_dress-code.scss`).
+- Dress code: the shared dress-code section (`DressCode.astro`, `_dress-code.scss`). The illustrated
+  stationery treatment uses original client-owned SVG artwork through the profile. The reserved
+  rose-gold note is confirmed; no dress formality is inferred.
 - Location: a grouped venue printed the raw `HH:mm` time; it now prints the formatted time.
 - Location map: an illustrated placeholder until the pin is confirmed (no embed, no CSP change).
 
@@ -257,8 +277,10 @@ approval before it is published; that approval is recorded here.
 
 ### Client pendings
 
-Ceremony venue, padrinos, song link, RSVP deadline, number of passes, dress formality, gifts and
-programme, the «Rábago» accent, the map pin. The guests' photo QR is not included.
+Ceremony venue and pin, padrinos, Production R2 copy of the song, dress formality, programme
+acceptance and the «Rábago» accent remain pending. RSVP closes on 25 November; the client assigns
+passes in the dashboard. The photo QR is included locally through 26 December. Automatic RSVP cutoff
+still requires the deadline feature and its migration to be integrated into this checkout.
 
 ---
 
