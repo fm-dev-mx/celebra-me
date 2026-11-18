@@ -256,7 +256,8 @@
 // time while it holds; scrolling back takes them away again.
 @include a11y.motion-safe {
 	@supports (animation-timeline: view()) {
-		.event-theme-wrapper
+		// Captures (`data-scroll-scenes='static'`) keep the static layout instead of an empty track.
+		.event-theme-wrapper:not([data-scroll-scenes='static'])
 			#invitation-sections-container
 			> .invitation-section-wrapper.has-motion[data-section-kind='gallery']:has(
 				.gallery-section[data-variant='rising-stack']
