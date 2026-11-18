@@ -33,9 +33,9 @@ opening a pull request into `develop`; merging that pull request once CI is gree
 `gh pr merge <n> --match-head-commit <sha>` (never `--admin`); and its automatic Cloudflare Preview
 deployment. Never push directly to `develop`: the agent guards block it, so integration always goes
 through a pull request. This never covers a merge into `main` or any cej-landing pull request: those
-are the owner's, and the guards deny them in headless runs. It also includes read-only provider inspection, required checks, and
-read-only Preview smoke. Reuse this authority through supporting skills; never prompt again for
-these actions.
+are the owner's, and the guards deny them in headless runs. It also includes read-only provider
+inspection, required checks, and read-only Preview smoke. Reuse this authority through supporting
+skills; never prompt again for these actions.
 
 Inspect and state the commit/file boundary first. Ambiguous scope or unrelated staged work blocks
 execution, not a reason to commit everything. A task-branch push is not a substitute for CI on the
