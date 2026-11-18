@@ -19,6 +19,7 @@ daniela-y-david. No database migrations.
 
 - Invitations: Camila Beltrán round two refines the envelope, palette, photographs and sections, and
   fits every section to the viewport on phone, tablet and desktop (#1045).
+- Invitations: Camila Beltrán plays «A Thousand Years» by Christina Perri as its song (#1054).
 - Invitations: daniela-y-david keeps a single gallery photograph and shows the reserved places on a
   perforated framed pass (#1050).
 - Invitations: the floating RSVP button and the footer reply link now track the RSVP section by
