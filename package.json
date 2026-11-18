@@ -117,6 +117,7 @@
         "ops:release-checks": "tsx scripts/ops/release-readiness.ts",
         "ops:release-status": "tsx scripts/ops/release-status.ts",
         "ops:classify-release": "tsx scripts/ops/classify-release.ts",
+        "ops:preview-readiness": "tsx scripts/ops/preview-readiness.ts",
         "ops:status": "tsx scripts/ops/ops-status.ts",
         "ops:cloudflare:preview:secrets": "tsx scripts/ops/cloudflare-worker-secrets.ts --env preview",
         "ops:cloudflare:production:secrets": "tsx scripts/ops/cloudflare-worker-secrets.ts --env production",

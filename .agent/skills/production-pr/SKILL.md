@@ -101,6 +101,10 @@ checks, and environment limitations.
   required remote CI. Database-sensitive or visual ranges retain their owning evidence and human
   gates; report missing evidence without applying migrations, publishing content, or accepting
   images.
+- When invitation content is included (`category === 'invitation-content'` or changed invitations in
+  the release range), run `pnpm ops:preview-readiness -- --base origin/main --head candidate/vX.Y.Z`
+  against Preview before opening the release PR. This catches `MISSING_PREVIEW_APPROVAL` and
+  `SCHEMA_INCOMPATIBLE` before the Production window.
 - Before an authorized push, recheck scope, remote tips, fast-forward compatibility, and effective
   branch rules. Honor the normal pre-push checks (commit-range validation and the Git LFS handoff;
   visual certification is remote). Push only the intended source ref; never force, bypass hooks,
@@ -136,6 +140,9 @@ Before creating or updating a release pull request:
   `git diff --stat origin/main origin/candidate/vX.Y.Z`; a shipped change without a CHANGELOG line
   is fixed through `chore/release-vX.Y.Z` on `develop` and a new candidate before the pull request.
 - State visual impact and content impact as separate lines, even when the answer is "none".
+- When invitation content is included, embed the `pnpm ops:preview-readiness` markdown report in the
+  PR body so missing or expired Preview approvals and schema drifts are surfaced before the
+  Production window.
 - Re-read claims about other pull requests ("retired", "merged") against `gh pr view` before writing
   them.
 
