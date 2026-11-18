@@ -170,6 +170,7 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 			groups.set(key, [...(groups.get(key) ?? []), animation]);
 		}
 		const pinned: Array<[Animation, number | null]> = [];
+		const committed = new Set<Animation>();
 		for (const [key, animations] of groups) {
 			// Capture mode (`?screenshot`) forces `animation-duration: 0s !important`. That ends a
 			// time-based animation at once, but it collapses a scroll-driven range to a point, so
@@ -220,8 +221,20 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 				});
 				animation.pause();
 				animation.currentTime = progress * 1000;
-				// Playwright's `animations: 'disabled'` skips animations with a zero playback rate,
-				// so it leaves this pinned frame alone instead of finishing it.
+				// A pinned frame left as a live animation did not hold: after one of Playwright's
+				// `animations: 'disabled'` screenshots the veiled-arch scroll cue rendered its last
+				// keyframe (opacity 0) while the animation still reported progress 0, so the cue
+				// vanished between two PNGs of the same page. An element keeps the frame as inline
+				// style with the animation cancelled, which leaves the screenshot nothing to move.
+				const { pseudoElement, target } = animation.effect as KeyframeEffect;
+				if (target && !pseudoElement) {
+					animation.commitStyles();
+					animation.cancel();
+					committed.add(animation);
+					continue;
+				}
+				// A pseudo-element cannot take inline style. Playwright skips animations with a zero
+				// playback rate, so it leaves this pinned frame alone instead of finishing it.
 				animation.updatePlaybackRate(0);
 			} catch {
 				// One animation that cannot be pinned must not leave the rest running.
@@ -231,7 +244,8 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 		window.scrollTo({ left: start.x, top: start.y, behavior: 'instant' });
 		for (const animation of finite) {
 			try {
-				if (animation.playbackRate === 0) continue;
+				// Finishing a cancelled animation would play it again, at its last frame.
+				if (animation.playbackRate === 0 || committed.has(animation)) continue;
 				if (animation.playState !== 'finished') animation.finish();
 			} catch {
 				animation.cancel();
