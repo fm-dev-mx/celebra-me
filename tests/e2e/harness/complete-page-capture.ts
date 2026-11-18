@@ -112,20 +112,35 @@ export async function waitForVisualHydration(page: Page): Promise<void> {
 				.filter((image) => image.complete && image.naturalWidth > 0)
 				.map((image) => image.decode().catch(() => undefined)),
 		);
-		// The fixed capture clock barely advances the animation timeline, so entrance animations
-		// are still running at capture time and each screenshot depended on Playwright
-		// fast-forwarding them in that instant. Finishing finite animations here makes the
-		// captured state their end state deterministically; infinite ones stay with Playwright.
+	}, scroll);
+	await settleFiniteAnimations(page);
+}
+
+// The fixed capture clock barely advances the animation timeline, so entrance animations are
+// still running at capture time and each screenshot depended on Playwright fast-forwarding them
+// in that instant. Finishing finite animations makes the captured state their end state.
+// A scroll-driven animation (`animation-timeline: view()` or a named scroll timeline) does not
+// stay finished: its progress keeps following the scroll position, and a complete-page capture
+// resizes the viewport, so each PNG caught it at a different point. Moving it to the document
+// timeline first pins it at its end state too. Infinite animations stay with Playwright.
+async function settleFiniteAnimations(page: Page): Promise<void> {
+	await page.evaluate(async () => {
 		for (const animation of document.getAnimations()) {
-			const { iterations } = animation.effect?.getComputedTiming() ?? {};
-			if (Number.isFinite(iterations) && animation.playState !== 'finished') {
-				animation.finish();
+			try {
+				const { iterations } = animation.effect?.getComputedTiming() ?? {};
+				if (!Number.isFinite(iterations)) continue;
+				if (animation.timeline !== document.timeline)
+					animation.timeline = document.timeline;
+				if (animation.playState !== 'finished') animation.finish();
+			} catch {
+				// One animation that cannot finish must not leave the rest running.
+				animation.cancel();
 			}
 		}
 		await new Promise<void>((resolve) =>
 			requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
 		);
-	}, scroll);
+	});
 }
 
 export async function assertNoOperationalTooling(page: Page): Promise<void> {
@@ -231,18 +246,15 @@ export async function prepareCompletePage(
 				rail.scrollTo({ left: galleryScrollLeft, behavior: 'instant' });
 			}
 		}
-		for (const animation of document.getAnimations()) {
-			const { iterations } = animation.effect?.getComputedTiming() ?? {};
-			if (Number.isFinite(iterations) && animation.playState !== 'finished') {
-				animation.finish();
-			}
-		}
+	}, options.galleryScrollLeft);
+	await settleFiniteAnimations(page);
+	await page.evaluate(async () => {
 		document.body.scrollTop = 0;
 		window.scrollTo({ top: 0, behavior: 'instant' });
 		await new Promise<void>((resolve) =>
 			requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
 		);
-	}, options.galleryScrollLeft);
+	});
 	await assertNoOperationalTooling(page);
 	const failures = presentationFailures(await collectPresentationEvidence(page));
 	if (failures.length) throw new Error(failures.join('\n'));
