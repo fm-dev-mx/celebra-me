@@ -203,9 +203,6 @@ No derivative is upscaled.
 | gallery  | #4, #5, #3, #7, #1 | `gallery-0N.webp` | no                                           |
 | OG share | #6                 | `og-share.webp`   | yes — same portrait as the cover             |
 
--------- | --------- | --------------- | ----------------------- | | hero | art:hero | `hero.webp` |
-no | | quote | art:quote | `quote.webp` | no | | OG share | art:og | `og-share.webp` | no |
-
 ---
 
 ## Implementation Constraints
