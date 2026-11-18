@@ -211,6 +211,8 @@ const wrapperDataAttributes = page
 	? {
 			...page.wrapper.dataAttributes,
 			...(skipEnvelope ? { 'data-reveal-state': 'revealed' } : {}),
+			// A still frame cannot show a scroll-driven scene, so captures get its static layout.
+			...(animationsOff ? { 'data-scroll-scenes': 'static' } : {}),
 			...(contentSource ? { 'data-content-source': contentSource } : {}),
 			...(contentSource === 'published' && contentVersion !== null
 				? { 'data-content-version': String(contentVersion) }

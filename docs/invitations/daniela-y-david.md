@@ -119,7 +119,7 @@ Tokens live in this document only; no token is rendered to guests.
 | D4  | photograph-acceptance | Photographs    | hr-photos         | Ask for more / design for the five      | Design for five; red-car photos small or cropped       |
 | D5  | missing-client-facts  | Groom's family | wa-export         | Ask for a father / show only the mother | Only the mother; never ask for or show a father        |
 
-Release scope: up to develop; Preview and Production wait for the owner's go.
+Release scope: published to Preview; Production follows in the owner's daily window.
 
 ---
 
@@ -178,7 +178,9 @@ References:
 
 ## Creative Direction & Acceptance
 
-**Human creative outcome:** `PENDING` (owner accepts block by block on Local; client review pending)
+**Human creative outcome:** `ACCEPTED` (Paco, the owner, 2026-11-17, on the certified candidate of
+`dfc599b78` with the dress code visible and ivory header links: «Aceptar el diseño»; client text
+confirmations still pending)
 
 - **concern:** Typography roles — names in serif capitals with a script connector; date as «SÁB | 23
   | ENE». **status:** accepted (first viewport)

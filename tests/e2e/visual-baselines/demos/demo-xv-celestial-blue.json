@@ -10,7 +10,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
-            "sha256": "3d71b22f4d46b187c8b3f37f5d6dd74d949ffce2a42885f1247ce2cb75326832",
+            "sha256": "94d45014fc8430d4b3b1f4f8398a11fadbf89a8de0480ac71316a85f96f0630d",
             "contentHash": "c83777586b3831b8b26ad77bb0e5626f6f9eaa13db6ed35e604008b802c5d49e",
             "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
             "comparisonResult": "ACCEPTED"
@@ -36,7 +36,7 @@
             "preset": "celestial-blue",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-celestial-blue-mobile.png",
-            "sha256": "3d71b22f4d46b187c8b3f37f5d6dd74d949ffce2a42885f1247ce2cb75326832",
+            "sha256": "94d45014fc8430d4b3b1f4f8398a11fadbf89a8de0480ac71316a85f96f0630d",
             "contentHash": "c83777586b3831b8b26ad77bb0e5626f6f9eaa13db6ed35e604008b802c5d49e",
             "assetHash": "94a34e5cad2fbf4e00c405824755f3dd008ad086f33d1d4a8fd1b8d40ac5db24",
             "comparisonResult": "CANDIDATE"

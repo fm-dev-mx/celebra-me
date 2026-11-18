@@ -10,7 +10,7 @@
             "preset": "eucharistic-grace",
             "viewport": "mobile",
             "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
-            "sha256": "e232e5771562a60fbb71261a5bf4bde9b472d1892ae1137a72e72c5730be1962",
+            "sha256": "2aa877572be1d171fe0e27dae706e17edaed9869eb95616e43114d95da0d18eb",
             "contentHash": "006b7311c3f649830331ae374e4d2f3e15c3d43f6509b00ee3f53ec7ffa8a764",
             "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
             "comparisonResult": "ACCEPTED"
@@ -36,7 +36,7 @@
             "preset": "eucharistic-grace",
             "viewport": "mobile",
             "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
-            "sha256": "e232e5771562a60fbb71261a5bf4bde9b472d1892ae1137a72e72c5730be1962",
+            "sha256": "2aa877572be1d171fe0e27dae706e17edaed9869eb95616e43114d95da0d18eb",
             "contentHash": "006b7311c3f649830331ae374e4d2f3e15c3d43f6509b00ee3f53ec7ffa8a764",
             "assetHash": "5432e50300231a47f9f8b3ef54a292d4b178dcfe5cbc4965055c832bdedde660",
             "comparisonResult": "CANDIDATE"
