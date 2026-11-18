@@ -186,8 +186,36 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 					: start;
 			return typeof name === 'string' && name.startsWith('exit');
 		};
+		// A scene animation that fades out as its scene ends (the veiled-photo quote, the framed
+		// family card, both on their section's whole timeline) is complete at its last fully
+		// visible keyframe, not at its hidden end.
+		const opacityOf = (frame: ComputedKeyframe): number => {
+			const value = frame.opacity;
+			if (value === undefined || value === null) return 1;
+			const amount = Number.parseFloat(String(value));
+			if (!Number.isFinite(amount)) return 1;
+			return String(value).trim().endsWith('%') ? amount / 100 : amount;
+		};
+		const lastShown = (animation: Animation): number => {
+			let frames: ComputedKeyframe[];
+			try {
+				frames = (animation.effect as KeyframeEffect | null)?.getKeyframes() ?? [];
+			} catch {
+				return 1;
+			}
+			const last = frames.at(-1);
+			if (!last || opacityOf(last) > 0) return 1;
+			let best = { opacity: 0, offset: 1 };
+			for (const frame of frames) {
+				const opacity = opacityOf(frame);
+				if (opacity > 0 && opacity >= best.opacity) {
+					best = { opacity, offset: frame.computedOffset };
+				}
+			}
+			return best.opacity > 0 ? best.offset : 1;
+		};
 		const keyframe = (key: 'before' | 'end', animation: Animation): number =>
-			key === 'end' && !leaving(animation) ? 1 : 0;
+			key === 'end' && !leaving(animation) ? lastShown(animation) : 0;
 		const groups = new Map<GroupKey, Animation[]>();
 		for (const animation of finite) {
 			const { timeline } = animation;
