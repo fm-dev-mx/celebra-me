@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-18T20:12:57.452Z",
+    "generatedAt": "2026-11-18T21:07:39.321Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "a709925afef9efc92efc2a7467884817dea2757b81e491a83cc81e1b018d44a8",
-        "cssSha256": "367714a1f49a7b99d93f210df19e82f88789961827f286896988c5ebdd0405dc",
+        "cssSha256": "6bcac38cd332fe9cfa3c01485a8e0876be6b87d02ecd40dc15a8c52427def6ee",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2021,7 +2021,7 @@
             "cssOwner": "src/styles/themes/sections/personalized-access/_framed-pass.scss",
             "fixtureIdentity": "synthetic:personalizedAccess.framed-pass",
             "file": "jewelry-box-mobile-personalizedAccess-framed-pass.png",
-            "sha256": "050c94a7a50209f91b6753462a7cfd28422dfafd971bfd0bbb0e2d1d75976828",
+            "sha256": "71141bf94e5c62abda561784e4bcee3f649a9ff148f8225a4af56f125f4af0b8",
             "contentHash": "e32079d65cb6db79c7d1878b839cb7c31a2d2cc8ec5ca0c7f62928a5f5a3e61a",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -2035,7 +2035,7 @@
             "cssOwner": "src/styles/themes/sections/personalized-access/_framed-pass.scss",
             "fixtureIdentity": "synthetic:personalizedAccess.framed-pass",
             "file": "jewelry-box-desktop-personalizedAccess-framed-pass.png",
-            "sha256": "03d1e2aa99034e56dda05082d15a5af95787c91cf313f09b56f6a8e2ce27be8b",
+            "sha256": "3e4c0cd2089fd59ad2fcc3422de90f62570a3b4e114b17fe8f8d0595d7656b1d",
             "contentHash": "e32079d65cb6db79c7d1878b839cb7c31a2d2cc8ec5ca0c7f62928a5f5a3e61a",
             "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
             "comparisonResult": "ACCEPTED"
@@ -2871,7 +2871,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/invitation-boda-daniela-y-david-mobile.png",
-            "sha256": "3f1d85c7f73e3342b35678ce62b89a9635c3104ee0f5092b2db1f40d471a9c19",
+            "sha256": "0d0217af7b8ee8fa32bfc865c20aaa16da67430073e75652d91b9325af71f9f1",
             "contentHash": "4c4a101ddf2dfe14a9c7f4be0a4c2e239721faa9cdae822c21bb804729f31ea9",
             "assetHash": "2c35d8f1a42f02f1816ed48552daf001263482140eb1a771f85101638cd368a6",
             "comparisonResult": "ACCEPTED"
@@ -2961,9 +2961,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "7a1b4199955e954f8fc3f7f3419b2eb797ff379d",
+    "referenceSha": "6c476b13d43e58666d9a9390015e3418521cc1fc",
     "variantManifest": {
-        "generatedAt": "2026-11-18T20:12:57.452Z",
+        "generatedAt": "2026-11-18T21:07:39.321Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2976,7 +2976,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a709925afef9efc92efc2a7467884817dea2757b81e491a83cc81e1b018d44a8",
-            "cssSha256": "367714a1f49a7b99d93f210df19e82f88789961827f286896988c5ebdd0405dc",
+            "cssSha256": "6bcac38cd332fe9cfa3c01485a8e0876be6b87d02ecd40dc15a8c52427def6ee",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -4985,7 +4985,7 @@
                 "cssOwner": "src/styles/themes/sections/personalized-access/_framed-pass.scss",
                 "fixtureIdentity": "synthetic:personalizedAccess.framed-pass",
                 "file": "jewelry-box-mobile-personalizedAccess-framed-pass.png",
-                "sha256": "050c94a7a50209f91b6753462a7cfd28422dfafd971bfd0bbb0e2d1d75976828",
+                "sha256": "71141bf94e5c62abda561784e4bcee3f649a9ff148f8225a4af56f125f4af0b8",
                 "contentHash": "e32079d65cb6db79c7d1878b839cb7c31a2d2cc8ec5ca0c7f62928a5f5a3e61a",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -4999,7 +4999,7 @@
                 "cssOwner": "src/styles/themes/sections/personalized-access/_framed-pass.scss",
                 "fixtureIdentity": "synthetic:personalizedAccess.framed-pass",
                 "file": "jewelry-box-desktop-personalizedAccess-framed-pass.png",
-                "sha256": "03d1e2aa99034e56dda05082d15a5af95787c91cf313f09b56f6a8e2ce27be8b",
+                "sha256": "3e4c0cd2089fd59ad2fcc3422de90f62570a3b4e114b17fe8f8d0595d7656b1d",
                 "contentHash": "e32079d65cb6db79c7d1878b839cb7c31a2d2cc8ec5ca0c7f62928a5f5a3e61a",
                 "assetHash": "039cd51783bd4bff3ea97e44a2d313d663d445f51238dc02277a2344c2918be9",
                 "comparisonResult": "CANDIDATE"
@@ -5397,10 +5397,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "7a1b4199955e954f8fc3f7f3419b2eb797ff379d"
+        "referenceSha": "6c476b13d43e58666d9a9390015e3418521cc1fc"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-18T20:12:57.519Z",
+        "generatedAt": "2026-11-18T21:07:39.345Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -5413,7 +5413,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a709925afef9efc92efc2a7467884817dea2757b81e491a83cc81e1b018d44a8",
-            "cssSha256": "367714a1f49a7b99d93f210df19e82f88789961827f286896988c5ebdd0405dc",
+            "cssSha256": "6bcac38cd332fe9cfa3c01485a8e0876be6b87d02ecd40dc15a8c52427def6ee",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -5863,7 +5863,7 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
                 "file": "pages/invitation-boda-daniela-y-david-mobile.png",
-                "sha256": "3f1d85c7f73e3342b35678ce62b89a9635c3104ee0f5092b2db1f40d471a9c19",
+                "sha256": "0d0217af7b8ee8fa32bfc865c20aaa16da67430073e75652d91b9325af71f9f1",
                 "contentHash": "4c4a101ddf2dfe14a9c7f4be0a4c2e239721faa9cdae822c21bb804729f31ea9",
                 "assetHash": "2c35d8f1a42f02f1816ed48552daf001263482140eb1a771f85101638cd368a6",
                 "comparisonResult": "CANDIDATE"
@@ -5953,9 +5953,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "7a1b4199955e954f8fc3f7f3419b2eb797ff379d"
+        "referenceSha": "6c476b13d43e58666d9a9390015e3418521cc1fc"
     },
-    "candidateManifestSha256": "be7b45afcdc1eab456e0dcc49a78acba3a9cbeb4a7401ce8859489a1b9ea4425",
-    "acceptedFromCommit": "7a1b4199955e954f8fc3f7f3419b2eb797ff379d",
-    "acceptedAt": "2026-11-18T20:14:32.873Z"
+    "candidateManifestSha256": "05e9ba8bd4dcba2cf3b06f203fe98645f1aa5d143d34697e1dc482be17b02336",
+    "acceptedFromCommit": "6c476b13d43e58666d9a9390015e3418521cc1fc",
+    "acceptedAt": "2026-11-18T21:08:54.193Z"
 }

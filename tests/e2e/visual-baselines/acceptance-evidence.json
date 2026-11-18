@@ -1,51 +1,40 @@
 {
-    "referenceSha": "7a1b4199955e954f8fc3f7f3419b2eb797ff379d",
-    "acceptedAt": "2026-11-18T20:14:32.873Z",
+    "referenceSha": "6c476b13d43e58666d9a9390015e3418521cc1fc",
+    "acceptedAt": "2026-11-18T21:08:54.193Z",
     "matrixHash": "6528e362893e74dd11c2c7c993832d1b7abad491d2129ab5a129a71e10f86f52",
-    "candidateManifestSha256": "be7b45afcdc1eab456e0dcc49a78acba3a9cbeb4a7401ce8859489a1b9ea4425",
-    "acceptedManifestSha256": "5a784b50e5147475c9b997ee11471245e3f80a3b7d9c66acc88072e5577964ca",
+    "candidateManifestSha256": "05e9ba8bd4dcba2cf3b06f203fe98645f1aa5d143d34697e1dc482be17b02336",
+    "acceptedManifestSha256": "2821614fc1aec92920ce0d7f13481229cb00887c66ab54d5a83a74bb7c6f27dc",
     "reviewedPaths": [
-        "pages/invitation-boda-daniela-y-david-mobile.png",
-        "pages/invitation-boda-daniela-y-david-desktop.png",
         "jewelry-box-mobile-personalizedAccess-framed-pass.png",
-        "jewelry-box-desktop-personalizedAccess-framed-pass.png"
+        "jewelry-box-desktop-personalizedAccess-framed-pass.png",
+        "pages/invitation-boda-daniela-y-david-mobile.png"
     ],
     "items": [
         {
-            "file": "pages/invitation-boda-daniela-y-david-mobile.png",
-            "status": "changed",
-            "sha256": "3f1d85c7f73e3342b35678ce62b89a9635c3104ee0f5092b2db1f40d471a9c19",
-            "previousSha256": "25f83fff50c66519f25ff5be57077890081faf9d31c6ec7b381339e96f26ec42",
-            "differentPixels": 660641,
-            "pixelRatio": 0.18340745799602448,
-            "heightDelta": -505
-        },
-        {
-            "file": "pages/invitation-boda-daniela-y-david-desktop.png",
-            "status": "changed",
-            "sha256": "ffae1dccb62a27797116e0f9bacc3cb905e44858ec84e2b5327b64409faf4d07",
-            "previousSha256": "260d9d518acbcd4faf39491e5ddf4df296df621fc9288d80b9414951c74456a4",
-            "differentPixels": 1036188,
-            "pixelRatio": 0.07589652990190908,
-            "heightDelta": -140
-        },
-        {
             "file": "jewelry-box-mobile-personalizedAccess-framed-pass.png",
             "status": "changed",
-            "sha256": "050c94a7a50209f91b6753462a7cfd28422dfafd971bfd0bbb0e2d1d75976828",
-            "previousSha256": "05703b1aaac1999d08a536671ed400e95786727f4e37a6cc8d61c756f0d9dd98",
-            "differentPixels": 7908,
-            "pixelRatio": 0.024024790375501277
+            "sha256": "71141bf94e5c62abda561784e4bcee3f649a9ff148f8225a4af56f125f4af0b8",
+            "previousSha256": "050c94a7a50209f91b6753462a7cfd28422dfafd971bfd0bbb0e2d1d75976828",
+            "differentPixels": 7392,
+            "pixelRatio": 0.02245716368939118
         },
         {
             "file": "jewelry-box-desktop-personalizedAccess-framed-pass.png",
             "status": "changed",
-            "sha256": "03d1e2aa99034e56dda05082d15a5af95787c91cf313f09b56f6a8e2ce27be8b",
-            "previousSha256": "01da97c7a2b96a6ef09872f7528ac1283fe417a8a4b50c3247104f7b47e2117a",
-            "differentPixels": 7920,
-            "pixelRatio": 0.006111111111111111
+            "sha256": "3e4c0cd2089fd59ad2fcc3422de90f62570a3b4e114b17fe8f8d0595d7656b1d",
+            "previousSha256": "03d1e2aa99034e56dda05082d15a5af95787c91cf313f09b56f6a8e2ce27be8b",
+            "differentPixels": 7381,
+            "pixelRatio": 0.005695216049382716
+        },
+        {
+            "file": "pages/invitation-boda-daniela-y-david-mobile.png",
+            "status": "changed",
+            "sha256": "0d0217af7b8ee8fa32bfc865c20aaa16da67430073e75652d91b9325af71f9f1",
+            "previousSha256": "3f1d85c7f73e3342b35678ce62b89a9635c3104ee0f5092b2db1f40d471a9c19",
+            "differentPixels": 9671,
+            "pixelRatio": 0.002840159878299839
         }
     ],
-    "renderNoise": 134,
+    "renderNoise": 135,
     "removed": []
 }
