@@ -498,9 +498,16 @@
 			margin: clamp(1.25rem, 4svh, 2.5rem) auto 0;
 			padding-left: var(--pinned-program-rail);
 			gap: clamp(1rem, 3svh, 1.75rem);
+
+			// The events stack in the program column at every width, not side by side as the base
+			// program does from tablets up (the pinned scene forced this too; captures need it as well).
+			&:not(.event-location__program--single) {
+				grid-template-columns: minmax(0, 1fr);
+			}
 		}
 
-		.event-location__program-entry {
+		.event-location__program-entry,
+		.event-location__program-entry + .event-location__program-entry {
 			display: grid;
 			grid-template-columns: minmax(0, 1fr) auto;
 			column-gap: 1rem;
