@@ -163,8 +163,9 @@ headLinks = buildInvitationHeadLinks({ page, forceBlocking: true });
 		<link rel="stylesheet" href={link.href} data-canonical-css-owner={link.canonicalPath} />
 	))}
 </head>
-	<body class={(fullPageContext ?? page).wrapper.className} data-reveal-state={showEnvelope ? undefined : 'revealed'}>
-	<div class={(fullPageContext ?? page).wrapper.className} {...showEnvelope ? page.wrapper.dataAttributes : {}} data-reveal-state={showEnvelope ? 'closed' : 'revealed'} data-screenshot="invitation-root" id="test-invitation-root">
+	<!-- Captures keep scroll scenes static, as [slug].astro does in capture mode; body carries the wrapper class too. -->
+	<body class={(fullPageContext ?? page).wrapper.className} data-scroll-scenes="static" data-reveal-state={showEnvelope ? undefined : 'revealed'}>
+	<div class={(fullPageContext ?? page).wrapper.className} data-scroll-scenes="static" {...showEnvelope ? page.wrapper.dataAttributes : {}} data-reveal-state={showEnvelope ? 'closed' : 'revealed'} data-screenshot="invitation-root" id="test-invitation-root">
 		{fullPageContext ? (
 			<>
 				{showEnvelope && page.envelope && <EnvelopeReveal {...page.envelope} />}
