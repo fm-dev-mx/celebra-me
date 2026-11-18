@@ -4,6 +4,10 @@ import {
 	parseReviewedPaths,
 } from '../../scripts/screenshot/visual-acceptance-evidence';
 import type { CandidateReview } from '../../scripts/screenshot/visual-candidate-review';
+import { acceptedManifestSha256 } from '../../scripts/screenshot/visual-demo-manifests';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const review = {
 	referenceSha: 'a'.repeat(40),
@@ -43,6 +47,32 @@ describe('visual acceptance evidence', () => {
 			assertReviewedCoversChanges(review, ['pages/boda/', 'pages/xv/', 'pages/other/']),
 		).toThrow(/no change/);
 		expect(() => assertReviewedCoversChanges(null, [])).toThrow(/missing/);
+	});
+
+	it('requires removed captures in the reviewed list too', () => {
+		const withRemoved = { ...review, removed: ['pages/old/z-mobile.png'] } as CandidateReview;
+		const listed = ['pages/boda/x-mobile.png', 'pages/xv/'];
+		expect(() => assertReviewedCoversChanges(withRemoved, listed)).toThrow(
+			/pages\/old\/z-mobile/,
+		);
+		expect(
+			assertReviewedCoversChanges(withRemoved, [...listed, 'pages/old/z-mobile.png']),
+		).toBe(withRemoved);
+	});
+
+	it('hashes the demo manifests with the accepted manifest', () => {
+		const dir = mkdtempSync(join(tmpdir(), 'accepted-'));
+		try {
+			const manifest = join(dir, 'manifest.json');
+			writeFileSync(manifest, '{"captures":[]}');
+			mkdirSync(join(dir, 'demos'));
+			writeFileSync(join(dir, 'demos', 'x.json'), '{"a":1}');
+			const before = acceptedManifestSha256(manifest);
+			writeFileSync(join(dir, 'demos', 'x.json'), '{"a":2}');
+			expect(acceptedManifestSha256(manifest)).not.toBe(before);
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
 	});
 
 	it('records hashes and reviewed paths', () => {

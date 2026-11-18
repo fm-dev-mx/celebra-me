@@ -39,9 +39,14 @@ import {
 	VISUAL_VIEWPORTS,
 } from './visual-coverage-contract.ts';
 import { expectedVisualCaptures } from './visual-record-aggregator.ts';
-import { readAcceptedManifestFile, writeAcceptedManifestFiles } from './visual-demo-manifests.ts';
+import {
+	acceptedManifestSha256,
+	readAcceptedManifestFile,
+	writeAcceptedManifestFiles,
+} from './visual-demo-manifests.ts';
 import {
 	buildCandidateReview,
+	type CandidateReview,
 	readCandidateReview,
 	writeCandidateReview,
 } from './visual-candidate-review.ts';
@@ -503,15 +508,33 @@ function accept(
 		throw new Error('Approved candidate manifest hash does not match the candidate artifact.');
 	}
 
-	const review = assertReviewedCoversChanges(readCandidateReview(CANDIDATE_ROOT), reviewed);
+	const stored = readCandidateReview(CANDIDATE_ROOT);
 	if (
-		review.candidateManifestSha256 !== candidateManifestSha256 ||
-		review.matrixHash !== candidateManifest.matrixHash
+		!stored ||
+		stored.candidateManifestSha256 !== candidateManifestSha256 ||
+		stored.matrixHash !== candidateManifest.matrixHash
 	) {
 		throw new Error(
 			'Candidate review does not match the candidate manifest. Regenerate the candidate.',
 		);
 	}
+	// The accepted baselines may have moved since the candidate was made: compare against them now.
+	const current = buildCandidateReview({
+		root: CANDIDATE_ROOT,
+		captures: candidateManifest.captures,
+		previous: readPreviousAccepted(),
+		acceptedRoot: ACCEPTED_ROOT,
+		observedSha256: readVisualRecordObservations(CANDIDATE_ROOT),
+		matrixHash: candidateManifest.matrixHash,
+		referenceSha: candidateManifest.referenceSha,
+		candidateManifestSha256,
+	});
+	if (reviewSignature(current) !== reviewSignature(stored)) {
+		throw new Error(
+			'Candidate review is stale against the current accepted baselines. Regenerate the candidate.',
+		);
+	}
+	const review = assertReviewedCoversChanges(current, reviewed);
 
 	const stagingRoot = resolve(ROOT, '.tmp/visual-parity/accepted-' + process.pid);
 	stageCandidateFiles(stagingRoot, files);
@@ -539,9 +562,7 @@ function accept(
 		diffsRoot: resolve(CANDIDATE_ROOT, '..', 'candidate-diffs'),
 		matrixHash: candidateManifest.matrixHash,
 		candidateManifestSha256,
-		acceptedManifestSha256: createHash('sha256')
-			.update(readFileSync(join(stagingRoot, 'manifest.json')))
-			.digest('hex'),
+		acceptedManifestSha256: acceptedManifestSha256(join(stagingRoot, 'manifest.json')),
 		referenceSha: resolvedReferenceSha,
 		acceptedAt: acceptedPayload.acceptedAt,
 	});
@@ -588,6 +609,12 @@ function assertCandidateManifest(manifest: CombinedManifest, referenceSha: strin
 			'Candidate reference SHA does not match the approved current HEAD. Regenerate the candidate.',
 		);
 	}
+}
+
+/** The files a review flags and how, plus the removed ones: what --reviewed must cover. */
+function reviewSignature(review: CandidateReview): string {
+	const items = review.items.map((item) => `${item.status}:${item.file}`).sort();
+	return JSON.stringify({ items, removed: [...(review.removed ?? [])].sort() });
 }
 
 function validateCandidateArtifacts(): { candidateManifestSha256: string; files: string[] } {

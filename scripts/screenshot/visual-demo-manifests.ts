@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
@@ -136,6 +137,18 @@ function parseDemoManifest(file: string): DemoManifest {
 export function readAcceptedManifestFile(manifestPath: string): Json {
 	const root = JSON.parse(readFileSync(manifestPath, 'utf8')) as Json;
 	return mergeDemoManifests(root, listDemoManifestFiles(manifestPath).map(parseDemoManifest));
+}
+
+/**
+ * The accepted baseline identity: the root manifest bytes followed by each per-demo manifest in
+ * sorted order, the same bytes the pre-push certification hashes from the commit.
+ */
+export function acceptedManifestSha256(manifestPath: string): string {
+	const bytes = Buffer.concat([
+		readFileSync(manifestPath),
+		...listDemoManifestFiles(manifestPath).map((file) => readFileSync(file)),
+	]);
+	return createHash('sha256').update(bytes).digest('hex');
 }
 
 /** Writes `manifest.json` plus one file per demo, with the indentation Prettier uses for JSON. */

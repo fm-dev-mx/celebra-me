@@ -32,7 +32,7 @@ function isReviewed(file: string, reviewed: readonly string[]): boolean {
 	);
 }
 
-/** Fails when the candidate review has a changed or new capture outside the reviewed list. */
+/** Fails when the candidate review has a changed, new or removed capture outside the reviewed list. */
 export function assertReviewedCoversChanges(
 	review: CandidateReview | null,
 	reviewed: readonly string[],
@@ -42,20 +42,16 @@ export function assertReviewedCoversChanges(
 			'Candidate review.json is missing. Regenerate the candidate before accepting.',
 		);
 	}
-	const outside = review.items.filter((item) => !isReviewed(item.file, reviewed));
+	// A removed capture loses its accepted reference, so it needs review like a change.
+	const changed = [...review.items.map((item) => item.file), ...(review.removed ?? [])];
+	const outside = changed.filter((file) => !isReviewed(file, reviewed));
 	if (outside.length > 0) {
+		const shown = `${outside.slice(0, 10).join(', ')}${outside.length > 10 ? ', …' : ''}`;
 		throw new Error(
-			`Candidate has ${outside.length} changed or new capture(s) outside --reviewed: ${outside
-				.slice(0, 10)
-				.map((item) => item.file)
-				.join(
-					', ',
-				)}${outside.length > 10 ? ', …' : ''}. Review them in changes.html and list them.`,
+			`Candidate has ${outside.length} changed, new or removed capture(s) outside --reviewed: ${shown}. Review them in changes.html and list them.`,
 		);
 	}
-	const unknown = reviewed.filter(
-		(entry) => !review.items.some((item) => isReviewed(item.file, [entry])),
-	);
+	const unknown = reviewed.filter((entry) => !changed.some((file) => isReviewed(file, [entry])));
 	if (unknown.length > 0) {
 		throw new Error(
 			`--reviewed lists path(s) with no change in the candidate: ${unknown.join(', ')}.`,
