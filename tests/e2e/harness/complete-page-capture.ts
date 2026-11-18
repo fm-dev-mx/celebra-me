@@ -129,8 +129,9 @@ export async function waitForVisualHydration(
 // on the document timeline and paused, at the progress a guest sees: in a viewport capture the
 // one at the captured scroll position; in a complete-page capture, which has no single scroll
 // position, the one with the animated element centred on screen (a root scroll timeline at the
-// top of the page). The element, not the timeline subject: a stacked card recedes on its
-// successor's timeline, and centring the successor showed the card dimmed with nothing on it.
+// top of the page). An animation driven by a later element's timeline (a stacked card recedes
+// while its successor arrives) shows its state before that element arrives, its first keyframe:
+// a complete page lays every card out at once, and centring either card caught it half receded.
 // Infinite animations stay with Playwright.
 async function settleFiniteAnimations(page: Page, completePage: boolean): Promise<void> {
 	await page.evaluate(async (completePage) => {
@@ -147,13 +148,22 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 			}
 		});
 		// Each group is read at one scroll position: an element to centre, or the page top.
-		const groups = new Map<Element | 'top' | 'here', Animation[]>();
+		type GroupKey = Element | 'top' | 'here' | 'before';
+		const groupKey = (timeline: AnimationTimeline, animation: Animation): GroupKey => {
+			if (!completePage) return 'here';
+			const subject = (timeline as AnimationTimeline & { subject?: Element }).subject;
+			const target = (animation.effect as KeyframeEffect | null)?.target ?? null;
+			if (!subject || !target) return 'top';
+			const later =
+				!subject.contains(target) &&
+				(target.compareDocumentPosition(subject) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+			return later ? 'before' : target;
+		};
+		const groups = new Map<GroupKey, Animation[]>();
 		for (const animation of finite) {
 			const { timeline } = animation;
 			if (!timeline || timeline === document.timeline) continue;
-			const subject = (timeline as AnimationTimeline & { subject?: Element }).subject;
-			const target = (animation.effect as KeyframeEffect | null)?.target ?? null;
-			const key = !completePage ? 'here' : subject && target ? target : 'top';
+			const key = groupKey(timeline, animation);
 			groups.set(key, [...(groups.get(key) ?? []), animation]);
 		}
 		const pinned: Array<[Animation, number | null]> = [];
@@ -171,6 +181,10 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 				} catch {
 					// Read below as unreadable and cancelled.
 				}
+			}
+			if (key === 'before') {
+				for (const animation of animations) pinned.push([animation, 0]);
+				continue;
 			}
 			if (key === 'top') window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
 			else if (key !== 'here') key.scrollIntoView({ block: 'center', behavior: 'instant' });
