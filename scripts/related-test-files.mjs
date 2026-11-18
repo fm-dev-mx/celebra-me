@@ -45,6 +45,17 @@ const CONTRACT_TESTS_BY_INPUT = [
 		],
 	},
 	{
+		// Client compositions live beside their profile, outside src/styles, and are measured
+		// (600-line cap, token-only declarations) by these tests rather than imported by them.
+		pattern: /^src\/invitations\/clients\/.*\.scss$/u,
+		tests: [
+			'tests/unit/composition-contract.test.ts',
+			'tests/unit/invitation-profile-boundary.test.ts',
+			'tests/unit/presentation-option-portability.test.ts',
+			'tests/unit/style-boundaries.test.ts',
+		],
+	},
+	{
 		pattern: /^supabase\/migrations\/.*\.sql$/u,
 		tests: [
 			'tests/unit/commercial-capi-readiness-migration.test.ts',
