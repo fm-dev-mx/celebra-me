@@ -230,6 +230,87 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 			if (key === 'end' && !leaving(animation)) return lastShown(animation);
 			return reversed(animation) ? 1 : 0;
 		};
+		// The progress a scroll-driven animation shows at scroll offset `offset`, worked out from
+		// layout instead of read from its timeline: a timeline can keep the previous scroll
+		// position for several frames, long enough for two reads to agree on the stale value (on
+		// CI the disco hero kept the page foot's lift and the photo pass its unentered, hidden
+		// first frame). Null when the timing is one this does not model; the live read stands.
+		const unitValue = (value: unknown, unit: string): number | null => {
+			const measured = value as { unit?: string; value?: number } | null;
+			return measured && measured.unit === unit && Number.isFinite(measured.value)
+				? (measured.value as number)
+				: null;
+		};
+		const progressAt = (animation: Animation, offset: number): number | null => {
+			const effect = animation.effect;
+			const timeline = animation.timeline as
+				| (AnimationTimeline & {
+						source?: Element | null;
+						axis?: string;
+						subject?: Element;
+						startOffset?: unknown;
+						endOffset?: unknown;
+				  })
+				| null;
+			if (!effect || !timeline || timeline === document.timeline) return null;
+			if (timeline.source !== document.scrollingElement) return null;
+			if (timeline.axis !== undefined && timeline.axis !== 'block' && timeline.axis !== 'y')
+				return null;
+			const timing = effect.getTiming();
+			if (
+				timing.iterations !== 1 ||
+				(timing.easing ?? 'linear') !== 'linear' ||
+				Number(timing.delay ?? 0) !== 0 ||
+				Number(timing.endDelay ?? 0) !== 0
+			)
+				return null;
+			const viewport = innerHeight;
+			// The ranges CSS names, as scroll offsets [start, end].
+			let ranges: Record<string, [number, number]>;
+			if (timeline.subject) {
+				const coverStart = unitValue(timeline.startOffset, 'px');
+				const coverEnd = unitValue(timeline.endOffset, 'px');
+				if (coverStart === null || coverEnd === null) return null;
+				const top = coverStart + viewport;
+				const height = coverEnd - top;
+				const fit = Math.min(height, viewport);
+				ranges = {
+					normal: [coverStart, coverEnd],
+					cover: [coverStart, coverEnd],
+					contain:
+						height <= viewport
+							? [top + height - viewport, top]
+							: [top, top + height - viewport],
+					entry: [coverStart, coverStart + fit],
+					exit: [top + height - fit, coverEnd],
+					'entry-crossing': [coverStart, coverStart + height],
+					'exit-crossing': [top, coverEnd],
+				};
+			} else {
+				const max = (document.scrollingElement as Element).scrollHeight - viewport;
+				ranges = { normal: [0, max] };
+			}
+			const edge = (value: unknown, side: 0 | 1): number | null => {
+				if (value === 'normal' || value === undefined) return ranges.normal[side];
+				const { rangeName, offset: amount } = value as {
+					rangeName?: string;
+					offset?: unknown;
+				};
+				const range = ranges[rangeName ?? 'normal'];
+				const share = unitValue(amount, 'percent');
+				if (!range || share === null) return null;
+				return range[0] + (share / 100) * (range[1] - range[0]);
+			};
+			const scrolled = animation as Animation & { rangeStart?: unknown; rangeEnd?: unknown };
+			const start = edge(scrolled.rangeStart, 0);
+			const end = edge(scrolled.rangeEnd, 1);
+			if (start === null || end === null || end <= start) return null;
+			const forward = Math.min(1, Math.max(0, (offset - start) / (end - start)));
+			const direction = timing.direction ?? 'normal';
+			return direction === 'reverse' || direction === 'alternate-reverse'
+				? 1 - forward
+				: forward;
+		};
 		const groups = new Map<GroupKey, Animation[]>();
 		for (const animation of finite) {
 			const { timeline } = animation;
@@ -273,20 +354,23 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 			// A scroll timeline can report the progress of the previous scroll position for a few
 			// frames after the jump: the night-arch hero read at the page top kept the zoom of the
 			// page foot on a fast machine and not on CI. Read once two frames agree.
-			let progresses = read();
+			let live = read();
 			for (let attempt = 0; attempt < 30; attempt++) {
 				await frames();
 				const next = read();
-				const settled = next.every((value, index) => value === progresses[index]);
-				progresses = next;
+				const settled = next.every((value, index) => value === live[index]);
+				live = next;
 				if (settled && attempt > 0) break;
 			}
+			const computed = animations.map((animation) => progressAt(animation, scrollY));
+			const progresses = computed.map((value, index) => value ?? live[index]);
 			trace.push({
 				key: typeof key === 'string' ? key : `${key.tagName}.${key.className}`,
 				scrollY,
 				innerHeight,
 				names: animations.map((a) => (a as CSSAnimation).animationName),
-				progresses,
+				live,
+				computed,
 			});
 			animations.forEach((animation, index) => pinned.push([animation, progresses[index]]));
 		}
