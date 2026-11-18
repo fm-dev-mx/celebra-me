@@ -351,8 +351,13 @@ evidence never certifies a different final commit.
   captures; keep the sibling `candidate-references` and `candidate-diffs` directories. Candidate
   mode never produces a passing `Application Suite`.
 - Acceptance (`pnpm visual:parity:accept`) binds the exact reference SHA, matrix hash and
-  candidate-manifest SHA-256, followed by a new passing compare. A regenerated manifest requires
-  renewed owner approval of that exact artifact; never transfer approval to a different hash.
+  candidate-manifest SHA-256, followed by a new passing compare. The agent accepts when it has
+  inspected the certified candidate and retained the diffs, the matrix hash, and the candidate
+  manifest SHA-256; Preview approval requires hosted validation evidence for the exact packageHash.
+  A regenerated manifest requires renewed acceptance of that exact artifact; never transfer approval
+  to a different hash.
+- Step ownership: Local and Preview steps are owned by the agent; Production steps remain
+  exclusively owned by the owner.
 
 #### Documentation audit limits
 

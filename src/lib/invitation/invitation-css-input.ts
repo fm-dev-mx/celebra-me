@@ -35,5 +35,6 @@ export function buildInvitationCssResolverInput(input: {
 				? (page.envelope.coverExperience ?? 'standard')
 				: undefined,
 		ornamentSet: viewModel.composition?.ornaments,
+		footerVariant: viewModel.composition?.footerVariant,
 	};
 }

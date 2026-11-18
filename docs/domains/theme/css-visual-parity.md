@@ -29,8 +29,15 @@ operations:
 ```bash
 pnpm visual:parity:candidate
 pnpm visual:parity:compare
-pnpm visual:parity:accept [-- --reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>]
+pnpm visual:parity:accept -- --reviewed=<paths> [--reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>]
 ```
+
+`--reviewed` is required: the capture files you looked at in `changes.html`, comma-separated (a
+trailing `/` covers a directory, `none` when the review lists no changes). `accept` fails if the
+candidate review has a changed or new capture outside the list, or a listed path with no change. It
+writes `acceptance-evidence.json` beside the accepted manifest (reference SHA, matrix hash,
+candidate and accepted manifest sha256, reviewed paths, per-capture hashes and diff hashes), so
+references, hashes and evidence go in one commit.
 
 `candidate` writes ignored files under `.tmp/visual-parity/candidate/`. `compare` never updates
 accepted files and fails when the accepted manifest is missing or a case differs; it runs with
@@ -166,11 +173,11 @@ cover the current matrix and match their PNG hashes. `validate:changed` runs it 
 paths, and a unit test pins the committed `matrixHash`. Both are branch gates, not commit gates: the
 accepted candidate can only be generated from the commit that changes the matrix, so the commit hook
 skips the pin (`CELEBRA_TEST_SCOPE=commit`) and the sequence is commit the lifecycle or variant
-change → `pnpm visual:parity:candidate:certified -- --sha <that commit>` → owner review →
-`pnpm visual:parity:accept` → commit the references. A branch that publishes, retires or adds a
-demo, invitation or variant must carry its approved candidate before integration; matrix drift must
-not reach a release. When the pin fails it prints the accepted and current hashes and the candidate
-and accept commands to run.
+change → `pnpm visual:parity:candidate:certified -- --sha <that commit>` → inspect candidate
+captures and diffs → `pnpm visual:parity:accept` → commit the references. A branch that publishes,
+retires or adds a demo, invitation or variant must carry its approved candidate before integration;
+matrix drift must not reach a release. When the pin fails it prints the accepted and current hashes
+and the candidate and accept commands to run.
 
 `pnpm visual:parity:affected:certified -- --sha <commit> [--base-sha <base>] [--pages a,b]` compares
 only the complete pages whose own files changed (client or demo folder, assets, provision
@@ -180,13 +187,18 @@ needs the full candidate, and CI still runs the complete compare.
 
 ### Release-time visual confirmation
 
-Visual acceptance is part of the owner's decision to release a candidate for deployment. It is not
-an automatic consequence of a push, a green partial CI run, or a deploy build starting. Before the
-owner sends the exact candidate revision through the release/promotion path, the owner reviews the
-candidate captures generated with the pinned runtime and explicitly confirms its source SHA, matrix
-hash, and candidate-manifest SHA-256. Only then may the owner run `visual:parity:accept`, land the
-accepted references on `develop` through the standard pull-request and checks flow, and require the
-resulting `Application Suite` to pass before deployment.
+Visual acceptance is part of certifying a candidate for deployment. It is not an automatic
+consequence of a push, a green partial CI run, or a deploy build starting. Local and Preview visual
+acceptance is owned by the agent: the agent reviews candidate captures generated with the pinned
+runtime, inspects `candidate/changes.html` to confirm that diffs are limited to the task's scope
+with zero geometry errors, and records its source SHA, matrix hash, and candidate-manifest SHA-256.
+Only then may the agent run `visual:parity:accept`, land the accepted references on `develop`
+through the standard pull-request and checks flow, and require the resulting `Application Suite` to
+pass before deployment. A regenerated manifest requires renewed acceptance of that exact artifact;
+never transfer approval to a different hash.
+
+Step ownership: Local and Preview steps are owned by the agent; Production steps remain exclusively
+owned by the owner.
 
 This ordering is intentional: browser CI consumes the accepted reference before it can become green,
 so acceptance cannot be deferred until after the deployment has started. A missing or rejected
@@ -225,10 +237,11 @@ changing tolerances, or downgrading compare mode.
   cannot detect a diacritic touching the preceding line.
 - Geometry cannot establish photographic contrast, ornamental glyph quality or aesthetic acceptance.
   Human review must inspect the complete pages and representative long-content fixtures.
-- Exceptions identify route, viewport, element, reason and owner approval; they cannot bypass other
-  checks.
-- Register acceptance only after explicit approval of the exact SHA, matrix hash and
-  candidate-manifest hash, then compare and run complete CI on the final revision.
+- Exceptions identify route, viewport, element, reason and Production owner approval; they cannot
+  bypass other checks.
+- Register acceptance only after explicit verification of the exact SHA, matrix hash and
+  candidate-manifest hash, then compare and run complete CI on the final revision. An approval or
+  acceptance never transfers to a different hash.
 
 Venue previews use `StaticVenueMap`, an in-house illustration (street grid, blocks, park and pin)
 styled with theme tokens and the explicit map style. It uses no basemap provider, credential or

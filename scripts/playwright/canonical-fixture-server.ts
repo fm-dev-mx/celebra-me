@@ -34,9 +34,12 @@ const origin = 'http://127.0.0.1:54321';
 const assets = new Map<string, { bytes: Uint8Array; mimeType: string }>();
 const publications: Record<string, unknown>[] = [];
 
-/** Embedded access state, as PostgREST returns it for `invitation:invitations(access:...)`. */
+/** Embedded kind and access state, as PostgREST returns it for `invitation:invitations(kind,access:...)`. */
 function accessEmbed(paymentStatus: 'paid' | 'unpaid', publicAccess: 'enabled' | 'disabled') {
-	return { access: { payment_status: paymentStatus, public_access: publicAccess } };
+	return {
+		kind: 'client',
+		access: { payment_status: paymentStatus, public_access: publicAccess },
+	};
 }
 for (const definition of listInvitationDefinitions().filter(
 	(item) => item.lifecycle === 'published',
@@ -60,7 +63,6 @@ for (const definition of listInvitationDefinitions().filter(
 		invitation_project_id: definition.managedIdentityId,
 		slug: definition.slug,
 		event_type: definition.eventType,
-		is_demo: false,
 		content: materializeAssetReferences(release.publishedProjection, references),
 		version: 1,
 		published_at: definition.createdAt,

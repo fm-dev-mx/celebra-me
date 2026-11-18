@@ -211,6 +211,8 @@ const wrapperDataAttributes = page
 	? {
 			...page.wrapper.dataAttributes,
 			...(skipEnvelope ? { 'data-reveal-state': 'revealed' } : {}),
+			// A still frame cannot show a scroll-driven scene, so captures get its static layout.
+			...(animationsOff ? { 'data-scroll-scenes': 'static' } : {}),
 			...(contentSource ? { 'data-content-source': contentSource } : {}),
 			...(contentSource === 'published' && contentVersion !== null
 				? { 'data-content-version': String(contentVersion) }
@@ -367,7 +369,7 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 								class={isDemoConversion ? 'demo-conversion-farewell' : undefined}
 								eventSlug={page.viewModel.id}
 								showEnvelope={page.wrapper.showEnvelope}
-								variant="standard"
+								variant={page.viewModel.composition?.footerVariant ?? 'standard'}
 								closingPhrase={page.footerClosingPhrase}
 								showFooterBranding={page.viewModel.brandingVisibility.showFooterBranding && !isDemoConversion}
 								showContactCta={page.viewModel.brandingVisibility.showContactCta && !isDemoConversion}

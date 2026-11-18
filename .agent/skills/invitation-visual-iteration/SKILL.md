@@ -94,6 +94,8 @@ render alone is not acceptance.
 - Shared SCSS, components or tooling changed: the affected command refuses to scope the run; produce
   the full candidate instead (`pnpm visual:parity:candidate:certified -- --sha <commit>`).
 - Matrix hash drift (`visual-coverage-lifecycle` fails): the message prints the accepted and current
-  hashes. Commit the lifecycle change, run the full candidate for that commit, get the owner's
-  review, then run the accept command the message prints with `--matrix-hash=<current>` and commit
-  the references ([CSS visual parity](../../../docs/domains/theme/css-visual-parity.md)).
+  hashes. Commit the lifecycle change, run the full candidate for that commit, inspect candidate
+  captures and diffs, then run the accept command the message prints with `--matrix-hash=<current>`
+  retaining the candidate-manifest SHA-256 and diff evidence, and commit the references
+  ([CSS visual parity](../../../docs/domains/theme/css-visual-parity.md)). Local and Preview
+  acceptance is owned by the agent; Production is owned by the owner.

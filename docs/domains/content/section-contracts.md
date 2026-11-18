@@ -365,6 +365,7 @@ validated by the schemas; the second table is **authoring guidance, not validate
 | Section.variant               | Authoring guidance (not validated)                       |
 | ----------------------------- | -------------------------------------------------------- |
 | `hero.split-cover`            | Provide `hero.portrait`                                  |
+| `hero.veiled-arch`            | Provide `hero.backgroundImage`                           |
 | `gifts.editorial-catalog`     | Provide `items` or an explicit compatible `presentation` |
 | `gifts.gift-tag`              | Provide `items` or an explicit compatible `presentation` |
 | `gallery` item-based variants | Provide items; an empty `items[]` passes the schema      |

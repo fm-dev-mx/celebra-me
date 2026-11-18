@@ -21,6 +21,7 @@ import {
 	WORKTREE_LANES,
 	type WorktreeLaneDefinition,
 } from '../shared/worktree-lane';
+import { isMainModule } from './git-helpers.mjs';
 import { inspectLane } from './worktree-status';
 import { assertCheckoutRuntime } from './env-files';
 
@@ -452,6 +453,6 @@ function main(): void {
 	]);
 }
 
-if (/worktree-doctor\.(ts|js|mjs)$/.test(process.argv[1] ?? '')) {
+if (isMainModule(undefined, { pattern: /worktree-doctor\.(ts|js|mjs)$/ })) {
 	main();
 }

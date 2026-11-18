@@ -69,6 +69,8 @@ export function initFloatingCta(root: Element | null): void {
 	if (!(root instanceof HTMLElement)) return;
 	const token = getComputedStyle(root).getPropertyValue('--invitation-floating-cta');
 	if (!isFloatingCtaOn(token, root.dataset.floatingCtaDefault === 'on')) return;
+	const avoidContent =
+		getComputedStyle(root).getPropertyValue('--floating-cta-avoid-content').trim() === 'on';
 	const confirm = root.querySelector<HTMLAnchorElement>('[data-floating-cta-confirm]');
 	const calendar = root.querySelector<HTMLButtonElement>('[data-floating-cta-calendar]');
 	const panel = root.querySelector<HTMLElement>('[data-floating-cta-panel]');
@@ -98,10 +100,31 @@ export function initFloatingCta(root: Element | null): void {
 		confirm.hidden = mode !== 'confirm';
 		calendar.hidden = mode !== 'calendar';
 		const menuOpen = menu?.dataset.state === 'open';
+		const bounds = root.getBoundingClientRect();
+		// Use the resting position, independent of the hide transition.
+		const bottom = window.innerHeight - parseFloat(getComputedStyle(root).bottom);
+		const coversContent =
+			avoidContent &&
+			[
+				...document.querySelectorAll(
+					'#invitation-sections-container :is(a, button, img, p)',
+				),
+			].some((control) => {
+				const box = control.getBoundingClientRect();
+				return (
+					box.width > 0 &&
+					box.height > 0 &&
+					box.top < bottom &&
+					box.bottom > bottom - bounds.height &&
+					box.left < bounds.right &&
+					box.right > bounds.left
+				);
+			});
 		const visible =
 			mode !== 'none' &&
 			!rsvpOnScreen &&
 			!menuOpen &&
+			!coversContent &&
 			isInFloatingZone(window.scrollY, window.innerHeight, docRoot.scrollHeight);
 		if (!visible && !panel.hidden) setPanel(false);
 		if (visible && mode !== glinted) {

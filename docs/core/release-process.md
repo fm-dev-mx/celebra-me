@@ -38,6 +38,9 @@ Diagnosis never authorizes mutation. `CURRENT`, green CI, an accessible deployme
   ([Local and Preview autonomy](../../.agent/rules/git-safety.md#local-and-preview-autonomy)).
   Require canonical package, lifecycle, provenance, asset namespace, three-way plan and hosted
   approval bound to current hashes.
+- **Preview release readiness (pre-PR to main):** diagnose with
+  `pnpm ops:preview-readiness -- --base <sha> --head <sha>` (or `--slug <slug>`). Surfaces
+  `MISSING_PREVIEW_APPROVAL` and `SCHEMA_INCOMPATIBLE` before opening the release PR or window.
 - **Production invitation publication:** use `pnpm prod:apply -- --slug <slug>` for preflight and
   the same owner-only entrypoint with `--apply`. Require `published`, current hash-bound approval,
   provenance/baseline, resolved conflicts, assets, backup and owner permit.

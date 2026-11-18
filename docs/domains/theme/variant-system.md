@@ -43,7 +43,8 @@ audit tooling (`pnpm invitation:published-audit`).
 
 - **Hero:** `standard`, `editorial-cover`, `split-cover`, `framed-portrait`, `bleed-portrait`,
   `cased-portrait`, `disco-stage`, `ceremonial-portrait`, `night-arch` (the photograph inside an
-  arched window on a night sky, names below; wide screens put the arch on the right).
+  arched window on a night sky, names below; wide screens put the arch on the right), `veiled-arch`
+  (requires `hero.backgroundImage`).
 - **Family:** `standard`, `split-groups`, `asymmetric-groups`, `ceremonial-family`, `framed-groups`;
   the three group layouts require at least two explicit `groups`.
 - **Location:** `standard`, `split-map`, `stacked-venue-plates`, `night-route` (the venue plates as
@@ -259,6 +260,10 @@ invitation profiles.
   the program-sheet rules, so `presentationOptions.scene` keeps working. Requires one visible venue.
   `--pinned-program-*` (stage-top, serif, rail, olive, olive-deep, gold, beige, ivory, paper and
   their `-rgb` triplets).
+- hero.veiled-arch: a full-bleed cover with a veiled foot and a hairline frame, built on the
+  night-arch markup (the reveal arch hand-off and the cover preload treat it as night-arch).
+  Requires `hero.backgroundImage`. `--hero-arch-*` plus
+  `--veiled-arch-{date-line,city-line,ampersand}`.
 - family.framed-groups: one screen of stationery with an asymmetric column inside one fine frame,
   the second group answering on the right and a sprig beside the heading; carries the
   asymmetric-groups rules. Requires two groups. `--framed-groups-*` (light, wash-rgb, accent, ink,
@@ -281,6 +286,14 @@ invitation profiles.
 - quote.veiled-photo: the photograph to the edges under a veil that deepens toward the text, the
   closing line in script over a hairline; scroll-linked.
   `--veiled-photo-{image,veil-rgb,veil-deep-rgb,rule,stage-top}`.
+- envelope.revealVariant pocket-fold: a paper envelope whose flap folds back, then an iris opens on
+  the cover; built on the night-envelope sheet (the arch window flies onto a `night-arch` or
+  `veiled-arch` cover). `--pocket-fold-*` (field, field-deep, ink, star, spark, paper, liner,
+  card-bg, card-ink, card-label-ink, guest-size, card-rest-y, window-width).
+- footer `composition.footerVariant: 'framed-closing'`: the closing in olive under the thank-you,
+  leading with the reply. Not a section variant: the footer is not in the registry, so the CSS
+  resolver loads `footer/_framed-closing.scss` from `composition.footerVariant` (default
+  `standard`). `--framed-closing-reply-{eyebrow,question,note,answered}` strings and palette tokens.
 - location.program-sheet: venues as printed-program entries (line drawing for ceremony/reception,
   label, time in words, venue, address, text links of 44 px for map, calendar and copy). No cards
   and no section nav button; two columns with a vertical hairline on wide screens.

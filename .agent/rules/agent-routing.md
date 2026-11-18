@@ -129,7 +129,7 @@ same exploration again.
 
 ## When NOT to Delegate
 
-- Tasks requiring tight visual coordination or owner approval.
+- Tasks requiring tight visual coordination or Production owner approval.
 - Tasks whose intermediate output must be reviewed before the next action.
 - Small tasks the orchestrator can complete directly with less overhead.
 - Tasks touching production data or requiring user approval.

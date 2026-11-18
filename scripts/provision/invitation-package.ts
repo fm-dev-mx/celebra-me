@@ -1,6 +1,6 @@
 /** Immutable package serialization for a normalized invitation release. */
 import { localManagedStoragePath } from './local-final-asset-verification.ts';
-import { createHash } from 'node:crypto';
+import { sha256Hex } from '../shared/hash.ts';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import {
@@ -88,16 +88,14 @@ export function computePackageHash(
 		InvitationPackageData,
 		'packageHash'
 	>;
-	return createHash('sha256')
-		.update(
-			canonicalize({
-				...sanitized,
-				assets: [...sanitized.assets].sort((a, b) =>
-					(a.key ?? a.storagePath).localeCompare(b.key ?? b.storagePath),
-				),
-			}),
-		)
-		.digest('hex');
+	return sha256Hex(
+		canonicalize({
+			...sanitized,
+			assets: [...sanitized.assets].sort((a, b) =>
+				(a.key ?? a.storagePath).localeCompare(b.key ?? b.storagePath),
+			),
+		}),
+	);
 }
 export function serializeInvitationPackage(
 	release: NormalizedInvitationRelease,

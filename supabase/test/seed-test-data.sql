@@ -37,9 +37,9 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- 5. Create published invitation content (countdown enabled, ceremony & reception locations)
-INSERT INTO public.published_invitation_content (id, invitation_project_id, slug, event_type, is_demo, content, version)
+INSERT INTO public.published_invitation_content (id, invitation_project_id, slug, event_type, content, version)
 VALUES
-  ('d0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', 'demo-xv-jewelry-box', 'xv', true,
+  ('d0000000-0000-0000-0000-000000000001', 'f0000000-0000-0000-0000-000000000001', 'demo-xv-jewelry-box', 'xv',
    '{"title": "Demo XV Jewelry Box", "countdown": {"title": "¡Faltan!", "targetIso": "2026-12-31T20:00:00Z", "footerText": "¡Te esperamos!"}, "sectionOrder": ["hero", "countdown", "locations", "rsvp"], "locations": {"ceremony": {"name": "Parroquia de San José", "address": "Av. Independencia 123", "googleMapsUrl": "https://maps.google.com/?q=Parroquia+San+Jose"}, "reception": {"name": "Hacienda del Sol", "address": "Carr. Federal Km 4.5", "googleMapsUrl": "https://maps.google.com/?q=Hacienda+del+Sol"}}}'::jsonb, 1)
 ON CONFLICT (id) DO NOTHING;
 

@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { isMainModule } from './git-helpers.mjs';
 import { randomUUID } from 'node:crypto';
 
 const POLICY = new URL('../../.agent/permissions/policy.json', import.meta.url);
@@ -365,7 +365,7 @@ export function main(args = process.argv.slice(2)) {
 	else process.stderr.write('Dry-run: no files or backups written.\n');
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (isMainModule(import.meta.url)) {
 	try {
 		main();
 	} catch (error) {

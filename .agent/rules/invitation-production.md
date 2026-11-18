@@ -107,6 +107,9 @@ This matrix is the SSOT for Agent vs Owner operational capabilities. Preview tas
 operational assertion, not cryptographic security; strong control depends on credential and
 execution-boundary separation.
 
+Step ownership: Local and Preview steps are owned by the agent; Production steps remain exclusively
+owned by the owner.
+
 ### Canonical invitation source
 
 - **Agent:** Edit with task authorization.
@@ -134,6 +137,20 @@ execution-boundary separation.
   (`preview:<slug>:<operation>`). `--dry-run` reports whether it is present, and a non-interactive
   `--apply` without it fails before any planning or remote work.
 - **Owner:** Yes.
+
+### Preview approval
+
+- **Agent:** Yes, when hosted validation evidence for the exact `packageHash` is verified
+  (`pnpm invitation:release -- --package-hash <hash> --approve`). An approval never transfers to a
+  different hash.
+- **Owner:** Yes.
+
+### Visual parity acceptance
+
+- **Agent:** Yes, in Local and Preview when the certified candidate has been inspected and diffs,
+  matrix hash, and candidate manifest SHA-256 are retained. Never transfer approval to a different
+  hash.
+- **Owner:** Yes. Production promotion is owner-only.
 
 ### Preview raw DB mutation
 
@@ -170,7 +187,7 @@ execution-boundary separation.
 ### Reconciliation
 
 - **Agent:** Plan and apply Local/Preview managed decisions.
-- **Owner:** Authorize Preview scope and source updates.
+- **Owner:** Authorize Production updates.
 
 ### Schema operations
 

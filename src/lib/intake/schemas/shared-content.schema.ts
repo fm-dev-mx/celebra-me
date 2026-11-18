@@ -215,6 +215,7 @@ export const giftsSchema = z
 		folioMark: optionalText(12),
 		presentation: z.enum(GIFTS_PRESENTATIONS).optional(),
 		items: z.array(giftItemSchema).optional(),
+		note: optionalText(300),
 	})
 	.strict()
 	.superRefine((gifts, context) => {

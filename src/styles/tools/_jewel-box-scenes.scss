@@ -1,6 +1,7 @@
 // Forwarded so the composition can size its own controls without widening the shared motion tool.
 @forward '../global/a11y' show touch-target;
 @use '../global/a11y';
+@use './motion';
 
 // ==========================================================================
 // JEWEL BOX SCENES — section looks for a jewel-box invitation (cream page, rose script, gold).
@@ -142,6 +143,11 @@
 				stroke-width: 2.5;
 				animation-duration: 2.8s;
 			}
+
+			// A visible music prompt reaches the centre of a phone, so the chevron rises above it.
+			body:has(.music-player__prompt:not([hidden])) & {
+				bottom: calc(2.5svh + 4.5rem);
+			}
 		}
 
 		// Landscape: one thin centred line instead of the chevron.
@@ -245,13 +251,28 @@
 	--env-shadow-container: none;
 	--env-seal-size-min: 84px;
 	--env-seal-size-ratio: 24;
-	--env-seal-size-max: 108px;
-	--env-title-size: clamp(3rem, 14cqw, 3.6rem);
+	--env-seal-size-max: min(132px, 28svh);
+
+	// Sized from both axes so every line stays on the body, clear of the fold shade.
+	--env-title-size: clamp(2.2rem, min(12cqi, 9svh), 3.6rem);
 	--storybook-letter-hold: 0ms;
 	--storybook-letter-exit: 0ms;
 
 	gap: 0;
 	transition-duration: 800ms;
+
+	// Wider than a phone (landscape phones keep the full face), the envelope stays a portrait card
+	// on the backdrop, so the flap keeps its angle and the seal and lettering their share of it.
+	@media (aspect-ratio >= 3 / 5) and (height >= 480px) {
+		--env-card-gutter: clamp(0.75rem, 3svh, 2.5rem);
+		--env-container-max-height: calc(100svh - 2 * var(--env-card-gutter));
+		--env-container-width: min(
+			100vw - 2 * var(--env-card-gutter),
+			max(0.62 * var(--env-container-max-height), 22rem)
+		);
+		--env-container-radius: 6px;
+		--env-shadow-container: 0 24px 60px rgb(var(--jewel-petal-shade-rgb) / 35%);
+	}
 
 	.envelope-flap {
 		--env-paper-bg: var(--jewel-paper-grain), var(--jewel-flap-paper);
@@ -319,7 +340,10 @@
 	}
 
 	.envelope-tease {
-		padding: 0 1rem calc(6svh + env(safe-area-inset-bottom));
+		padding: 0 1rem calc(3.5svh + env(safe-area-inset-bottom));
+		padding-top: calc(
+			max(3.5svh, var(--preview-banner-height, 0px) + 0.25rem) + env(safe-area-inset-top)
+		);
 	}
 
 	.envelope-zone--identity {
@@ -341,13 +365,13 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.9rem;
+		gap: min(0.9rem, 2svh);
 	}
 
 	.tease-divider {
 		display: block;
 		order: 2;
-		width: 11rem;
+		width: min(11rem, 30cqi, 36svh);
 		height: 0.5rem;
 		margin: 0;
 		background: var(--jewel-rule) center / contain no-repeat;
@@ -358,12 +382,20 @@
 		display: block;
 		margin: 0;
 		font-family: var(--font-ui, var(--font-body));
-		font-size: 0.72rem;
+		font-size: clamp(0.6rem, 3.2cqi, 0.72rem);
 		font-weight: 600;
-		letter-spacing: 0.3em;
+		letter-spacing: clamp(0.12em, 1cqi, 0.3em);
 		text-transform: uppercase;
 		color: var(--jewel-bronze);
 		opacity: 100%;
+	}
+
+	.envelope-tease .guest-personalized {
+		max-inline-size: min(100%, 22rem);
+	}
+
+	.envelope-tease .personalized-name {
+		font-size: clamp(1rem, 5.6cqi, 1.45rem);
 	}
 
 	.envelope-external-instruction {
@@ -489,6 +521,70 @@
 			animation-delay: 650ms;
 		}
 	}
+
+	// Landscape tablets and desktops: a horizontal envelope whose flap folds down from the top edge
+	// to the seal, with the lettering on the body below it.
+	@media (aspect-ratio >= 6 / 5) and (height >= 480px) {
+		--env-container-ratio: 1.45;
+		--env-container-width: min(
+			100vw - 2 * var(--env-card-gutter),
+			1.45 * var(--env-container-max-height),
+			72rem
+		);
+		--env-title-size: clamp(2.2rem, min(6cqi, 8svh), 3.6rem);
+
+		.envelope-flap {
+			clip-path: polygon(0 0, 100% 0, 50% 50%);
+			transform-origin: 50% 0;
+		}
+
+		.envelope-flap::after {
+			background:
+				linear-gradient(
+						to top right,
+						transparent calc(50% - 0.5px),
+						rgb(var(--jewel-white-rgb) / 70%) 50%,
+						transparent calc(50% + 6px)
+					)
+					left top / 50% 50% no-repeat,
+				linear-gradient(
+						to top left,
+						transparent calc(50% - 0.5px),
+						rgb(var(--jewel-white-rgb) / 70%) 50%,
+						transparent calc(50% + 6px)
+					)
+					right top / 50% 50% no-repeat;
+		}
+
+		.envelope-pocket::after {
+			background:
+				linear-gradient(
+						to top right,
+						transparent calc(50% - 22px),
+						rgb(var(--jewel-petal-shade-rgb) / 34%) 50%,
+						transparent 50%
+					)
+					left top / 50% 50% no-repeat,
+				linear-gradient(
+						to top left,
+						transparent calc(50% - 22px),
+						rgb(var(--jewel-petal-shade-rgb) / 34%) 50%,
+						transparent 50%
+					)
+					right top / 50% 50% no-repeat;
+		}
+
+		// Outranks the per-invitation grid: the top half belongs to the flap and the seal.
+		.envelope-container > .envelope-tease {
+			grid-template: 'stamp' 1fr '.' auto '.' auto '.' auto / minmax(0, 1fr);
+			row-gap: min(0.9rem, 2svh);
+			padding-bottom: calc(6svh + env(safe-area-inset-bottom));
+		}
+
+		&.is-opening .envelope-flap {
+			transform: rotateX(115deg) translateY(-5%);
+		}
+	}
 }
 
 // One-screen countdown: title, numbers, date and a month calendar with the event day marked. Include on `.countdown-section`.
@@ -611,6 +707,152 @@
 	}
 }
 
+// A compact evening program on one screen, using the standard itinerary renderer.
+@mixin compact-evening-program {
+	display: grid;
+	align-content: center;
+	min-height: 100svh;
+	padding: clamp(1.25rem, 4svh, 3rem) 1.25rem;
+	background: var(--jewel-ink);
+	color: var(--jewel-cream);
+
+	.itinerary__container {
+		width: min(100%, 32rem);
+	}
+
+	.itinerary__header {
+		margin-bottom: clamp(1rem, 3svh, 2rem);
+	}
+
+	.itinerary__timeline {
+		padding: 0;
+	}
+
+	.itinerary__title {
+		margin: 0;
+		font-family: var(--jewel-script);
+		font-size: var(--jewel-title-size);
+		font-weight: 400;
+		line-height: 1.15;
+		letter-spacing: 0;
+		color: var(--jewel-petal-light);
+	}
+
+	.itinerary__subtitle,
+	.itinerary__closing-note {
+		font-family: var(--jewel-serif);
+		font-size: 1rem;
+		line-height: 1.4;
+		color: var(--jewel-cream);
+	}
+
+	.itinerary__subtitle {
+		margin-top: 0.5rem;
+	}
+
+	.itinerary__header-flourish,
+	.itinerary__animated-line-container,
+	.itinerary__line-start,
+	.itinerary__line-end,
+	.itinerary__item-dot {
+		display: none;
+	}
+
+	.itinerary__items {
+		display: grid;
+		gap: 0;
+	}
+
+	.itinerary__item {
+		display: grid;
+		grid-template-columns: 1.75rem minmax(0, 1fr);
+		gap: 0.75rem;
+		align-items: center;
+		padding: clamp(0.5rem, 1.5svh, 0.875rem) 0;
+		border-bottom: 1px solid color-mix(in srgb, var(--jewel-gold) 35%, transparent);
+	}
+
+	.itinerary__item-content {
+		display: grid;
+		grid-template-columns: 5rem minmax(0, 1fr);
+		column-gap: 0.75rem;
+		align-items: baseline;
+		grid-column: 2;
+		padding: 0;
+		text-align: start;
+	}
+
+	.itinerary__item-time {
+		grid-column: 1;
+		grid-row: 1;
+		margin: 0;
+		font-family: var(--jewel-serif);
+		font-size: 1rem;
+		letter-spacing: 0;
+		color: var(--jewel-cream);
+	}
+
+	.itinerary__item-label {
+		grid-column: 2;
+		margin: 0;
+		font-family: var(--jewel-serif);
+		font-size: clamp(1.125rem, 3vw, 1.375rem);
+		font-weight: 500;
+		line-height: 1.2;
+		background: none;
+		color: var(--jewel-petal-light);
+		-webkit-text-fill-color: currentcolor;
+		text-shadow: none;
+	}
+
+	.itinerary__item-description {
+		grid-column: 2;
+		margin: 0.125rem 0 0;
+		font-size: 0.875rem;
+		color: var(--jewel-beige);
+	}
+
+	.itinerary__item-icon-wrapper {
+		position: static;
+		grid-column: 1;
+		grid-row: 1;
+		justify-self: center;
+		order: 0;
+		width: 1.5rem;
+		height: 1.5rem;
+		margin: 0;
+		border: 0;
+		background: none;
+		box-shadow: none;
+		backdrop-filter: none;
+
+		&::before {
+			content: none;
+		}
+	}
+
+	.itinerary__item-icon-inner {
+		width: 1.25rem;
+		height: 1.25rem;
+		color: var(--jewel-gold);
+	}
+
+	.itinerary__closing-note {
+		margin-top: clamp(1rem, 3svh, 2rem);
+	}
+
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			&:is(#invitation-sections-container .has-motion.has-motion.has-motion *)
+				.itinerary__item {
+				animation: scroll-accent-rise linear both;
+				animation-timeline: view();
+				animation-range: entry 0% cover 30%;
+			}
+		}
+	}
+}
+
 // Location as an arched card: illustrated map, venue, both times and three map links, with a reversible scroll-linked entrance. Include on `.event-location`.
 @mixin arched-location-card {
 	padding-block: 0;
@@ -629,10 +871,6 @@
 
 	.event-location__lede {
 		margin-block: 0;
-
-		@media (height <= 860px) {
-			display: none;
-		}
 	}
 
 	.event-location__container {
@@ -649,7 +887,6 @@
 		margin-inline: auto;
 	}
 
-	.event-location__card-title,
 	.event-location__card-flourish,
 	.event-location__card-map-preview-grid,
 	.event-location__card-content-itinerary-dot,
@@ -925,10 +1162,16 @@
 		border: 1px solid var(--jewel-gold);
 		border-radius: 999px;
 		background: transparent;
+		backdrop-filter: none;
 		color: var(--jewel-ink);
-		font-size: 0.6875rem;
+		font-size: 0.8125rem;
 		letter-spacing: 0.04em;
 		white-space: nowrap;
+	}
+
+	.event-location__nav-button--maps,
+	.event-location__nav-button--waze {
+		backdrop-filter: none;
 	}
 
 	.event-location__nav-button--maps {
@@ -974,9 +1217,7 @@
 				}
 
 				.event-location__lede,
-				.event-location__card-content > *,
-				.event-location__card-content-itinerary-item,
-				.event-location__nav-button {
+				.event-location__card-content > * {
 					--scroll-accent-rise: 1.25rem;
 
 					animation: scroll-accent-rise linear both;
@@ -984,21 +1225,10 @@
 					animation-range: entry 0% entry 80%;
 				}
 
-				.event-location__card-content-itinerary-item
-					+ .event-location__card-content-itinerary-item,
-				.event-location__nav-button--waze {
-					animation-range: entry 15% entry 95%;
-				}
-
-				.event-location__nav-button--apple {
-					animation-range: entry 25% entry 100%;
-				}
-
 				.event-location__card-wrapper {
-					--scroll-accent-turn: 0deg;
-					--scroll-accent-scale: 0.9;
+					--scroll-accent-rise: 1rem;
 
-					animation: scroll-accent-unfold linear both;
+					animation: scroll-accent-rise linear both;
 					animation-timeline: view();
 					animation-range: entry 0% entry 45%;
 				}
@@ -1013,55 +1243,79 @@
 	}
 }
 
-// Dress code on its own screen: a colour swatch, gold small caps and a reversible scroll-linked reveal. Include on `.dress-code`.
-@mixin swatch-dress-code {
+// Illustrated attire on its own screen, with a reversible scroll-linked reveal.
+@mixin illustrated-dress-code {
 	--dress-code-bg: var(--jewel-cream);
 	--dress-code-color: var(--jewel-ink);
 	--dress-code-muted: var(--jewel-ink);
-	--dress-code-accent: var(--jewel-gold-deep);
+	--dress-code-accent: var(--jewel-gold-ink);
 	--dress-code-title-font: var(--font-label, var(--font-body));
-	--dress-code-gap: clamp(1rem, 3svh, 2rem);
+	--dress-code-gap: clamp(1rem, 3svh, 1.75rem);
 
-	place-items: center start;
-	padding-inline: max(1.5rem, calc(50% - 12.5rem));
-	text-align: start;
+	place-items: center;
+	padding-inline: 1.5rem;
+	padding-block: clamp(3.5rem, 8svh, 5rem);
+	text-align: center;
+
+	.dress-code__container {
+		width: min(100%, 40rem);
+	}
+
+	.dress-code__heading {
+		font-family: var(--font-label, var(--font-body));
+		font-size: 0.8125rem;
+		font-weight: 500;
+		letter-spacing: 0.2em;
+		line-height: 1.5;
+		text-transform: uppercase;
+	}
 
 	.dress-code__item {
-		justify-items: start;
-		gap: 1rem;
-		max-width: 21rem;
+		justify-self: center;
+		justify-items: center;
+		gap: clamp(0.75rem, 2svh, 1.25rem);
+		width: min(100%, 32rem);
+		padding: clamp(1.25rem, 4svh, 2rem) clamp(1rem, 4vw, 2.5rem);
+		background: var(--jewel-beige);
+		border: 1px solid rgb(var(--jewel-gold-rgb) / 35%);
 	}
 
 	.dress-code__icon {
 		display: grid;
 		place-items: center;
-		width: 5rem;
-		height: 5rem;
-		border: 1px solid var(--jewel-gold);
-		border-radius: 50%;
-		background: linear-gradient(
-			135deg,
-			var(--jewel-rose),
-			var(--jewel-gold) 55%,
-			var(--jewel-rose-deep)
-		);
-		color: var(--jewel-white);
-		box-shadow:
-			0 0 0 6px var(--jewel-cream),
-			0 0 0 7px var(--jewel-gold);
+		width: clamp(12rem, 36svh, 17rem);
+		max-width: 100%;
+		aspect-ratio: 4 / 3;
+		color: var(--jewel-gold-ink);
+
+		&::before {
+			content: '';
+			width: 100%;
+			height: 100%;
+			background: currentcolor;
+			mask: var(--dress-code-artwork) center / contain no-repeat;
+		}
+
+		svg {
+			display: none;
+		}
 	}
 
 	.dress-code__title {
-		font-size: 0.75rem;
-		font-weight: 500;
-		letter-spacing: 0.24em;
+		order: -1;
+		font-family: var(--jewel-script);
+		font-size: clamp(2rem, 7vw, 2.75rem);
+		font-weight: 400;
+		letter-spacing: normal;
+		line-height: 1.15;
+		text-transform: none;
+		color: var(--jewel-rose-deep);
 	}
 
 	.dress-code__text {
 		font-family: var(--font-display);
-		font-style: italic;
-		font-size: clamp(1.125rem, 4.5vw, 1.375rem);
-		line-height: 1.45;
+		font-size: clamp(1.125rem, 3.8vw, 1.25rem);
+		line-height: 1.6;
 	}
 
 	@include a11y.motion-safe {

@@ -10,7 +10,7 @@
             "preset": "storybook-lilac",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-lantern-garden-mobile.png",
-            "sha256": "2dccbd0f1e5895bfb5b1305e5b376f9e1d499e7a4d56338f9d98c711eea4edfb",
+            "sha256": "550e64dc26e450f0c615cc3696262c641caa556c54f48051282a6c2f6c4009c8",
             "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
             "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
             "comparisonResult": "ACCEPTED"
@@ -36,7 +36,7 @@
             "preset": "storybook-lilac",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-lantern-garden-mobile.png",
-            "sha256": "2dccbd0f1e5895bfb5b1305e5b376f9e1d499e7a4d56338f9d98c711eea4edfb",
+            "sha256": "550e64dc26e450f0c615cc3696262c641caa556c54f48051282a6c2f6c4009c8",
             "contentHash": "21a96a2bf5c0ec13e843fb9a5c74b81cda288b23756f9ed2b3f6bd3ebda4e1c5",
             "assetHash": "6f243fb7441a128d75862a5856c1cf94cb984e07059973476b8cf8ac8bef1011",
             "comparisonResult": "CANDIDATE"
