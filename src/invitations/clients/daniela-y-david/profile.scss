@@ -46,6 +46,12 @@
 	--hairline-frame-ink: rgb(var(--dyd-gold-rgb) / 85%);
 	--hairline-frame-inset: 12px;
 
+	// Over the cover photograph the preset's olive links fade into the dark foliage; while the
+	// header is transparent they take the ivory of the title.
+	#event-header.header-base--transparent {
+		--header-nav-color: var(--color-text-on-dark);
+	}
+
 	.invitation-hero[data-variant='veiled-arch'] {
 		--hero-arch-top: 0;
 		--hero-arch-width: 100%;
