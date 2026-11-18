@@ -1,25 +1,40 @@
 {
-    "referenceSha": "64a7d58e82edff96877b5b6a4398d5a8baa6502f",
-    "acceptedAt": "2026-11-18T20:52:24.200Z",
-    "matrixHash": "cbd3152ea1b0947ad893879ae91aab90f89058a61c678642dd9e81f1292fe10a",
-    "candidateManifestSha256": "276920cdb955cceb29036f78ecd6f715e41b746e239b822effdd25f081cc2cf9",
-    "acceptedManifestSha256": "79c37d06d36a960c62887d3a09d508c8f7363f17c82a78e44dd8b09ec6efd25a",
+    "referenceSha": "6c476b13d43e58666d9a9390015e3418521cc1fc",
+    "acceptedAt": "2026-11-18T21:08:54.193Z",
+    "matrixHash": "6528e362893e74dd11c2c7c993832d1b7abad491d2129ab5a129a71e10f86f52",
+    "candidateManifestSha256": "05e9ba8bd4dcba2cf3b06f203fe98645f1aa5d143d34697e1dc482be17b02336",
+    "acceptedManifestSha256": "2821614fc1aec92920ce0d7f13481229cb00887c66ab54d5a83a74bb7c6f27dc",
     "reviewedPaths": [
-        "pages/invitation-boda-adriana-y-israel-mobile.png",
-        "pages/invitation-boda-adriana-y-israel-desktop.png"
+        "jewelry-box-mobile-personalizedAccess-framed-pass.png",
+        "jewelry-box-desktop-personalizedAccess-framed-pass.png",
+        "pages/invitation-boda-daniela-y-david-mobile.png"
     ],
     "items": [
         {
-            "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
-            "status": "new",
-            "sha256": "d783f185499c8fb036f47564dafdeede7542d490de7e68aa49a0ba8b920e8441"
+            "file": "jewelry-box-mobile-personalizedAccess-framed-pass.png",
+            "status": "changed",
+            "sha256": "71141bf94e5c62abda561784e4bcee3f649a9ff148f8225a4af56f125f4af0b8",
+            "previousSha256": "050c94a7a50209f91b6753462a7cfd28422dfafd971bfd0bbb0e2d1d75976828",
+            "differentPixels": 7392,
+            "pixelRatio": 0.02245716368939118
         },
         {
-            "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
-            "status": "new",
-            "sha256": "77944dd7d8d08d3098ce03cd78315f2f2cd747879db97898cbc3e83921225450"
+            "file": "jewelry-box-desktop-personalizedAccess-framed-pass.png",
+            "status": "changed",
+            "sha256": "3e4c0cd2089fd59ad2fcc3422de90f62570a3b4e114b17fe8f8d0595d7656b1d",
+            "previousSha256": "03d1e2aa99034e56dda05082d15a5af95787c91cf313f09b56f6a8e2ce27be8b",
+            "differentPixels": 7381,
+            "pixelRatio": 0.005695216049382716
+        },
+        {
+            "file": "pages/invitation-boda-daniela-y-david-mobile.png",
+            "status": "changed",
+            "sha256": "0d0217af7b8ee8fa32bfc865c20aaa16da67430073e75652d91b9325af71f9f1",
+            "previousSha256": "3f1d85c7f73e3342b35678ce62b89a9635c3104ee0f5092b2db1f40d471a9c19",
+            "differentPixels": 9671,
+            "pixelRatio": 0.002840159878299839
         }
     ],
-    "renderNoise": 136,
+    "renderNoise": 135,
     "removed": []
 }
