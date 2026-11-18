@@ -245,7 +245,7 @@
 				rgb(var(--framed-pass-gold-rgb, 201 174 118) / 9%) 100%
 			);
 			border: 1px solid rgb(var(--framed-pass-gold-rgb, 201 174 118) / 55%);
-			border-radius: 1.1rem;
+			border-radius: var(--radius-xl);
 			box-shadow:
 				0 18px 40px rgb(var(--framed-pass-olive-deep-rgb, 62 72 40) / 12%),
 				0 2px 6px rgb(var(--framed-pass-olive-deep-rgb, 62 72 40) / 6%);
@@ -278,7 +278,7 @@
 				position: absolute;
 				inset: 0.4rem;
 				border: 1px solid rgb(var(--framed-pass-gold-rgb, 201 174 118) / 30%);
-				border-radius: 0.8rem;
+				border-radius: var(--radius-lg);
 				pointer-events: none;
 			}
 		}
@@ -406,7 +406,7 @@
 				rgb(var(--framed-pass-gold-rgb, 201 174 118) / 16%) 100%
 			);
 			border: 1px solid rgb(var(--framed-pass-gold-rgb, 201 174 118) / 70%);
-			border-radius: 0.6rem;
+			border-radius: var(--radius-md);
 			box-shadow: none;
 		}
 
@@ -437,7 +437,7 @@
 				rgb(var(--framed-pass-gold-rgb, 201 174 118) / 16%) 100%
 			);
 			border: 1px solid rgb(var(--framed-pass-gold-rgb, 201 174 118) / 70%);
-			border-radius: 0.6rem;
+			border-radius: var(--radius-md);
 		}
 
 		// The stub: a perforated gold line with a half-moon notch cut into each edge of the pass.
@@ -460,7 +460,7 @@
 				aspect-ratio: 1;
 				background: var(--framed-pass-paper, rgb(255 255 255));
 				border: 1px solid rgb(var(--framed-pass-gold-rgb, 201 174 118) / 55%);
-				border-radius: 50%;
+				border-radius: var(--radius-pill);
 			}
 
 			&::before {
