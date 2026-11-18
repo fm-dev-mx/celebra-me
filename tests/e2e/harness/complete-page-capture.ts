@@ -75,7 +75,10 @@ export async function captureStablePage(page: Page, fullPage = false): Promise<B
 	throw new Error(`Page capture did not stabilize within ${timeout / 1000} seconds.`);
 }
 
-export async function waitForVisualHydration(page: Page): Promise<void> {
+export async function waitForVisualHydration(
+	page: Page,
+	options: { completePage?: boolean } = {},
+): Promise<void> {
 	const scroll = await page.evaluate(() => ({ x: scrollX, y: scrollY }));
 	await page.waitForFunction(() =>
 		Array.from(document.querySelectorAll('astro-island[ssr]')).every(
@@ -113,7 +116,7 @@ export async function waitForVisualHydration(page: Page): Promise<void> {
 				.map((image) => image.decode().catch(() => undefined)),
 		);
 	}, scroll);
-	await settleFiniteAnimations(page);
+	await settleFiniteAnimations(page, options.completePage ?? false);
 }
 
 // The fixed capture clock barely advances the animation timeline, so entrance animations are
@@ -122,12 +125,15 @@ export async function waitForVisualHydration(page: Page): Promise<void> {
 // A scroll-driven animation (`animation-timeline: view()`, a named view timeline or
 // `scroll(root)`) does not stay finished: its progress keeps following the scroll position, and a
 // complete-page capture resizes the viewport, so each PNG caught it at a different point. Its end
-// state is often an exit state (a booth photo leaving, a program item hidden), so it is pinned
-// instead at the progress it has with its subject centred on screen (a root scroll timeline at
-// the top of the page), on the document timeline and paused. Infinite animations stay with
-// Playwright.
-async function settleFiniteAnimations(page: Page): Promise<void> {
-	await page.evaluate(async () => {
+// state is often an exit state (a booth photo leaving, a program item hidden), so it is pinned,
+// on the document timeline and paused, at the progress a guest sees: in a viewport capture the
+// one at the captured scroll position; in a complete-page capture, which has no single scroll
+// position, the one with the animated element centred on screen (a root scroll timeline at the
+// top of the page). The element, not the timeline subject: a stacked card recedes on its
+// successor's timeline, and centring the successor showed the card dimmed with nothing on it.
+// Infinite animations stay with Playwright.
+async function settleFiniteAnimations(page: Page, completePage: boolean): Promise<void> {
+	await page.evaluate(async (completePage) => {
 		const frames = () =>
 			new Promise<void>((resolve) =>
 				requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
@@ -140,14 +146,18 @@ async function settleFiniteAnimations(page: Page): Promise<void> {
 				return false;
 			}
 		});
-		const byTimeline = new Map<AnimationTimeline, Animation[]>();
+		// Each group is read at one scroll position: an element to centre, or the page top.
+		const groups = new Map<Element | 'top' | 'here', Animation[]>();
 		for (const animation of finite) {
 			const { timeline } = animation;
 			if (!timeline || timeline === document.timeline) continue;
-			byTimeline.set(timeline, [...(byTimeline.get(timeline) ?? []), animation]);
+			const subject = (timeline as AnimationTimeline & { subject?: Element }).subject;
+			const target = (animation.effect as KeyframeEffect | null)?.target ?? null;
+			const key = !completePage ? 'here' : subject && target ? target : 'top';
+			groups.set(key, [...(groups.get(key) ?? []), animation]);
 		}
 		const pinned: Array<[Animation, number | null]> = [];
-		for (const [timeline, animations] of byTimeline) {
+		for (const [key, animations] of groups) {
 			// Capture mode (`?screenshot`) forces `animation-duration: 0s !important`. That ends a
 			// time-based animation at once, but it collapses a scroll-driven range to a point, so
 			// the animation jumps between its first and last keyframe as the scroll crosses it and
@@ -162,9 +172,8 @@ async function settleFiniteAnimations(page: Page): Promise<void> {
 					// Read below as unreadable and cancelled.
 				}
 			}
-			const subject = (timeline as AnimationTimeline & { subject?: Element }).subject;
-			if (subject) subject.scrollIntoView({ block: 'center', behavior: 'instant' });
-			else window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
+			if (key === 'top') window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
+			else if (key !== 'here') key.scrollIntoView({ block: 'center', behavior: 'instant' });
 			await frames();
 			for (const animation of animations) {
 				let progress: number | null = null;
@@ -212,7 +221,7 @@ async function settleFiniteAnimations(page: Page): Promise<void> {
 			}
 		}
 		await frames();
-	});
+	}, completePage);
 }
 
 export async function assertNoOperationalTooling(page: Page): Promise<void> {
@@ -291,7 +300,7 @@ export async function prepareCompletePage(
 			await new Promise((resolve) => setTimeout(resolve, 40));
 		}
 	});
-	await waitForVisualHydration(page);
+	await waitForVisualHydration(page, { completePage: true });
 	const giftNumber = page.locator('.gift-card__table-number-code').first();
 	if (await giftNumber.isVisible()) {
 		// Chromium resolves the pinned system monospace lazily on the first rasterization.
@@ -319,7 +328,7 @@ export async function prepareCompletePage(
 			}
 		}
 	}, options.galleryScrollLeft);
-	await settleFiniteAnimations(page);
+	await settleFiniteAnimations(page, true);
 	await page.evaluate(async () => {
 		document.body.scrollTop = 0;
 		window.scrollTo({ top: 0, behavior: 'instant' });
