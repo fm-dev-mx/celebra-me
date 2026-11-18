@@ -37,6 +37,33 @@ export interface CandidateReview {
 	removed: string[];
 }
 
+/**
+ * What a reviewer saw: each flagged file with its status and the accepted and candidate bytes it
+ * was compared against, plus the removed files. Two reviews with the same signature need the same
+ * review.
+ */
+export function reviewSignature(review: CandidateReview): string {
+	const items = review.items
+		.map((item) => `${item.status}:${item.file}:${item.previousSha256 ?? ''}:${item.sha256}`)
+		.sort();
+	return JSON.stringify({ items, removed: [...(review.removed ?? [])].sort() });
+}
+
+/** Copies the accepted image next to the candidate and writes the diff; true when a diff exists. */
+function writeReviewImages(paths: {
+	reference: string;
+	acceptedFile: string;
+	diffTarget: string;
+	diffBytes?: Buffer;
+}): boolean {
+	mkdirSync(dirname(paths.reference), { recursive: true });
+	cpSync(paths.acceptedFile, paths.reference);
+	if (!paths.diffBytes) return false;
+	mkdirSync(dirname(paths.diffTarget), { recursive: true });
+	writeFileSync(paths.diffTarget, paths.diffBytes);
+	return true;
+}
+
 function captureLabel(capture: ReviewCapture): string {
 	if (capture.section) return `${capture.section}.${capture.variant}`;
 	return `${String(capture.kind ?? 'page')} ${String(capture.eventType ?? '')}/${String(capture.slug ?? '')}`;
@@ -57,8 +84,11 @@ export function buildCandidateReview(options: {
 	matrixHash?: string;
 	referenceSha?: unknown;
 	candidateManifestSha256: string;
+	/** False compares only: no reference or diff images are written (accept's staleness check). */
+	writeImages?: boolean;
 }): CandidateReview {
 	const { root, captures, previous, acceptedRoot, observedSha256 } = options;
+	const writeImages = options.writeImages ?? true;
 	const referencesRoot = resolve(root, '..', 'candidate-references');
 	const diffsRoot = resolve(root, '..', 'candidate-diffs');
 	const previousByFile = new Map(previous?.captures.map((capture) => [capture.file, capture]));
@@ -90,16 +120,14 @@ export function buildCandidateReview(options: {
 			renderNoise.push(capture.file);
 			continue;
 		}
-		const reference = join(referencesRoot, old.file);
-		mkdirSync(dirname(reference), { recursive: true });
-		cpSync(join(acceptedRoot, old.file), reference);
-		let diff: string | undefined;
-		if (comparison.diff) {
-			const target = join(diffsRoot, capture.file);
-			mkdirSync(dirname(target), { recursive: true });
-			writeFileSync(target, comparison.diff);
-			diff = capture.file;
-		}
+		const hasDiff =
+			writeImages &&
+			writeReviewImages({
+				reference: join(referencesRoot, old.file),
+				acceptedFile: join(acceptedRoot, old.file),
+				diffTarget: join(diffsRoot, capture.file),
+				diffBytes: comparison.diff,
+			});
 		const area = accepted.readUInt32BE(16) * accepted.readUInt32BE(20);
 		items.push({
 			...base,
@@ -115,7 +143,7 @@ export function buildCandidateReview(options: {
 			...(comparison.actualSize && comparison.expectedSize
 				? { heightDelta: comparison.actualSize.height - comparison.expectedSize.height }
 				: {}),
-			...(diff ? { diff } : {}),
+			...(hasDiff ? { diff: capture.file } : {}),
 		});
 	}
 	items.sort((left, right) => severity(right) - severity(left));

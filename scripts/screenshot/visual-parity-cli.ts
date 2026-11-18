@@ -39,8 +39,23 @@ import {
 	VISUAL_VIEWPORTS,
 } from './visual-coverage-contract.ts';
 import { expectedVisualCaptures } from './visual-record-aggregator.ts';
-import { readAcceptedManifestFile, writeAcceptedManifestFiles } from './visual-demo-manifests.ts';
-import { buildCandidateReview, writeCandidateReview } from './visual-candidate-review.ts';
+import {
+	acceptedManifestSha256,
+	readAcceptedManifestFile,
+	writeAcceptedManifestFiles,
+} from './visual-demo-manifests.ts';
+import {
+	buildCandidateReview,
+	readCandidateReview,
+	reviewSignature,
+	writeCandidateReview,
+} from './visual-candidate-review.ts';
+import {
+	ACCEPTANCE_EVIDENCE_FILE,
+	assertReviewedCoversChanges,
+	buildAcceptanceEvidence,
+	parseReviewedPaths,
+} from './visual-acceptance-evidence.ts';
 import { readVisualRecordObservations } from '../../tests/e2e/harness/visual-capture-record.ts';
 
 const ROOT = process.cwd();
@@ -470,8 +485,10 @@ function accept(
 	referenceSha?: string,
 	approvedMatrixHash?: string,
 	approvedCandidateManifestSha256?: string,
+	reviewedValue?: string,
 ): void {
 	if (process.env.CI) throw new Error('Baseline acceptance is unavailable in CI.');
+	const reviewed = parseReviewedPaths(reviewedValue);
 	const head = assertCleanGitState('accept');
 	const resolvedReferenceSha = referenceSha ? resolveReferenceSha(referenceSha, head) : head;
 	const candidateManifest = readManifest(CANDIDATE_ROOT);
@@ -490,6 +507,35 @@ function accept(
 	) {
 		throw new Error('Approved candidate manifest hash does not match the candidate artifact.');
 	}
+
+	const stored = readCandidateReview(CANDIDATE_ROOT);
+	if (
+		!stored ||
+		stored.candidateManifestSha256 !== candidateManifestSha256 ||
+		stored.matrixHash !== candidateManifest.matrixHash
+	) {
+		throw new Error(
+			'Candidate review does not match the candidate manifest. Regenerate the candidate.',
+		);
+	}
+	// The accepted baselines may have moved since the candidate was made: compare against them now.
+	const current = buildCandidateReview({
+		root: CANDIDATE_ROOT,
+		captures: candidateManifest.captures,
+		previous: readPreviousAccepted(),
+		acceptedRoot: ACCEPTED_ROOT,
+		observedSha256: readVisualRecordObservations(CANDIDATE_ROOT),
+		matrixHash: candidateManifest.matrixHash,
+		referenceSha: candidateManifest.referenceSha,
+		candidateManifestSha256,
+		writeImages: false,
+	});
+	if (reviewSignature(current) !== reviewSignature(stored)) {
+		throw new Error(
+			'Candidate review is stale against the current accepted baselines. Regenerate the candidate.',
+		);
+	}
+	const review = assertReviewedCoversChanges(current, reviewed);
 
 	const stagingRoot = resolve(ROOT, '.tmp/visual-parity/accepted-' + process.pid);
 	stageCandidateFiles(stagingRoot, files);
@@ -510,6 +556,22 @@ function accept(
 	// demo captures go to one manifest per demo.
 	writeAcceptedManifestFiles(join(stagingRoot, 'manifest.json'), acceptedPayload);
 	assertManifestIntegrity(acceptedPayload, stagingRoot);
+	// Kept beside the manifest so the references, hashes and review land in one commit.
+	const evidence = buildAcceptanceEvidence({
+		review,
+		reviewed,
+		diffsRoot: resolve(CANDIDATE_ROOT, '..', 'candidate-diffs'),
+		matrixHash: candidateManifest.matrixHash,
+		candidateManifestSha256,
+		acceptedManifestSha256: acceptedManifestSha256(join(stagingRoot, 'manifest.json')),
+		referenceSha: resolvedReferenceSha,
+		acceptedAt: acceptedPayload.acceptedAt,
+	});
+	writeFileSync(
+		join(stagingRoot, ACCEPTANCE_EVIDENCE_FILE),
+		`${JSON.stringify(evidence, null, 4)}\n`,
+		'utf8',
+	);
 
 	const backupRoot = resolve(ROOT, '.tmp/visual-parity/accepted-backup-' + head.slice(0, 12));
 	replaceAcceptedRoot(stagingRoot, backupRoot);
@@ -727,10 +789,15 @@ async function main(): Promise<void> {
 		const referenceSha = parseCliFlag(args, '--reference-sha');
 		const matrixHash = parseCliFlag(args, '--matrix-hash');
 		const candidateManifestSha256 = parseCliFlag(args, '--candidate-manifest-sha256');
-		return accept(referenceSha, matrixHash, candidateManifestSha256);
+		return accept(
+			referenceSha,
+			matrixHash,
+			candidateManifestSha256,
+			parseCliFlag(args, '--reviewed'),
+		);
 	}
 	throw new Error(
-		'Usage: visual-parity-cli.ts candidate [--sha=<sha>]|affected --pages <slugs>|compare|accept [--reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>]|diagnose',
+		'Usage: visual-parity-cli.ts candidate [--sha=<sha>]|affected --pages <slugs>|compare|accept --reviewed=<paths> [--reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>]|diagnose',
 	);
 }
 
