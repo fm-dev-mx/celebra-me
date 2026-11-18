@@ -178,7 +178,9 @@ References:
 
 ## Creative Direction & Acceptance
 
-**Human creative outcome:** `PENDING` (owner accepts block by block on Local; client review pending)
+**Human creative outcome:** `ACCEPTED` (Paco, the owner, 2026-11-17, on the certified candidate of
+`dfc599b78` with the dress code visible and ivory header links: «Aceptar el diseño»; client text
+confirmations still pending)
 
 - **concern:** Typography roles — names in serif capitals with a script connector; date as «SÁB | 23
   | ENE». **status:** accepted (first viewport)
