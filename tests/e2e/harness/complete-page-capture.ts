@@ -133,7 +133,8 @@ export async function waitForVisualHydration(
 // photos and counter all follow the section) are read together at one moment of it; centring each
 // photo showed the counter at two pages and the photos scattered. That moment is the scene's end,
 // their last keyframe, where its story is complete (the album assembled, the lantern at the last
-// stop with its venue, the family names lit): the centred scene sat at the lantern route's
+// stop with its venue, the family names lit), except an animation that runs as the scene exits,
+// read at its first keyframe before it leaves: the centred scene sat at the lantern route's
 // crossover, where one venue has left and the next has not arrived. A scene that opens the page
 // (the cover approach) is read at the top instead, as a guest first sees it.
 // An animation driven by a later element's timeline (a stacked card recedes
@@ -170,6 +171,18 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 				(target.compareDocumentPosition(subject) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
 			return later ? 'before' : target;
 		};
+		// An animation whose range starts as the scene exits (a block fading out as its section
+		// leaves) ends hidden; its scene is complete at its first keyframe, still at rest.
+		const leaving = (animation: Animation): boolean => {
+			const start = (animation as Animation & { rangeStart?: unknown }).rangeStart;
+			const name =
+				typeof start === 'object' && start !== null
+					? (start as { rangeName?: unknown }).rangeName
+					: start;
+			return typeof name === 'string' && name.startsWith('exit');
+		};
+		const keyframe = (key: 'before' | 'end', animation: Animation): number =>
+			key === 'end' && !leaving(animation) ? 1 : 0;
 		const groups = new Map<GroupKey, Animation[]>();
 		for (const animation of finite) {
 			const { timeline } = animation;
@@ -195,7 +208,8 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 				}
 			}
 			if (key === 'before' || key === 'end') {
-				for (const animation of animations) pinned.push([animation, key === 'end' ? 1 : 0]);
+				for (const animation of animations)
+					pinned.push([animation, keyframe(key, animation)]);
 				continue;
 			}
 			if (key === 'top') window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
