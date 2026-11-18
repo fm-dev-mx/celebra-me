@@ -4,10 +4,10 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
 /**
  * Wedding invitation on the jewelry-box-wedding preset, recolored by the profile into indigo
  * stationery: an indigo envelope, a full-bleed cover under an indigo veil, and light cards for the
- * inner sections, with gold only as hairlines. A shorter page than the preset's full set: no
- * gallery until the couple's photographs arrive. The cover and quote art are provisional indigo
- * paper until the couple's photographs are cropped. The ceremony time is pending at the parish, so the ceremony
- * entry carries no time and no calendar link; the event timing follows the reception.
+ * inner sections, with gold only as hairlines. The couple's own photographs carry the cover (their
+ * portrait under the tree), the quote (the flower arch) and a short gallery of their selfies. The
+ * ceremony time is pending at the parish, so the ceremony entry carries no time and no calendar
+ * link; the event timing follows the reception.
  */
 const WEDDING_TIMING = {
 	localDateTime: '2027-07-10T20:00',
@@ -33,6 +33,7 @@ const content: CanonicalEventContentInput = {
 		'family',
 		'countdown',
 		'location',
+		'gallery',
 		'gifts',
 		'personalizedAccess',
 		'rsvp',
@@ -45,7 +46,8 @@ const content: CanonicalEventContentInput = {
 			family: { family: 'atmospheric-blend', source: 'quote' },
 			countdown: { family: 'atmospheric-blend', source: 'family' },
 			location: { family: 'atmospheric-blend', source: 'countdown' },
-			gifts: { family: 'atmospheric-blend', source: 'location' },
+			gallery: { family: 'atmospheric-blend', source: 'location' },
+			gifts: { family: 'atmospheric-blend', source: 'gallery' },
 			'personalized-access': { family: 'atmospheric-blend', source: 'gifts' },
 			rsvp: { family: 'atmospheric-blend', source: 'personalized-access' },
 			thankYou: { family: 'atmospheric-blend', source: 'rsvp' },
@@ -125,6 +127,22 @@ const content: CanonicalEventContentInput = {
 			},
 		],
 	},
+	gallery: {
+		variant: 'rising-stack',
+		eyebrow: 'Nosotros',
+		title: 'Nuestra historia',
+		items: [
+			{ image: 'gallery01', alt: 'Adriana e Israel sonríen juntos', focalPoint: '50% 30%' },
+			{ image: 'gallery02', alt: 'Adriana e Israel en un jardín', focalPoint: '50% 30%' },
+			{ image: 'gallery03', alt: 'Adriana e Israel en una cena', focalPoint: '50% 30%' },
+			{
+				image: 'gallery04',
+				alt: 'Adriana e Israel una noche de invierno',
+				focalPoint: '50% 35%',
+			},
+			{ image: 'gallery05', alt: 'Adriana e Israel de camino', focalPoint: '40% 35%' },
+		],
+	},
 	gifts: {
 		variant: 'framed-card',
 		title: 'Regalos',
@@ -152,7 +170,8 @@ const content: CanonicalEventContentInput = {
 		personalizedAccess: {
 			variant: 'framed-pass',
 			title: 'Su invitación',
-			subtitle: 'Hemos reservado estos lugares para usted.',
+			subtitle:
+				'Hemos reservado estos lugares para usted. Le pedimos respetar el número de pases asignados.',
 			footerText: 'Le pedimos confirmar su asistencia al final de esta invitación.',
 		},
 		labels: {
@@ -187,6 +206,7 @@ const content: CanonicalEventContentInput = {
 	navigation: [
 		{ label: 'Familia', href: '#family-section' },
 		{ label: 'Lugar', href: '#event-location' },
+		{ label: 'Nosotros', href: '#galeria' },
 		{ label: 'Confirmar', href: '#rsvp' },
 	],
 	quote: {
@@ -202,8 +222,9 @@ const content: CanonicalEventContentInput = {
 		// Hero formats its display date in UTC; eventTiming owns the real instant.
 		date: '2027-07-10T12:00:00.000Z',
 		backgroundImage: 'hero',
-		focalPoint: '50% 40%',
-		focalPointMobile: '50% 40%',
+		// Their portrait under the tree: both faces sit in the upper half, above the indigo veil.
+		focalPoint: '50% 30%',
+		focalPointMobile: '46% 30%',
 	},
 	envelope: {
 		disabled: false,
@@ -244,9 +265,14 @@ export default defineCanonicalInvitation({
 	lifecycle: 'published',
 	hostLoginAlias: 'adriana_rivas',
 	assetDir: 'src/invitations/clients/adriana-y-israel/assets',
-	// Provisional indigo paper art until the couple's photographs are cropped per role.
+	// Cropped from the couple's photographs; the quote photo is wired by the profile.
 	assetFiles: {
 		hero: 'hero.webp',
+		gallery01: 'gallery-01.webp',
+		gallery02: 'gallery-02.webp',
+		gallery03: 'gallery-03.webp',
+		gallery04: 'gallery-04.webp',
+		gallery05: 'gallery-05.webp',
 		ogShare: 'og-share.webp',
 	},
 	deliveryScope: 'content-and-assets',
