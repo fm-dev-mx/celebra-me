@@ -129,7 +129,10 @@ export async function waitForVisualHydration(
 // on the document timeline and paused, at the progress a guest sees: in a viewport capture the
 // one at the captured scroll position; in a complete-page capture, which has no single scroll
 // position, the one with the animated element centred on screen (a root scroll timeline at the
-// top of the page). An animation driven by a later element's timeline (a stacked card recedes
+// top of the page). Elements animated on an enclosing scene's timeline (a sticky album whose
+// photos and counter all follow the section) are read with that scene centred, so they show one
+// moment of it; centring each photo showed the counter at two pages and the photos scattered.
+// An animation driven by a later element's timeline (a stacked card recedes
 // while its successor arrives) shows its state before that element arrives, its first keyframe:
 // a complete page lays every card out at once, and centring either card caught it half receded.
 // Infinite animations stay with Playwright.
@@ -154,8 +157,8 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 			const subject = (timeline as AnimationTimeline & { subject?: Element }).subject;
 			const target = (animation.effect as KeyframeEffect | null)?.target ?? null;
 			if (!subject || !target) return 'top';
+			if (subject.contains(target)) return subject;
 			const later =
-				!subject.contains(target) &&
 				(target.compareDocumentPosition(subject) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
 			return later ? 'before' : target;
 		};
