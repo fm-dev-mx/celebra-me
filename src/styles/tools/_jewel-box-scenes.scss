@@ -251,15 +251,28 @@
 	--env-shadow-container: none;
 	--env-seal-size-min: 84px;
 	--env-seal-size-ratio: 24;
-	--env-seal-size-max: min(108px, 28svh);
+	--env-seal-size-max: min(132px, 28svh);
 
 	// Sized from both axes so every line stays on the body, clear of the fold shade.
-	--env-title-size: clamp(2.2rem, min(12vw, 9svh), 3.6rem);
+	--env-title-size: clamp(2.2rem, min(12cqi, 9svh), 3.6rem);
 	--storybook-letter-hold: 0ms;
 	--storybook-letter-exit: 0ms;
 
 	gap: 0;
 	transition-duration: 800ms;
+
+	// Wider than a phone (landscape phones keep the full face), the envelope stays a portrait card
+	// on the backdrop, so the flap keeps its angle and the seal and lettering their share of it.
+	@media (aspect-ratio >= 3 / 5) and (height >= 480px) {
+		--env-card-gutter: clamp(0.75rem, 3svh, 2.5rem);
+		--env-container-max-height: calc(100svh - 2 * var(--env-card-gutter));
+		--env-container-width: min(
+			100vw - 2 * var(--env-card-gutter),
+			max(0.62 * var(--env-container-max-height), 22rem)
+		);
+		--env-container-radius: 6px;
+		--env-shadow-container: 0 24px 60px rgb(var(--jewel-petal-shade-rgb) / 35%);
+	}
 
 	.envelope-flap {
 		--env-paper-bg: var(--jewel-paper-grain), var(--jewel-flap-paper);
@@ -358,7 +371,7 @@
 	.tease-divider {
 		display: block;
 		order: 2;
-		width: min(11rem, 30vw, 36svh);
+		width: min(11rem, 30cqi, 36svh);
 		height: 0.5rem;
 		margin: 0;
 		background: var(--jewel-rule) center / contain no-repeat;
@@ -369,9 +382,9 @@
 		display: block;
 		margin: 0;
 		font-family: var(--font-ui, var(--font-body));
-		font-size: clamp(0.6rem, 3.2vw, 0.72rem);
+		font-size: clamp(0.6rem, 3.2cqi, 0.72rem);
 		font-weight: 600;
-		letter-spacing: clamp(0.12em, 1vw, 0.3em);
+		letter-spacing: clamp(0.12em, 1cqi, 0.3em);
 		text-transform: uppercase;
 		color: var(--jewel-bronze);
 		opacity: 100%;
@@ -382,7 +395,7 @@
 	}
 
 	.envelope-tease .personalized-name {
-		font-size: clamp(1rem, 5.6vw, 1.45rem);
+		font-size: clamp(1rem, 5.6cqi, 1.45rem);
 	}
 
 	.envelope-external-instruction {
@@ -506,6 +519,70 @@
 		.envelope-reveal-stage {
 			animation-duration: 300ms;
 			animation-delay: 650ms;
+		}
+	}
+
+	// Landscape tablets and desktops: a horizontal envelope whose flap folds down from the top edge
+	// to the seal, with the lettering on the body below it.
+	@media (aspect-ratio >= 6 / 5) and (height >= 480px) {
+		--env-container-ratio: 1.45;
+		--env-container-width: min(
+			100vw - 2 * var(--env-card-gutter),
+			1.45 * var(--env-container-max-height),
+			72rem
+		);
+		--env-title-size: clamp(2.2rem, min(6cqi, 8svh), 3.6rem);
+
+		.envelope-flap {
+			clip-path: polygon(0 0, 100% 0, 50% 50%);
+			transform-origin: 50% 0;
+		}
+
+		.envelope-flap::after {
+			background:
+				linear-gradient(
+						to top right,
+						transparent calc(50% - 0.5px),
+						rgb(var(--jewel-white-rgb) / 70%) 50%,
+						transparent calc(50% + 6px)
+					)
+					left top / 50% 50% no-repeat,
+				linear-gradient(
+						to top left,
+						transparent calc(50% - 0.5px),
+						rgb(var(--jewel-white-rgb) / 70%) 50%,
+						transparent calc(50% + 6px)
+					)
+					right top / 50% 50% no-repeat;
+		}
+
+		.envelope-pocket::after {
+			background:
+				linear-gradient(
+						to top right,
+						transparent calc(50% - 22px),
+						rgb(var(--jewel-petal-shade-rgb) / 34%) 50%,
+						transparent 50%
+					)
+					left top / 50% 50% no-repeat,
+				linear-gradient(
+						to top left,
+						transparent calc(50% - 22px),
+						rgb(var(--jewel-petal-shade-rgb) / 34%) 50%,
+						transparent 50%
+					)
+					right top / 50% 50% no-repeat;
+		}
+
+		// Outranks the per-invitation grid: the top half belongs to the flap and the seal.
+		.envelope-container > .envelope-tease {
+			grid-template: 'stamp' 1fr '.' auto '.' auto '.' auto / minmax(0, 1fr);
+			row-gap: min(0.9rem, 2svh);
+			padding-bottom: calc(6svh + env(safe-area-inset-bottom));
+		}
+
+		&.is-opening .envelope-flap {
+			transform: rotateX(115deg) translateY(-5%);
 		}
 	}
 }
