@@ -523,6 +523,17 @@ export async function prepareCompletePage(
 	}, options.galleryScrollLeft);
 	await settleFiniteAnimations(page, true);
 	await page.evaluate(async () => {
+		// scrollIntoView also scrolls clipped ancestors: a section with overflow hidden whose
+		// decoration overflows it by a few pixels keeps that offset, and its content renders
+		// shifted. Readers cannot scroll such boxes, so return them to their origin. Rails the
+		// reader can scroll (auto/scroll) keep their framing.
+		const clipped = (value: string) => value === 'hidden' || value === 'clip';
+		for (const element of document.querySelectorAll<HTMLElement>('body *')) {
+			if (!element.scrollTop && !element.scrollLeft) continue;
+			const style = getComputedStyle(element);
+			if (clipped(style.overflowY) && element.scrollTop) element.scrollTop = 0;
+			if (clipped(style.overflowX) && element.scrollLeft) element.scrollLeft = 0;
+		}
 		document.body.scrollTop = 0;
 		window.scrollTo({ top: 0, behavior: 'instant' });
 		await new Promise<void>((resolve) =>
