@@ -9,7 +9,7 @@ para_usted:
 lee:
     - 'database_ops'
 pasos_inicio:
-    - 'pnpm board claim {id} --agente={agente} --titulo="{nombre}"'
+    - 'node <tablero>/src/cli.ts claim {id} --agente={agente} --titulo="{nombre}"'
 pasos:
     - '1. Use solo el flujo protegido de .agent/rules/database.md y guarde la salida de cada comando.'
 autorizado_por_defecto:

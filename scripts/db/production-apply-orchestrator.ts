@@ -5,7 +5,13 @@
  * and explicit patch primitives. Does not reimplement classifiers, fingerprints,
  * backups, receipts, or SQL execution.
  */
+import {
+	applyProductionApplyPhases,
+	ownerGateInputFor,
+	PRODUCTION_APPLY_OPERATION_TYPE,
+} from './production-apply-phases.ts';
 import { getProdDbUrl } from './db-workflow-lib.ts';
+import { ProductionApplyTimings, type ProductionApplyTiming } from './production-apply-timings.ts';
 import { OperatorError } from './operator-cli-ux.ts';
 import {
 	assertReleaseReadinessFailFast,
@@ -69,9 +75,9 @@ import {
 	inspectSchema,
 } from './production-apply-inspectors.ts';
 
-const PRODUCTION_APPLY_OPERATION_TYPE = 'production_apply';
-
 export interface ProductionApplyAssemblerDeps {
+	/** Run-local instrumentation, excluded from plan fingerprints and owner permissions. */
+	timings?: ProductionApplyTimings;
 	preflightSchema?: () => MigrationPlan;
 	listSlugs?: () => string[];
 	/** Expired slugs (event date + 1 year) reported apart from --all-ready / inspection plans. */
@@ -143,26 +149,32 @@ interface ProductionApplyOutcomeRow {
 }
 
 export interface ProductionApplyExecution {
+	timings?: ProductionApplyTiming[];
 	plan: ProductionApplyPlan;
 	wrote: boolean;
 	outcomes: ProductionApplyOutcomeRow[];
-}
-
-function scopeFromArgs(args: ProductionApplyCliArgs): ProductionApplyScope {
-	return {
-		schema: args.schema || args.inspectAll,
-		slugs: args.inspectAll || args.allReady ? [] : args.slugs,
-		allReady: args.allReady,
-		patchFile: args.patchFile,
-		inspectAll: args.inspectAll,
-	};
 }
 
 export async function buildProductionApplyPlan(
 	args: ProductionApplyCliArgs,
 	deps: ProductionApplyAssemblerDeps = {},
 ): Promise<ProductionApplyPlan> {
-	const scope = scopeFromArgs(args);
+	return deps.timings
+		? deps.timings.measure('plan', () => assemblePlan(args, deps))
+		: assemblePlan(args, deps);
+}
+
+async function assemblePlan(
+	args: ProductionApplyCliArgs,
+	deps: ProductionApplyAssemblerDeps,
+): Promise<ProductionApplyPlan> {
+	const scope: ProductionApplyScope = {
+		schema: args.schema || args.inspectAll,
+		slugs: args.inspectAll || args.allReady ? [] : args.slugs,
+		allReady: args.allReady,
+		patchFile: args.patchFile,
+		inspectAll: args.inspectAll,
+	};
 	const schemaItem = await inspectSchema(scope.schema, deps, args.expectedPin);
 	const schemaReadyInPlan = schemaItem.readiness === 'READY';
 
@@ -291,43 +303,16 @@ function throwIfPatchApiIdentityInvalid(
 	}
 }
 
+/** One owner confirmation per reviewed plan; runs before any Production write below. */
 async function authorizeReviewedPlan(
 	reviewed: ProductionApplyPlan,
 	mutations: readonly ProductionApplyPlanItem[],
 	deps: ProductionApplyExecuteDeps,
 ): Promise<void> {
-	const getProductionDbUrl = deps.getProductionDbUrl ?? getProdDbUrl;
-	const { url: dbUrl } = getProductionDbUrl();
-	const discardDraftSlugs = mutations
-		.filter((item) => item.readiness === 'READY_AFTER_DISCARD')
-		.map((item) => item.id);
-	const ownerGateInput: OwnerProductionApplyInput = {
-		apply: true,
-		dbUrl,
-		operationType: PRODUCTION_APPLY_OPERATION_TYPE,
-		operationVerb: 'APPLY',
-		bindingHex: reviewed.planId,
-		applyActionLabel: 'Aplicar plan',
-		summaryTitle: 'Apply Production',
-		summary: [
-			['Operación', 'Plan mixto Production'],
-			['Mutaciones', String(mutations.length)],
-			['Alcance', mutations.map((item) => `${item.domain}:${item.id}`).join(', ')],
-			[
-				'Borradores inéditos',
-				discardDraftSlugs.length > 0
-					? `Se reemplazarán: ${discardDraftSlugs.join(', ')}`
-					: 'Ninguno',
-			],
-			['Autorización', 'Una confirmación cubre el plan exacto'],
-		],
-		technicalReview: [
-			['Impacto', 'Delega a primitivas canónicas de schema, promoción y parche'],
-			['Plan', reviewed.planId],
-			['Orden', 'schema → verificar → invitaciones → parche explícito'],
-			['Controles', 'TTY · agente bloqueado · permiso ligado al plan · sin token'],
-		],
-	};
+	const ownerGateInput = ownerGateInputFor(reviewed, mutations, deps);
+	if (ownerGateInput.operationVerb !== 'APPLY' || ownerGateInput.bindingHex !== reviewed.planId) {
+		throw new Error('Owner gate input must bind APPLY to the reviewed plan.');
+	}
 	if (deps.requireOwnerApply) {
 		await deps.requireOwnerApply(ownerGateInput);
 		return;
@@ -433,7 +418,9 @@ async function applySchemaMutation(
 							}
 						: undefined,
 				}));
-		const result = await applySchema({ authorizedPlanBindingHex: reviewed.planId });
+		const result = await deps.timings!.measure('schema', () =>
+			applySchema({ authorizedPlanBindingHex: reviewed.planId }),
+		);
 		replaceOutcome(outcomes, 'schema', {
 			id: 'schema',
 			outcome: 'APPLIED_AND_VERIFIED',
@@ -495,7 +482,7 @@ async function verifyMediaBeforeApply(
 				});
 	if (hasPreexisting && verify) {
 		try {
-			await verify(item.id);
+			await deps.timings!.measure('verification', () => verify(item.id), `${item.id}:antes`);
 		} catch (error) {
 			throw new OperatorError({
 				title: 'La verificación previa de imágenes falló',
@@ -532,7 +519,8 @@ async function verifyMediaAfterApply(
 				});
 	if (verify) {
 		try {
-			await verify(item.id);
+			const slug = item.id;
+			await deps.timings!.measure('verification', () => verify(slug), `${slug}:después`);
 		} catch (error) {
 			replaceOutcome(outcomes, item.id, {
 				id: item.id,
@@ -576,16 +564,16 @@ async function applyOneInvitationMutation(
 			],
 		});
 	}
-	const applyInvitation =
+	const applyInvitation: NonNullable<ProductionApplyExecuteDeps['applyInvitation']> =
 		deps.applyInvitation ??
-		((input: {
-			packageData: InvitationPackageData;
-			authorizedPlanBindingHex: string;
-			updateScope?: UpdateScope;
-			reviewedPreflight?: PromotionPreflightReport;
-			acknowledgeDiscardUnpublishedDraft?: boolean;
-		}) =>
+		((input) =>
 			orchestrateInvitationPromotion({
+				ensureBackup: (input) =>
+					deps.timings!.measureSync(
+						'backup',
+						() => ensureCriticalProductionBackup(input),
+						item.id,
+					),
 				packageData: input.packageData,
 				updateScope: input.updateScope,
 				reviewedPreflight: input.reviewedPreflight,
@@ -599,13 +587,15 @@ async function applyOneInvitationMutation(
 				},
 			}));
 	await verifyMediaBeforeApply(item, deps);
-	const report = await applyInvitation({
-		packageData,
-		authorizedPlanBindingHex: reviewed.planId,
-		updateScope: item.updateScope,
-		reviewedPreflight: item.preflight,
-		acknowledgeDiscardUnpublishedDraft: item.readiness === 'READY_AFTER_DISCARD',
-	});
+	const publish = () =>
+		applyInvitation({
+			packageData,
+			authorizedPlanBindingHex: reviewed.planId,
+			updateScope: item.updateScope,
+			reviewedPreflight: item.preflight,
+			acknowledgeDiscardUnpublishedDraft: item.readiness === 'READY_AFTER_DISCARD',
+		});
+	const report = await deps.timings!.measure('publication', publish, item.id);
 	if (report.status === 'BLOCKED' || report.status === 'APPLIED_BUT_VERIFICATION_FAILED') {
 		replaceOutcome(outcomes, item.id, {
 			id: item.id,
@@ -723,9 +713,23 @@ export async function applyProductionApplyPlan(
 ): Promise<ProductionApplyExecution> {
 	// Before the owner gate and before any write, schema included.
 	assertNoPreviewScopeForProduction();
+	const timings = deps.timings ?? new ProductionApplyTimings();
+	deps = { ...deps, timings };
 	const reviewed = await buildProductionApplyPlan(args, deps);
 	throwIfIneligible(reviewed);
+	const execution = await applyProductionApplyPhases(args, deps, reviewed, {
+		buildPlan: buildProductionApplyPlan,
+		applyPhase: applyReviewedProductionApplyPlan,
+	});
+	return { ...execution, timings: timings.rows };
+}
 
+async function applyReviewedProductionApplyPlan(
+	args: ProductionApplyCliArgs,
+	deps: ProductionApplyExecuteDeps,
+	reviewed: ProductionApplyPlan,
+): Promise<ProductionApplyExecution> {
+	throwIfIneligible(reviewed);
 	const mutations = mutationItemsOf(reviewed);
 	const ownerUserId = args.ownerUserId;
 	throwIfPatchMissingOwner(mutations, ownerUserId, deps);
@@ -761,22 +765,24 @@ export async function applyProductionApplyPlan(
 			retryCommand: 'pnpm prod:apply',
 			operationLabel: 'la autorización del plan Production',
 		};
-		const backup = deps.ensureSharedBackup
-			? deps.ensureSharedBackup({
-					...sharedInput,
-					purpose: hasSchema ? 'migrate-pre' : 'standalone',
-					reuseExisting: true,
-				})
-			: deps.ensurePatchBackup
-				? deps.ensurePatchBackup({
-						...sharedInput,
-						purpose: 'standalone',
-					})
-				: ensureCriticalProductionBackup({
+		const backup = deps.timings!.measureSync('backup', () =>
+			deps.ensureSharedBackup
+				? deps.ensureSharedBackup({
 						...sharedInput,
 						purpose: hasSchema ? 'migrate-pre' : 'standalone',
 						reuseExisting: true,
-					});
+					})
+				: deps.ensurePatchBackup
+					? deps.ensurePatchBackup({
+							...sharedInput,
+							purpose: 'standalone',
+						})
+					: ensureCriticalProductionBackup({
+							...sharedInput,
+							purpose: hasSchema ? 'migrate-pre' : 'standalone',
+							reuseExisting: true,
+						}),
+		);
 		sharedBackupManifest = backup.manifestPath;
 	}
 	const executeDeps: ProductionApplyExecuteDeps = {
@@ -789,7 +795,9 @@ export async function applyProductionApplyPlan(
 	try {
 		await authorizeReviewedPlan(reviewed, mutations, executeDeps);
 		if (isInvitationOnlyPlan(reviewed)) {
-			await revalidateInvitationOnlyPlan(reviewed, executeDeps);
+			await deps.timings!.measure('plan', () =>
+				revalidateInvitationOnlyPlan(reviewed, executeDeps),
+			);
 		} else {
 			throwIfPlanDrifted(reviewed, await buildProductionApplyPlan(args, executeDeps));
 		}

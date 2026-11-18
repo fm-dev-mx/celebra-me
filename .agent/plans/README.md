@@ -190,10 +190,10 @@ onto Goal counts.
 
 One provider-neutral **Handoff Contract** applies whenever work crosses an execution boundary (next
 Goal, next session, or next role). Its fields have one source: the board task's closing summary,
-`cierre`, written with `pnpm board close` and checked by the board core on `close`. The tablero core
-(`docs/agent-rules.md`, «Claim, work, close») lists the fields and flags and `.agent/rules/board.md`
-(«Closing summary») adds the project levels; do not repeat them here or in other documents. Work
-that has no board task returns the same fields in its final message.
+`cierre`, written with `node <tablero>/src/cli.ts close` and checked by the board core on `close`.
+The tablero core (`docs/agent-rules.md`, «Claim, work, close») lists the fields and flags and
+`.agent/rules/board.md` («Closing summary») adds the project levels; do not repeat them here or in
+other documents. Work that has no board task returns the same fields in its final message.
 
 ### Persistence
 
@@ -203,7 +203,8 @@ that has no board task returns the same fields in its final message.
   boundary.
 - Multi-session Goal continuity: `.agent/plans/active/` when a tracked plan is justified.
 - Cross-agent hand-over goes through the board, never through files: the task's `cierre`, its review
-  rounds (`pnpm board review`) and `pnpm board msg` (`.agent/rules/board.md`).
+  rounds (`node <tablero>/src/cli.ts review`) and `node <tablero>/src/cli.ts msg`
+  (`.agent/rules/board.md`).
 - Do not generate mandatory handoff files for trivial work.
 
 Human-facing report **layout** for named review/apply/commit skills remains

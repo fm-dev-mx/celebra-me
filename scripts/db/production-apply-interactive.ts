@@ -5,6 +5,10 @@
  */
 import { existsSync } from 'node:fs';
 import {
+	ProductionApplyTimings,
+	formatProductionApplyTimings,
+} from './production-apply-timings.ts';
+import {
 	askText,
 	confirmDanger,
 	isPromptExit,
@@ -152,13 +156,15 @@ function planDoneLine(plan: ProductionApplyPlan): string {
 
 async function planSelection(selection: ProductionApplySelection): Promise<ProductionApplyPlan> {
 	const parsed = parseSelection(selection);
+	const timings = new ProductionApplyTimings();
 	refreshDisposableProofForPlan(parsed);
 	const plan = await step(
 		`Planning Production (read-only): ${describeSelection(selection)}`,
-		() => buildProductionApplyPlan(parsed),
+		() => buildProductionApplyPlan(parsed, { timings }),
 		{ done: planDoneLine },
 	);
 	writeHuman(formatProductionApplyPlan(plan));
+	writeHuman(formatProductionApplyTimings(timings.rows));
 	printLine();
 	printLine(theme().summary('Summary', summarizePlanRows(plan)));
 	return plan;
@@ -188,10 +194,11 @@ async function runApply(
 		printLine(t.mark('info', 'No writes. Production is unchanged.'));
 		return;
 	}
+	const timings = new ProductionApplyTimings();
 	try {
 		const parsed = parseSelection(selection);
 		refreshDisposableProofForPlan(parsed);
-		const execution = await applyProductionApplyPlan(parsed);
+		const execution = await applyProductionApplyPlan(parsed, { timings });
 		writeHuman(formatProductionApplyResult(execution));
 		printLine(
 			t.summary('Summary', [
@@ -206,6 +213,7 @@ async function runApply(
 			]),
 		);
 	} catch (error) {
+		writeHuman(formatProductionApplyTimings(timings.rows));
 		if (isPromptExit(error)) throw error;
 		renderOperatorError(error, {
 			title: 'No se pudo completar Production apply',
@@ -217,11 +225,14 @@ async function runApply(
 
 async function printJsonPlan(): Promise<void> {
 	const parsed = parseSelection({ kind: 'inspect_all', json: true });
+	const timings = new ProductionApplyTimings();
 	refreshDisposableProofForPlan(parsed);
 	const plan = await step('Planning Production (read-only, JSON)', () =>
-		buildProductionApplyPlan(parsed),
+		buildProductionApplyPlan(parsed, { timings }),
 	);
-	process.stdout.write(`${JSON.stringify(toPublicProductionApplyPlan(plan), null, 2)}\n`);
+	process.stdout.write(
+		`${JSON.stringify({ ...toPublicProductionApplyPlan(plan), timings: timings.rows }, null, 2)}\n`,
+	);
 }
 
 type NextStep = 'exit' | 'replan' | 'menu' | `apply:${number}`;

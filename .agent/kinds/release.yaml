@@ -11,7 +11,7 @@ lee:
     - 'database_parity'
 pasos_inicio:
     - 'pnpm agent:git-safety:start --session={rama}'
-    - 'pnpm board claim {id} --agente={agente} --rama={rama} --titulo="{nombre}"'
+    - 'node <tablero>/src/cli.ts claim {id} --agente={agente} --rama={rama} --titulo="{nombre}"'
 pasos:
     - '1. Siga el skill de release paso a paso y guarde la evidencia de cada puerta.'
 autorizado_por_defecto:

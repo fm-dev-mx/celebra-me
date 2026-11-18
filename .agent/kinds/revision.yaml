@@ -1,5 +1,5 @@
 # Task kind «revision»: a read-only cross review of a PR (T130, rules: .agent/rules/board.md).
-# Rounds made by `pnpm board review` live inside the reviewed task and keep their own prompt (T529); this
+# Rounds made by `node <tablero>/src/cli.ts review` live inside the reviewed task and keep their own prompt (T529); this
 # kind covers reviews added by hand.
 tipo: revision
 descripcion: 'Revisión cruzada de un PR, solo lectura.'
@@ -10,7 +10,7 @@ para_usted:
 lee:
     - 'staged_code_review'
 pasos_inicio:
-    - 'pnpm board claim {id} --agente={agente} --titulo="{nombre}"'
+    - 'node <tablero>/src/cli.ts claim {id} --agente={agente} --titulo="{nombre}"'
 pasos:
     - '1. Revise corrección, regresiones, pruebas y AGENTS.md en el diff del PR.'
     - '2. Publique los hallazgos con gh pr review.'

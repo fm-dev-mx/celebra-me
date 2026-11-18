@@ -29,6 +29,7 @@ import {
 } from './recovery-integrity.ts';
 import { writeStorageObjectArchive } from './storage-object-archive.ts';
 import { BACKUP_PHASE_LABELS, writeBackupPhase } from './critical-backup-progress.ts';
+import { isTransientBackupError } from './backup-capture-errors.ts';
 import {
 	downloadStorageInventory,
 	emptyStorageArchive,
@@ -54,7 +55,9 @@ async function runBackupCommand(
 ): Promise<void> {
 	const result = await runCommandAsync(command, args, { ...options, throwOnError: false });
 	if (result.status !== 0) {
-		throw new Error(`Critical backup subprocess failed with status ${String(result.status)}.`);
+		throw new Error(`Critical backup subprocess failed with status ${String(result.status)}.`, {
+			cause: new Error(result.stderr),
+		});
 	}
 }
 
@@ -338,5 +341,13 @@ main().catch((error: unknown) => {
 		if (safeChild) rmSync(incompleteOutputDir, { recursive: true, force: true });
 	}
 	console.error(error instanceof Error ? error.message : String(error));
+	// stderr remains live for progress; only a fixed classification crosses stdout to the caller.
+	if (isTransientBackupError(error)) console.info('CRITICAL_BACKUP_FAILURE=TRANSIENT');
+	if (
+		error instanceof Error &&
+		/Production changed while the critical backup set was being captured/i.test(error.message)
+	) {
+		console.info('CRITICAL_BACKUP_FAILURE=UNSTABLE');
+	}
 	process.exit(1);
 });

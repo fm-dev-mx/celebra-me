@@ -31,7 +31,17 @@ function global:Log-Call([string]$line) { Add-Content -LiteralPath $global:CallL
 function global:fnm { '$null' }
 function global:Start-Sleep { }
 function global:Invoke-RestMethod { Log-Call 'health'; [pscustomobject]@{ build = [pscustomobject]@{ commitSha = $global:S.mainSha } } }
-function global:pnpm { Log-Call "pnpm $args"; $global:LASTEXITCODE = 0 }
+$global:CiAttempt = 0
+function global:pnpm {
+    Log-Call "pnpm $args"; $global:LASTEXITCODE = 0
+    if ($args -contains 'ops:release-checks') {
+        $index = [Math]::Min($global:CiAttempt, $global:S.ci.Count - 1)
+        $response = $global:S.ci[$index]
+        $global:CiAttempt++
+        $global:LASTEXITCODE = $response.exitCode
+        return $response.output
+    }
+}
 function global:git {
     Log-Call "git $args"; $global:LASTEXITCODE = 0
     if ($args[0] -eq 'rev-parse') { return $global:S.mainSha }
@@ -55,7 +65,7 @@ function global:gh {
     }
     throw "unexpected gh $a"
 }
-$params = @{}
+$params = @{ CiTimeoutSeconds = $global:S.ciTimeoutSeconds }
 if ($RunId) { $params.UploadRunId = $RunId }
 try { & $Script @params } catch { [Console]::Out.WriteLine("FAILED: $($_.Exception.Message)"); exit 1 }
 `;
@@ -118,9 +128,20 @@ interface Scenario {
 	preexisting?: number[];
 	dispatches?: number[];
 	runId?: string;
+	ci?: { exitCode: number; output: string }[];
+	ciTimeoutSeconds?: number;
 }
 
-function runWindow({ runs, preexisting = [], dispatches = [], runId = '' }: Scenario) {
+const VALID_CI = { exitCode: 0, output: JSON.stringify({ sha: MAIN, state: 'CHECKS_PASSED' }) };
+
+function runWindow({
+	runs,
+	preexisting = [],
+	dispatches = [],
+	runId = '',
+	ci = [VALID_CI],
+	ciTimeoutSeconds = 600,
+}: Scenario) {
 	const dir = mkdtempSync(join(tmpdir(), 'prod-window-'));
 	try {
 		const harness = join(dir, 'harness.ps1');
@@ -136,6 +157,8 @@ function runWindow({ runs, preexisting = [], dispatches = [], runId = '' }: Scen
 				runs,
 				preexisting,
 				dispatches,
+				ci,
+				ciTimeoutSeconds,
 			}),
 		);
 		const child = spawnSync(
@@ -174,6 +197,53 @@ function expectRejected(result: ReturnType<typeof runWindow>, message: RegExp) {
 }
 
 describe('production-daily-window upload run validation', () => {
+	it.each([
+		['missing', { exitCode: 1, output: '' }, /Se agotó la espera de CI/],
+		['invalid JSON', { exitCode: 0, output: 'not JSON' }, /no es JSON válido/],
+		[
+			'wrong SHA',
+			{ exitCode: 0, output: JSON.stringify({ sha: OLD, state: 'CHECKS_PASSED' }) },
+			/no acredita el SHA/,
+		],
+		[
+			'wrong state',
+			{ exitCode: 0, output: JSON.stringify({ sha: MAIN, state: 'PENDING' }) },
+			/no acredita el SHA/,
+		],
+	] as const)(
+		'blocks dispatch and activation with %s CI evidence',
+		(_name, response, message) => {
+			const result = runWindow({ runs: {}, ci: [response], ciTimeoutSeconds: 0 });
+			expectRejected(result, message);
+			expect(result.calls.filter((call) => /gh workflow run/.test(call))).toEqual([]);
+		},
+	);
+
+	it('waits for exact-SHA CI before dispatching the upload', () => {
+		const result = runWindow({
+			runs: { '200': uploadRun(200), '300': domainSmokeRun(300) },
+			dispatches: [200, 300],
+			ci: [{ exitCode: 1, output: '' }, VALID_CI],
+		});
+		expect(result.status).toBe(0);
+		const checks = result.calls.filter((call) => /ops:release-checks/.test(call));
+		expect(checks).toHaveLength(2);
+		expect(result.calls.indexOf(checks[0])).toBeLessThan(
+			result.calls.findIndex((call) => /step=upload/.test(call)),
+		);
+		expect(result.output).toMatch(/Esperando evidencia de CI/);
+	});
+
+	it('also requires CI when resuming a supplied upload', () => {
+		const result = runWindow({
+			runs: { '101': uploadRun(101) },
+			runId: '101',
+			ci: [{ exitCode: 1, output: '' }],
+			ciTimeoutSeconds: 0,
+		});
+		expectRejected(result, /Se agotó la espera de CI/);
+	});
+
 	it('rejects a supplied run uploaded from a stale SHA', () => {
 		const result = runWindow({
 			runs: { '101': uploadRun(101, { headSha: OLD }) },

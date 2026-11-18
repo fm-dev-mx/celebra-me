@@ -9,7 +9,7 @@ para_usted:
 lee:
     - 'code_release_execution'
 pasos_inicio:
-    - 'pnpm board claim {id} --agente={agente} --titulo="{nombre}"'
+    - 'node <tablero>/src/cli.ts claim {id} --agente={agente} --titulo="{nombre}"'
 pasos:
     - '1. Lea docs/operations/cloudflare-platform.md y respete sus invariantes.'
     - '2. Antes de cambiar nada, guarde el estado actual (salida de la API o de wrangler) como plan de rollback.'

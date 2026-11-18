@@ -59,6 +59,15 @@ after the activated Production Worker is verified for the merged `main` SHA. `pr
 invitation content and owner patches when the Worker serving Production does not contain the commit
 it publishes from.
 
+When schema is pending, the owner applies it as a separate phase, with a schema-only plan and
+confirmation. For a mixed `prod:apply -- --schema --slugs <slugs> --apply` or `--all-ready --apply`,
+the orchestrator first verifies that schema phase and clears its permit. It then builds a fresh
+publication plan from live state and asks for a new owner confirmation bound to that plan. A
+`READY_AFTER_SCHEMA` preflight is never publication authorization. A failed or unverified schema
+stops publication. Cancellation or failure in publication leaves the verified schema in place; retry
+from a fresh plan and confirmation, never by reusing the schema permission. Agents must not execute
+either Production phase.
+
 Finish only after verifying the actual merged `main` SHA, correct Production Worker/environment,
 uploaded and activated Worker version, serving alias, and correlated smoke. The merged SHA may
 differ from the reviewed develop SHA; report both. Follow shared stop/recovery rules if incomplete.

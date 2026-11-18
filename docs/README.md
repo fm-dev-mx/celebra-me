@@ -26,7 +26,7 @@ historical evidence, not current policy.
 | Database safety boundaries                | [Database rule](../.agent/rules/database.md); operational procedure in [database workflow](database-workflow.md)                                                                     |
 | Native command approval policy            | [Permissions rule](../.agent/rules/permissions.md); adapter usage in [agent permissions](core/agent-permissions.md)                                                                  |
 | Board protocol and project additions      | [Board rule](../.agent/rules/board.md) links the generic protocol in the `tablero` repository; [coordinator guide](core/coordinator-board.md) owns Celebra-me setup and coordination |
-| Available commands and lane configuration | [package.json](../package.json) owns scripts; [tablero.config.json](../tablero.config.json) owns registered projects, lanes, and ports                                               |
+| Available commands and lane configuration | [package.json](../package.json) owns scripts; [.agent/carriles.json](../.agent/carriles.json) owns lanes and ports                                                                   |
 
 ## Documentation map
 
