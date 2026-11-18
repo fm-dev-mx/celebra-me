@@ -7,7 +7,7 @@
  */
 import {
 	applyProductionApplyPhases,
-	authorizeReviewedPlan,
+	ownerGateInputFor,
 	PRODUCTION_APPLY_OPERATION_TYPE,
 } from './production-apply-phases.ts';
 import { getProdDbUrl } from './db-workflow-lib.ts';
@@ -23,7 +23,10 @@ import {
 	type OrchestrateMigrateResult,
 } from './migrate-orchestrator.ts';
 import type { MigrationPlan } from './migration-plan.ts';
-import type { OwnerProductionApplyInput } from './owner-production-apply.ts';
+import {
+	requireOwnerProductionApply,
+	type OwnerProductionApplyInput,
+} from './owner-production-apply.ts';
 import {
 	clearProductionWritePermit,
 	matchProductionWritePermit,
@@ -289,6 +292,23 @@ function throwIfPatchApiIdentityInvalid(
 			],
 		});
 	}
+}
+
+/** One owner confirmation per reviewed plan; runs before any Production write below. */
+async function authorizeReviewedPlan(
+	reviewed: ProductionApplyPlan,
+	mutations: readonly ProductionApplyPlanItem[],
+	deps: ProductionApplyExecuteDeps,
+): Promise<void> {
+	const ownerGateInput = ownerGateInputFor(reviewed, mutations, deps);
+	if (ownerGateInput.operationVerb !== 'APPLY' || ownerGateInput.bindingHex !== reviewed.planId) {
+		throw new Error('Owner gate input must bind APPLY to the reviewed plan.');
+	}
+	if (deps.requireOwnerApply) {
+		await deps.requireOwnerApply(ownerGateInput);
+		return;
+	}
+	await requireOwnerProductionApply(ownerGateInput);
 }
 
 function throwIfPlanDrifted(reviewed: ProductionApplyPlan, live: ProductionApplyPlan): void {

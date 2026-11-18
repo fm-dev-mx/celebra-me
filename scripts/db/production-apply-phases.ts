@@ -1,9 +1,6 @@
 /** Separate schema authorization from publication and present each exact plan to the owner. */
 import { getProdDbUrl } from './db-workflow-lib.ts';
-import {
-	requireOwnerProductionApply,
-	type OwnerProductionApplyInput,
-} from './owner-production-apply.ts';
+import type { OwnerProductionApplyInput } from './owner-production-apply.ts';
 import { OperatorError } from './operator-cli-ux.ts';
 import {
 	mutationItemsOf,
@@ -89,11 +86,12 @@ export async function applyProductionApplyPhases(
 	}
 }
 
-export async function authorizeReviewedPlan(
+/** Owner gate input for the exact reviewed plan; the orchestrator runs the gate itself. */
+export function ownerGateInputFor(
 	reviewed: ProductionApplyPlan,
 	mutations: readonly ProductionApplyPlanItem[],
 	deps: ProductionApplyExecuteDeps,
-): Promise<void> {
+): OwnerProductionApplyInput {
 	const getProductionDbUrl = deps.getProductionDbUrl ?? getProdDbUrl;
 	const { url: dbUrl } = getProductionDbUrl();
 	const discardDraftSlugs = mutations
@@ -131,9 +129,5 @@ export async function authorizeReviewedPlan(
 			['Controles', 'TTY · agente bloqueado · permiso ligado al plan · sin token'],
 		],
 	};
-	if (deps.requireOwnerApply) {
-		await deps.requireOwnerApply(ownerGateInput);
-		return;
-	}
-	await requireOwnerProductionApply(ownerGateInput);
+	return ownerGateInput;
 }
