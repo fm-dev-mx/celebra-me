@@ -3,7 +3,10 @@ import {
 	buildAcceptanceEvidence,
 	parseReviewedPaths,
 } from '../../scripts/screenshot/visual-acceptance-evidence';
-import type { CandidateReview } from '../../scripts/screenshot/visual-candidate-review';
+import {
+	type CandidateReview,
+	reviewSignature,
+} from '../../scripts/screenshot/visual-candidate-review';
 import { acceptedManifestSha256 } from '../../scripts/screenshot/visual-demo-manifests';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -94,5 +97,22 @@ describe('visual acceptance evidence', () => {
 			renderNoise: 1,
 		});
 		expect(evidence.items).toHaveLength(2);
+	});
+});
+
+describe('reviewSignature', () => {
+	it('matches when the same files carry the same bytes', () => {
+		const copy = JSON.parse(JSON.stringify(review)) as CandidateReview;
+		copy.items.reverse();
+		expect(reviewSignature(copy)).toBe(reviewSignature(review));
+	});
+
+	it('changes when a flagged capture changes bytes under the same name', () => {
+		const changed = JSON.parse(JSON.stringify(review)) as CandidateReview;
+		changed.items[0].sha256 = 's9';
+		expect(reviewSignature(changed)).not.toBe(reviewSignature(review));
+		const rebased = JSON.parse(JSON.stringify(review)) as CandidateReview;
+		rebased.items[0].previousSha256 = 's8';
+		expect(reviewSignature(rebased)).not.toBe(reviewSignature(review));
 	});
 });

@@ -141,7 +141,8 @@ export function readAcceptedManifestFile(manifestPath: string): Json {
 
 /**
  * The accepted baseline identity: the root manifest bytes followed by each per-demo manifest in
- * sorted order, the same bytes the pre-push certification hashes from the commit.
+ * sorted order, read from the working tree. The pre-push certification hashes the same files in
+ * the same order from the commit, so the two match only when the manifests are committed.
  */
 export function acceptedManifestSha256(manifestPath: string): string {
 	const bytes = Buffer.concat([

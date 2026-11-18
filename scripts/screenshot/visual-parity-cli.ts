@@ -46,8 +46,8 @@ import {
 } from './visual-demo-manifests.ts';
 import {
 	buildCandidateReview,
-	type CandidateReview,
 	readCandidateReview,
+	reviewSignature,
 	writeCandidateReview,
 } from './visual-candidate-review.ts';
 import {
@@ -528,6 +528,7 @@ function accept(
 		matrixHash: candidateManifest.matrixHash,
 		referenceSha: candidateManifest.referenceSha,
 		candidateManifestSha256,
+		writeImages: false,
 	});
 	if (reviewSignature(current) !== reviewSignature(stored)) {
 		throw new Error(
@@ -609,12 +610,6 @@ function assertCandidateManifest(manifest: CombinedManifest, referenceSha: strin
 			'Candidate reference SHA does not match the approved current HEAD. Regenerate the candidate.',
 		);
 	}
-}
-
-/** The files a review flags and how, plus the removed ones: what --reviewed must cover. */
-function reviewSignature(review: CandidateReview): string {
-	const items = review.items.map((item) => `${item.status}:${item.file}`).sort();
-	return JSON.stringify({ items, removed: [...(review.removed ?? [])].sort() });
 }
 
 function validateCandidateArtifacts(): { candidateManifestSha256: string; files: string[] } {
