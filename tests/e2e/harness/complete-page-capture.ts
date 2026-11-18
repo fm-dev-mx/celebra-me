@@ -162,11 +162,13 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 			if (!completePage) return 'here';
 			const subject = (timeline as AnimationTimeline & { subject?: Element }).subject;
 			const target = (animation.effect as KeyframeEffect | null)?.target ?? null;
-			// A view() on a pseudo-element (a mirror ball on a card's `::before`) reports no
-			// subject; it follows the element that bears it, read centred like its own timeline.
-			if (!subject && target && timeline instanceof ViewTimeline) return target;
 			if (!subject || !target) return 'top';
+			// A view() on a pseudo-element (a mirror ball on a card's `::before`) has the
+			// pseudo-element, a child of the animated element, as its subject: it follows that
+			// element, read centred like its own timeline, not as a later element arriving.
 			if (subject === target) return target;
+			const pseudo = (animation.effect as KeyframeEffect | null)?.pseudoElement;
+			if (pseudo && subject.parentElement === target) return target;
 			if (subject.contains(target)) {
 				return subject.getBoundingClientRect().top + scrollY < 1 ? 'top' : 'end';
 			}
