@@ -228,17 +228,17 @@ const content: CanonicalEventContentInput = {
 		variant: 'standard',
 		title: 'Confirme su asistencia',
 		// The client manages the guest list and pass counts through the host dashboard.
-		subcopy: 'Confirme su asistencia a más tardar el 25 de noviembre de 2026.',
+		subcopy: 'Le pedimos su respuesta a más tardar el 25 de noviembre.',
 		lockedMessage: 'Abra su enlace personalizado para confirmar su asistencia.',
 		guestCap: 2,
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',
 		flow: 'steps',
 		personalizedAccess: {
-			variant: 'standard',
-			title: 'Pases reservados',
-			subtitle: 'Esta invitación es para',
-			footerText: 'Confirme su asistencia en la siguiente sección.',
+			variant: 'formal-pass',
+			ticket: { signature: 'Camila', monogram: 'C' },
+			title: 'Pase de acceso',
+			subtitle: 'Será un honor celebrar con usted.',
 		},
 		labels: {
 			name: 'Nombre completo',
