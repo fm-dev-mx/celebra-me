@@ -199,26 +199,36 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 			if (!Number.isFinite(amount)) return 1;
 			return String(value).trim().endsWith('%') ? amount / 100 : amount;
 		};
+		// A pinned frame is replayed with `direction: normal`, so an animation that plays in
+		// reverse (the jewel-box quote leaving its shared stage) starts its scene at its last
+		// keyframe and ends it at its first.
+		const reversed = (animation: Animation): boolean => {
+			const direction = animation.effect?.getTiming().direction;
+			return direction === 'reverse' || direction === 'alternate-reverse';
+		};
 		const lastShown = (animation: Animation): number => {
+			const end = reversed(animation) ? 0 : 1;
 			let frames: ComputedKeyframe[];
 			try {
 				frames = (animation.effect as KeyframeEffect | null)?.getKeyframes() ?? [];
 			} catch {
-				return 1;
+				return end;
 			}
-			const last = frames.at(-1);
-			if (rangeName(animation) !== 'normal' || !last || opacityOf(last) > 0) return 1;
-			let best = { opacity: 0, offset: 1 };
-			for (const frame of frames) {
+			const last = end === 0 ? frames.at(0) : frames.at(-1);
+			if (rangeName(animation) !== 'normal' || !last || opacityOf(last) > 0) return end;
+			let best = { opacity: 0, offset: end };
+			for (const frame of end === 0 ? [...frames].reverse() : frames) {
 				const opacity = opacityOf(frame);
 				if (opacity > 0 && opacity >= best.opacity) {
 					best = { opacity, offset: frame.computedOffset };
 				}
 			}
-			return best.opacity > 0 ? best.offset : 1;
+			return best.opacity > 0 ? best.offset : end;
 		};
-		const keyframe = (key: 'before' | 'end', animation: Animation): number =>
-			key === 'end' && !leaving(animation) ? lastShown(animation) : 0;
+		const keyframe = (key: 'before' | 'end', animation: Animation): number => {
+			if (key === 'end' && !leaving(animation)) return lastShown(animation);
+			return reversed(animation) ? 1 : 0;
+		};
 		const groups = new Map<GroupKey, Animation[]>();
 		for (const animation of finite) {
 			const { timeline } = animation;
