@@ -21,6 +21,9 @@ daniela-y-david. No database migrations.
   fits every section to the viewport on phone, tablet and desktop (#1045).
 - Invitations: daniela-y-david keeps a single gallery photograph and shows the reserved places on a
   perforated framed pass (#1050).
+- Invitations: the floating RSVP button and the footer reply link now track the RSVP section by
+  measuring its position, so they keep working on every invitation when that section remounts
+  (#1045).
 
 ## [0.73.1] - 2026-11-14
 
