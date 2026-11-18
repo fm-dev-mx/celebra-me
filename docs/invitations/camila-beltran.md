@@ -67,7 +67,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | rsvpDeadline          | 2026-11-25                                                                                                      | verified       | owner-session | Client confirmed; displayed in RSVP copy, not an automatic API cutoff                                                   |
 | gifts                 | Lluvia de sobres, regalo sorpresa; baúl en la recepción                                                         | verified       | owner-session | Owner request; shown after the dress code, before memories                                                              |
 | itinerary             | [[PENDIENTE:ITINERARY]]                                                                                         | pending        | wa-export     | 19:00 and 20:00 confirmed; later times proposed by the owner-authorized draft; estimate labels removed at owner request |
-| musicUrl              | Tercer Cielo — No crezcas más                                                                                   | verified       | owner-session | 64 kbps MP3 (silence-trimmed) on Production R2 (`media.celebra-me.com`, copied from preview; sha `2a99b268…`)           |
+| musicUrl              | Christina Perri — A Thousand Years                                                                              | verified       | owner-session | 64 kbps MP3 on Production and Preview R2; sha `ac280437…`; family changed the song on 2026-11-18                        |
 | checkInQr             | —                                                                                                               | not_applicable | wa-export     | Not requested                                                                                                           |
 | memoriesQr            | camila-beltran                                                                                                  | verified       | owner-session | Client-managed; uploads 2026-11-16 through 2026-12-26. Local active; hosted activation pending.                         |
 | specialMessages       | [[PENDIENTE:CELEBRANT_MESSAGE]]                                                                                 | pending        | owner-session | Quote and closing are agent drafts                                                                                      |
@@ -82,8 +82,7 @@ content the client has not supplied stays hidden; nothing is invented.
 ### Missing blockers
 
 - Owner decision (2026-11-17): the invitation ships with the data on file; the client requests
-  changes after reviewing it. Delivery still requires copying the staged song MP3 to Production R2
-  (`media.celebra-me.com`) before the production release.
+  changes after reviewing it. The song MP3 is already on Production R2 (`media.celebra-me.com`).
 - Local photo space is active and has an event owner. Both local upload services must be running
   with their ignored local configuration and the application origin allowed. Guest uploads work
   locally; hosted activation and access with the client's owner account remain delivery checks.
@@ -246,9 +245,9 @@ approval before it is published; that approval is recorded here.
   `profile.scss`, slug-scoped `composition.scss`, `assets/`).
 - No new preset and no storybook art; the envelope uses the `storybook-lanterns` reveal, never the
   base `storybook-blush` reveal.
-- Music: 64 kbps MP3 («No crezcas más — Tercer Cielo», YouTube `BDwEyfgClF4`, trimmed edges) staged
-  on Preview R2 at
-  `https://media.celebra-me.com/invitations/xv/camila-beltran/music-2a99b2682dba29919f8fd021a8672c3d40128a0742509fadd8be0c2d7469496a.mp3`.
+- Music: 64 kbps MP3 («A Thousand Years — Christina Perri», file supplied by the owner, trailing
+  silence trimmed) on Preview and Production R2 at
+  `https://media.celebra-me.com/invitations/xv/camila-beltran/music-ac280437e080b10dd2b6ec51ea694b3c96173c36b5a8584bca35efb7be4719d6.mp3`.
 - Every date string is typed from the fact register.
 
 ### Shared changes made for this invitation

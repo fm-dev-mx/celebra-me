@@ -7,8 +7,11 @@
 // with the variants.
 
 // A thin gold rule with a centre dot, for the section breaks.
-$camila-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 8' fill='none' stroke='%23C2A063' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M4 4h48M68 4h48'/%3E%3Ccircle cx='60' cy='4' r='2' fill='%23C2A063' stroke='none'/%3E%3C/svg%3E");
-$camila-flourish: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 12' fill='%23C2A063'%3E%3Cpath d='M6 6 66 5.3v1.4zM154 6 94 5.3v1.4z'/%3E%3Ccircle cx='71' cy='6' r='1'/%3E%3Ccircle cx='89' cy='6' r='1'/%3E%3Cpath d='M80 1.2 84.8 6 80 10.8 75.2 6z' fill='none' stroke='%23C2A063' stroke-width='.9'/%3E%3Cpath d='M80 4 82 6 80 8 78 6z'/%3E%3C/svg%3E");
+$camila-rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 8' fill='none' stroke='%23C9A27A' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M4 4h48M68 4h48'/%3E%3Ccircle cx='60' cy='4' r='2' fill='%23C9A27A' stroke='none'/%3E%3C/svg%3E");
+
+// Gold dot divider: two fine rules that taper into three dots (small, large, small).
+$camila-dots: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 10' fill='%23C9A27A'%3E%3Cpath d='M8 5 64 4.6v.8zM152 5 96 4.6v.8z'/%3E%3Ccircle cx='70.5' cy='5' r='1.3'/%3E%3Ccircle cx='80' cy='5' r='2.4'/%3E%3Ccircle cx='89.5' cy='5' r='1.3'/%3E%3C/svg%3E");
+$camila-flourish: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 12' fill='%23C9A27A'%3E%3Cpath d='M6 6 66 5.3v1.4zM154 6 94 5.3v1.4z'/%3E%3Ccircle cx='71' cy='6' r='1'/%3E%3Ccircle cx='89' cy='6' r='1'/%3E%3Cpath d='M80 1.2 84.8 6 80 10.8 75.2 6z' fill='none' stroke='%23C9A27A' stroke-width='.9'/%3E%3Cpath d='M80 4 82 6 80 8 78 6z'/%3E%3C/svg%3E");
 
 // Cotton paper: a fine tooth plus faint long fibres, in a deep rose so it reads on pink.
 $camila-paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.2 0 0 0 0 0.25 0 0 0 0.16 0'/%3E%3C/filter%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035 0.06' numOctaves='3' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.97 0 0 0 0 0.96 0 0 0 0.16 -0.05'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23t)'/%3E%3Crect width='240' height='240' filter='url(%23f)'/%3E%3C/svg%3E");
@@ -19,50 +22,59 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 .event--camila-beltran.theme-preset--jewelry-box {
 	--dress-code-artwork: url('./assets/evening-attire.svg');
 
-	// Palette.
-	--jewel-cream: rgb(250 245 238);
-	--jewel-cream-rgb: 250 245 238;
-	--jewel-backdrop: rgb(198 185 183);
-	--jewel-beige: rgb(241 231 218);
-	--jewel-beige-rgb: 241 231 218;
-	--jewel-white: rgb(255 253 250);
-	--jewel-white-rgb: 255 253 250;
-	--jewel-petal: rgb(240 172 180);
-	--jewel-petal-deep: rgb(234 158 168);
-	--jewel-petal-light: rgb(245 186 192);
-	--jewel-petal-shade-rgb: 176 96 108;
+	// Palette, sampled from her dresses: warm blush satin, salmon-pink tulle, champagne satin and
+	// the rose-gold studio wall, with a warm rose-brown ink. No cold greys or mauves anywhere.
+	--jewel-cream: rgb(252 241 234);
+	--jewel-cream-rgb: 252 241 234;
+	--jewel-backdrop: rgb(240 200 194);
+	--jewel-beige: rgb(246 226 214);
+	--jewel-beige-rgb: 246 226 214;
+	--jewel-white: rgb(255 250 246);
+	--jewel-white-rgb: 255 250 246;
+	--jewel-petal: rgb(240 200 194);
+	--jewel-petal-deep: rgb(230 180 172);
+	--jewel-petal-light: rgb(248 220 214);
+	--jewel-petal-shade-rgb: 196 140 128;
 	--jewel-flap-paper: linear-gradient(
 		270deg,
 		var(--jewel-petal-light) 0%,
 		var(--jewel-petal) 100%
 	);
-	--jewel-rose: rgb(190 128 122);
-	--jewel-rose-rgb: 190 128 122;
-	--jewel-rose-deep: rgb(158 96 92);
-	--jewel-rose-deep-rgb: 158 96 92;
-	--jewel-blush: rgb(236 204 198);
-	--jewel-blush-rgb: 236 204 198;
-	--jewel-blush-deep: rgb(226 186 180);
-	--jewel-gold: rgb(194 160 99);
-	--jewel-gold-rgb: 194 160 99;
-	--jewel-gold-light: rgb(226 201 148);
-	--jewel-gold-deep: rgb(150 116 60);
-	--jewel-gold-ink: rgb(122 92 44);
-	--jewel-gold-ink-deep: rgb(104 77 35);
+	--jewel-rose: rgb(216 150 140);
+	--jewel-rose-rgb: 216 150 140;
+	--jewel-rose-deep: rgb(158 82 80);
+	--jewel-rose-deep-rgb: 158 82 80;
+	--jewel-mauve-deep: rgb(114 56 58);
+	--jewel-blush: rgb(248 222 216);
+	--jewel-blush-rgb: 248 222 216;
+	--jewel-blush-deep: rgb(240 200 194);
+	--jewel-gold: rgb(206 162 124);
+	--jewel-gold-rgb: 206 162 124;
+	--jewel-gold-light: rgb(236 210 184);
+	--jewel-gold-deep: rgb(181 124 96);
+	--jewel-gold-ink: rgb(140 88 64);
+	--jewel-gold-ink-deep: rgb(112 66 46);
+	--jewel-champagne-pill: linear-gradient(
+		180deg,
+		var(--jewel-gold-light) 0%,
+		var(--jewel-gold) 58%,
+		var(--jewel-gold-deep) 100%
+	);
 	--jewel-wax-shine: rgb(252 232 172);
 	--jewel-wax-gold: rgb(214 168 74);
 	--jewel-wax-deep: rgb(150 104 34);
 	--jewel-wax-edge: rgb(108 72 22);
-	--jewel-bronze: rgb(98 64 26);
+	--jewel-bronze: rgb(114 56 58);
 	--jewel-script: 'Parisienne', var(--font-calligraphy), cursive;
 	--jewel-serif: 'EB Garamond Variable', 'EB Garamond', georgia, serif;
 	--jewel-title-size: clamp(2.6rem, 11vw, 3.4rem);
-	--jewel-ink: rgb(84 66 60);
-	--jewel-ink-rgb: 84 66 60;
-	--jewel-ink-soft: rgb(120 100 92);
-	--jewel-ink-soft-rgb: 120 100 92;
+	--jewel-ink: rgb(98 58 58);
+	--jewel-ink-rgb: 98 58 58;
+	--jewel-ink-soft: rgb(136 94 92);
+	--jewel-ink-soft-rgb: 136 94 92;
 	--jewel-rule: #{$camila-rule};
 	--jewel-flourish: #{$camila-flourish};
+	--jewel-dots: #{$camila-dots};
 	--jewel-paper-grain: #{$camila-paper-grain};
 	--jewel-wax-grain: #{$camila-wax-grain};
 
@@ -197,10 +209,10 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	--location-nav-bg: rgb(var(--jewel-gold-rgb) / 8%);
 	--location-nav-color: var(--jewel-ink);
 	--location-nav-border: 1px solid rgb(var(--jewel-gold-rgb) / 30%);
-	--location-nav-hover-bg: var(--jewel-gold);
-	--location-nav-hover-color: var(--jewel-white);
-	--location-nav-primary-bg: var(--jewel-gold);
-	--location-nav-primary-color: var(--jewel-white);
+	--location-nav-hover-bg: var(--jewel-champagne-pill);
+	--location-nav-hover-color: var(--jewel-mauve-deep);
+	--location-nav-primary-bg: var(--jewel-champagne-pill);
+	--location-nav-primary-color: var(--jewel-mauve-deep);
 	--location-nav-apple-bg: var(--jewel-white);
 	--location-nav-apple-color: var(--jewel-ink);
 	--location-nav-apple-border: rgb(var(--jewel-gold-rgb) / 30%);
@@ -297,12 +309,12 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	--mobile-drawer-login-color: var(--jewel-ink-soft);
 	--mobile-drawer-login-hover-color: var(--jewel-ink);
 	--mobile-drawer-footer-copy: var(--jewel-ink-soft);
-	--mobile-drawer-cta-bg-fallback: var(--jewel-gold);
-	--mobile-drawer-cta-color-fallback: var(--jewel-white);
+	--mobile-drawer-cta-bg-fallback: var(--jewel-champagne-pill);
+	--mobile-drawer-cta-color-fallback: var(--jewel-mauve-deep);
 	--mobile-drawer-cta-border-fallback: 1px solid var(--jewel-gold);
 	--mobile-drawer-cta-shadow: 0 4px 16px rgb(var(--jewel-gold-rgb) / 30%);
-	--mobile-drawer-cta-hover-bg-fallback: var(--jewel-gold-deep);
-	--mobile-drawer-cta-hover-color-fallback: var(--jewel-white);
+	--mobile-drawer-cta-hover-bg-fallback: var(--jewel-gold);
+	--mobile-drawer-cta-hover-color-fallback: var(--jewel-mauve-deep);
 	--mobile-drawer-cta-hover-border: 1px solid var(--jewel-gold-deep);
 	--mobile-drawer-cta-hover-shadow: 0 8px 22px rgb(var(--jewel-gold-rgb) / 36%);
 }
@@ -339,70 +351,59 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	--rsvp-steps-heading-align: center;
 }
 
-// Reserved passes: a flat white card with a gold hairline on cream, the title in rose script and
-// the seat count in a thin gold frame, matching the RSVP stationery below it.
-.event--camila-beltran.theme-preset--jewelry-box .personalized-access {
-	--pa-card-bg-color-fallback: var(--jewel-white);
-	--pa-card-bg-image: none;
-	--pa-card-bg-image-fallback: none;
-	--pa-card-border-fallback: 1px solid rgb(var(--jewel-gold-rgb) / 45%);
-	--pa-card-inner-border-fallback: 1px solid rgb(var(--jewel-gold-rgb) / 25%);
-	--pa-card-border-radius: 18px;
-	--pa-card-inner-radius: 12px;
-	--pa-card-shadow: 0 18px 40px rgb(var(--jewel-rose-deep-rgb) / 12%);
-	--pa-card-shadow-fallback: 0 18px 40px rgb(var(--jewel-rose-deep-rgb) / 12%);
-	--pa-card-glow: none;
-	--pa-card-glow-fallback: none;
-	--pa-corner-color: var(--jewel-gold);
-	--pa-corner-color-fallback: var(--jewel-gold);
-	--pa-corner-glow-blur: 0;
-	--pa-corner-glow-blur-fallback: 0;
-	--pa-title-font: var(--jewel-script);
-	--pa-title-size: clamp(2.6rem, 11vw, 3.2rem);
-	--pa-title-transform: none;
-	--pa-title-tracking: 0;
-	--pa-title-tracking-fallback: 0;
-	--pa-title-shadow: none;
-	--pa-title-color: var(--jewel-rose-deep);
-	--pa-title-color-fallback: var(--jewel-rose-deep);
-	--pa-subtitle-color-fallback: var(--jewel-gold-ink);
-	--pa-subtitle-size: 1rem;
-	--pa-label-size: 0.8125rem;
-	--pa-eyebrow-size: 0.8125rem;
-	--pa-footer-size: 1rem;
-	--pa-subtitle-font: var(--jewel-serif);
-	--pa-subtitle-font-style: italic;
-	--pa-eyebrow-color: var(--jewel-gold-ink);
-	--pa-eyebrow-color-fallback: var(--jewel-gold-ink);
-	--pa-guest-font: var(--jewel-serif);
-	--pa-guest-color: var(--jewel-ink);
-	--pa-guest-color-fallback: var(--jewel-ink);
-	--pa-divider-diamond-bg-fallback: var(--jewel-gold);
-	--pa-divider-diamond-shadow-fallback: none;
-	--pa-count-color: var(--jewel-rose-deep);
-	--pa-count-color-fallback: var(--jewel-rose-deep);
-	--pa-count-shadow: none;
-	--pa-count-frame-border-fallback: 1px solid rgb(var(--jewel-gold-rgb) / 55%);
-	--pa-count-frame-inner-border-fallback: 1px solid rgb(var(--jewel-gold-rgb) / 25%);
-	--pa-count-frame-shadow: none;
-	--pa-count-frame-shadow-fallback: none;
-	--pa-label-color: var(--jewel-gold-ink);
-	--pa-label-color-fallback: var(--jewel-gold-ink);
-	--pa-label-opacity: 1;
-	--pa-footer-bg: transparent;
-	--pa-footer-bg-fallback: transparent;
-	--pa-footer-border-top-fallback: 1px solid rgb(var(--jewel-gold-rgb) / 30%);
-	--pa-footer-text-color-fallback: var(--jewel-ink);
-	--pa-footer-text-font-style: italic;
-	--pa-seal-color: var(--jewel-gold);
-	--pa-padding-block-lg: clamp(2rem, 7svh, 5rem);
+// Admission ticket: fine ivory paper on a blush chapter, champagne perforation and hairlines,
+// the guest name as the headline and the camila palette in place of the dark formal chapter.
+.event--camila-beltran.theme-preset--jewelry-box
+	.invitation-section-wrapper[data-section-kind='personalized-access'] {
+	--formal-chapter-band: var(--jewel-rose-deep);
+	--formal-chapter-band-rgb: var(--jewel-rose-deep-rgb);
+	--formal-chapter-cream: var(--jewel-cream);
+	--formal-chapter-cream-rgb: var(--jewel-cream-rgb);
+	--formal-chapter-sand-rgb: var(--jewel-beige-rgb);
+	--formal-chapter-metal: var(--jewel-gold-deep);
+	--formal-chapter-metal-rgb: 184 137 90;
+	--formal-chapter-ink: var(--jewel-ink);
+	--formal-chapter-ink-rgb: var(--jewel-ink-rgb);
+	--formal-chapter-title: var(--jewel-rose-deep);
+	--formal-chapter-muted: var(--jewel-ink-soft);
+	--formal-chapter-meta: var(--jewel-gold-ink);
+	--pa-section-bg: var(--jewel-paper-grain), var(--jewel-blush-deep);
+}
 
-	// Short phones keep the whole pass on one screen.
-	@media (height <= 700px) {
-		--pa-padding-block: 1.5rem;
-		--pa-title-size: 2.5rem;
-		--pa-count-size: 2.75rem;
-	}
+.event--camila-beltran.theme-preset--jewelry-box .personalized-access {
+	--formal-chapter-display: var(--jewel-serif);
+	--formal-chapter-body: var(--jewel-serif);
+	--formal-chapter-label: var(--jewel-serif);
+	--pa-seal-display: none;
+	--pa-card-bg-image:
+		var(--jewel-paper-grain),
+		linear-gradient(
+			165deg,
+			var(--jewel-white) 0%,
+			var(--jewel-cream) 55%,
+			rgb(var(--jewel-beige-rgb) / 90%) 100%
+		);
+	--pa-card-border-fallback: 1px solid rgb(var(--jewel-gold-rgb) / 55%);
+	--pa-card-shadow-fallback: 0 18px 40px rgb(var(--jewel-rose-deep-rgb) / 18%);
+	--pa-guest-font: var(--jewel-serif);
+	--pa-guest-color-fallback: var(--jewel-ink);
+	--pa-count-color-fallback: var(--jewel-rose-deep);
+	--pa-label-color-fallback: var(--jewel-gold-ink);
+	--pa-section-padding: clamp(2.5rem, 8svh, 4.5rem);
+	--pa-ticket-width: min(100%, 26rem);
+	--pa-ticket-header-padding: 2.25rem 2rem 0;
+	--pa-ticket-header-gap: 0.4rem;
+	--pa-ticket-signature-size: 2.4rem;
+	--pa-ticket-body-padding: 1.75rem 2rem 0;
+	--pa-ticket-body-gap: 0.75rem;
+	--pa-ticket-field-min-height: 0;
+	--pa-ticket-guest-size: clamp(2rem, 8.5vw, 2.6rem);
+	--pa-ticket-welcome-margin: 0 0 1.5rem;
+	--pa-welcome-size: 1.125rem;
+	--pa-welcome-wrap: balance;
+	--pa-ticket-quota-padding: 1.25rem 2rem 1.5rem;
+	--pa-ticket-count-size: 3.75rem;
+	--pa-seats-label-max-width: 10ch;
 }
 
 // Thank-you: centred stationery copy with a plain initial, and tighter padding so the portrait,
@@ -433,7 +434,7 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	--footer-reply-eyebrow: 'Su lugar está apartado';
 	--footer-reply-question: '¿Me acompaña el 11 de diciembre?';
 	--footer-reply-note: 'Antes del miércoles 25 de noviembre';
-	--footer-reply-answered: 'Gracias por ser parte de este día.';
+	--footer-reply-answered: 'Nos vemos el viernes 11 de diciembre.';
 	--footer-reply-eyebrow-size: 0.78rem;
 	--footer-reply-question-font: var(--jewel-serif);
 	--footer-reply-question-size: clamp(1.5rem, 6vw, 1.9rem);
@@ -449,13 +450,8 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 		var(--jewel-wax-gold) 45%,
 		var(--jewel-wax-deep) 100%
 	);
-	--footer-reply-button-bg: linear-gradient(
-		to bottom,
-		var(--jewel-wax-shine) 0%,
-		var(--jewel-gold-light) 55%,
-		var(--jewel-gold) 100%
-	);
-	--footer-reply-button-ink: rgb(48 36 30);
+	--footer-reply-button-bg: var(--jewel-champagne-pill);
+	--footer-reply-button-ink: rgb(72 40 40);
 	--footer-reply-button-font: var(--font-label, var(--font-body));
 	--footer-reply-button-size: 0.8125rem;
 	--footer-reply-glint: linear-gradient(
@@ -464,7 +460,7 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 		rgb(255 255 255 / 50%) 50%,
 		transparent 60%
 	);
-	--footer-reply-gap: 2.5rem;
+	--footer-reply-gap: 1.75rem;
 	--footer-bg: var(--jewel-ink);
 	--footer-sky: radial-gradient(
 		ellipse 65% 40% at 50% 0%,
@@ -502,13 +498,13 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 		hue-rotate(350deg);
 	--color-action-accent: var(--jewel-gold-light);
 	--color-text-primary: var(--jewel-beige);
-	--color-text-on-light: rgb(48 36 30);
-	--footer-control-font-size: 0.75rem;
+	--color-text-on-light: rgb(72 40 40);
+	--footer-control-font-size: 0.875rem;
 	--footer-replay-order: 0;
 	--footer-replay-color: var(--jewel-gold-light);
-	--footer-replay-font-size: 0.75rem;
+	--footer-replay-font-size: 0.875rem;
 	--footer-replay-opacity: 100%;
-	--footer-padding-bottom: 3rem;
+	--footer-padding-bottom: 2rem;
 }
 
 // Preserve the mobile mosaic and give the same crops more room on desktop.
@@ -537,8 +533,8 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 
 .event--camila-beltran .floating-cta {
 	--floating-cta-avoid-content: on;
-	--floating-cta-bg: var(--jewel-rose-deep);
-	--floating-cta-ink: var(--jewel-white);
+	--floating-cta-bg: var(--jewel-champagne-pill);
+	--floating-cta-ink: var(--jewel-mauve-deep);
 	--floating-cta-border: 1px solid rgb(var(--jewel-gold-rgb) / 55%);
 	--floating-cta-shadow: 0 10px 26px -8px rgb(var(--jewel-ink-rgb) / 45%);
 	--floating-cta-panel-bg: var(--jewel-white);
@@ -553,9 +549,38 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 }
 
 .event--camila-beltran .memories-section[data-variant='card'] {
-	--memories-action-bg: var(--jewel-rose-deep);
-	--memories-action-ink: var(--jewel-white);
+	--memories-action-bg: var(--jewel-champagne-pill);
+	--memories-action-ink: var(--jewel-mauve-deep);
 	--memories-action-radius: 999px;
 	--memories-action-font: var(--jewel-serif);
 	--memories-action-size: 1rem;
+}
+
+// Dress-code swatch: the blush of the client's dress, sampled from her photos.
+.event--camila-beltran .dress-code {
+	--camila-dress-swatch: radial-gradient(
+		circle at 32% 28%,
+		rgb(253 232 225),
+		rgb(242 207 198) 45%,
+		rgb(214 168 158)
+	);
+	--camila-dress-swatch-ring:
+		0 0 0 0.25rem rgb(255 255 255 / 75%), 0 0 0 0.3125rem var(--jewel-gold);
+}
+
+.event--camila-beltran .family {
+	--camila-divider-margin: 1.25rem auto 0;
+}
+
+.event--camila-beltran .rsvp {
+	--camila-rsvp-button-shadow:
+		inset 0 1px 0 rgb(var(--jewel-white-rgb) / 55%),
+		0 8px 18px -10px rgb(var(--jewel-rose-deep-rgb) / 55%);
+	--rsvp-button-color-hover: var(--jewel-mauve-deep);
+	--rsvp-button-bg-hover: var(--jewel-champagne-pill);
+	--rsvp-button-border-hover: transparent;
+	--rsvp-button-filter-hover: brightness(1.04);
+	--rsvp-button-shadow-hover:
+		inset 0 1px 0 rgb(var(--jewel-white-rgb) / 60%),
+		0 12px 22px -10px rgb(var(--jewel-rose-deep-rgb) / 60%);
 }

@@ -195,16 +195,17 @@ confirmations still pending)
 ## Photograph Inventory
 
 Source label: `source:hr-photos` (opaque). Five photographer originals. The owner told the client
-that a small set is fine. The gallery shows four crops on one pinned screen: a main photograph, two
-portraits and a wide strip of the hands. Every crop leaves out the car and the side mirror.
+that a small set is fine. At the client's request the gallery shows one photograph, gallery 3, in
+the `single-keepsake` variant. Gallery 1, 2 and 4 stay in the asset set but are not rendered. Every
+crop leaves out the car and the side mirror.
 
-| source  | quality            | dims      | orientation | role                       | processing                                             | derivative                          |
-| ------- | ------------------ | --------- | ----------- | -------------------------- | ------------------------------------------------------ | ----------------------------------- |
-| SF_6570 | `production-ready` | 1333×2000 | portrait    | hero; OG card              | WebP; 1200×630 OG                                      | `hero.webp`, `og-share.webp`        |
-| SF_6508 | `production-ready` | 1333×2000 | portrait    | gallery 1 (main)           | WebP; gallery crop 1200×1432                           | `gallery-01.webp`                   |
-| SF_6502 | `production-ready` | 1333×2000 | portrait    | gallery 2; thank-you       | upper-body crop 1000×1240, WebP; 1200×1500 couple crop | `gallery-02.webp`, `thank-you.webp` |
-| SF_6538 | `production-ready` | 1500×2000 | portrait    | gallery 3                  | crop above the mirror 1000×840                         | `gallery-03.webp`                   |
-| SF_6584 | `production-ready` | 1333×2000 | portrait    | gallery 4 (hands and ring) | landscape detail 1200×861, WebP                        | `gallery-04.webp`                   |
+| source  | quality            | dims      | orientation | role                         | processing                                             | derivative                          |
+| ------- | ------------------ | --------- | ----------- | ---------------------------- | ------------------------------------------------------ | ----------------------------------- |
+| SF_6570 | `production-ready` | 1333×2000 | portrait    | hero; OG card                | WebP; 1200×630 OG                                      | `hero.webp`, `og-share.webp`        |
+| SF_6508 | `production-ready` | 1333×2000 | portrait    | gallery 1 (unused)           | WebP; gallery crop 1200×1432                           | `gallery-01.webp`                   |
+| SF_6502 | `production-ready` | 1333×2000 | portrait    | thank-you (gallery 2 unused) | upper-body crop 1000×1240, WebP; 1200×1500 couple crop | `gallery-02.webp`, `thank-you.webp` |
+| SF_6538 | `production-ready` | 1500×2000 | portrait    | gallery (only photo)         | crop above the mirror 1000×840                         | `gallery-03.webp`                   |
+| SF_6584 | `production-ready` | 1333×2000 | portrait    | gallery 4 (unused)           | landscape detail 1200×861, WebP                        | `gallery-04.webp`                   |
 
 No derivative is upscaled.
 

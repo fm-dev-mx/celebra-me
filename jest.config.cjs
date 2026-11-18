@@ -14,8 +14,14 @@ const nestedRepositoryCopyPatterns = [
 	'<rootDir>/.claude/worktrees/',
 	'<rootDir>/.agent/tmp/',
 ];
+// Several agent sessions run this suite at once in different worktrees. Jest's default (cores
+// minus one) lets a single local run take the whole machine, so local runs use half the cores.
+// CI runners are dedicated, so they keep Jest's default. `--maxWorkers` on the CLI still wins.
+const localMaxWorkers = process.env.CI ? {} : { maxWorkers: '50%' };
 
 module.exports = {
+	...localMaxWorkers,
+
 	// ESM + TypeScript preset
 	preset: 'ts-jest/presets/default-esm',
 	testEnvironment: 'jsdom',

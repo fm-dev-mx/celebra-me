@@ -45,9 +45,10 @@ const content: CanonicalEventContentInput = {
 		{
 			image: 'interludePortrait',
 			afterSection: 'family',
-			alt: 'Camila con su vestido rosa, mirando hacia abajo',
+			alt: 'Camila sentada con su vestido rosa y la mano enguantada en alto',
 			height: 'screen',
 			presentation: 'framed',
+			focalPoint: '45% 30%',
 		},
 		{
 			image: 'interludeDress',
@@ -55,20 +56,22 @@ const content: CanonicalEventContentInput = {
 			alt: 'Camila con vestido rosa strapless y guante de encaje',
 			height: 'screen',
 			presentation: 'framed',
-			focalPoint: '50% 25%',
+			focalPoint: '50% 30%',
 		},
 		{
-			image: 'interludeAmbientFloral',
+			image: 'interludeStanding',
 			afterSection: 'dressCode',
-			alt: 'Rosas en tono rosa empolvado y marfil con listón rose gold y pasadores con perlas sobre papel crema',
+			alt: 'Camila de pie con su vestido rosa de tul, medias de encaje y guantes',
 			height: 'screen',
 			presentation: 'framed',
+			focalPoint: '50% 30%',
 		},
 		{
-			image: 'interludeAmbientTulle',
+			image: 'interludeAccessories',
 			afterSection: 'gallery',
-			alt: 'Tul y encaje floral en rosa empolvado junto a un sobre crema artesanal y listón dorado',
+			alt: 'Aretes de gota rosa, collar fino, guante de encaje y tul rosa sobre un pedestal blanco',
 			height: 'screen',
+			focalPoint: '50% 50%',
 			presentation: 'framed',
 		},
 	],
@@ -156,11 +159,11 @@ const content: CanonicalEventContentInput = {
 		title: 'Itinerario',
 		subtitle: 'Así celebraremos mis XV años',
 		items: [
-			{ time: '19:00', iconName: 'Sparkles', label: 'Ceremonia de XV años' },
-			{ time: '20:00', iconName: 'Reception', label: 'Bienvenida y recepción' },
+			{ time: '19:00', iconName: 'Church', label: 'Ceremonia de XV años' },
+			{ time: '20:00', iconName: 'Toast', label: 'Bienvenida y recepción' },
 			{
 				time: '20:30',
-				iconName: 'Sparkles',
+				iconName: 'Crown',
 				label: 'Mi gran entrada',
 				description: '¡Comienza la celebración!',
 			},
@@ -178,7 +181,7 @@ const content: CanonicalEventContentInput = {
 			},
 			{
 				time: '22:00',
-				iconName: 'Party',
+				iconName: 'Heel',
 				label: '¡A bailar!',
 				description: 'La pista nos espera.',
 			},
@@ -204,17 +207,17 @@ const content: CanonicalEventContentInput = {
 		items: [
 			{
 				image: 'gallery01',
-				alt: 'Camila con sonrisa suave, un ramo de rosas rosa palo y guantes de encaje',
-				focalPoint: '50% 35%',
+				alt: 'Camila sentada sobre un pedestal blanco con su vestido rosa y guantes de encaje',
+				focalPoint: '50% 40%',
 			},
 			{
 				image: 'gallery02',
-				alt: 'Aretes de gota rosa, collar fino, guante de encaje y tul rosa sobre un pedestal blanco',
-				focalPoint: '50% 50%',
+				alt: 'Retrato de Camila con su vestido rosa, aretes de gota y collar fino',
+				focalPoint: '50% 35%',
 			},
 			{
 				image: 'gallery03',
-				alt: 'Camila de espaldas mirando sobre el hombro con media sonrisa',
+				alt: 'Camila con vestido champaña sobre un fondo cálido, la mano junto al rostro',
 				focalPoint: '50% 30%',
 			},
 			{
@@ -228,17 +231,17 @@ const content: CanonicalEventContentInput = {
 		variant: 'standard',
 		title: 'Confirme su asistencia',
 		// The client manages the guest list and pass counts through the host dashboard.
-		subcopy: 'Confirme su asistencia a más tardar el 25 de noviembre de 2026.',
+		subcopy: 'Le pedimos su respuesta a más tardar el 25 de noviembre.',
 		lockedMessage: 'Abra su enlace personalizado para confirmar su asistencia.',
 		guestCap: 2,
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',
 		flow: 'steps',
 		personalizedAccess: {
-			variant: 'standard',
-			title: 'Pases reservados',
-			subtitle: 'Esta invitación es para',
-			footerText: 'Confirme su asistencia en la siguiente sección.',
+			variant: 'formal-pass',
+			ticket: { signature: 'Camila', monogram: 'C' },
+			title: 'Pase de acceso',
+			subtitle: 'Será un honor celebrar con usted.',
 		},
 		labels: {
 			name: 'Nombre completo',
@@ -248,7 +251,7 @@ const content: CanonicalEventContentInput = {
 			notesLabel: 'Mensaje para Camila',
 			notesPlaceholder: 'Escriba aquí unas palabras',
 		},
-		confirmationMessage: '¡Gracias por confirmar! Le espero el 11 de diciembre.',
+		confirmationMessage: 'Su respuesta quedó registrada.',
 		responseMessages: {
 			confirmed: {
 				title: '¡Gracias por confirmar!',
@@ -263,7 +266,7 @@ const content: CanonicalEventContentInput = {
 	thankYou: {
 		variant: 'portrait-keepsake',
 		image: 'thankYouPortrait',
-		focalPoint: '50% 25%',
+		focalPoint: '50% 30%',
 		message: 'Gracias por acompañarme en la noche que tanto he soñado.',
 		closingName: 'Camila',
 		closingPhrase: 'Con cariño',
@@ -275,8 +278,8 @@ const content: CanonicalEventContentInput = {
 		{ label: 'Confirmar', href: '#rsvp' },
 	],
 	music: {
-		url: 'https://media.celebra-me.com/invitations/xv/camila-beltran/music-2a99b2682dba29919f8fd021a8672c3d40128a0742509fadd8be0c2d7469496a.mp3',
-		title: 'No crezcas más — Tercer Cielo',
+		url: 'https://media.celebra-me.com/invitations/xv/camila-beltran/music-ac280437e080b10dd2b6ec51ea694b3c96173c36b5a8584bca35efb7be4719d6.mp3',
+		title: 'A Thousand Years — Christina Perri',
 		autoPlay: true,
 	},
 	sharing: {
@@ -309,8 +312,8 @@ export default defineCanonicalInvitation({
 		hero: 'hero.webp',
 		interludePortrait: 'interlude-portrait.webp',
 		interludeDress: 'interlude-dress.webp',
-		interludeAmbientFloral: 'interlude-ambient-floral.webp',
-		interludeAmbientTulle: 'interlude-ambient-tulle.webp',
+		interludeStanding: 'interlude-standing.webp',
+		interludeAccessories: 'interlude-accessories.webp',
 		gallery01: 'gallery-01.webp',
 		gallery02: 'gallery-02.webp',
 		gallery03: 'gallery-03.webp',
