@@ -47,6 +47,11 @@ export function isInFloatingZone(
 	return pastCover && beforeEnd;
 }
 
+/** Whether any part of a box with these viewport edges is on screen. */
+export function isOnScreen(top: number, bottom: number, viewportHeight: number): boolean {
+	return bottom > 0 && top < viewportHeight;
+}
+
 // One group per venue: its heading (the venue's event) and a copy of its calendar links.
 function fillCalendarPanel(panel: HTMLElement, sources: HTMLElement[]): void {
 	panel.replaceChildren(
@@ -81,7 +86,6 @@ export function initFloatingCta(root: Element | null): void {
 	fillCalendarPanel(panel, sources);
 	const docRoot = document.documentElement;
 	const menu = document.querySelector<HTMLElement>('[data-nav-mobile-menu]');
-	let rsvpOnScreen = false;
 	let frame = 0;
 	// The mode the light last crossed the pill for: once on first showing, again on Agendar.
 	let glinted: FloatingCtaMode = 'none';
@@ -100,6 +104,9 @@ export function initFloatingCta(root: Element | null): void {
 		confirm.hidden = mode !== 'confirm';
 		calendar.hidden = mode !== 'calendar';
 		const menuOpen = menu?.dataset.state === 'open';
+		// Looked up and measured every frame: the RSVP card remounts its section on state changes.
+		const rsvpBox = (document.getElementById('rsvp') ?? rsvpSection).getBoundingClientRect();
+		const rsvpOnScreen = isOnScreen(rsvpBox.top, rsvpBox.bottom, window.innerHeight);
 		const bounds = root.getBoundingClientRect();
 		// Use the resting position, independent of the hide transition.
 		const bottom = window.innerHeight - parseFloat(getComputedStyle(root).bottom);
@@ -141,11 +148,8 @@ export function initFloatingCta(root: Element | null): void {
 	};
 
 	root.hidden = false;
-	new IntersectionObserver(([entry]) => {
-		rsvpOnScreen = Boolean(entry?.isIntersecting);
-		schedule();
-	}).observe(rsvpSection);
-	new MutationObserver(schedule).observe(rsvpSection, {
+	// The section's parent outlives the section, which remounts on RSVP state changes.
+	new MutationObserver(schedule).observe(rsvpSection.parentElement ?? document.body, {
 		subtree: true,
 		childList: true,
 		attributes: true,

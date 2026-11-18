@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "a709925afef9efc92efc2a7467884817dea2757b81e491a83cc81e1b018d44a8",
-        "cssSha256": "6bcac38cd332fe9cfa3c01485a8e0876be6b87d02ecd40dc15a8c52427def6ee",
+        "cssSha256": "482a77e90f9535b3028452756997f4c24c28651c9731d5574d330b3673810c58",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2847,9 +2847,9 @@
             "preset": "jewelry-box",
             "viewport": "mobile",
             "file": "pages/invitation-xv-camila-beltran-mobile.png",
-            "sha256": "afd170fd46209b50c727761fb50b77f455ac83bb0c25999e00536c70bf2b68e0",
-            "contentHash": "aa20a7981ae6a6ee4e86dbc192c8b7282b7ea00303bbdd01ada7d7e04f8e4b74",
-            "assetHash": "8c65236906c991051b62948be35cdcef94288b5cb35277759fd6be4815342a20",
+            "sha256": "cc67b7079637e9b01f01da4fd9043d5d17789e99047657674a8219153970b3fe",
+            "contentHash": "b9b6b35077b2db7793292ec6fd8a980606bb7a9ea100b09b47a8c6d0d16c951f",
+            "assetHash": "8325b09fd49699a77bfbe2992170e840724b196bc980dfb6666cba5f36111daf",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2859,9 +2859,9 @@
             "preset": "jewelry-box",
             "viewport": "desktop",
             "file": "pages/invitation-xv-camila-beltran-desktop.png",
-            "sha256": "1108eba79da488390f23ee673227543506bc0feb2ed44a447f33010da1e28a04",
-            "contentHash": "aa20a7981ae6a6ee4e86dbc192c8b7282b7ea00303bbdd01ada7d7e04f8e4b74",
-            "assetHash": "8c65236906c991051b62948be35cdcef94288b5cb35277759fd6be4815342a20",
+            "sha256": "67d36133732cc624b30dde8e0da8caceb10bd6e9a032625223407fc7a6948889",
+            "contentHash": "b9b6b35077b2db7793292ec6fd8a980606bb7a9ea100b09b47a8c6d0d16c951f",
+            "assetHash": "8325b09fd49699a77bfbe2992170e840724b196bc980dfb6666cba5f36111daf",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -2976,7 +2976,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a709925afef9efc92efc2a7467884817dea2757b81e491a83cc81e1b018d44a8",
-            "cssSha256": "6bcac38cd332fe9cfa3c01485a8e0876be6b87d02ecd40dc15a8c52427def6ee",
+            "cssSha256": "482a77e90f9535b3028452756997f4c24c28651c9731d5574d330b3673810c58",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -5413,7 +5413,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a709925afef9efc92efc2a7467884817dea2757b81e491a83cc81e1b018d44a8",
-            "cssSha256": "6bcac38cd332fe9cfa3c01485a8e0876be6b87d02ecd40dc15a8c52427def6ee",
+            "cssSha256": "482a77e90f9535b3028452756997f4c24c28651c9731d5574d330b3673810c58",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -5839,9 +5839,9 @@
                 "preset": "jewelry-box",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-camila-beltran-mobile.png",
-                "sha256": "afd170fd46209b50c727761fb50b77f455ac83bb0c25999e00536c70bf2b68e0",
-                "contentHash": "aa20a7981ae6a6ee4e86dbc192c8b7282b7ea00303bbdd01ada7d7e04f8e4b74",
-                "assetHash": "8c65236906c991051b62948be35cdcef94288b5cb35277759fd6be4815342a20",
+                "sha256": "cc67b7079637e9b01f01da4fd9043d5d17789e99047657674a8219153970b3fe",
+                "contentHash": "b9b6b35077b2db7793292ec6fd8a980606bb7a9ea100b09b47a8c6d0d16c951f",
+                "assetHash": "8325b09fd49699a77bfbe2992170e840724b196bc980dfb6666cba5f36111daf",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -5851,9 +5851,9 @@
                 "preset": "jewelry-box",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-camila-beltran-desktop.png",
-                "sha256": "1108eba79da488390f23ee673227543506bc0feb2ed44a447f33010da1e28a04",
-                "contentHash": "aa20a7981ae6a6ee4e86dbc192c8b7282b7ea00303bbdd01ada7d7e04f8e4b74",
-                "assetHash": "8c65236906c991051b62948be35cdcef94288b5cb35277759fd6be4815342a20",
+                "sha256": "67d36133732cc624b30dde8e0da8caceb10bd6e9a032625223407fc7a6948889",
+                "contentHash": "b9b6b35077b2db7793292ec6fd8a980606bb7a9ea100b09b47a8c6d0d16c951f",
+                "assetHash": "8325b09fd49699a77bfbe2992170e840724b196bc980dfb6666cba5f36111daf",
                 "comparisonResult": "CANDIDATE"
             },
             {

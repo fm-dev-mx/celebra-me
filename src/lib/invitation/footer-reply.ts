@@ -61,12 +61,16 @@ export function initFooterReply(root: Element | null): void {
 		if (!card) return;
 		event.preventDefault();
 		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-		rsvpSection.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+		(document.getElementById('rsvp') ?? rsvpSection).scrollIntoView({
+			behavior: reduced ? 'auto' : 'smooth',
+			block: 'start',
+		});
 		card.querySelector<HTMLElement>(FIELD_SELECTOR)?.focus({ preventScroll: true });
 		history.replaceState(null, '', '#rsvp');
 	});
 
-	new MutationObserver(update).observe(rsvpSection, {
+	// The section's parent outlives the section, which remounts on RSVP state changes.
+	new MutationObserver(update).observe(rsvpSection.parentElement ?? document.body, {
 		subtree: true,
 		childList: true,
 		attributes: true,

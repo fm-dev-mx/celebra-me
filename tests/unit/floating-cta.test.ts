@@ -1,4 +1,9 @@
-import { floatingCtaMode, isFloatingCtaOn, isInFloatingZone } from '@/lib/invitation/floating-cta';
+import {
+	floatingCtaMode,
+	isFloatingCtaOn,
+	isInFloatingZone,
+	isOnScreen,
+} from '@/lib/invitation/floating-cta';
 
 describe('floating reply button', () => {
 	it('turns on only for the on token', () => {
@@ -26,5 +31,13 @@ describe('floating reply button', () => {
 		expect(isInFloatingZone(100, 844, 10000)).toBe(false);
 		expect(isInFloatingZone(3000, 844, 10000)).toBe(true);
 		expect(isInFloatingZone(9000, 844, 10000)).toBe(false);
+	});
+
+	it('treats the RSVP as on screen while any part of it shows', () => {
+		expect(isOnScreen(0, 844, 844)).toBe(true);
+		expect(isOnScreen(-800, 44, 844)).toBe(true);
+		expect(isOnScreen(800, 1600, 844)).toBe(true);
+		expect(isOnScreen(-900, 0, 844)).toBe(false);
+		expect(isOnScreen(844, 1700, 844)).toBe(false);
 	});
 });
