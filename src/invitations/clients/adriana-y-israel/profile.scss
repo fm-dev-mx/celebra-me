@@ -1,0 +1,179 @@
+@use './composition';
+
+// Adriana e Israel: the jewelry-box-wedding preset recolored as indigo stationery. Indigo leads,
+// mist and ivory carry the paper, and gold appears only as hairlines. Tokens only; layout that the
+// variants do not expose lives in the composition.
+
+.event--adriana-y-israel.theme-preset--jewelry-box-wedding {
+	--ayi-indigo: rgb(44 56 124);
+	--ayi-indigo-rgb: 44 56 124;
+	--ayi-indigo-deep: rgb(22 28 70);
+	--ayi-indigo-deep-rgb: 22 28 70;
+	--ayi-periwinkle: rgb(115 128 180);
+	--ayi-periwinkle-rgb: 115 128 180;
+	--ayi-mist: rgb(226 229 241);
+	--ayi-mist-rgb: 226 229 241;
+	--ayi-ivory: rgb(250 249 245);
+	--ayi-ivory-rgb: 250 249 245;
+	--ayi-gold: rgb(201 174 118);
+	--ayi-gold-rgb: 201 174 118;
+	--ayi-gold-ink: rgb(122 100 54);
+	--color-surface-primary: var(--ayi-ivory);
+	--color-surface-primary-rgb: var(--ayi-ivory-rgb);
+	--color-surface-dark: var(--ayi-indigo);
+	--color-surface-dark-rgb: var(--ayi-indigo-rgb);
+	--color-action-accent: var(--ayi-gold);
+	--color-action-accent-rgb: var(--ayi-gold-rgb);
+	--color-text-emphasis: var(--ayi-indigo);
+	--color-text-on-dark: var(--ayi-ivory);
+	--color-text-on-light: rgb(var(--ayi-indigo-deep-rgb) / 86%);
+
+	// Two families for the whole page: Cormorant for titles and figures, Montserrat for small
+	// lines. Pinyon stays only for the signatures and script accents.
+	--ayi-font-serif: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+	--ayi-font-sans: 'Montserrat Variable', montserrat, system-ui, sans-serif;
+	--font-display: var(--ayi-font-serif);
+	--font-display-elegant: var(--ayi-font-serif);
+	--font-display-formal: var(--ayi-font-serif);
+	--font-label: var(--ayi-font-sans);
+	--family-label-font: var(--ayi-font-sans);
+	--family-meta-font: var(--ayi-font-sans);
+	--formal-chapter-label-font: var(--ayi-font-sans);
+	--hairline-frame-display: block;
+	--hairline-frame-ink: rgb(var(--ayi-gold-rgb) / 85%);
+	--hairline-frame-inset: 12px;
+
+	#event-header.header-base--transparent {
+		--header-nav-color: var(--color-text-on-dark);
+	}
+
+	// Cover: the art bleeds to every edge and an indigo veil rises from the foot; no arch.
+	.invitation-hero[data-variant='veiled-arch'] {
+		--hero-arch-top: 0;
+		--hero-arch-width: 100%;
+		--hero-arch-height: 100%;
+		--hero-arch-radius: 0;
+		--hero-arch-moulding: transparent;
+		--hero-arch-moulding-gap: -12px;
+		--hero-arch-moulding-radius: 0;
+		--hero-arch-label-top: calc(var(--header-height-scrolled, 64px) + 1.75rem);
+		--hero-arch-content-margin: 0 auto 6.5rem;
+		--hero-arch-heading-size: clamp(2.6rem, 12.5vw, 3.75rem);
+		--hero-arch-divider-margin: 1rem auto 0.85rem;
+		--hero-arch-sky: var(--ayi-indigo-deep);
+		--hero-arch-sky-deep: var(--ayi-indigo-deep);
+		--hero-arch-ring: transparent;
+		--hero-arch-accent: var(--ayi-gold);
+		--hero-arch-ink: var(--ayi-ivory);
+		--hero-arch-muted: rgb(var(--ayi-ivory-rgb) / 94%);
+		--hero-arch-photo-shade:
+			linear-gradient(
+				0deg,
+				rgb(var(--ayi-indigo-deep-rgb) / 96%) 0%,
+				rgb(var(--ayi-indigo-rgb) / 82%) 26%,
+				rgb(var(--ayi-indigo-rgb) / 34%) 48%,
+				transparent 66%
+			),
+			linear-gradient(180deg, rgb(var(--ayi-indigo-deep-rgb) / 62%) 0%, transparent 24%);
+		--hero-scroll-indicator-color: rgb(var(--ayi-ivory-rgb) / 88%);
+		--hero-scroll-z-index: 1;
+		--hero-eyebrow-font: var(--font-label);
+		--hero-eyebrow-size: 0.8125rem;
+		--hero-eyebrow-weight: 600;
+		--hero-eyebrow-tracking: 0.32em;
+		--hero-heading-weight: 500;
+		--hero-heading-paint: none;
+		--hero-heading-fill: currentcolor;
+		--hero-divider-fill: var(--ayi-gold);
+		--hero-date-font: var(--font-label);
+		--hero-date-size: 0.9375rem;
+		--hero-date-weight: 600;
+		--hero-date-tracking: 0.2em;
+		--hero-date-transform: uppercase;
+		--veiled-arch-ampersand: 'e';
+		--veiled-arch-date-line: 'Sábado 10 de julio de 2027';
+		--veiled-arch-city-line: 'Oaxaca de Juárez, Oaxaca';
+	}
+
+	// Stationery card shared by the inner sections: white paper on a mist ground, indigo branches
+	// at the corners.
+	--ayi-paper: rgb(255 255 255);
+	--ayi-ground: var(--ayi-mist);
+	--ayi-art-corner: url('./assets/branch-corner.svg');
+	--ayi-art-sprig: url('./assets/branch-sprig.svg');
+
+	// Quote: indigo paper art full screen under an indigo veil, the text in ivory.
+	--ayi-quote-photo: url('./assets/quote.webp');
+	--framed-groups-sprig: var(--ayi-art-sprig);
+	--framed-scene-sprig: var(--ayi-art-sprig);
+	--framed-scene-sprig-display: block;
+	--framed-pass-art-corner: var(--ayi-art-corner);
+	--veiled-photo-image: var(--ayi-quote-photo);
+	--framed-closing-reply-eyebrow: 'Su lugar está apartado';
+	--framed-closing-reply-question: '¿Nos acompaña el 10 de julio?';
+	--framed-closing-reply-note: 'Será un honor contar con usted';
+	--framed-closing-reply-answered: 'Gracias por ser parte de este día.';
+
+	.quote-section {
+		--quote-min-height: 0;
+		--quote-bg: var(--ayi-indigo-deep);
+		--quote-divider-display: none;
+		--quote-content-font: var(--font-display);
+		--quote-content-size: clamp(1.25rem, 0.95rem + 1.4vw, 1.75rem);
+		--quote-content-weight: 400;
+		--quote-content-style: italic;
+		--quote-content-line-height: 1.55;
+		--quote-content-max-width: 24ch;
+		--quote-content-shadow: 0 1px 14px rgb(var(--ayi-indigo-deep-rgb) / 55%);
+		--quote-content-wrap: balance;
+		--quote-text-color: var(--ayi-ivory);
+		--quote-closing-line-color: var(--ayi-ivory);
+		--quote-closing-line-gap: 0;
+		--quote-line-margin-start: 0;
+	}
+
+	.family {
+		--family-bg: var(--ayi-ground);
+		--family-accent: var(--ayi-gold);
+		--family-header-max-width: 100%;
+		--family-title-max-width: 16ch;
+		--family-title-size: clamp(1.35rem, 1rem + 1.6vw, 1.9rem);
+		--family-title-color: var(--ayi-indigo-deep);
+		--family-eyebrow-color: var(--ayi-indigo);
+		--family-group-padding: 0;
+		--family-group-text-align: center;
+		--family-group-title-color: var(--ayi-indigo);
+		--family-group-title-margin: 0 0 0.4rem;
+		--family-list-align-items: center;
+		--family-list-gap: 0.2rem;
+		--family-item-align: center;
+		--family-name-max-width: 100%;
+		--family-name-size: clamp(1rem, 0.86rem + 0.7vw, 1.25rem);
+		--family-name-color: var(--ayi-indigo-deep);
+		--family-content-gap: clamp(0.85rem, 2.4svh, 1.6rem);
+		--family-deceased-symbol-size: 0.62em;
+		--family-deceased-symbol-offset-y: -0.5em;
+		--family-deceased-symbol-opacity: 100%;
+		--family-deceased-symbol-color: var(--ayi-indigo);
+		--framed-groups-group-title-size: clamp(1.4rem, 0.9rem + 1.7svh, 2rem);
+		--framed-groups-name-size: clamp(1rem, 0.9rem + 0.8svh, 1.2rem);
+	}
+
+	// Reveal: an indigo pocket-fold envelope, a gold hairline for the ink and an ivory card.
+	.envelope-wrapper[data-variant='pocket-fold'] {
+		--pocket-fold-field: var(--ayi-indigo);
+		--pocket-fold-field-deep: var(--ayi-indigo-deep);
+		--pocket-fold-ink: var(--ayi-gold);
+		--pocket-fold-star: transparent;
+		--pocket-fold-spark: transparent;
+		--pocket-fold-paper: rgb(56 68 138);
+		--pocket-fold-liner: rgb(84 96 160);
+		--pocket-fold-card-bg: var(--ayi-ivory);
+		--pocket-fold-card-ink: var(--ayi-indigo-deep);
+		--pocket-fold-card-label-ink: var(--ayi-gold-ink);
+		--pocket-fold-guest-size: clamp(2.25rem, 10.5vw, 2.85rem);
+		--env-text-primary: var(--ayi-ivory);
+		--env-text-secondary: rgb(var(--ayi-ivory-rgb) / 86%);
+		--env-instruction-color: rgb(232 216 176);
+	}
+}
