@@ -32,7 +32,8 @@ when needed; switching branches when permitted by the assigned lane; pushing the
 opening a pull request into `develop`; merging that pull request once CI is green, with
 `gh pr merge <n> --match-head-commit <sha>` (never `--admin`); and its automatic Cloudflare Preview
 deployment. Never push directly to `develop`: the agent guards block it, so integration always goes
-through a pull request. It also includes read-only provider inspection, required checks, and
+through a pull request. This never covers a merge into `main` or any cej-landing pull request: those
+are the owner's, and the guards deny them in headless runs. It also includes read-only provider inspection, required checks, and
 read-only Preview smoke. Reuse this authority through supporting skills; never prompt again for
 these actions.
 
