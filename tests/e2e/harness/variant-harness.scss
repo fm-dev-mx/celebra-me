@@ -11,11 +11,14 @@ html,
 body {
 	margin: 0;
 	padding: 0;
-	overflow-x: hidden;
+	overflow-x: clip;
 }
 
+// The harness shows every section at once, over the site's entrance states.
+/* stylelint-disable declaration-no-important */
 .invitation-section-wrapper {
-	opacity: 1 !important;
+	opacity: 100% !important;
 	transform: none !important;
 	visibility: visible !important;
 }
+/* stylelint-enable declaration-no-important */

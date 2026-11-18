@@ -10,7 +10,7 @@
             "preset": "editorial",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-            "sha256": "132c0d097a0d7dc606d6579eb01f88828b0093e493993c0380dca0523bbfe029",
+            "sha256": "93c9cc30cc19616200580159c0bc2a68e8dc57792814e79248a4388a9f19b9e9",
             "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
             "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
             "comparisonResult": "ACCEPTED"
@@ -22,7 +22,7 @@
             "preset": "editorial",
             "viewport": "desktop",
             "file": "pages/demo-xv-demo-xv-editorial-desktop.png",
-            "sha256": "39776e7ca1b71aec1b9687420ace1eb52ddb58e38775fc8bfa83e1ae51bafe32",
+            "sha256": "7a22e83864cc0c0b2c694ca94650b21683a8c75de650e477f9efc93ee4ad564c",
             "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
             "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
             "comparisonResult": "ACCEPTED"
@@ -36,7 +36,7 @@
             "preset": "editorial",
             "viewport": "mobile",
             "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-            "sha256": "132c0d097a0d7dc606d6579eb01f88828b0093e493993c0380dca0523bbfe029",
+            "sha256": "93c9cc30cc19616200580159c0bc2a68e8dc57792814e79248a4388a9f19b9e9",
             "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
             "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
             "comparisonResult": "CANDIDATE"
@@ -48,7 +48,7 @@
             "preset": "editorial",
             "viewport": "desktop",
             "file": "pages/demo-xv-demo-xv-editorial-desktop.png",
-            "sha256": "39776e7ca1b71aec1b9687420ace1eb52ddb58e38775fc8bfa83e1ae51bafe32",
+            "sha256": "7a22e83864cc0c0b2c694ca94650b21683a8c75de650e477f9efc93ee4ad564c",
             "contentHash": "bc186e37600a7bf7ac94e8739761c220f0498be3b34079da54269d66a198abe9",
             "assetHash": "de80c433d8a8c7e8c84b8d0753d4921ab90684576c03ed45c0c5a560fa3eb08c",
             "comparisonResult": "CANDIDATE"
