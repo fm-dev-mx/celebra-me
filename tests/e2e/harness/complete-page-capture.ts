@@ -132,8 +132,8 @@ export async function waitForVisualHydration(
 // top of the page). Elements animated on an enclosing scene's timeline (a sticky album whose
 // photos and counter all follow the section) are read together at one moment of it; centring each
 // photo showed the counter at two pages and the photos scattered. That moment is the scene's end,
-// its bottom on the viewport's bottom, where its story is complete (the album assembled, the
-// lantern at the last stop with its venue): the centred scene sat at the lantern route's
+// their last keyframe, where its story is complete (the album assembled, the lantern at the last
+// stop with its venue, the family names lit): the centred scene sat at the lantern route's
 // crossover, where one venue has left and the next has not arrived. A scene that opens the page
 // (the cover approach) is read at the top instead, as a guest first sees it.
 // An animation driven by a later element's timeline (a stacked card recedes
@@ -154,18 +154,17 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 				return false;
 			}
 		});
-		// Each group is read at one scroll position: an element to centre, or the page top.
-		type GroupKey = Element | 'top' | 'here' | 'before';
-		const scenes = new Set<Element>();
+		// Each group is read at one scroll position (an element to centre, or the page top) or
+		// pinned at its first or last keyframe.
+		type GroupKey = Element | 'top' | 'here' | 'before' | 'end';
 		const groupKey = (timeline: AnimationTimeline, animation: Animation): GroupKey => {
 			if (!completePage) return 'here';
 			const subject = (timeline as AnimationTimeline & { subject?: Element }).subject;
 			const target = (animation.effect as KeyframeEffect | null)?.target ?? null;
 			if (!subject || !target) return 'top';
+			if (subject === target) return target;
 			if (subject.contains(target)) {
-				if (subject.getBoundingClientRect().top + scrollY < 1) return 'top';
-				scenes.add(subject);
-				return subject;
+				return subject.getBoundingClientRect().top + scrollY < 1 ? 'top' : 'end';
 			}
 			const later =
 				(target.compareDocumentPosition(subject) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
@@ -195,15 +194,12 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 					// Read below as unreadable and cancelled.
 				}
 			}
-			if (key === 'before') {
-				for (const animation of animations) pinned.push([animation, 0]);
+			if (key === 'before' || key === 'end') {
+				for (const animation of animations) pinned.push([animation, key === 'end' ? 1 : 0]);
 				continue;
 			}
 			if (key === 'top') window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
-			else if (key !== 'here') {
-				const block = scenes.has(key) ? 'end' : 'center';
-				key.scrollIntoView({ block, behavior: 'instant' });
-			}
+			else if (key !== 'here') key.scrollIntoView({ block: 'center', behavior: 'instant' });
 			await frames();
 			for (const animation of animations) {
 				let progress: number | null = null;
