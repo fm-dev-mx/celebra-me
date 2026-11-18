@@ -271,8 +271,7 @@
 		}
 
 		.access-card__ornaments,
-		.access-card__seal,
-		.access-card[aria-label*='solo para adultos'] .access-card__party {
+		.access-card__seal {
 			display: none;
 		}
 
@@ -367,8 +366,9 @@
 			color: var(--framed-pass-olive, rgb(92 104 62));
 		}
 
-		// With children the split replaces the bare total: «3 adultos y 1 niño», not «4».
-		.access-card:not([aria-label*='solo para adultos']) .access-card__count-frame {
+		// With children the split replaces the bare total: «3 adultos y 1 niño», not «4». Without
+		// children no split is rendered, so the total stays visible.
+		.access-card:has(.access-card__party) .access-card__count-frame {
 			display: none;
 		}
 

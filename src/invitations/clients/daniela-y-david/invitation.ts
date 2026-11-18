@@ -127,18 +127,12 @@ const content: CanonicalEventContentInput = {
 		],
 	},
 	gallery: {
-		variant: 'rising-stack',
+		variant: 'single-keepsake',
 		eyebrow: 'Nosotros',
 		title: 'Nuestra historia',
+		// The couple asked to keep a single photograph in this section.
 		items: [
-			{ image: 'gallery01', alt: 'David besa la frente de Daniela', focalPoint: '50% 30%' },
-			{ image: 'gallery02', alt: 'Daniela y David se abrazan', focalPoint: '50% 30%' },
 			{ image: 'gallery03', alt: 'Daniela y David sonríen juntos', focalPoint: '50% 45%' },
-			{
-				image: 'gallery04',
-				alt: 'Las manos de Daniela y David con el anillo',
-				focalPoint: '55% 60%',
-			},
 		],
 	},
 	gifts: {
