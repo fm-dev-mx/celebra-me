@@ -148,6 +148,15 @@ async function settleFiniteAnimations(page: Page): Promise<void> {
 		}
 		const pinned: Array<[Animation, number | null]> = [];
 		for (const [timeline, animations] of byTimeline) {
+			// A CSS animation has no fill by default, so past its range it reports no progress
+			// and would fall back to its unanimated style; a filled one reports 0 or 1 there.
+			for (const animation of animations) {
+				try {
+					animation.effect?.updateTiming({ fill: 'both' });
+				} catch {
+					// Read below as unreadable and cancelled.
+				}
+			}
 			const subject = (timeline as AnimationTimeline & { subject?: Element }).subject;
 			if (subject) subject.scrollIntoView({ block: 'center', behavior: 'instant' });
 			else window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
