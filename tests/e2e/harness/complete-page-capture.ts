@@ -260,16 +260,27 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 			}
 			if (key === 'top') window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
 			else if (key !== 'here') key.scrollIntoView({ block: 'center', behavior: 'instant' });
-			await frames();
-			for (const animation of animations) {
-				let progress: number | null = null;
-				try {
-					progress = animation.effect?.getComputedTiming().progress ?? null;
-				} catch {
-					// An unreadable timing leaves the animation to be cancelled below.
-				}
-				pinned.push([animation, progress]);
+			const read = (): Array<number | null> =>
+				animations.map((animation) => {
+					try {
+						return animation.effect?.getComputedTiming().progress ?? null;
+					} catch {
+						// An unreadable timing leaves the animation to be cancelled below.
+						return null;
+					}
+				});
+			// A scroll timeline can report the progress of the previous scroll position for a few
+			// frames after the jump: the night-arch hero read at the page top kept the zoom of the
+			// page foot on a fast machine and not on CI. Read once two frames agree.
+			let progresses = read();
+			for (let attempt = 0; attempt < 30; attempt++) {
+				await frames();
+				const next = read();
+				const settled = next.every((value, index) => value === progresses[index]);
+				progresses = next;
+				if (settled && attempt > 0) break;
 			}
+			animations.forEach((animation, index) => pinned.push([animation, progresses[index]]));
 		}
 		for (const [animation, progress] of pinned) {
 			try {
