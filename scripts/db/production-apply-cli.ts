@@ -24,6 +24,10 @@ import { productionApplyHandoff } from './production-apply-plan.ts';
 import { isInteractiveSession } from '../lib/cli-prompts.ts';
 import { shouldOpenProductionApplyMenu } from './production-apply-menu-model.ts';
 import { refreshDisposableProofForPlan } from './production-apply-disposable-proof.ts';
+import {
+	ProductionApplyTimings,
+	formatProductionApplyTimings,
+} from './production-apply-timings.ts';
 
 async function main(): Promise<void> {
 	// Terminal without flags: interactive read-only plan menu. Agents and pipes keep the
@@ -51,15 +55,17 @@ async function main(): Promise<void> {
 		return;
 	}
 
+	const timings = new ProductionApplyTimings();
 	try {
 		// The owner's plan and apply rebuild a stale disposable proof; agent plans stay read-only.
 		if (parsed.apply || isInteractiveSession()) refreshDisposableProofForPlan(parsed);
 		if (!parsed.apply) {
-			const plan = await buildProductionApplyPlan(parsed);
+			const plan = await buildProductionApplyPlan(parsed, { timings });
 			if (parsed.json) {
-				writeJson(toPublicProductionApplyPlan(plan));
+				writeJson({ ...toPublicProductionApplyPlan(plan), timings: timings.rows });
 			} else {
 				writeHuman(formatProductionApplyPlan(plan));
+				writeHuman(formatProductionApplyTimings(timings.rows));
 			}
 			if (parsed.json) {
 				writeHuman(productionApplyHandoff(plan));
@@ -67,17 +73,20 @@ async function main(): Promise<void> {
 			return;
 		}
 
-		const execution = await applyProductionApplyPlan(parsed);
+		const execution = await applyProductionApplyPlan(parsed, { timings });
 		if (parsed.json) {
 			writeJson({
 				plan: toPublicProductionApplyPlan(execution.plan),
 				wrote: execution.wrote,
 				outcomes: execution.outcomes,
+				timings: execution.timings,
 			});
 		} else {
 			writeHuman(formatProductionApplyResult(execution));
 		}
 	} catch (error) {
+		writeHuman(formatProductionApplyTimings(timings.rows));
+		if (parsed.json) writeJson({ timings: timings.rows, failed: true });
 		renderOperatorError(error, {
 			title: 'No se pudo completar Production apply',
 			retryCommand: 'pnpm prod:apply',
