@@ -119,7 +119,7 @@ Tokens live in this document only; no token is rendered to guests.
 | D4  | photograph-acceptance | Photographs    | hr-photos         | Ask for more / design for the five      | Design for five; red-car photos small or cropped       |
 | D5  | missing-client-facts  | Groom's family | wa-export         | Ask for a father / show only the mother | Only the mother; never ask for or show a father        |
 
-Release scope: up to develop; Preview and Production wait for the owner's go.
+Release scope: published to Preview; Production follows in the owner's daily window.
 
 ---
 
