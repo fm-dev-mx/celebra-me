@@ -148,11 +148,16 @@ async function settleFiniteAnimations(page: Page): Promise<void> {
 		}
 		const pinned: Array<[Animation, number | null]> = [];
 		for (const [timeline, animations] of byTimeline) {
-			// A CSS animation has no fill by default, so past its range it reports no progress
-			// and would fall back to its unanimated style; a filled one reports 0 or 1 there.
+			// Capture mode (`?screenshot`) forces `animation-duration: 0s !important`. That ends a
+			// time-based animation at once, but it collapses a scroll-driven range to a point, so
+			// the animation jumps between its first and last keyframe as the scroll crosses it and
+			// never shows its middle (the veiled-photo quote ends at opacity 0). `auto` gives it
+			// back its whole range. A CSS animation has no fill by default, so past its range it
+			// reports no progress and would fall back to its unanimated style; a filled one
+			// reports 0 or 1 there.
 			for (const animation of animations) {
 				try {
-					animation.effect?.updateTiming({ fill: 'both' });
+					animation.effect?.updateTiming({ duration: 'auto', fill: 'both' });
 				} catch {
 					// Read below as unreadable and cancelled.
 				}
