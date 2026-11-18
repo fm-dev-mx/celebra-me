@@ -58,8 +58,8 @@ Start from the release notes board tasks left in their cierre (`close --changelo
 Integration:
 
 ```bash
-pnpm board changelog --desde=<date of the last tag>
-pnpm board changelog --desde=<date of the last tag> --faltan
+node <tablero>/src/cli.ts changelog --desde=<date of the last tag>
+node <tablero>/src/cli.ts changelog --desde=<date of the last tag> --faltan
 ```
 
 The first prints them as `[Unreleased]` Markdown; the second lists the ones `[Unreleased]` still

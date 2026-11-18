@@ -205,11 +205,6 @@ $commandDetails = @{
         UseCase = "Capturar imagenes del renderizado de invitaciones para revision de diseño visual."
         Help    = "Ingrese '--help' (o '--interactive' para selector guiado de capturas)"
     }
-    "board:serve"               = @{
-        Desc    = "Tablero de tareas en http://127.0.0.1:4320/, solo lectura y en vivo."
-        UseCase = "Ver la cola, los carriles y el historial del tablero; cada cambio de pnpm board aparece al instante."
-        Help    = "Presione Enter para (re)abrirlo: cierra lo que ocupe el 4320 y corre el codigo de Integration desde cualquier carril."
-    }
     "ops:status"              = @{
         Desc    = "Estado de operacion en texto, solo lectura (git, preflight, limpieza, dbs y, con --remote, migraciones)."
         UseCase = "Ver develop frente a main, el diagnostico de prod:apply, que limpiar con su comando y las migraciones pendientes por entorno."
@@ -238,24 +233,14 @@ $historyFile = Join-Path $historyDir "$safeCmdName.log"
 $lastOutputFile = Join-Path $historyDir "$safeCmdName`_last_output.log"
 #endregion
 
-#region Forced restart and Integration-only commands
+#region Forced restart
 $checkoutRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 
-# The board data lives in Integration and the board is served from there (d165), so these commands
-# run Integration's code from any lane; a lane on an older commit would otherwise serve an old board.
-$integrationCommands = @("board:serve")
-$commandRoot = $checkoutRoot
-if ($integrationCommands -contains $Command) {
-    $commonDir = git -C $checkoutRoot rev-parse --path-format=absolute --git-common-dir 2>$null
-    if ($LASTEXITCODE -eq 0 -and $commonDir) { $commandRoot = (Resolve-Path (Split-Path $commonDir.Trim())).Path }
-}
-
 # Enter always runs these: whatever node process holds the command's port is stopped first.
-$forceRestartCommands = @("dev", "board:serve")
+$forceRestartCommands = @("dev")
 
 function Get-ForcedPort([string]$ArgsText) {
     if ($ArgsText -match '--port[= ](\d+)') { return [int]$Matches[1] }
-    if ($Command -eq "board:serve") { return 4320 }
     if ($env:ASTRO_PORT) { return [int]$env:ASTRO_PORT }
     $laneModule = Join-Path $checkoutRoot "scripts/shared/worktree-lane.ts"
     $port = & node --input-type=module -e 'import { pathToFileURL } from "node:url"; const l = await import(pathToFileURL(process.argv[1])); console.log(l.getWorktreeDevServerPort(l.detectWorktreeLane(process.argv[2], l.findRepoRoot(process.argv[2])).id));' $laneModule $checkoutRoot
@@ -382,9 +367,6 @@ while ($true) {
                 $fullCmd = if ([string]::IsNullOrWhiteSpace($scriptArgs)) { "pnpm $Command" } else { "pnpm $Command -- $scriptArgs" }
             } else {
                 $fullCmd = if ([string]::IsNullOrWhiteSpace($scriptArgs)) { "pnpm $Command" } else { "pnpm $Command $scriptArgs" }
-            }
-            if ($commandRoot -ne $checkoutRoot) {
-                $fullCmd = $fullCmd -replace '^pnpm ', "pnpm -C `"$commandRoot`" "
             }
             if ($forceRestartCommands -contains $Command) {
                 $forcedPort = Get-ForcedPort $scriptArgs

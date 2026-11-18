@@ -160,9 +160,9 @@ commands, fields and session-name format, and `.agent/rules/board.md` owns the C
 and `T<n> <id>` task references. This file's roles and delegation rules apply inside one agent's
 session; they never assign work to another agent. Assignment across agents happens only on the
 board, by verified capability (`requiere`). Hand-over between agents or sessions also lives only on
-the board: the task's `cierre` (`pnpm board close`), its review rounds (`pnpm board review`) and
-`pnpm board msg`. There is no handoff file directory and no separate status vocabulary for
-handed-over work.
+the board: the task's `cierre` (`node <tablero>/src/cli.ts close`), its review rounds
+(`node <tablero>/src/cli.ts review`) and `node <tablero>/src/cli.ts msg`. There is no handoff file
+directory and no separate status vocabulary for handed-over work.
 
 ## Routing Conflict Resolution
 
