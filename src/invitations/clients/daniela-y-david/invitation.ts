@@ -276,7 +276,7 @@ export default defineCanonicalInvitation({
 	content,
 	managedIdentityId: 'efbd7c4e-1f7c-4e06-898f-f34fe3ae6af2',
 	managedIdentityProvenance: 'persisted',
-	lifecycle: 'in_progress',
+	lifecycle: 'published',
 	hostLoginAlias: 'daniela_yanez',
 	assetDir: 'src/invitations/clients/daniela-y-david/assets',
 	// One role per crop; the hero and the og card share one source photograph.

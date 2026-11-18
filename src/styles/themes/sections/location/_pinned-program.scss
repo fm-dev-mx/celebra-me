@@ -498,6 +498,16 @@
 			margin: clamp(1.25rem, 4svh, 2.5rem) auto 0;
 			padding-left: var(--pinned-program-rail);
 			gap: clamp(1rem, 3svh, 1.75rem);
+
+			// The events stack in the program column at every width, not side by side as the base
+			// program does from tablets up (the pinned scene forced this too; captures need it as well).
+			&:not(.event-location__program--single) {
+				grid-template-columns: minmax(0, 1fr);
+			}
+		}
+
+		.event-location__program-entry + .event-location__program-entry {
+			border-left: 0;
 		}
 
 		.event-location__program-entry {
@@ -823,7 +833,9 @@
 
 @include a11y.motion-safe {
 	@supports (animation-timeline: view()) {
-		.event-theme-wrapper {
+		// Captures (`data-scroll-scenes='static'`) keep the static layout: a still frame of this scene
+		// shows an empty track and both events in one cell.
+		.event-theme-wrapper:not([data-scroll-scenes='static']) {
 			// Ceremony and reception: a pinned card. It rises over the countdown, then the two events
 			// and the dress code come in turn while it stands still; scrolling back takes them away.
 			#invitation-sections-container
@@ -833,11 +845,14 @@
 				height: 300svh;
 				view-timeline-name: --pinned-program-loc;
 
+				// The waiting reception stands 2.5rem to the right; clipping keeps it from widening the
+				// page on phones.
 				.event-location {
 					position: sticky;
 					top: 0;
 					height: 100svh;
 					min-height: 0;
+					overflow-x: clip;
 				}
 
 				// One place at a time: both events share one grid cell and hand over to each other. Two
