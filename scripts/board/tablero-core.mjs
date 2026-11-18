@@ -36,9 +36,17 @@ export function coreDir({ env = process.env, cwd = process.cwd(), root } = {}) {
 	return resolve(root ?? integrationRoot(cwd), '..', 'tablero');
 }
 
+/**
+ * Git arguments that read the core checkout even when it belongs to another Windows user, as in
+ * an agent sandbox (git then refuses with "dubious ownership"). Trusts only this one folder.
+ */
+function trust(dir) {
+	return ['-c', `safe.directory=${dir.replaceAll('\\', '/')}`, '-C', dir];
+}
+
 function headOf(dir) {
 	try {
-		return execFileSync('git', ['-C', dir, 'rev-parse', 'HEAD'], {
+		return execFileSync('git', [...trust(dir), 'rev-parse', 'HEAD'], {
 			encoding: 'utf8',
 			stdio: ['ignore', 'pipe', 'ignore'],
 		}).trim();
@@ -49,7 +57,7 @@ function headOf(dir) {
 
 function isReleased(dir, head) {
 	try {
-		execFileSync('git', ['-C', dir, 'merge-base', '--is-ancestor', head, 'origin/main'], {
+		execFileSync('git', [...trust(dir), 'merge-base', '--is-ancestor', head, 'origin/main'], {
 			stdio: 'ignore',
 		});
 		return true;
