@@ -162,6 +162,9 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 			if (!completePage) return 'here';
 			const subject = (timeline as AnimationTimeline & { subject?: Element }).subject;
 			const target = (animation.effect as KeyframeEffect | null)?.target ?? null;
+			// A view() on a pseudo-element (a mirror ball on a card's `::before`) reports no
+			// subject; it follows the element that bears it, read centred like its own timeline.
+			if (!subject && target && timeline instanceof ViewTimeline) return target;
 			if (!subject || !target) return 'top';
 			if (subject === target) return target;
 			if (subject.contains(target)) {
