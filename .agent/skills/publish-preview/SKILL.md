@@ -28,14 +28,18 @@ Execute [the shared release procedure](../../../docs/core/release-execution.md) 
 
 Explicit invocation authorizes, for the identified release scope in the assigned checkout: fetching
 origin; staging named in-scope files; ordinary commits with normal hooks; creating a task branch
-when needed; switching branches when permitted by the assigned lane; non-destructive branch
-integration into `develop`; pushing that exact `develop` ref; and its automatic Cloudflare Preview
-deployment. It also includes read-only provider inspection, required checks, and read-only Preview
-smoke. Reuse this authority through supporting skills; never prompt again for these actions.
+when needed; switching branches when permitted by the assigned lane; pushing the task branch;
+opening a pull request into `develop`; merging that pull request once CI is green, with
+`gh pr merge <n> --match-head-commit <sha>` (never `--admin`); and its automatic Cloudflare Preview
+deployment. Never push directly to `develop`: the agent guards block it, so integration always goes
+through a pull request. It also includes read-only provider inspection, required checks, and
+read-only Preview smoke. Reuse this authority through supporting skills; never prompt again for
+these actions.
 
 Inspect and state the commit/file boundary first. Ambiguous scope or unrelated staged work blocks
-execution, not a reason to commit everything. A task-branch push is not a substitute for integration
-CI on `develop`. Do not operate in another checkout or silently change an assigned lane.
+execution, not a reason to commit everything. A task-branch push is not a substitute for CI on the
+pull request and on `develop` after the merge. Do not operate in another checkout or silently change
+an assigned lane.
 
 ## Exclusions and completion
 
