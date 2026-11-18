@@ -1368,3 +1368,340 @@
 		}
 	}
 }
+
+// Admission ticket: the guest's pass signed in script with a gold wax seal on its stub, the same
+// wax as the envelope. Include on `.personalized-access[data-presentation='admission-ticket']`.
+@mixin wax-sealed-ticket {
+	// Deeper inks and slightly larger small caps so every line reads on the pale paper.
+	.access-card__signature {
+		font-family: var(--jewel-script);
+		color: var(--jewel-gold-ink-deep);
+	}
+
+	.access-card__title {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: var(--jewel-rose-deep);
+	}
+
+	.access-card__guest {
+		font-weight: 500;
+		color: var(--jewel-ink);
+	}
+
+	.access-card__welcome {
+		text-align: center;
+		font-weight: 500;
+		color: var(--jewel-ink);
+	}
+
+	// The quota label wraps between words only, never inside one.
+	.access-card__quota .access-card__label {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		color: var(--jewel-gold-ink-deep);
+		min-width: 0;
+		overflow-wrap: normal;
+		word-break: normal;
+		hyphens: none;
+		text-align: center;
+		letter-spacing: 0.16em;
+	}
+
+	.access-card__monogram {
+		display: grid;
+		place-items: center;
+		align-self: center;
+		width: 3.25rem;
+		aspect-ratio: 1;
+		padding: 0;
+		border: 0;
+		border-radius: 50%;
+		background:
+			radial-gradient(
+				circle,
+				transparent 62%,
+				rgb(var(--jewel-ink-rgb) / 35%) 65%,
+				transparent 69%
+			),
+			radial-gradient(
+				ellipse 34% 22% at 34% 26%,
+				rgb(var(--jewel-white-rgb) / 55%) 0%,
+				transparent 100%
+			),
+			var(--jewel-wax-grain),
+			radial-gradient(
+				circle at 36% 30%,
+				var(--jewel-wax-shine) 0%,
+				var(--jewel-wax-gold) 40%,
+				var(--jewel-wax-deep) 100%
+			);
+		box-shadow:
+			inset 0 2px 2px rgb(var(--jewel-white-rgb) / 50%),
+			inset 0 -3px 5px rgb(var(--jewel-ink-rgb) / 40%),
+			0 2px 3px rgb(var(--jewel-petal-shade-rgb) / 55%);
+		font: 400 1.75rem / 1 var(--jewel-script);
+		color: var(--jewel-wax-deep);
+		text-shadow:
+			0 1px 0 rgb(var(--jewel-white-rgb) / 70%),
+			0 -1px 1px rgb(var(--jewel-ink-rgb) / 50%);
+	}
+}
+
+// The reply and the closing, each on one screen with no empty band. RSVP: the outer shell drops its
+// centring padding and its hanging line, and the inner section starts the card right under the
+// header, over a photo veiled in cream that clears toward the bottom (the url is written by the
+// invitation, where its assets resolve). Closing: the portrait and thanks start under the header
+// and the section ends with them, so the footer follows without a gap.
+@mixin compact-ending($photo) {
+	// Keyed on #rsvp: outranks the hanging line set on the main sections.
+	.rsvp-section:has(#rsvp) {
+		min-block-size: 0;
+		padding: 0;
+		background: none;
+	}
+
+	#rsvp.rsvp-section {
+		--rsvp-section-min-height: 100svh;
+
+		align-items: start;
+		padding-block: calc(var(--rsvp-header-offset) + 0.5rem)
+			calc(var(--rsvp-player-clearance) + var(--rsvp-safe-area-bottom) + 1rem);
+		background:
+			linear-gradient(
+				rgb(var(--jewel-cream-rgb) / 92%),
+				rgb(var(--jewel-cream-rgb) / 78%) 55%,
+				rgb(var(--jewel-cream-rgb) / 30%)
+			),
+			$photo center bottom / cover no-repeat;
+	}
+
+	.rsvp-section .rsvp {
+		padding-bottom: 1rem;
+	}
+
+	.thank-you-section.thank-you-section {
+		min-block-size: 0;
+		justify-content: flex-start;
+
+		// Bottom clears the floating music player and the section dock.
+		padding-block: calc(var(--invitation-header-height, 70px) + 0.5rem)
+			calc(5.5rem + env(safe-area-inset-bottom, 0px));
+	}
+
+	.thank-you-section .thank-you-editorial {
+		min-block-size: 0;
+		margin-block: 0;
+
+		// Side by side, the empty second track would leave its row gap under the portrait.
+		@media (width >= 1024px) {
+			row-gap: 0;
+		}
+	}
+}
+
+// The envelope as the family's reference shows it: plain bright pink paper with barely-there folds,
+// a satin gold wax seal (a raised, wavy rim around a flat struck disc ringed by a fine groove, the
+// script initial engraved in it) casting a shadow on the paper, and the name in gold script at
+// the foot.
+@mixin gold-seal-envelope {
+	--storybook-field: rgb(232 168 176);
+	--storybook-envelope-paper: linear-gradient(180deg, rgb(241 174 181) 0%, rgb(235 165 173) 100%);
+	--env-seal-size-min: 84px;
+	--env-seal-size-max: 116px;
+	--env-seal-size-ratio: 22;
+
+	// The storybook rim paints over the wax face (it sits in the face's own stacking context), so the
+	// whole seal is the rim: an SVG height map (wavy lip, flat struck disc, fine groove) lit with
+	// diffuse and specular light, so the gold reads as cast metal and casts its own shadow on the paper.
+	.envelope-seal-button__visual {
+		--env-shadow-seal: none;
+		--env-seal-icon: rgb(110 74 26);
+		--storybook-seal-rim-spread: -25%;
+		--storybook-seal-rim-shape: 0;
+		--storybook-seal-rim-rotate: 0deg;
+		--storybook-seal-rim-bg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-8 -8 150 150'%3E%3Cdefs%3E%3CradialGradient id='g' cx='67' cy='67' r='62' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0.71' stop-color='%238a8a8a'/%3E%3Cstop offset='0.79' stop-color='%23f2f2f2'/%3E%3Cstop offset='0.86' stop-color='%23ffffff'/%3E%3Cstop offset='0.94' stop-color='%23d0d0d0'/%3E%3Cstop offset='1' stop-color='%23707070'/%3E%3C/radialGradient%3E%3Cfilter id='f' x='-12%' y='-12%' width='124%' height='124%' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='7' result='n'/%3E%3CfeGaussianBlur in='SourceGraphic' stdDeviation='2.1' result='b'/%3E%3CfeComposite in='b' in2='n' operator='arithmetic' k2='1' k3='0.0007' result='bn0'/%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.045' numOctaves='2' seed='3' result='m'/%3E%3CfeComposite in='bn0' in2='m' operator='arithmetic' k2='1' k3='0' k4='0' result='bn'/%3E%3CfeColorMatrix in='bn' type='luminanceToAlpha' result='h'/%3E%3CfeDiffuseLighting in='h' surfaceScale='9' diffuseConstant='1.1' lighting-color='%23cc9d57' result='d'%3E%3CfeDistantLight azimuth='225' elevation='60'/%3E%3C/feDiffuseLighting%3E%3CfeSpecularLighting in='h' surfaceScale='9' specularConstant='1' specularExponent='10' lighting-color='%23fff1c8' result='s0'%3E%3CfeDistantLight azimuth='225' elevation='30'/%3E%3C/feSpecularLighting%3E%3CfeComponentTransfer in='s0' result='s'%3E%3CfeFuncR type='linear' slope='1.4' intercept='-0.34'/%3E%3CfeFuncG type='linear' slope='1.4' intercept='-0.34'/%3E%3CfeFuncB type='linear' slope='1.4' intercept='-0.34'/%3E%3CfeFuncA type='linear' slope='1.4' intercept='-0.34'/%3E%3C/feComponentTransfer%3E%3CfeComposite in='s' in2='SourceAlpha' operator='in' result='s2'/%3E%3CfeComposite in='d' in2='SourceAlpha' operator='in' result='d2'/%3E%3CfeComposite in='d2' in2='s2' operator='arithmetic' k2='1' k3='1' result='lit'/%3E%3CfeGaussianBlur in='SourceAlpha' stdDeviation='3' result='sb'/%3E%3CfeOffset in='sb' dx='1.2' dy='3' result='so'/%3E%3CfeFlood flood-color='%237d3845' flood-opacity='0.38'/%3E%3CfeComposite in2='so' operator='in' result='sh'/%3E%3CfeMerge%3E%3CfeMergeNode in='sh'/%3E%3CfeMergeNode in='lit'/%3E%3C/feMerge%3E%3C/filter%3E%3ClinearGradient id='t' x1='0.15' y1='0.1' x2='0.85' y2='0.9'%3E%3Cstop offset='0' stop-color='%23fff0c8' stop-opacity='0.28'/%3E%3Cstop offset='0.55' stop-color='%23fff0c8' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%235a3208' stop-opacity='0.14'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg filter='url(%23f)'%3E%3Cpath d='M128.1 67.0L128.2 69.1L128.1 71.3L127.9 73.4L127.4 75.5L126.9 77.6L126.3 79.6L125.5 81.6L124.7 83.6L123.9 85.5L123.0 87.4L122.1 89.3L121.2 91.1L120.3 93.0L119.3 94.8L118.3 96.6L117.3 98.4L116.1 100.1L114.9 101.8L113.6 103.4L112.2 104.9L110.7 106.3L109.2 107.7L107.6 109.1L106.0 110.4L104.4 111.6L102.9 112.9L101.3 114.1L99.7 115.4L98.0 116.7L96.4 118.0L94.8 119.2L93.1 120.4L91.3 121.6L89.5 122.7L87.6 123.6L85.7 124.5L83.7 125.2L81.6 125.7L79.6 126.1L77.5 126.4L75.4 126.6L73.3 126.6L71.2 126.5L69.1 126.4L67.0 126.2L64.9 126.0L62.9 125.7L60.9 125.4L58.8 125.1L56.8 124.7L54.8 124.4L52.8 124.0L50.8 123.6L48.8 123.1L46.8 122.6L44.8 122.0L42.8 121.4L40.8 120.7L38.9 119.9L37.0 119.0L35.1 118.1L33.3 117.0L31.5 115.9L29.8 114.6L28.2 113.3L26.6 111.9L25.1 110.4L23.7 108.8L22.4 107.1L21.1 105.5L19.9 103.8L18.8 102.0L17.7 100.3L16.6 98.5L15.6 96.7L14.5 94.9L13.6 93.1L12.7 91.2L11.8 89.3L11.1 87.4L10.4 85.4L9.8 83.4L9.3 81.4L9.0 79.3L8.7 77.3L8.4 75.2L8.3 73.2L8.2 71.1L8.1 69.1L8.0 67.0L7.9 64.9L7.9 62.9L7.9 60.8L8.0 58.7L8.1 56.6L8.3 54.5L8.7 52.5L9.1 50.4L9.8 48.4L10.6 46.5L11.5 44.6L12.6 42.8L13.7 41.0L15.0 39.3L16.3 37.7L17.6 36.1L18.9 34.6L20.2 33.0L21.5 31.4L22.7 29.8L23.9 28.2L25.1 26.6L26.3 24.9L27.6 23.2L28.9 21.6L30.3 20.0L31.7 18.5L33.3 17.0L34.9 15.7L36.7 14.4L38.5 13.3L40.3 12.3L42.3 11.4L44.2 10.6L46.2 9.9L48.2 9.3L50.3 8.7L52.3 8.2L54.4 7.8L56.5 7.4L58.6 7.2L60.7 7.0L62.8 6.9L64.9 6.9L67.0 7.0L69.1 7.2L71.2 7.5L73.2 7.8L75.3 8.3L77.3 8.8L79.3 9.4L81.2 10.0L83.2 10.6L85.1 11.3L87.0 12.0L88.9 12.8L90.8 13.6L92.6 14.4L94.5 15.3L96.3 16.2L98.1 17.2L99.9 18.2L101.7 19.3L103.4 20.4L105.1 21.6L106.7 22.9L108.3 24.2L109.9 25.6L111.4 27.1L112.7 28.6L114.0 30.2L115.3 31.9L116.4 33.7L117.4 35.5L118.3 37.4L119.1 39.3L119.9 41.2L120.7 43.1L121.4 45.0L122.1 47.0L122.8 48.9L123.5 50.8L124.2 52.7L124.9 54.7L125.6 56.7L126.3 58.7L126.9 60.7L127.4 62.8L127.8 64.9Z' fill='url(%23g)'/%3E%3Ccircle cx='67' cy='67' r='43.6' fill='%238a8a8a'/%3E%3Ccircle cx='67' cy='67' r='43.6' fill='none' stroke='%23c4c4c4' stroke-width='1.6'/%3E%3C/g%3E%3Ccircle cx='67' cy='67' r='43' fill='url(%23t)'/%3E%3Ccircle cx='67' cy='67' r='44.3' fill='none' stroke='%23f4dfaa' stroke-opacity='0.75' stroke-width='0.9'/%3E%3C/svg%3E")
+			center / contain no-repeat;
+		--storybook-seal-rim-shadow: none;
+	}
+
+	// The family's seal is still: no ring breathing out of the wax.
+	&:not(.is-opening) .envelope-seal-button__pulse {
+		display: none;
+	}
+
+	// The flap is a broad wedge on the right, as on a real pocket envelope: two mirrored folds leave a
+	// point hidden under the seal and run out towards the right corners, turning just before them. A fine light line
+	// marks the flap's edge and a soft shade falls on the body beside it; both are drawn on an SVG
+	// stretched over the card, with the same points as the clip so line and edge always meet.
+	--gold-apex-x: 48%;
+	--gold-apex-y: 50%;
+	--gold-fold-x: 92.6%;
+	--gold-fold-reach: 5.6%;
+	--gold-fold-turn: 3.9%;
+	--gold-text-inset: 8%;
+	--gold-text-column: 62%;
+	--gold-guest-column: 50%;
+	--jewel-flap-paper: linear-gradient(180deg, rgb(243 178 185) 0%, rgb(237 169 177) 100%);
+
+	.envelope-flap {
+		clip-path: polygon(
+			var(--gold-fold-x) var(--gold-fold-reach),
+			100% var(--gold-fold-turn),
+			100% calc(100% - var(--gold-fold-turn)),
+			var(--gold-fold-x) calc(100% - var(--gold-fold-reach)),
+			var(--gold-apex-x) var(--gold-apex-y)
+		);
+		transform-origin: 100% 50%;
+	}
+
+	// Landscape screens keep the same portrait card instead of the shared horizontal envelope, so the
+	// flap keeps the reference's shape everywhere.
+	@media (aspect-ratio >= 6 / 5) and (height >= 480px) {
+		--env-container-ratio: 0.3;
+		--env-container-width: min(
+			100vw - 2 * var(--env-card-gutter),
+			max(0.62 * var(--env-container-max-height), 22rem)
+		);
+		--env-title-size: clamp(2.2rem, min(12cqi, 9svh), 3.6rem);
+
+		&.is-opening .envelope-flap {
+			transform: rotateY(115deg) translateX(-5%);
+		}
+	}
+
+	.envelope-flap::after,
+	.envelope-pocket::after {
+		background-position: 0 0;
+		background-repeat: no-repeat;
+		background-size: 100% 100%;
+		opacity: 100%;
+	}
+
+	.envelope-flap::after {
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-10%' y='-10%' width='120%' height='120%'%3E%3CfeGaussianBlur stdDeviation='0.9'/%3E%3C/filter%3E%3Cpolyline points='100 3.9 92.6 5.6 48 50 92.6 94.4 100 96.1' fill='none' vector-effect='non-scaling-stroke' stroke='%23fffaf4' stroke-opacity='0.22' stroke-width='10' filter='url(%23b)'/%3E%3Cpolyline points='100 3.9 92.6 5.6 48 50 92.6 94.4 100 96.1' fill='none' vector-effect='non-scaling-stroke' stroke='%23fffaf4' stroke-opacity='0.62' stroke-width='1.8'/%3E%3C/svg%3E");
+	}
+
+	.envelope-pocket::after {
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-10%' y='-10%' width='120%' height='120%'%3E%3CfeGaussianBlur stdDeviation='1.1'/%3E%3C/filter%3E%3Cpolyline points='100 3.9 92.6 5.6 48 50 92.6 94.4 100 96.1' fill='none' vector-effect='non-scaling-stroke' stroke='%237d3845' stroke-opacity='0.30' stroke-width='12' stroke-linejoin='round' filter='url(%23b)'/%3E%3C/svg%3E");
+	}
+
+	// On a framed card (tablet, desktop) the corners are in view, so the folds turn straight into
+	// them instead of stopping short; full-screen phones keep the reference's turn.
+	@media (aspect-ratio >= 3 / 5) and (height >= 480px) {
+		.envelope-flap {
+			--gold-fold-x: 85%;
+			--gold-fold-reach: 5%;
+			--gold-fold-turn: 0%;
+		}
+
+		.envelope-flap::after {
+			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-10%' y='-10%' width='120%' height='120%'%3E%3CfeGaussianBlur stdDeviation='0.9'/%3E%3C/filter%3E%3Cpolyline points='100 0 85 5 48 50 85 95 100 100' fill='none' vector-effect='non-scaling-stroke' stroke='%23fffaf4' stroke-opacity='0.22' stroke-width='10' filter='url(%23b)'/%3E%3Cpolyline points='100 0 85 5 48 50 85 95 100 100' fill='none' vector-effect='non-scaling-stroke' stroke='%23fffaf4' stroke-opacity='0.62' stroke-width='1.8'/%3E%3C/svg%3E");
+		}
+
+		.envelope-pocket::after {
+			background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-10%' y='-10%' width='120%' height='120%'%3E%3CfeGaussianBlur stdDeviation='1.1'/%3E%3C/filter%3E%3Cpolyline points='100 0 85 5 48 50 85 95 100 100' fill='none' vector-effect='non-scaling-stroke' stroke='%237d3845' stroke-opacity='0.30' stroke-width='12' stroke-linejoin='round' filter='url(%23b)'/%3E%3C/svg%3E");
+		}
+	}
+
+	.envelope-seal-monogram {
+		font-size: calc(var(--env-seal-size, 88px) * 0.66);
+
+		// The glyph's ink sits high in its line box; drop it onto the disc centre.
+		translate: 0 7%;
+		font-weight: 400;
+		color: rgb(220 178 102);
+		-webkit-text-stroke: 0.4px rgb(150 104 40 / 70%);
+
+		// Raised from the disc: lit along its upper edge, shaded below, and casting a small shadow.
+		text-shadow:
+			-0.4px -0.9px 0 rgb(255 242 204 / 85%),
+			0.5px 1.1px 0 rgb(104 66 18 / 80%),
+			1px 2px 2px rgb(74 44 10 / 45%);
+	}
+
+	// The name heads the envelope, above the seal; the guest line sits low, under it. Both blocks are
+	// set flush left on the body, in a column that ends before the folds, so no line ever runs onto
+	// the flap. Every line is gold: the script name and the guest name in a cast-gold gradient, the
+	// small capitals in a deeper bronze so they stay legible on the pink paper.
+	.envelope-zone--identity {
+		position: absolute;
+		grid-area: auto;
+		place-self: stretch;
+		inset: 0;
+		z-index: 2;
+		display: grid;
+		grid-template-rows: 7% auto auto 1fr;
+		grid-template-columns: var(--gold-text-column);
+		justify-content: start;
+		justify-items: start;
+		gap: 0;
+		padding: 0 0 0 var(--gold-text-inset);
+		text-align: start;
+		pointer-events: none;
+	}
+
+	.envelope-name {
+		grid-row: 2;
+		margin: 0 0 0 -0.06em;
+		justify-content: flex-start;
+		padding-inline: 0 0.2em;
+		text-align: start;
+		font-size: clamp(3.1rem, 15cqi, 4.2rem);
+		line-height: 1.05;
+		background: linear-gradient(180deg, rgb(196 146 68) 0%, rgb(128 84 28) 100%);
+
+		// The shared white shadow would show through the clipped gold and wash it out.
+		text-shadow: none;
+		background-clip: text;
+		color: transparent;
+	}
+
+	.tease-details-group {
+		grid-row: 3;
+		align-items: flex-start;
+		justify-self: start;
+		gap: 0;
+		margin-top: 0.35rem;
+	}
+
+	.tease-divider {
+		display: none;
+	}
+
+	.envelope-details {
+		font-size: clamp(0.7rem, 3.4cqi, 0.82rem);
+		font-weight: 600;
+		letter-spacing: 0.28em;
+		text-align: start;
+		color: rgb(112 72 24);
+		opacity: 100%;
+	}
+
+	.envelope-tease .guest-personalized {
+		position: absolute;
+		inset: 75% auto auto var(--gold-text-inset);
+		align-items: flex-start;
+		gap: 0.3rem;
+		max-inline-size: var(--gold-guest-column);
+		margin: 0;
+		text-align: start;
+	}
+
+	.envelope-tease .guest-personalized .personalized-label {
+		font-size: 0.7rem;
+		font-weight: 600;
+		letter-spacing: 0.4em;
+		color: rgb(122 80 28);
+		opacity: 100%;
+	}
+
+	.envelope-tease .guest-personalized .personalized-name {
+		font-size: clamp(1.3rem, 6.6cqi, 1.7rem);
+		letter-spacing: 0.06em;
+		text-wrap: balance;
+		background: linear-gradient(180deg, rgb(184 134 60) 0%, rgb(120 78 26) 100%);
+		background-clip: text;
+		color: transparent;
+	}
+}

@@ -1,0 +1,406 @@
+@use 'motion';
+@use 'jewel-box-scenes' as scenes;
+
+// ==========================================================================
+// JEWEL BOX VARIANTS — experimental section variants built on the jewel-box scenes.
+// Mixins only: nothing here emits CSS until a composition includes it.
+// Colours and fonts come from the `--jewel-*` tokens the profile declares.
+// ==========================================================================
+
+// Full-bleed portrait band: edge to edge on phones at 4:5 on its focal point; from 48rem the whole
+// portrait stands contained on a studio-toned ground. Include on
+// `.invitation-interlude[data-presentation='framed']`.
+@mixin portrait-photo-band {
+	@include scenes.framed-photo-band;
+
+	--interlude-framed-bg: var(--jewel-rose-deep);
+	--interlude-framed-mat: 0;
+	--interlude-framed-mat-bg: var(--jewel-rose-deep);
+	--interlude-framed-border: 0;
+
+	padding-block: 0;
+	background: var(--jewel-rose-deep);
+
+	// Large portrait bands: the session photos are the protagonists, framed on each photo's own
+	// focal point.
+	.invitation-interlude__image.invitation-interlude__image {
+		display: block;
+		aspect-ratio: 4 / 5;
+		max-height: 82svh;
+		object-position: var(--interlude-focal-point);
+	}
+
+	// Wide screens keep the whole portrait, centred on a studio-toned ground that matches the
+	// photos' own backdrop.
+	@media (width >= 48rem) {
+		background: linear-gradient(
+			90deg,
+			rgb(214 204 205),
+			rgb(232 222 221) 50%,
+			rgb(214 204 205)
+		);
+
+		.invitation-interlude__media {
+			display: flex;
+			justify-content: center;
+			background: none;
+		}
+
+		.invitation-interlude__image.invitation-interlude__image {
+			width: auto;
+			max-width: 100%;
+			aspect-ratio: auto;
+			height: 92svh;
+			max-height: none;
+			object-fit: contain;
+		}
+	}
+}
+
+// Pinned overture: one 300svh sticky stage plays the quote (act 1) and then the parents (act 2),
+// reversible on scroll; gallery tiles rise in and titles rise word by word. Include on the event root.
+@mixin pinned-overture {
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			#invitation-sections-container
+				> .invitation-section-wrapper[data-reveal].has-motion.has-motion {
+				&:has(> .quote-section) {
+					height: 300svh;
+					view-timeline: --jewel-phrase block;
+				}
+
+				&:has(> .family) {
+					position: relative;
+					z-index: 1;
+					height: 300svh;
+					margin-top: -300svh;
+					pointer-events: none;
+					view-timeline: --jewel-parents block;
+				}
+
+				> .quote-section,
+				> .family {
+					position: sticky;
+					top: 0;
+					height: 100svh;
+				}
+
+				> .family {
+					background: transparent;
+					pointer-events: auto;
+					scroll-margin-top: -160svh;
+				}
+
+				.family__title .word,
+				.family__group,
+				.family__header {
+					animation: none;
+				}
+
+				.quote-line {
+					--scroll-accent-turn: 0deg;
+					--scroll-accent-scale: 0.7;
+
+					animation: scroll-accent-unfold linear both;
+					animation-timeline: --jewel-phrase;
+					animation-range: cover 5% cover 20%;
+				}
+
+				.quote-line .word {
+					animation: editorial-word linear both;
+					animation-timeline: --jewel-phrase;
+					animation-range: cover calc(6% + var(--i, 0) * 0.6%) cover
+						calc(14% + var(--i, 0) * 0.6%);
+				}
+
+				.quote-closing-line::before {
+					animation: family-divider-draw linear both;
+					animation-timeline: --jewel-phrase;
+					animation-range: cover 19% cover 25%;
+				}
+
+				.quote-closing-line {
+					--scroll-accent-rise: 3rem;
+
+					animation: scroll-accent-rise linear both;
+					animation-timeline: --jewel-phrase;
+					animation-range: cover 21% cover 27%;
+				}
+
+				.quote-container {
+					--scroll-accent-drift: -40%;
+					--scroll-accent-grow: 0.75;
+
+					animation:
+						editorial-word linear reverse both,
+						scroll-accent-leave linear both;
+					animation-timeline: --jewel-phrase, --jewel-phrase;
+					animation-range:
+						cover 36% cover 48%,
+						cover 35% cover 50%;
+				}
+
+				.family__title {
+					--scroll-accent-rise: 2.5rem;
+
+					animation: scroll-accent-rise linear both;
+					animation-timeline: --jewel-parents;
+					animation-range: cover 36% cover 44%;
+				}
+
+				.family__header-divider {
+					animation: family-divider-draw linear both;
+					animation-timeline: --jewel-parents;
+					animation-range: cover 40% cover 47%;
+				}
+
+				.family__panel {
+					--scroll-accent-rise: 2rem;
+
+					animation: scroll-accent-rise linear both;
+					animation-timeline: --jewel-parents;
+					animation-range: cover 39% cover 47%;
+				}
+
+				.family__member {
+					--scroll-accent-turn: 0deg;
+					--scroll-accent-scale: 0.85;
+
+					transform-origin: center;
+					animation: scroll-accent-unfold linear both;
+					animation-timeline: --jewel-parents;
+					animation-range: cover 42% cover 51%;
+				}
+
+				.family__member + .family__member {
+					animation-range: cover 46% cover 55%;
+				}
+
+				.family__message {
+					--scroll-accent-rise: 2rem;
+
+					animation: scroll-accent-rise linear both;
+					animation-timeline: --jewel-parents;
+					animation-range: cover 52% cover 60%;
+				}
+
+				.gallery-grid__item {
+					animation: scroll-accent-rise linear both;
+					animation-timeline: view();
+					animation-range: entry 0% entry 70%;
+				}
+			}
+		}
+
+		#invitation-sections-container .has-motion.has-motion.has-motion h2 .word.word {
+			--scroll-accent-rise: 0.35em;
+
+			animation-name: scroll-accent-rise;
+		}
+	}
+}
+
+// Single-screen venue card: the arched card fits under its intro on one screen; venue first, then
+// the hour, date and address, with a pill main map button. Include on `.event-location`.
+@mixin single-screen-venue-card($button-shadow) {
+	@include scenes.arched-location-card;
+
+	// One screen: the card sits right under the intro instead of inside a fixed-height stage.
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-height: 100svh;
+	padding-block: clamp(2.5rem, 6svh, 4.5rem) clamp(1.5rem, 4svh, 3rem);
+
+	.event-location__container {
+		min-height: 0;
+	}
+
+	// The main map button wears the same champagne pill as the RSVP buttons, not the rose block.
+	.event-location__nav-button--maps {
+		border-color: transparent;
+		background: var(--jewel-champagne-pill);
+		color: var(--jewel-mauve-deep);
+		box-shadow: $button-shadow;
+		font-size: 0.8125rem;
+		letter-spacing: 0.18em;
+	}
+
+	.event-location__intro,
+	.event-location__card-content {
+		padding-top: 0;
+		text-align: center;
+	}
+
+	.event-location__card,
+	.event-location__card-map-preview {
+		border-radius: 0.375rem;
+	}
+
+	.event-location__card::after {
+		content: none;
+	}
+
+	// Hierarchy: venue name first, then the hour, then date and address, then the secondary links.
+	.event-location__lede {
+		max-width: 36ch;
+		margin-inline: auto;
+		font-size: 0.875rem;
+		line-height: 1.5;
+		color: rgb(var(--jewel-ink-rgb) / 72%);
+	}
+
+	.event-location__card-title {
+		font-size: 0.6875rem;
+		font-weight: 500;
+		letter-spacing: 0.32em;
+		color: var(--jewel-gold-deep);
+	}
+
+	.event-location__card-map-preview {
+		height: clamp(5rem, calc(22svh - 4rem), 9rem);
+		opacity: 85%;
+	}
+
+	.event-location__card-content-place {
+		font-size: clamp(2rem, 9vw, 2.5rem);
+		color: var(--jewel-mauve-deep);
+	}
+
+	.event-location__card-content-date {
+		margin-top: 0.625rem;
+		font-size: 0.6875rem;
+		letter-spacing: 0.28em;
+		color: var(--jewel-gold-deep);
+	}
+
+	.event-location__card-content-hour {
+		margin-top: 0.125rem;
+		font-family: var(--jewel-serif);
+		font-size: 1.375rem;
+		font-weight: 500;
+		letter-spacing: 0.02em;
+		color: var(--jewel-rose-deep);
+	}
+
+	.event-location__card-content-address {
+		margin-top: 0.75rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid color-mix(in srgb, var(--jewel-gold) 35%, transparent);
+		font-size: 0.875rem;
+		color: rgb(var(--jewel-ink-rgb) / 70%);
+	}
+
+	.event-location__nav-button--waze,
+	.event-location__nav-button--apple {
+		border-color: color-mix(in srgb, var(--jewel-gold) 45%, transparent);
+		font-size: 0.6875rem;
+		font-weight: 500;
+		letter-spacing: 0.14em;
+		color: rgb(var(--jewel-ink-rgb) / 75%);
+	}
+}
+
+// Gold-tag evening program: the moment leads, the hour is a gold tag and the description whispers.
+// Include on `.itinerary`.
+@mixin gold-tag-evening-program {
+	@include scenes.compact-evening-program;
+
+	// Hierarchy: the moment leads, the hour is a gold tag, the description whispers.
+	.itinerary__subtitle {
+		font-style: italic;
+		font-size: 0.9375rem;
+		opacity: 80%;
+	}
+
+	.itinerary__item {
+		border-bottom-color: color-mix(in srgb, var(--jewel-gold) 20%, transparent);
+		grid-template-columns: 1.25rem minmax(0, 1fr);
+	}
+
+	.itinerary__item-icon-wrapper {
+		width: 1.125rem;
+		height: 1.125rem;
+	}
+
+	.itinerary__item-content {
+		grid-template-columns: 5.25rem minmax(0, 1fr);
+	}
+
+	.itinerary__item-time {
+		font-family: var(--font-label, var(--font-body));
+		font-size: 0.875rem;
+		font-weight: 500;
+		letter-spacing: 0.04em;
+		white-space: nowrap;
+		text-transform: none;
+		color: var(--jewel-gold-light);
+	}
+
+	.itinerary__item-label {
+		font-size: clamp(1.25rem, 3.4vw, 1.5rem);
+		color: var(--jewel-cream);
+	}
+
+	.itinerary__item-description {
+		font-size: 0.8125rem;
+		color: rgb(var(--jewel-beige-rgb) / 70%);
+	}
+
+	.itinerary__item-icon-inner {
+		width: 1rem;
+		height: 1rem;
+		opacity: 80%;
+	}
+
+	.itinerary__closing-note {
+		font-size: 0.9375rem;
+		opacity: 70%;
+	}
+}
+
+// Edge-roses RSVP ground: a photo whose roses sit on its edges. Phones crop it to the left
+// roses; from 30rem it spans the full outer section, full width at the bottom below 1024px.
+// Include on the event root after `scenes.compact-ending`.
+@mixin edge-roses-rsvp($photo) {
+	// The roses sit on the photo's edges; a centred crop on a phone shows only the bare middle.
+	@media (width < 30rem) {
+		#rsvp.rsvp-section {
+			background-color: var(--jewel-cream);
+			background-position:
+				center,
+				left bottom;
+			background-size:
+				cover,
+				auto 60%;
+		}
+	}
+
+	// From wide phones up the RSVP column is narrow; the roses belong on the full-width outer section.
+	@media (width >= 30rem) {
+		.rsvp-section:has(#rsvp) {
+			background:
+				linear-gradient(
+					rgb(var(--jewel-cream-rgb) / 92%),
+					rgb(var(--jewel-cream-rgb) / 70%) 55%,
+					rgb(var(--jewel-cream-rgb) / 15%)
+				),
+				$photo center bottom / cover no-repeat;
+		}
+
+		#rsvp.rsvp-section {
+			background: none;
+		}
+	}
+
+	// Wide phones to tablet portrait: cover would crop the roses off both sides, so the photo spans
+	// the width at the bottom and cream fills the space above it.
+	@media (30rem <= width < 1024px) {
+		.rsvp-section:has(#rsvp) {
+			background-color: rgb(var(--jewel-cream-rgb));
+			background-size:
+				auto,
+				100% auto;
+		}
+	}
+}
