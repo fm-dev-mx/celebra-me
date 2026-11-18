@@ -3,7 +3,10 @@
 # Uso: pnpm prod:window [-UploadRunId <id de un run de upload ya lanzado>]
 # Se detiene en el primer fallo. Se puede volver a correr: salta lo que ya está hecho.
 # Es del dueño: no omite ninguna confirmación del deploy ni de prod:apply (se contestan a mano).
-param([string]$UploadRunId = '')
+param(
+    [string]$UploadRunId = '',
+    [ValidateRange(0, 3600)][int]$CiTimeoutSeconds = 600
+)
 $ErrorActionPreference = 'Stop'
 $repo = 'fm-dev-mx/celebra-me'
 Set-Location (Resolve-Path (Join-Path $PSScriptRoot '..\..'))
@@ -12,6 +15,29 @@ fnm env --shell powershell | Out-String | Invoke-Expression
 function Runs-Dispatch {
     # Newest workflow_dispatch runs of the deploy workflow on main.
     @(gh run list --repo $repo --workflow deploy-production.yml --branch main --event workflow_dispatch --limit 20 --json databaseId,headSha | ConvertFrom-Json)
+}
+
+function Wait-CiEvidence([string]$headSha) {
+    # Reuse the canonical trusted, exact-SHA gate instead of duplicating check names or trust rules.
+    $timer = [System.Diagnostics.Stopwatch]::StartNew()
+    do {
+        $raw = pnpm --silent ops:release-checks $headSha
+        if ($LASTEXITCODE -eq 0) {
+            try { $evidence = ($raw -join "`n") | ConvertFrom-Json } catch {
+                throw "La evidencia de CI para $headSha no es JSON válido."
+            }
+            if ($evidence.sha -ne $headSha -or $evidence.state -ne 'CHECKS_PASSED') {
+                throw "La evidencia de CI no acredita el SHA $headSha."
+            }
+            Write-Host "CI verificado para $headSha."
+            return
+        }
+        $remaining = $CiTimeoutSeconds - $timer.Elapsed.TotalSeconds
+        if ($remaining -le 0) { break }
+        Write-Host "Esperando evidencia de CI para $headSha (máximo $CiTimeoutSeconds s)…"
+        Start-Sleep -Seconds ([Math]::Min(15, $remaining))
+    } while ($timer.Elapsed.TotalSeconds -lt $CiTimeoutSeconds)
+    throw "Se agotó la espera de CI ($CiTimeoutSeconds s) para $headSha; no se despachó ni activó el Worker."
 }
 
 function Nuevo-Run([string[]]$previos, [string]$headSha) {
@@ -77,6 +103,7 @@ if ((git rev-parse HEAD) -ne $sha) {
 if (git status --porcelain) { throw 'El checkout no quedó limpio.' }
 
 # 2. Subir el Worker (o seguir el run de upload ya lanzado).
+Wait-CiEvidence $sha
 if (-not $UploadRunId) {
     $previos = @(Runs-Dispatch | ForEach-Object { [string]$_.databaseId })
     gh workflow run deploy-production.yml --repo $repo --ref main -f step=upload
