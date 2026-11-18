@@ -178,17 +178,20 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 		};
 		// An animation whose range starts as the scene exits (a block fading out as its section
 		// leaves) ends hidden; its scene is complete at its first keyframe, still at rest.
-		const leaving = (animation: Animation): boolean => {
+		const rangeName = (animation: Animation): unknown => {
 			const start = (animation as Animation & { rangeStart?: unknown }).rangeStart;
-			const name =
-				typeof start === 'object' && start !== null
-					? (start as { rangeName?: unknown }).rangeName
-					: start;
+			return typeof start === 'object' && start !== null
+				? (start as { rangeName?: unknown }).rangeName
+				: start;
+		};
+		const leaving = (animation: Animation): boolean => {
+			const name = rangeName(animation);
 			return typeof name === 'string' && name.startsWith('exit');
 		};
-		// A scene animation that fades out as its scene ends (the veiled-photo quote, the framed
-		// family card, both on their section's whole timeline) is complete at its last fully
-		// visible keyframe, not at its hidden end.
+		// A scene animation with no range of its own runs over its section's whole pass and may
+		// fade out as the section leaves (the veiled-photo quote, the framed family card): it is
+		// complete at its last fully visible keyframe, not at its hidden end. One with a range
+		// (a camera flash that peaks and clears) still ends at its last keyframe.
 		const opacityOf = (frame: ComputedKeyframe): number => {
 			const value = frame.opacity;
 			if (value === undefined || value === null) return 1;
@@ -204,7 +207,7 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 				return 1;
 			}
 			const last = frames.at(-1);
-			if (!last || opacityOf(last) > 0) return 1;
+			if (rangeName(animation) !== 'normal' || !last || opacityOf(last) > 0) return 1;
 			let best = { opacity: 0, offset: 1 };
 			for (const frame of frames) {
 				const opacity = opacityOf(frame);
