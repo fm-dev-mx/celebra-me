@@ -1,202 +1,40 @@
 {
-    "referenceSha": "6cd7560262fed52a5aee7645c8eef7fcd00a7516",
-    "acceptedAt": "2026-11-18T08:47:55.762Z",
+    "referenceSha": "a753cf1d1ebccf1fd32a91e7e79ad445a205771c",
+    "acceptedAt": "2026-11-18T15:57:23.186Z",
     "matrixHash": "6528e362893e74dd11c2c7c993832d1b7abad491d2129ab5a129a71e10f86f52",
-    "candidateManifestSha256": "6b48e0f515bf0b618a57be94d0de2bee99bbd16e821144d416b23e642f349757",
-    "acceptedManifestSha256": "ab645d6330a190a66f110b3d930cd1b5342a3fcefca931235822fc7d604f8ae0",
+    "candidateManifestSha256": "7da348ff4330c8fcab7c83165e7f25a2256137dbdf96e9594b22aa6296019641",
+    "acceptedManifestSha256": "25cd6c7cecf58fc2eb3c7919440b6b8cc53799695443c79aa0c53fa7c173cec2",
     "reviewedPaths": [
-        "jewelry-box-mobile-gallery-photo-booth.png",
-        "jewelry-box-mobile-location-pinned-program.png",
-        "jewelry-box-desktop-gallery-photo-booth.png",
-        "pages/invitation-boda-olivia-y-antonio-desktop.png",
-        "pages/invitation-boda-olivia-y-antonio-mobile.png",
-        "jewelry-box-desktop-location-pinned-program.png",
-        "pages/demo-xv-demo-xv-editorial-mobile.png",
-        "pages/demo-xv-demo-xv-editorial-desktop.png",
-        "pages/demo-boda-demo-brisa-desktop.png",
-        "pages/demo-boda-demo-brisa-mobile.png",
-        "pages/invitation-xv-valeria-hernandez-mobile.png",
-        "pages/invitation-xv-america-mobile.png",
-        "pages/demo-xv-demo-xv-lantern-garden-mobile.png",
-        "pages/invitation-boda-daniela-y-david-mobile.png",
-        "pages/invitation-xv-america-desktop.png",
-        "pages/demo-xv-demo-xv-lantern-garden-desktop.png",
-        "pages/invitation-xv-valeria-hernandez-desktop.png",
-        "pages/invitation-boda-daniela-y-david-desktop.png",
-        "pages/invitation-xv-andrea-mobile.png",
+        "pages/invitation-xv-destenid-sofia-desktop.png",
         "pages/invitation-xv-camila-beltran-mobile.png",
-        "pages/invitation-xv-naomi-huerta-mobile.png"
+        "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png"
     ],
     "items": [
         {
-            "file": "jewelry-box-mobile-gallery-photo-booth.png",
+            "file": "pages/invitation-xv-destenid-sofia-desktop.png",
             "status": "changed",
-            "sha256": "9323b8448f95fd0f74cdf329fdf46c48e9b7a9d3bf5b23c123bffa0a62e82a03",
-            "previousSha256": "5c1e546b387c8d359fc0fe6fae0a60857ed51b2a1d8d25e747b1901b4474edcb",
-            "differentPixels": 37846,
-            "pixelRatio": 0.1149775185320209
-        },
-        {
-            "file": "jewelry-box-mobile-location-pinned-program.png",
-            "status": "changed",
-            "sha256": "ec3626ea19e92c432873df525e87051b2f32aa5f3afb27852b7dc5fad89b6f3a",
-            "previousSha256": "8bec868893733a2f524afdc0746532303225e4a17668a1c5c903c2240c8bf467",
-            "differentPixels": 28053,
-            "pixelRatio": 0.08522602989427634
-        },
-        {
-            "file": "jewelry-box-desktop-gallery-photo-booth.png",
-            "status": "changed",
-            "sha256": "e2e7f74d900befbd08271102d57f28be719e0ed5f0537e0f4b5789b79e383cac",
-            "previousSha256": "a477637e57b8bdb2dfebd2702c41ae2ac6441db92923cea8d3bc9c28b01f2d56",
-            "differentPixels": 47386,
-            "pixelRatio": 0.036563271604938274
-        },
-        {
-            "file": "pages/invitation-boda-olivia-y-antonio-desktop.png",
-            "status": "changed",
-            "sha256": "6f911653f632df33a8e1219c926e353136a942a621b8643334008b00b6c3e8ae",
-            "previousSha256": "6dd6823459e1095ba470df6da39426db2f708207e5dba0749f204efe0d27f0a4",
-            "differentPixels": 431699,
-            "pixelRatio": 0.022003007135575944
-        },
-        {
-            "file": "pages/invitation-boda-olivia-y-antonio-mobile.png",
-            "status": "changed",
-            "sha256": "6b3245ca079a64b6e771c8d3e17845e97beddcca72c7e68de882128bc479c789",
-            "previousSha256": "bb1bcbaa80af405104d17bf438f333da72cd4262b50183452377158fd7ef8519",
-            "differentPixels": 112036,
-            "pixelRatio": 0.02021332640527687
-        },
-        {
-            "file": "jewelry-box-desktop-location-pinned-program.png",
-            "status": "changed",
-            "sha256": "1248d63f50a8b7fa01c139acf4c6b1c69bfe20b43bb9585a4ef31b3f52a993b7",
-            "previousSha256": "1eac5eed019aa3f968875225fe1c8bff4c66fc61efc267890f9364bb01419580",
-            "differentPixels": 23735,
-            "pixelRatio": 0.018314043209876542
-        },
-        {
-            "file": "pages/demo-xv-demo-xv-editorial-mobile.png",
-            "status": "changed",
-            "sha256": "93c9cc30cc19616200580159c0bc2a68e8dc57792814e79248a4388a9f19b9e9",
-            "previousSha256": "132c0d097a0d7dc606d6579eb01f88828b0093e493993c0380dca0523bbfe029",
-            "differentPixels": 76241,
-            "pixelRatio": 0.013320369555038403
-        },
-        {
-            "file": "pages/demo-xv-demo-xv-editorial-desktop.png",
-            "status": "changed",
-            "sha256": "7a22e83864cc0c0b2c694ca94650b21683a8c75de650e477f9efc93ee4ad564c",
-            "previousSha256": "39776e7ca1b71aec1b9687420ace1eb52ddb58e38775fc8bfa83e1ae51bafe32",
-            "differentPixels": 289070,
-            "pixelRatio": 0.01322156724992133
-        },
-        {
-            "file": "pages/demo-boda-demo-brisa-desktop.png",
-            "status": "changed",
-            "sha256": "d9db2503fa1585af3ae921b2becd214d5eef064d0c9936860e86c7b44706ff4b",
-            "previousSha256": "bb0331a61995c45f1972727bf6543d6821ce58c8e1c2a178637619e980ff3d7b",
-            "differentPixels": 224159,
-            "pixelRatio": 0.010709733211023201
-        },
-        {
-            "file": "pages/demo-boda-demo-brisa-mobile.png",
-            "status": "changed",
-            "sha256": "6e66d011de14b967a59d0a2da04cd7006f99d6bb8488978686723591ae96f085",
-            "previousSha256": "a75ccd5203fce26a9ae375154b770ff3d2fc1930e055d7dff5ba6b24e108e0f4",
-            "differentPixels": 53264,
-            "pixelRatio": 0.009290140736981088
-        },
-        {
-            "file": "pages/invitation-xv-valeria-hernandez-mobile.png",
-            "status": "changed",
-            "sha256": "32dd48dc0aa352fbfbdd65b243b0ac804ae40d65ba4f0acf893bc00e7c86a81d",
-            "previousSha256": "d7412deb0495c160191d8ed0a27b02976f87640d1e0de3c1712a53db8fe4aef9",
-            "differentPixels": 30404,
-            "pixelRatio": 0.005700839075610556
-        },
-        {
-            "file": "pages/invitation-xv-america-mobile.png",
-            "status": "changed",
-            "sha256": "1265542b340d8af7cecd4f70555178b8c1214024cf9c451679e0a0b12c0577f5",
-            "previousSha256": "877f7055874bc37cd58f605a1b7d6e29e193bea541b79ebea9b0b2c8da70a881",
-            "differentPixels": 33680,
-            "pixelRatio": 0.005475808405235836
-        },
-        {
-            "file": "pages/demo-xv-demo-xv-lantern-garden-mobile.png",
-            "status": "changed",
-            "sha256": "2697666cb169493ea8c825f1f126638763f69589557f4d34726a587ccc270396",
-            "previousSha256": "550e64dc26e450f0c615cc3696262c641caa556c54f48051282a6c2f6c4009c8",
-            "differentPixels": 31267,
-            "pixelRatio": 0.005051146350289496
-        },
-        {
-            "file": "pages/invitation-boda-daniela-y-david-mobile.png",
-            "status": "changed",
-            "sha256": "25f83fff50c66519f25ff5be57077890081faf9d31c6ec7b381339e96f26ec42",
-            "previousSha256": "7a6db0b21e063311976f452c20c9008b449805445a1ffde8b8bcf42b240f0fa0",
-            "differentPixels": 15162,
-            "pixelRatio": 0.0042092814072025855
-        },
-        {
-            "file": "pages/invitation-xv-america-desktop.png",
-            "status": "changed",
-            "sha256": "ce32e648dd15f2f4220945d69dd1351d97f172496bc393224732c686ec5e34b7",
-            "previousSha256": "22ef631012c2f42628888a43606bc8eb372d6a1839939d3061b4a79170a34ce4",
-            "differentPixels": 102611,
-            "pixelRatio": 0.004143849667881419
-        },
-        {
-            "file": "pages/demo-xv-demo-xv-lantern-garden-desktop.png",
-            "status": "changed",
-            "sha256": "7490c3e3051273fe489b6760030e6b982c2f9616c36a215f74ce509875a13489",
-            "previousSha256": "0bf86bd462b4aba2413e39cb4d4d8672aad4a7f8585fc60977d25a7848be5948",
-            "differentPixels": 89192,
-            "pixelRatio": 0.0035607294561016893
-        },
-        {
-            "file": "pages/invitation-xv-valeria-hernandez-desktop.png",
-            "status": "changed",
-            "sha256": "50b50a891ddc01cb216f24cb7946012e083b95ce4ff3fa54f3694a1e5e11ddcd",
-            "previousSha256": "2686acee6106cb8a4f311e484751c5bc80a520019b71a124cfec8666c4c8f0fd",
-            "differentPixels": 59897,
-            "pixelRatio": 0.002950219085671955
-        },
-        {
-            "file": "pages/invitation-boda-daniela-y-david-desktop.png",
-            "status": "changed",
-            "sha256": "260d9d518acbcd4faf39491e5ddf4df296df621fc9288d80b9414951c74456a4",
-            "previousSha256": "fc875ad99fdaeba7487928633fb77240b6a10c329008c72a399c5f1ad4c56fb7",
-            "differentPixels": 27379,
-            "pixelRatio": 0.0020053996882654196
-        },
-        {
-            "file": "pages/invitation-xv-andrea-mobile.png",
-            "status": "changed",
-            "sha256": "e2b441d3188c7187257569560042d86f51b6f481fe318aba32cecc8287981baf",
-            "previousSha256": "f66eb66d142212188f580cfc3340b2413a183b1ed0840978f9a6e8cc349b2943",
-            "differentPixels": 9969,
-            "pixelRatio": 0.0014953514953514953
+            "sha256": "a83e5ed3fcfe4bfee2d810cf5e8922a532f635ecf8c072df26dc289b1bdc28a1",
+            "previousSha256": "13dddd2dac0d3570d9c38cb47642e0f7f366cf1ef95cbea874864c2eed9cc152",
+            "differentPixels": 229704,
+            "pixelRatio": 0.010698636262016543
         },
         {
             "file": "pages/invitation-xv-camila-beltran-mobile.png",
             "status": "changed",
-            "sha256": "fac08f5a12eb1b7b50eba49e1e4aa249d73784f21954a61e26e2a892f5595dbe",
-            "previousSha256": "c26a87fee9039444372dd093e12f566627d6c096fbe9a105b43e23c36a3c33a0",
-            "differentPixels": 6963,
-            "pixelRatio": 0.0014536595142359676
+            "sha256": "afd170fd46209b50c727761fb50b77f455ac83bb0c25999e00536c70bf2b68e0",
+            "previousSha256": "fac08f5a12eb1b7b50eba49e1e4aa249d73784f21954a61e26e2a892f5595dbe",
+            "differentPixels": 34162,
+            "pixelRatio": 0.007131971323471079
         },
         {
-            "file": "pages/invitation-xv-naomi-huerta-mobile.png",
+            "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
             "status": "changed",
-            "sha256": "1dc30cda0ec7e72d64e860d32256e2ad4b5685b538b83df0cdb34d598bd073fa",
-            "previousSha256": "ea0f56f338fd7abe0e7b0c95830956ae9feade53804dbb58f339225c035949f8",
-            "differentPixels": 7426,
-            "pixelRatio": 0.001227740385648697
+            "sha256": "26e25a389cc1eb604b6f09d48356c3f0ec7d29bbfb04d56e888d9c9335394b59",
+            "previousSha256": "2aa877572be1d171fe0e27dae706e17edaed9869eb95616e43114d95da0d18eb",
+            "differentPixels": 11519,
+            "pixelRatio": 0.0024150365851101745
         }
     ],
-    "renderNoise": 118,
+    "renderNoise": 126,
     "removed": []
 }

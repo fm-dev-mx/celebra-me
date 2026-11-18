@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-18T08:46:19.075Z",
+    "generatedAt": "2026-11-18T15:56:03.639Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -2715,7 +2715,7 @@
             "preset": "editorial-magazine",
             "viewport": "desktop",
             "file": "pages/invitation-xv-destenid-sofia-desktop.png",
-            "sha256": "13dddd2dac0d3570d9c38cb47642e0f7f366cf1ef95cbea874864c2eed9cc152",
+            "sha256": "a83e5ed3fcfe4bfee2d810cf5e8922a532f635ecf8c072df26dc289b1bdc28a1",
             "contentHash": "75e757f293e1e3f444913a09ef9fbc0035352e7800ce53de470ff5db9589f48b",
             "assetHash": "49192ff1d04942cfd2dfdc127ac3fb522c93d958459f1035a39ddb479c770803",
             "comparisonResult": "ACCEPTED"
@@ -2847,7 +2847,7 @@
             "preset": "jewelry-box",
             "viewport": "mobile",
             "file": "pages/invitation-xv-camila-beltran-mobile.png",
-            "sha256": "fac08f5a12eb1b7b50eba49e1e4aa249d73784f21954a61e26e2a892f5595dbe",
+            "sha256": "afd170fd46209b50c727761fb50b77f455ac83bb0c25999e00536c70bf2b68e0",
             "contentHash": "aa20a7981ae6a6ee4e86dbc192c8b7282b7ea00303bbdd01ada7d7e04f8e4b74",
             "assetHash": "8c65236906c991051b62948be35cdcef94288b5cb35277759fd6be4815342a20",
             "comparisonResult": "ACCEPTED"
@@ -2961,9 +2961,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "6cd7560262fed52a5aee7645c8eef7fcd00a7516",
+    "referenceSha": "a753cf1d1ebccf1fd32a91e7e79ad445a205771c",
     "variantManifest": {
-        "generatedAt": "2026-11-18T08:46:19.075Z",
+        "generatedAt": "2026-11-18T15:56:03.639Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -5397,10 +5397,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "6cd7560262fed52a5aee7645c8eef7fcd00a7516"
+        "referenceSha": "a753cf1d1ebccf1fd32a91e7e79ad445a205771c"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-18T08:46:19.083Z",
+        "generatedAt": "2026-11-18T15:56:03.645Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -5707,7 +5707,7 @@
                 "preset": "editorial-magazine",
                 "viewport": "desktop",
                 "file": "pages/invitation-xv-destenid-sofia-desktop.png",
-                "sha256": "13dddd2dac0d3570d9c38cb47642e0f7f366cf1ef95cbea874864c2eed9cc152",
+                "sha256": "a83e5ed3fcfe4bfee2d810cf5e8922a532f635ecf8c072df26dc289b1bdc28a1",
                 "contentHash": "75e757f293e1e3f444913a09ef9fbc0035352e7800ce53de470ff5db9589f48b",
                 "assetHash": "49192ff1d04942cfd2dfdc127ac3fb522c93d958459f1035a39ddb479c770803",
                 "comparisonResult": "CANDIDATE"
@@ -5839,7 +5839,7 @@
                 "preset": "jewelry-box",
                 "viewport": "mobile",
                 "file": "pages/invitation-xv-camila-beltran-mobile.png",
-                "sha256": "fac08f5a12eb1b7b50eba49e1e4aa249d73784f21954a61e26e2a892f5595dbe",
+                "sha256": "afd170fd46209b50c727761fb50b77f455ac83bb0c25999e00536c70bf2b68e0",
                 "contentHash": "aa20a7981ae6a6ee4e86dbc192c8b7282b7ea00303bbdd01ada7d7e04f8e4b74",
                 "assetHash": "8c65236906c991051b62948be35cdcef94288b5cb35277759fd6be4815342a20",
                 "comparisonResult": "CANDIDATE"
@@ -5953,9 +5953,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "6cd7560262fed52a5aee7645c8eef7fcd00a7516"
+        "referenceSha": "a753cf1d1ebccf1fd32a91e7e79ad445a205771c"
     },
-    "candidateManifestSha256": "6b48e0f515bf0b618a57be94d0de2bee99bbd16e821144d416b23e642f349757",
-    "acceptedFromCommit": "6cd7560262fed52a5aee7645c8eef7fcd00a7516",
-    "acceptedAt": "2026-11-18T08:47:55.762Z"
+    "candidateManifestSha256": "7da348ff4330c8fcab7c83165e7f25a2256137dbdf96e9594b22aa6296019641",
+    "acceptedFromCommit": "a753cf1d1ebccf1fd32a91e7e79ad445a205771c",
+    "acceptedAt": "2026-11-18T15:57:23.186Z"
 }
