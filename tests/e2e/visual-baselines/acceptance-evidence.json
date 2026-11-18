@@ -1,40 +1,25 @@
 {
-    "referenceSha": "a753cf1d1ebccf1fd32a91e7e79ad445a205771c",
-    "acceptedAt": "2026-11-18T15:57:23.186Z",
-    "matrixHash": "6528e362893e74dd11c2c7c993832d1b7abad491d2129ab5a129a71e10f86f52",
-    "candidateManifestSha256": "7da348ff4330c8fcab7c83165e7f25a2256137dbdf96e9594b22aa6296019641",
-    "acceptedManifestSha256": "25cd6c7cecf58fc2eb3c7919440b6b8cc53799695443c79aa0c53fa7c173cec2",
+    "referenceSha": "64a7d58e82edff96877b5b6a4398d5a8baa6502f",
+    "acceptedAt": "2026-11-18T20:52:24.200Z",
+    "matrixHash": "cbd3152ea1b0947ad893879ae91aab90f89058a61c678642dd9e81f1292fe10a",
+    "candidateManifestSha256": "276920cdb955cceb29036f78ecd6f715e41b746e239b822effdd25f081cc2cf9",
+    "acceptedManifestSha256": "79c37d06d36a960c62887d3a09d508c8f7363f17c82a78e44dd8b09ec6efd25a",
     "reviewedPaths": [
-        "pages/invitation-xv-destenid-sofia-desktop.png",
-        "pages/invitation-xv-camila-beltran-mobile.png",
-        "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png"
+        "pages/invitation-boda-adriana-y-israel-mobile.png",
+        "pages/invitation-boda-adriana-y-israel-desktop.png"
     ],
     "items": [
         {
-            "file": "pages/invitation-xv-destenid-sofia-desktop.png",
-            "status": "changed",
-            "sha256": "a83e5ed3fcfe4bfee2d810cf5e8922a532f635ecf8c072df26dc289b1bdc28a1",
-            "previousSha256": "13dddd2dac0d3570d9c38cb47642e0f7f366cf1ef95cbea874864c2eed9cc152",
-            "differentPixels": 229704,
-            "pixelRatio": 0.010698636262016543
+            "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
+            "status": "new",
+            "sha256": "d783f185499c8fb036f47564dafdeede7542d490de7e68aa49a0ba8b920e8441"
         },
         {
-            "file": "pages/invitation-xv-camila-beltran-mobile.png",
-            "status": "changed",
-            "sha256": "afd170fd46209b50c727761fb50b77f455ac83bb0c25999e00536c70bf2b68e0",
-            "previousSha256": "fac08f5a12eb1b7b50eba49e1e4aa249d73784f21954a61e26e2a892f5595dbe",
-            "differentPixels": 34162,
-            "pixelRatio": 0.007131971323471079
-        },
-        {
-            "file": "pages/demo-primera-comunion-demo-primera-comunion-angelic-presence-mobile.png",
-            "status": "changed",
-            "sha256": "26e25a389cc1eb604b6f09d48356c3f0ec7d29bbfb04d56e888d9c9335394b59",
-            "previousSha256": "2aa877572be1d171fe0e27dae706e17edaed9869eb95616e43114d95da0d18eb",
-            "differentPixels": 11519,
-            "pixelRatio": 0.0024150365851101745
+            "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
+            "status": "new",
+            "sha256": "77944dd7d8d08d3098ce03cd78315f2f2cd747879db97898cbc3e83921225450"
         }
     ],
-    "renderNoise": 126,
+    "renderNoise": 136,
     "removed": []
 }
