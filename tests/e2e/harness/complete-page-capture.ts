@@ -142,8 +142,7 @@ export async function waitForVisualHydration(
 // a complete page lays every card out at once, and centring either card caught it half receded.
 // Infinite animations stay with Playwright.
 async function settleFiniteAnimations(page: Page, completePage: boolean): Promise<void> {
-	const debug = await page.evaluate(async (completePage) => {
-		const trace: unknown[] = [];
+	await page.evaluate(async (completePage) => {
 		const frames = () =>
 			new Promise<void>((resolve) =>
 				requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
@@ -364,14 +363,6 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 			}
 			const computed = animations.map((animation) => progressAt(animation, scrollY));
 			const progresses = computed.map((value, index) => value ?? live[index]);
-			trace.push({
-				key: typeof key === 'string' ? key : `${key.tagName}.${key.className}`,
-				scrollY,
-				innerHeight,
-				names: animations.map((a) => (a as CSSAnimation).animationName),
-				live,
-				computed,
-			});
 			animations.forEach((animation, index) => pinned.push([animation, progresses[index]]));
 		}
 		for (const [animation, progress] of pinned) {
@@ -423,21 +414,7 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 			}
 		}
 		await frames();
-		return trace;
 	}, completePage);
-	const fs = await import('node:fs');
-	const traceFile =
-		process.env.SETTLE_DEBUG_FILE ??
-		(fs.existsSync('/node-cache')
-			? '/node-cache/settle-trace.jsonl'
-			: 'test-results/settle-trace.jsonl');
-	if (traceFile) {
-		fs.mkdirSync(traceFile.slice(0, traceFile.lastIndexOf('/')), { recursive: true });
-		fs.appendFileSync(
-			traceFile,
-			JSON.stringify({ url: page.url(), viewport: page.viewportSize(), debug }) + '\n',
-		);
-	}
 }
 
 export async function assertNoOperationalTooling(page: Page): Promise<void> {
