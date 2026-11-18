@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-17T21:27:25.366Z",
+    "generatedAt": "2026-11-18T00:43:55.662Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,15 +12,15 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "a709925afef9efc92efc2a7467884817dea2757b81e491a83cc81e1b018d44a8",
-        "cssSha256": "c4c3b490270d4ee77a0023c18301e4ad715fc04ae8fe758bef45557bc396bbe4",
+        "cssSha256": "68e94940d0422293c1fd308dbe500f6ec254464098003c59cf9e42eb80988ca6",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 234,
-    "matrixHash": "85db5b49d2a6af5891b867e9ed7e89c0b0ef451d5ee8a63b7c2f2bd893a29ed1",
+    "totalCaptures": 236,
+    "matrixHash": "6528e362893e74dd11c2c7c993832d1b7abad491d2129ab5a129a71e10f86f52",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2866,6 +2866,30 @@
         },
         {
             "kind": "invitation",
+            "slug": "daniela-y-david",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "mobile",
+            "file": "pages/invitation-boda-daniela-y-david-mobile.png",
+            "sha256": "b287bac68d735732843b7e05945a9fd920ec97d82d9f969f933bb0bc4bd0b781",
+            "contentHash": "4746fd064528e14fcc5a6d9eb4794d89ba3a5b9d33df167b4d2c7db8551674d3",
+            "assetHash": "2c35d8f1a42f02f1816ed48552daf001263482140eb1a771f85101638cd368a6",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "daniela-y-david",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "desktop",
+            "file": "pages/invitation-boda-daniela-y-david-desktop.png",
+            "sha256": "d76798d4ed94787767e407432e112364084c486052f93b2836f617d2f0a00480",
+            "contentHash": "4746fd064528e14fcc5a6d9eb4794d89ba3a5b9d33df167b4d2c7db8551674d3",
+            "assetHash": "2c35d8f1a42f02f1816ed48552daf001263482140eb1a771f85101638cd368a6",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
             "slug": "naomi-huerta",
             "eventType": "xv",
             "preset": "storybook-blush",
@@ -2937,9 +2961,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "5e1740862011ab70067456702d04d2632df99b43",
+    "referenceSha": "11ebc30dd92e324ee8e501d5a683f0336852975e",
     "variantManifest": {
-        "generatedAt": "2026-11-17T21:27:25.366Z",
+        "generatedAt": "2026-11-18T00:43:55.662Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2952,7 +2976,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a709925afef9efc92efc2a7467884817dea2757b81e491a83cc81e1b018d44a8",
-            "cssSha256": "c4c3b490270d4ee77a0023c18301e4ad715fc04ae8fe758bef45557bc396bbe4",
+            "cssSha256": "68e94940d0422293c1fd308dbe500f6ec254464098003c59cf9e42eb80988ca6",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -5373,10 +5397,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "5e1740862011ab70067456702d04d2632df99b43"
+        "referenceSha": "11ebc30dd92e324ee8e501d5a683f0336852975e"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-17T21:27:25.372Z",
+        "generatedAt": "2026-11-18T00:43:55.673Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -5389,16 +5413,16 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a709925afef9efc92efc2a7467884817dea2757b81e491a83cc81e1b018d44a8",
-            "cssSha256": "c4c3b490270d4ee77a0023c18301e4ad715fc04ae8fe758bef45557bc396bbe4",
+            "cssSha256": "68e94940d0422293c1fd308dbe500f6ec254464098003c59cf9e42eb80988ca6",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 62,
-        "matrixHash": "3cbc5d9c33f7c24eaf1b20f7c87053a3ed440f84f8ff8e32cadba7b93b89f2db",
-        "cases": 31,
+        "totalCaptures": 64,
+        "matrixHash": "29af6fd814cb24244868628e42dd3d826be06603340bfd9790a4a8cb4785b955",
+        "cases": 32,
         "captures": [
             {
                 "kind": "invitation",
@@ -5834,6 +5858,30 @@
             },
             {
                 "kind": "invitation",
+                "slug": "daniela-y-david",
+                "eventType": "boda",
+                "preset": "jewelry-box-wedding",
+                "viewport": "mobile",
+                "file": "pages/invitation-boda-daniela-y-david-mobile.png",
+                "sha256": "b287bac68d735732843b7e05945a9fd920ec97d82d9f969f933bb0bc4bd0b781",
+                "contentHash": "4746fd064528e14fcc5a6d9eb4794d89ba3a5b9d33df167b4d2c7db8551674d3",
+                "assetHash": "2c35d8f1a42f02f1816ed48552daf001263482140eb1a771f85101638cd368a6",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "daniela-y-david",
+                "eventType": "boda",
+                "preset": "jewelry-box-wedding",
+                "viewport": "desktop",
+                "file": "pages/invitation-boda-daniela-y-david-desktop.png",
+                "sha256": "d76798d4ed94787767e407432e112364084c486052f93b2836f617d2f0a00480",
+                "contentHash": "4746fd064528e14fcc5a6d9eb4794d89ba3a5b9d33df167b4d2c7db8551674d3",
+                "assetHash": "2c35d8f1a42f02f1816ed48552daf001263482140eb1a771f85101638cd368a6",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
                 "slug": "naomi-huerta",
                 "eventType": "xv",
                 "preset": "storybook-blush",
@@ -5905,9 +5953,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "5e1740862011ab70067456702d04d2632df99b43"
+        "referenceSha": "11ebc30dd92e324ee8e501d5a683f0336852975e"
     },
-    "candidateManifestSha256": "f60048fbcedc0363227ae44f725c763f7df0a5374f95347df6d5b8d0c59aa965",
-    "acceptedFromCommit": "5e1740862011ab70067456702d04d2632df99b43",
-    "acceptedAt": "2026-11-17T21:30:44.303Z"
+    "candidateManifestSha256": "10081a3ef27c52e733864c93c3d8967d0ca2ddcf80fbe34f2cbef7206b51f8ce",
+    "acceptedFromCommit": "11ebc30dd92e324ee8e501d5a683f0336852975e",
+    "acceptedAt": "2026-11-18T00:45:32.742Z"
 }
