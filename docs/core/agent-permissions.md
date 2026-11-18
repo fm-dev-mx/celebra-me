@@ -96,6 +96,67 @@ JSON allow; review and remove obsolete grants manually with owner authority. Tex
 their previous generated grants. Unmanaged conflicting rules are preserved and reported as a
 coverage limit.
 
+## Remote resource coverage
+
+The resource identities below come from the versioned Wrangler configuration, without credentials.
+`--remote` selects remote execution; it does not identify Production or Preview. An environment name
+is meaningful only with its configuration file. An explicit R2 object path selects its bucket
+independently of the selected Worker environment.
+
+| Configuration                                     | Environment      | R2 bucket                             | Classification                             |
+| ------------------------------------------------- | ---------------- | ------------------------------------- | ------------------------------------------ |
+| `wrangler.jsonc`                                  | default          | none                                  | Local development; not a deployment target |
+| `wrangler.jsonc`                                  | `preview`        | `celebra-me-invitation-media-staging` | Preview                                    |
+| `wrangler.jsonc`                                  | `production`     | `celebra-me-invitation-media`         | Production                                 |
+| `workers/celebra-memories-sign/wrangler.json`     | default or empty | `celebra-memories`                    | Production                                 |
+| `workers/celebra-memories-retrieve/wrangler.json` | default or empty | `celebra-memories`                    | Production                                 |
+| Both memories configurations                      | `staging`        | `celebra-memories-staging`            | Preview                                    |
+| Both memories configurations                      | `local`          | `celebra-memories-local`              | Local                                      |
+
+The application Workers are `celebra-me-local`, `celebra-me-preview` and `celebra-me`, respectively.
+The memories Workers use their directory names in Production and append `-staging` or `-local` for
+the corresponding environment.
+
+These files declare no D1 databases. A D1 name, unknown configuration or undeclared environment
+cannot be classified as Preview from these files. A safe classifier must ask for the destination
+when it cannot establish its identity, and must not use a staging suffix alone as proof.
+
+### Generated rules and gaps
+
+This matrix describes the repository adapter output, not rules installed in a running host. Applying
+adapters to user settings remains an owner/coordinator operation. Global hooks are a separate
+integration and are not inspected or installed by this repository's generator.
+
+| Agent  | Generated control                                          | Worker deployment                                                             | R2 object writes and D1 remote execution |
+| ------ | ---------------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------- |
+| Claude | Bash/PowerShell permission patterns in settings JSON       | `wrangler deploy` and `wrangler versions deploy` denied for every environment | No generated destination-specific rules  |
+| Codex  | Literal argv prefixes in `.rules`                          | Same two command prefixes forbidden for every environment                     | No generated destination-specific rules  |
+| Gemini | `run_shell_command` regex rules in TOML                    | Same two commands denied at priority 999 for every environment                | No generated destination-specific rules  |
+| Cursor | `beforeShellExecution` hook and Production database policy | Wrangler absent from the hook matcher and evaluator                           | No Wrangler resource classification      |
+
+The three native adapters also deny `wrangler secret` without environment classification. Their
+current deployment denies block Preview too. R2 `object put` / `delete` and D1 `execute --remote`
+have no equivalent generated protection. Absence of a match does not imply host approval: unmanaged
+rules, sandboxing and host defaults still apply. No generated rule establishes that reads are always
+allowed by a host.
+
+### Native prefix limitation
+
+Codex's [documented rules](https://learn.chatgpt.com/docs/agent-configuration/rules) match literal
+argv tokens, with alternatives at fixed positions; the strictest matching decision wins. They do not
+evaluate bucket names within an arbitrary `bucket/key` token or load the `--config` file to resolve
+an environment. A broad prompt or forbid on `wrangler r2 object put` therefore also catches Preview,
+even if a narrower allow is added. A literal prefix containing only the Production bucket does not
+match `celebra-memories/path/to/object`, because that is a different argv token.
+
+Consequently native prefix additions alone cannot implement the full contract of Production deny,
+Preview allow and unknown destination ask for arbitrary raw Wrangler commands. Do not remove broad
+deployment denies or add permissive wrappers based on a simulated semantic matcher: that would claim
+enforcement the host does not provide. A complete implementation needs a supported execution
+boundary that actually invokes a destination classifier, plus raw-command restrictions that prevent
+bypass. Its integration must be verified separately for each host; a Cursor hook alone does not
+protect Claude, Codex or Gemini. Offline classifier tests alone do not prove host coverage.
+
 ## Format references
 
 - [Codex rules](https://learn.chatgpt.com/docs/agent-configuration/rules)
