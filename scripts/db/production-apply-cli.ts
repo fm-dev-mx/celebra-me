@@ -2,7 +2,7 @@
  * Owner-only Production apply CLI.
  *
  * Default: read-only plan. --apply mutates through canonical domain primitives
- * after one owner TTY confirmation bound to the plan fingerprint.
+ * after owner TTY confirmation bound to each phase's plan fingerprint.
  * On a terminal without flags an interactive menu plans scopes; every flag below is also a
  * menu option and apply is never preselected.
  */
