@@ -1,9 +1,35 @@
 @use '../../../styles/tools/motion';
 @use '../../../styles/tools/jewel-box-scenes' as scenes;
+@use '../../../styles/tools/jewel-box-variants' as variants;
 
 .event--camila-beltran .invitation-hero {
 	// The date arc lives with her assets; a url written in the shared tool would not resolve.
 	@include scenes.photo-cover(url('./assets/hero-date-arc.png'));
+
+	// Her studio photo has its own warm backdrop, so it fills the screen edge to edge; the shared
+	// inset and edge fade would leave a pink frame around it.
+	.invitation-hero__background img {
+		translate: none;
+		scale: none;
+		mask-image: none;
+	}
+
+	// Her photo has no pedestal for the curved date, and its arc ran into her hand: a straight
+	// line, aligned with the name, sits on the skirt and stops well short of the hand.
+	@media (aspect-ratio < 5/4) {
+		.invitation-hero__date {
+			top: auto;
+			bottom: 4.5rem;
+			left: clamp(1.25rem, 6vw, 4rem);
+			translate: none;
+			color: var(--jewel-gold-ink-deep);
+			text-shadow: 0 0 0.75rem rgb(255 245 238 / 70%);
+
+			&::after {
+				display: none;
+			}
+		}
+	}
 }
 
 .event--camila-beltran {
@@ -43,6 +69,7 @@
 	}
 
 	@include scenes.compact-ending(url('./assets/interlude-ambient-floral.webp'));
+	@include variants.edge-roses-rsvp(url('./assets/interlude-ambient-floral.webp'));
 
 	.rsvp .rsvp-steps__track {
 		overflow: clip;
@@ -75,6 +102,12 @@
 		text-transform: uppercase;
 	}
 
+	.rsvp .rsvp__button--calendar {
+		gap: 0.6rem;
+		align-items: center;
+		justify-content: center;
+	}
+
 	.rsvp .rsvp__radio-card {
 		border-radius: 999px;
 		padding-inline: 0.75rem;
@@ -105,6 +138,14 @@
 		justify-content: center;
 		overflow: clip;
 		padding-block: clamp(2.5rem, 8svh, 5rem);
+	}
+
+	// A wash in the dress tones: blush glowing at the top, champagne at the foot.
+	.quote-section {
+		background:
+			radial-gradient(120% 55% at 50% 0%, var(--jewel-petal-light), transparent 70%),
+			radial-gradient(110% 50% at 50% 100%, var(--jewel-gold-light), transparent 72%),
+			var(--jewel-beige);
 	}
 
 	.quote-container {
@@ -172,7 +213,8 @@
 	}
 
 	.family__title {
-		font: 600 0.875rem / 1.4 var(--font-label, var(--font-body));
+		max-width: 20rem;
+		font: 600 0.875rem / 1.6 var(--font-label, var(--font-body));
 		text-align: center;
 	}
 
@@ -192,14 +234,23 @@
 		content: none;
 	}
 
+	// The parents' names sit in a soft card with a double gold rule, like a printed place card.
 	.family__panel {
-		width: 100%;
-		margin: clamp(1.75rem, 6svh, 3rem) 0 0;
-		padding: 0;
-		background: none;
-		border: 0;
-		outline: 0;
-		box-shadow: none;
+		width: min(100%, 32rem);
+		margin: clamp(1.75rem, 6svh, 3rem) auto 0;
+		padding: clamp(1.75rem, 5svh, 2.5rem) 1.25rem;
+		background:
+			radial-gradient(
+				90% 70% at 50% 0%,
+				color-mix(in srgb, var(--jewel-blush) 55%, transparent),
+				transparent 75%
+			),
+			rgb(252 241 234 / 82%);
+		border: 1px solid var(--jewel-gold);
+		border-radius: 1.25rem;
+		outline: 1px solid var(--jewel-gold-light);
+		outline-offset: -0.45rem;
+		box-shadow: 0 1.25rem 2.5rem -1.5rem rgb(158 82 80 / 35%);
 	}
 
 	.family__members {
@@ -216,137 +267,7 @@
 		font: 400 clamp(2.125rem, 9vw, 2.75rem) / 1.15 var(--jewel-script);
 	}
 
-	// One 300svh pinned stage for phrase (act 1) and parents (act 2), reversible on scroll up.
-	@include motion.motion-safe {
-		@supports (animation-timeline: view()) {
-			#invitation-sections-container
-				> .invitation-section-wrapper[data-reveal].has-motion.has-motion {
-				&:has(> .quote-section) {
-					height: 300svh;
-					view-timeline: --jewel-phrase block;
-				}
-
-				&:has(> .family) {
-					position: relative;
-					z-index: 1;
-					height: 300svh;
-					margin-top: -300svh;
-					pointer-events: none;
-					view-timeline: --jewel-parents block;
-				}
-
-				> .quote-section,
-				> .family {
-					position: sticky;
-					top: 0;
-					height: 100svh;
-				}
-
-				> .family {
-					background: transparent;
-					pointer-events: auto;
-					scroll-margin-top: -160svh;
-				}
-
-				.family__title .word,
-				.family__group,
-				.family__header {
-					animation: none;
-				}
-
-				.quote-line {
-					--scroll-accent-turn: 0deg;
-					--scroll-accent-scale: 0.7;
-
-					animation: scroll-accent-unfold linear both;
-					animation-timeline: --jewel-phrase;
-					animation-range: cover 5% cover 20%;
-				}
-
-				.quote-line .word {
-					animation: editorial-word linear both;
-					animation-timeline: --jewel-phrase;
-					animation-range: cover calc(6% + var(--i, 0) * 0.6%) cover
-						calc(14% + var(--i, 0) * 0.6%);
-				}
-
-				.quote-closing-line::before {
-					animation: family-divider-draw linear both;
-					animation-timeline: --jewel-phrase;
-					animation-range: cover 19% cover 25%;
-				}
-
-				.quote-closing-line {
-					--scroll-accent-rise: 3rem;
-
-					animation: scroll-accent-rise linear both;
-					animation-timeline: --jewel-phrase;
-					animation-range: cover 21% cover 27%;
-				}
-
-				.quote-container {
-					--scroll-accent-drift: -40%;
-					--scroll-accent-grow: 0.75;
-
-					animation:
-						editorial-word linear reverse both,
-						scroll-accent-leave linear both;
-					animation-timeline: --jewel-phrase, --jewel-phrase;
-					animation-range:
-						cover 36% cover 48%,
-						cover 35% cover 50%;
-				}
-
-				.family__title {
-					--scroll-accent-rise: 2.5rem;
-
-					animation: scroll-accent-rise linear both;
-					animation-timeline: --jewel-parents;
-					animation-range: cover 36% cover 44%;
-				}
-
-				.family__header-divider {
-					animation: family-divider-draw linear both;
-					animation-timeline: --jewel-parents;
-					animation-range: cover 40% cover 47%;
-				}
-
-				.family__member {
-					--scroll-accent-turn: 0deg;
-					--scroll-accent-scale: 0.85;
-
-					transform-origin: center;
-					animation: scroll-accent-unfold linear both;
-					animation-timeline: --jewel-parents;
-					animation-range: cover 42% cover 51%;
-				}
-
-				.family__member + .family__member {
-					animation-range: cover 46% cover 55%;
-				}
-
-				.family__message {
-					--scroll-accent-rise: 2rem;
-
-					animation: scroll-accent-rise linear both;
-					animation-timeline: --jewel-parents;
-					animation-range: cover 52% cover 60%;
-				}
-
-				.gallery-grid__item {
-					animation: scroll-accent-rise linear both;
-					animation-timeline: view();
-					animation-range: entry 0% entry 70%;
-				}
-			}
-		}
-
-		#invitation-sections-container .has-motion.has-motion.has-motion h2 .word.word {
-			--scroll-accent-rise: 0.35em;
-
-			animation-name: scroll-accent-rise;
-		}
-	}
+	@include variants.pinned-overture;
 
 	.envelope-wrapper[data-variant='storybook-lanterns'] {
 		@include scenes.flap-envelope;
@@ -390,8 +311,61 @@
 
 // Scene compositions, narrative script titles, eyebrows, signature contrast and dark footer ink.
 .event--camila-beltran.theme-preset--jewelry-box {
+	// Edge-to-edge photo bands: no cream padding or mat around them, and a rose ground behind the
+	// photo so nothing pale shows while a band scrolls in or out.
 	.invitation-interlude[data-presentation='framed'] {
-		@include scenes.framed-photo-band;
+		@include variants.portrait-photo-band;
+	}
+
+	// Each band's side ground follows its own photo's edge tones, top to bottom, so the portrait
+	// blends into the band instead of sitting on a flat grey panel.
+	@media (width >= 48rem) {
+		.invitation-interlude[data-presentation='framed'] {
+			&[data-interlude-index='1'] {
+				background: linear-gradient(
+					rgb(197 186 185),
+					rgb(209 199 197) 50%,
+					rgb(225 213 210)
+				);
+			}
+
+			&[data-interlude-index='2'] {
+				background: linear-gradient(
+					rgb(192 183 178),
+					rgb(201 192 188) 50%,
+					rgb(215 195 185)
+				);
+			}
+
+			&[data-interlude-index='3'] {
+				background: linear-gradient(
+					rgb(210 198 194),
+					rgb(218 207 204) 50%,
+					rgb(233 225 223)
+				);
+			}
+
+			&[data-interlude-index='4'] {
+				background: linear-gradient(
+					rgb(178 162 162),
+					rgb(218 192 186) 50%,
+					rgb(214 196 192)
+				);
+			}
+		}
+	}
+
+	// The band itself stays put and opaque before, during and after its reveal (no pale flash); only
+	// the photo inside drifts. Outranks the shared media-scale reveal and the framed-band frame.
+	#invitation-sections-container
+		> .invitation-section-wrapper[data-reveal]
+		.invitation-interlude[data-presentation='framed']
+		.invitation-interlude__media.invitation-interlude__media {
+		animation: none;
+		opacity: 100%;
+		clip-path: none;
+		translate: none;
+		scale: none;
 	}
 
 	.invitation-section-wrapper:has(+ [data-section-kind='itinerary']) > .invitation-interlude {
@@ -414,6 +388,38 @@
 			background: var(--camila-dress-swatch);
 			box-shadow: var(--camila-dress-swatch-ring);
 			content: '';
+		}
+
+		.dress-code__icon {
+			opacity: 85%;
+		}
+
+		.dress-code__text {
+			max-width: 30ch;
+			margin-inline: auto;
+			font-size: 1rem;
+			line-height: 1.6;
+			color: rgb(var(--jewel-ink-rgb) / 78%);
+
+			:is(strong, b) {
+				font-weight: 600;
+				color: var(--jewel-rose-deep);
+			}
+		}
+	}
+
+	.gifts-section {
+		.gifts-section__subtitle {
+			max-width: 32ch;
+			margin-inline: auto;
+			font-size: 0.9375rem;
+			line-height: 1.6;
+			color: rgb(var(--jewel-ink-rgb) / 75%);
+		}
+
+		.gifts-section__note {
+			font-size: 0.9375rem;
+			color: rgb(var(--jewel-ink-rgb) / 70%);
 		}
 	}
 
@@ -485,32 +491,11 @@
 	}
 
 	.event-location {
-		@include scenes.arched-location-card;
-
-		padding-block: clamp(3rem, 8svh, 5rem) clamp(2rem, 6svh, 4rem);
-
-		.event-location__intro,
-		.event-location__card-content {
-			padding-top: 0;
-			text-align: center;
-		}
-
-		.event-location__card,
-		.event-location__card-map-preview {
-			border-radius: 0.375rem;
-		}
-
-		.event-location__card::after {
-			content: none;
-		}
+		@include variants.single-screen-venue-card(var(--camila-rsvp-button-shadow));
 	}
 
 	.itinerary {
-		@include scenes.compact-evening-program;
-
-		.itinerary__item-time {
-			text-transform: none;
-		}
+		@include variants.gold-tag-evening-program;
 	}
 
 	.gallery-section {
@@ -524,7 +509,11 @@
 
 		.gallery-grid__item:is(:first-child, :last-child) {
 			grid-column: 1 / -1;
-			aspect-ratio: 3 / 2;
+			aspect-ratio: 4 / 5;
+
+			@media (width >= 768px) {
+				aspect-ratio: 3 / 2;
+			}
 
 			@media (width >= 1024px) {
 				grid-column: span 2;
@@ -574,5 +563,11 @@
 			[data-reveal-pending] {
 			opacity: 100%;
 		}
+	}
+
+	.invitation-footer .footer-reply__answered {
+		font-size: 1.125rem;
+		font-style: normal;
+		color: var(--jewel-gold-light);
 	}
 }
