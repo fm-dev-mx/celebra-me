@@ -506,8 +506,11 @@
 			}
 		}
 
-		.event-location__program-entry,
 		.event-location__program-entry + .event-location__program-entry {
+			border-left: 0;
+		}
+
+		.event-location__program-entry {
 			display: grid;
 			grid-template-columns: minmax(0, 1fr) auto;
 			column-gap: 1rem;
