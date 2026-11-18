@@ -29,8 +29,15 @@ operations:
 ```bash
 pnpm visual:parity:candidate
 pnpm visual:parity:compare
-pnpm visual:parity:accept [-- --reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>]
+pnpm visual:parity:accept -- --reviewed=<paths> [--reference-sha=<sha> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>]
 ```
+
+`--reviewed` is required: the capture files you looked at in `changes.html`, comma-separated (a
+trailing `/` covers a directory, `none` when the review lists no changes). `accept` fails if the
+candidate review has a changed or new capture outside the list, or a listed path with no change. It
+writes `acceptance-evidence.json` beside the accepted manifest (reference SHA, matrix hash,
+candidate and accepted manifest sha256, reviewed paths, per-capture hashes and diff hashes), so
+references, hashes and evidence go in one commit.
 
 `candidate` writes ignored files under `.tmp/visual-parity/candidate/`. `compare` never updates
 accepted files and fails when the accepted manifest is missing or a case differs; it runs with

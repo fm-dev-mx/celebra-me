@@ -108,7 +108,8 @@
 }
 
 // The program numerals: smaller solid gold seals with white figures instead of outlined rings.
-.event--daniela-y-david.theme-preset--jewelry-box-wedding
+// They belong to the pinned scene, so captures (`data-scroll-scenes='static'`) leave them out.
+.event--daniela-y-david.theme-preset--jewelry-box-wedding:not([data-scroll-scenes='static'])
 	#invitation-sections-container
 	> .invitation-section-wrapper.has-motion[data-section-kind='location']
 	.event-location[data-variant='pinned-program']

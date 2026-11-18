@@ -255,17 +255,10 @@ ownership:
           - '.agent/rules/board.md'
           - 'Copied board rules in skills or plans'
 
-    - aspect: 'Board behavior (exec)'
-      owner: 'scripts/board/'
+    - aspect: 'Board lanes'
+      owner: '.agent/carriles.json'
       non_owners:
-          - 'Prose docs overriding board code'
-          - '.agent/tmp/tablero/ data as policy'
-
-    - aspect: 'Board core pin, projects and lanes'
-      owner: 'tablero.config.json'
-      non_owners:
-          - 'scripts/board/ defaults'
-          - 'The board core checkout beside the Integration checkout'
+          - 'The board config in the tablero repo (points at this file)'
 
     - aspect: 'Board task kinds'
       owner: '.agent/kinds/'
@@ -278,7 +271,7 @@ ownership:
           - 'Copied command tables in stale docs'
 
     - aspect: 'Worktree topology & ports (exec)'
-      owner: 'tablero.config.json'
+      owner: '.agent/carriles.json'
       non_owners:
           - 'scripts/shared/worktree-lane.ts (reads carriles; defines only Integration)'
           - 'Prose cards overriding the config'

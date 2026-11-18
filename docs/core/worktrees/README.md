@@ -1,6 +1,6 @@
 # Worktree lanes
 
-The single source of truth is `tablero.config.json`: `carriles` lists each lane's id, folder, key
+The single source of truth is `.agent/carriles.json`: `carriles` lists each lane's id, folder, key
 (`tecla`), port, name and runtime (`entorno`), and `carrilesRetirados` lists folders that stay on
 disk but take no tasks. The board and [`worktree-lane.ts`](../../../scripts/shared/worktree-lane.ts)
 (guards, ports, doctor, VS Code task runner) both read it; only Integration is defined in code.

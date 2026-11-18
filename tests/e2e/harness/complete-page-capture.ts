@@ -192,6 +192,18 @@ export async function prepareCompletePage(
 		await sections.nth(index).scrollIntoViewIfNeeded();
 		await page.waitForTimeout(40);
 	}
+	// A short editorial item at the foot of a tall section can be skipped by the section visits:
+	// it never crosses the entrance line, so it stays pending and paints as a blank gap.
+	// Centering puts it above the entrance line even when it already sits low in the viewport.
+	await page.evaluate(async () => {
+		for (const item of Array.from(
+			document.querySelectorAll<HTMLElement>('[data-reveal-pending]'),
+		)) {
+			if (!item.hasAttribute('data-reveal-pending') || !item.checkVisibility()) continue;
+			item.scrollIntoView({ block: 'center', behavior: 'instant' });
+			await new Promise((resolve) => setTimeout(resolve, 40));
+		}
+	});
 	await waitForVisualHydration(page);
 	const giftNumber = page.locator('.gift-card__table-number-code').first();
 	if (await giftNumber.isVisible()) {
