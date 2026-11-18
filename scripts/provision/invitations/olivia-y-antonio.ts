@@ -21,7 +21,7 @@ const SCHEDULE = { ceremony: '19:00', reception: '21:00' } as const;
 const COUPLE = 'Olivia & Antonio';
 const EVENT_DATE_LONG = '18 de diciembre de 2026';
 const EVENT_DATE_HEADING = 'Viernes, 18 de diciembre de 2026';
-const RSVP_DEADLINE = 'miércoles 18 de noviembre';
+const RSVP_DEADLINE = 'domingo 29 de noviembre';
 
 const CEREMONY = {
 	name: 'Parroquia del Santo Niño de la Salud',
@@ -359,7 +359,7 @@ const content: CanonicalEventContentInput = {
 			invitation:
 				'Hola, {{invitado}}: con mucha alegría le compartimos la invitación a nuestra boda, con su pase y la opción para confirmar:\n\n{{enlace}}',
 			reminder:
-				'Hola, {{invitado}}: {{hora_evento}} Nos dará mucho gusto verle.\n\nPuede confirmar hasta el miércoles 18 de noviembre:\n{{enlace}}',
+				'Hola, {{invitado}}: {{hora_evento}} Nos dará mucho gusto verle.\n\nPuede confirmar hasta el domingo 29 de noviembre:\n{{enlace}}',
 		},
 	},
 };

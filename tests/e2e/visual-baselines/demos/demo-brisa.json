@@ -10,7 +10,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/demo-boda-demo-brisa-mobile.png",
-            "sha256": "a75ccd5203fce26a9ae375154b770ff3d2fc1930e055d7dff5ba6b24e108e0f4",
+            "sha256": "6e66d011de14b967a59d0a2da04cd7006f99d6bb8488978686723591ae96f085",
             "contentHash": "9bc76dfa55251e31bdba4b5f4f4f26c9d57beb3771cb2977cbe28e313c86f93f",
             "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
             "comparisonResult": "ACCEPTED"
@@ -22,7 +22,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
             "file": "pages/demo-boda-demo-brisa-desktop.png",
-            "sha256": "bb0331a61995c45f1972727bf6543d6821ce58c8e1c2a178637619e980ff3d7b",
+            "sha256": "d9db2503fa1585af3ae921b2becd214d5eef064d0c9936860e86c7b44706ff4b",
             "contentHash": "9bc76dfa55251e31bdba4b5f4f4f26c9d57beb3771cb2977cbe28e313c86f93f",
             "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
             "comparisonResult": "ACCEPTED"
@@ -36,7 +36,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/demo-boda-demo-brisa-mobile.png",
-            "sha256": "a75ccd5203fce26a9ae375154b770ff3d2fc1930e055d7dff5ba6b24e108e0f4",
+            "sha256": "6e66d011de14b967a59d0a2da04cd7006f99d6bb8488978686723591ae96f085",
             "contentHash": "9bc76dfa55251e31bdba4b5f4f4f26c9d57beb3771cb2977cbe28e313c86f93f",
             "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
             "comparisonResult": "CANDIDATE"
@@ -48,7 +48,7 @@
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
             "file": "pages/demo-boda-demo-brisa-desktop.png",
-            "sha256": "bb0331a61995c45f1972727bf6543d6821ce58c8e1c2a178637619e980ff3d7b",
+            "sha256": "d9db2503fa1585af3ae921b2becd214d5eef064d0c9936860e86c7b44706ff4b",
             "contentHash": "9bc76dfa55251e31bdba4b5f4f4f26c9d57beb3771cb2977cbe28e313c86f93f",
             "assetHash": "5ff6e6f517daee4a95f438ee4dec78f62fa336838e8fb1aabaceaa9e84f28041",
             "comparisonResult": "CANDIDATE"

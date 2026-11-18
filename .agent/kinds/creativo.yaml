@@ -9,7 +9,7 @@ lee:
     - 'copywriting'
     - 'visual_ui'
 pasos_inicio:
-    - 'pnpm board claim {id} --agente={agente} --titulo="{nombre}"'
+    - 'node <tablero>/src/cli.ts claim {id} --agente={agente} --titulo="{nombre}"'
 pasos:
     - '1. Parta del brief de marca y de las plantillas de creative/; edite, no regenere, lo ya aceptado.'
 autorizado_por_defecto:

@@ -39,8 +39,11 @@ export interface EnsureCriticalProductionBackupInput {
 }
 
 function isCaptureUnstableOutput(result: CommandResult): boolean {
-	return /Production changed while the critical backup set was being captured/i.test(
-		`${result.stdout}\n${result.stderr}`,
+	return (
+		/^CRITICAL_BACKUP_FAILURE=UNSTABLE\r?$/m.test(result.stdout) ||
+		/Production changed while the critical backup set was being captured/i.test(
+			`${result.stdout}\n${result.stderr}`,
+		)
 	);
 }
 
@@ -142,7 +145,7 @@ function assertCapturedCoverage(
 
 /**
  * Ensure one verified critical recovery point for the current Production state.
- * Capture is retried at most once when concurrent traffic makes it unstable.
+ * Capture is retried at most once for concurrent traffic or a classified transient failure.
  */
 export function ensureCriticalProductionBackup(
 	input: EnsureCriticalProductionBackupInput,
@@ -175,9 +178,13 @@ export function ensureCriticalProductionBackup(
 
 	writeHuman(`${operatorSymbol('info')} Cobertura: creando respaldo crítico verificado…`);
 	let result = captureOnce(input);
-	if (result.status !== 0 && isCaptureUnstableOutput(result)) {
+	if (
+		result.status !== 0 &&
+		(isCaptureUnstableOutput(result) ||
+			/^CRITICAL_BACKUP_FAILURE=TRANSIENT\r?$/m.test(result.stdout))
+	) {
 		writeHuman(
-			`${operatorSymbol('warn')} Captura inestable por actividad concurrente; reintentando una vez…`,
+			`${operatorSymbol('warn')} Captura inestable o falla transitoria del respaldo; reintentando una vez…`,
 		);
 		result = captureOnce(input);
 	}

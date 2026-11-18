@@ -8,6 +8,10 @@ import {
 } from '../../src/lib/status/operator-command-display.ts';
 import { formatKeyValueBlock, operatorSymbol, shortSha } from './operator-cli-ux.ts';
 import {
+	formatProductionApplyTimings,
+	type ProductionApplyTiming,
+} from './production-apply-timings.ts';
+import {
 	mutationItemsOf,
 	productionApplyHandoff,
 	type ProductionApplyItemOutcome,
@@ -164,6 +168,7 @@ function describeScope(plan: ProductionApplyPlan): string {
 }
 
 export function formatProductionApplyResult(input: {
+	timings?: readonly ProductionApplyTiming[];
 	plan: ProductionApplyPlan;
 	outcomes: ReadonlyArray<{ id: string; outcome: ProductionApplyItemOutcome; detail?: string }>;
 }): string {
@@ -176,6 +181,7 @@ export function formatProductionApplyResult(input: {
 	for (const row of input.outcomes) {
 		lines.push(`${row.id}: ${row.outcome}${row.detail ? ` — ${row.detail}` : ''}`);
 	}
+	if (input.timings?.length) lines.push('', formatProductionApplyTimings(input.timings));
 	return lines.join('\n');
 }
 
