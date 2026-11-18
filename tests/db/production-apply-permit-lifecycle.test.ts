@@ -431,6 +431,7 @@ describe('canonical Production apply permit lifecycle', () => {
 	});
 
 	it('clears the permit after a later write fails', async () => {
+		let migrated = false;
 		const applyInvitation = jest.fn(async (): Promise<PromotionApplyReport> => {
 			throwIfDenied(probeProtectedWrite());
 			throw new OperatorError({
@@ -443,11 +444,13 @@ describe('canonical Production apply permit lifecycle', () => {
 		await expect(
 			applyProductionApplyPlan(cli(['--all-ready', '--apply']), {
 				...baseDeps(),
+				preflightSchema: () => schemaPlan(migrated ? [] : ['20260807120000']),
 				listSlugs: () => ['alpha'],
 				runInvitationPreflight: async () => invitationPreflight('alpha'),
 				requireOwnerApply: confirmOwnerApply,
 				applySchema: async () => {
 					throwIfDenied(probeProtectedWrite());
+					migrated = true;
 					return { plan: schemaPlan(), wrote: true };
 				},
 				applyInvitation,

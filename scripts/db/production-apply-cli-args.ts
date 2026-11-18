@@ -73,7 +73,7 @@ Options:
                         Explicitly review selected invitation draft discards
   --patch <file>        Explicit specialized DML (never implied by --all-ready)
   --expected <versions> Optional exact pending-set pin (requires --schema)
-  --apply               Mutate Production after one owner TTY confirmation
+  --apply               Confirm each exact phase plan in the owner's TTY
   --owner-user-id <id>  Only when the patch SQL reads app.owner_user_id
   --json                Emit the secret-free plan on stdout
   --help, -h            Show this help (no database access)
@@ -83,6 +83,8 @@ Manual/editor baseline drift remains BLOCKED. --all-ready excludes draft discard
 draft repair, one-off resets, historical patches, and UNKNOWN/BLOCKED items.
 --apply reuses valid release-check evidence for the current HEAD or runs
 pnpm release-check once. Agents must stop after the read-only plan.
+Pending schema is applied and verified with its own confirmation first.
+Publication then gets a fresh plan and a separate owner confirmation.
 `);
 }
 

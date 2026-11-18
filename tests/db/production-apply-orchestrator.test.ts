@@ -395,8 +395,9 @@ describe('production apply planning', () => {
 });
 
 describe('production apply execution', () => {
-	it('authorizes once then delegates schema before invitations', async () => {
+	it('authorizes schema separately, then replans and confirms publication with preserved identity', async () => {
 		const order: string[] = [];
+		let migrated = false;
 		const requireOwnerApply = jest.fn(async (input: { bindingHex: string }) => {
 			order.push('authorize');
 			issueProductionWritePermit({
@@ -407,6 +408,7 @@ describe('production apply execution', () => {
 		});
 		const applySchema = jest.fn(async () => {
 			order.push('schema');
+			migrated = true;
 			return { plan: schemaPlan(), wrote: true };
 		});
 		const applyInvitation = jest.fn(
@@ -430,6 +432,22 @@ describe('production apply execution', () => {
 				},
 			}),
 			resolveInvitationUpdateScope: () => 'content-and-assets',
+			preflightSchema: () => schemaPlan(migrated ? [] : ['20260807120000']),
+			runInvitationPreflight: async (data) => {
+				if (migrated)
+					expect(getProductionWritePermit()?.bindingHex).not.toBe(
+						requireOwnerApply.mock.calls[0][0].bindingHex,
+					);
+				return invitationPreflight(
+					data.invitation.slug,
+					migrated
+						? {}
+						: {
+								status: 'BLOCKED',
+								blockCode: 'SCHEMA_INCOMPATIBLE',
+							},
+				);
+			},
 			requireOwnerApply,
 			applySchema,
 			applyInvitation,
@@ -437,8 +455,8 @@ describe('production apply execution', () => {
 				order.push('worker');
 			},
 		});
-		expect(requireOwnerApply).toHaveBeenCalledTimes(1);
-		expect(order).toEqual(['worker', 'authorize', 'schema', 'alpha', 'beta']);
+		expect(requireOwnerApply).toHaveBeenCalledTimes(2);
+		expect(order).toEqual(['authorize', 'schema', 'worker', 'authorize', 'alpha', 'beta']);
 		expect(result.wrote).toBe(true);
 		expect(result.outcomes.find((row) => row.id === 'schema')?.outcome).toBe(
 			'APPLIED_AND_VERIFIED',
@@ -451,7 +469,15 @@ describe('production apply execution', () => {
 		const schemaCall = applySchema.mock.calls[0] as unknown as [
 			{ authorizedPlanBindingHex: string },
 		];
-		expect(schemaCall[0].authorizedPlanBindingHex).toBe(result.plan.planId);
+		expect(schemaCall[0].authorizedPlanBindingHex).toBe(
+			requireOwnerApply.mock.calls[0][0].bindingHex,
+		);
+		expect(schemaCall[0].authorizedPlanBindingHex).not.toBe(result.plan.planId);
+		expect(requireOwnerApply.mock.calls[1][0].bindingHex).toBe(result.plan.planId);
+		expect(applyInvitation.mock.calls.map(([input]) => input.packageData)).toEqual([
+			pkg('alpha'),
+			pkg('beta'),
+		]);
 		expect(JSON.stringify(result)).not.toMatch(/postgres(ql)?:\/\/postgres:super-secret/);
 	});
 
@@ -1370,8 +1396,9 @@ describe('production apply execution', () => {
 		expect(getProductionWritePermit()).toBeNull();
 	});
 
-	it('applies a mixed schema+invitation+patch plan in order with one gate and one backup', async () => {
+	it('applies a mixed plan with separate schema and publication gates and backups', async () => {
 		const order: string[] = [];
+		let migrated = false;
 		const requireOwnerApply = jest.fn(async (input: { bindingHex: string }) => {
 			order.push('authorize');
 			issueProductionWritePermit({
@@ -1398,6 +1425,7 @@ describe('production apply execution', () => {
 		}));
 		const applySchema = jest.fn(async () => {
 			order.push('schema');
+			migrated = true;
 			return { plan: schemaPlan(), wrote: true };
 		});
 		const applyInvitation = jest.fn(async () => {
@@ -1419,6 +1447,7 @@ describe('production apply execution', () => {
 					preflights: { alpha: invitationPreflight('alpha') },
 				}),
 				requireOwnerApply,
+				preflightSchema: () => schemaPlan(migrated ? [] : ['20260807120000']),
 				ensureSharedBackup,
 				ensurePatchBackup,
 				revalidatePatchBackup,
@@ -1427,10 +1456,18 @@ describe('production apply execution', () => {
 				applyPatch,
 			},
 		);
-		expect(requireOwnerApply).toHaveBeenCalledTimes(1);
-		expect(ensureSharedBackup).toHaveBeenCalledTimes(1);
+		expect(requireOwnerApply).toHaveBeenCalledTimes(2);
+		expect(ensureSharedBackup).toHaveBeenCalledTimes(2);
 		expect(ensurePatchBackup).not.toHaveBeenCalled();
-		expect(order).toEqual(['backup', 'authorize', 'schema', 'alpha', 'patch']);
+		expect(order).toEqual([
+			'backup',
+			'authorize',
+			'schema',
+			'backup',
+			'authorize',
+			'alpha',
+			'patch',
+		]);
 		expect(result.wrote).toBe(true);
 		expect(result.plan.planId.length).toBeGreaterThan(8);
 	});
@@ -1480,6 +1517,159 @@ describe('production apply execution', () => {
 		).rejects.toMatchObject({ code: 'NOT_APPLIED' });
 		expect(applyInvitation).not.toHaveBeenCalled();
 		expect(applyPatch).not.toHaveBeenCalled();
+	});
+});
+
+describe('schema to publication authorization boundary', () => {
+	function phaseDeps() {
+		let migrated = false;
+		const bindings: string[] = [];
+		const applySchema = jest.fn(async () => {
+			migrated = true;
+			return { plan: schemaPlan(), wrote: true };
+		});
+		const applyInvitation = jest.fn(
+			async () =>
+				({
+					...invitationPreflight('alpha'),
+					status: 'PROMOTED',
+				}) as PromotionApplyReport,
+		);
+		const deps: ProductionApplyExecuteDeps = {
+			...baseDeps({ preflights: { alpha: invitationPreflight('alpha') } }),
+			preflightSchema: () => schemaPlan(migrated ? [] : ['20260807120000']),
+			runInvitationPreflight: async () =>
+				invitationPreflight(
+					'alpha',
+					migrated
+						? {}
+						: {
+								status: 'BLOCKED',
+								blockCode: 'SCHEMA_INCOMPATIBLE',
+							},
+				),
+			requireOwnerApply: async (input) => {
+				expect(getProductionWritePermit()).toBeNull();
+				bindings.push(input.bindingHex);
+				issueProductionWritePermit({
+					projectRef: SUPABASE_PROJECT_REFS.production,
+					operationType: 'production_apply',
+					bindingHex: input.bindingHex,
+				});
+			},
+			applySchema,
+			applyInvitation,
+		};
+		return { deps, bindings, applySchema, applyInvitation };
+	}
+
+	it('refuses publication drift after its new confirmation without repeating schema', async () => {
+		const context = phaseDeps();
+		let drift = false;
+		const confirm = context.deps.requireOwnerApply!;
+		context.deps.requireOwnerApply = async (input) => {
+			await confirm(input);
+			if (context.bindings.length === 2) drift = true;
+		};
+		context.deps.resolvePackage = async (slug) => ({
+			...pkg(slug),
+			packageHash: drift ? 'changed-package' : pkg(slug).packageHash,
+		});
+		await expect(
+			applyProductionApplyPlan(cli(['--all-ready', '--apply']), context.deps),
+		).rejects.toMatchObject({ code: 'PLAN_DRIFT' });
+		expect(context.bindings).toHaveLength(2);
+		expect(context.bindings[0]).not.toBe(context.bindings[1]);
+		expect(context.applySchema).toHaveBeenCalledTimes(1);
+		expect(context.applyInvitation).not.toHaveBeenCalled();
+		expect(getProductionWritePermit()).toBeNull();
+	});
+
+	it('keeps a successful schema after publication fails and requires a fresh confirmation on retry', async () => {
+		const context = phaseDeps();
+		context.applyInvitation.mockRejectedValueOnce(new Error('publication failed'));
+		await expect(
+			applyProductionApplyPlan(cli(['--all-ready', '--apply']), context.deps),
+		).rejects.toMatchObject({
+			code: 'PUBLICATION_APPLY_FAILED',
+			noChangesMessage: expect.stringContaining('El esquema ya se aplicó y verificó'),
+		});
+		expect(context.applySchema).toHaveBeenCalledTimes(1);
+		expect(context.bindings).toHaveLength(2);
+		expect(getProductionWritePermit()).toBeNull();
+		const retry = await applyProductionApplyPlan(cli(['--all-ready', '--apply']), context.deps);
+		expect(context.bindings).toHaveLength(3);
+		expect(context.applySchema).toHaveBeenCalledTimes(1);
+		expect(retry.outcomes.find((row) => row.id === 'schema')?.outcome).toBe('already_applied');
+	});
+
+	it('does not publish when the owner declines the second confirmation', async () => {
+		const context = phaseDeps();
+		const confirm = context.deps.requireOwnerApply!;
+		context.deps.requireOwnerApply = async (input) => {
+			if (context.bindings.length === 1) {
+				expect(getProductionWritePermit()).toBeNull();
+				throw new Error('owner declined publication');
+			}
+			await confirm(input);
+		};
+		await expect(
+			applyProductionApplyPlan(cli(['--all-ready', '--apply']), context.deps),
+		).rejects.toThrow('owner declined publication');
+		expect(context.applySchema).toHaveBeenCalledTimes(1);
+		expect(context.applyInvitation).not.toHaveBeenCalled();
+		expect(getProductionWritePermit()).toBeNull();
+	});
+
+	it.each(['NOT_APPLIED', 'APPLIED_VERIFICATION_FAILED'] as const)(
+		'never publishes after schema ends in %s',
+		async (state) => {
+			const context = phaseDeps();
+			context.applySchema.mockRejectedValueOnce(
+				new MigrateApplyError({
+					state,
+					plan: schemaPlan(),
+					error: new Error('schema failed'),
+				}),
+			);
+			await expect(
+				applyProductionApplyPlan(cli(['--all-ready', '--apply']), context.deps),
+			).rejects.toMatchObject({ code: state });
+			expect(context.bindings).toHaveLength(1);
+			expect(context.applyInvitation).not.toHaveBeenCalled();
+			expect(getProductionWritePermit()).toBeNull();
+		},
+	);
+
+	it('refuses a still-pending schema in the post-schema plan', async () => {
+		const context = phaseDeps();
+		context.deps.preflightSchema = () => schemaPlan();
+		await expect(
+			applyProductionApplyPlan(cli(['--all-ready', '--apply']), context.deps),
+		).rejects.toMatchObject({ code: 'SCHEMA_NOT_IN_SYNC' });
+		expect(context.bindings).toHaveLength(1);
+		expect(context.applyInvitation).not.toHaveBeenCalled();
+	});
+
+	it('retains schema outcomes when fresh publication inspection finds nothing to write', async () => {
+		const context = phaseDeps();
+		context.deps.runInvitationPreflight = async () =>
+			invitationPreflight('alpha', {
+				status: context.applySchema.mock.calls.length > 0 ? 'IN_SYNC' : 'PROMOTABLE',
+			});
+		const result = await applyProductionApplyPlan(
+			cli(['--all-ready', '--apply']),
+			context.deps,
+		);
+		expect(result.wrote).toBe(true);
+		expect(result.outcomes).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: 'schema', outcome: 'APPLIED_AND_VERIFIED' }),
+				expect.objectContaining({ id: 'alpha', outcome: 'already_applied' }),
+			]),
+		);
+		expect(context.bindings).toHaveLength(1);
+		expect(context.applyInvitation).not.toHaveBeenCalled();
 	});
 });
 

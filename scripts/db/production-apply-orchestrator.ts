@@ -5,6 +5,11 @@
  * and explicit patch primitives. Does not reimplement classifiers, fingerprints,
  * backups, receipts, or SQL execution.
  */
+import {
+	applyProductionApplyPhases,
+	authorizeReviewedPlan,
+	PRODUCTION_APPLY_OPERATION_TYPE,
+} from './production-apply-phases.ts';
 import { getProdDbUrl } from './db-workflow-lib.ts';
 import { OperatorError } from './operator-cli-ux.ts';
 import {
@@ -18,10 +23,7 @@ import {
 	type OrchestrateMigrateResult,
 } from './migrate-orchestrator.ts';
 import type { MigrationPlan } from './migration-plan.ts';
-import {
-	requireOwnerProductionApply,
-	type OwnerProductionApplyInput,
-} from './owner-production-apply.ts';
+import type { OwnerProductionApplyInput } from './owner-production-apply.ts';
 import {
 	clearProductionWritePermit,
 	matchProductionWritePermit,
@@ -68,8 +70,6 @@ import {
 	inspectInvitation,
 	inspectSchema,
 } from './production-apply-inspectors.ts';
-
-const PRODUCTION_APPLY_OPERATION_TYPE = 'production_apply';
 
 export interface ProductionApplyAssemblerDeps {
 	preflightSchema?: () => MigrationPlan;
@@ -289,50 +289,6 @@ function throwIfPatchApiIdentityInvalid(
 			],
 		});
 	}
-}
-
-async function authorizeReviewedPlan(
-	reviewed: ProductionApplyPlan,
-	mutations: readonly ProductionApplyPlanItem[],
-	deps: ProductionApplyExecuteDeps,
-): Promise<void> {
-	const getProductionDbUrl = deps.getProductionDbUrl ?? getProdDbUrl;
-	const { url: dbUrl } = getProductionDbUrl();
-	const discardDraftSlugs = mutations
-		.filter((item) => item.readiness === 'READY_AFTER_DISCARD')
-		.map((item) => item.id);
-	const ownerGateInput: OwnerProductionApplyInput = {
-		apply: true,
-		dbUrl,
-		operationType: PRODUCTION_APPLY_OPERATION_TYPE,
-		operationVerb: 'APPLY',
-		bindingHex: reviewed.planId,
-		applyActionLabel: 'Aplicar plan',
-		summaryTitle: 'Apply Production',
-		summary: [
-			['Operación', 'Plan mixto Production'],
-			['Mutaciones', String(mutations.length)],
-			['Alcance', mutations.map((item) => `${item.domain}:${item.id}`).join(', ')],
-			[
-				'Borradores inéditos',
-				discardDraftSlugs.length > 0
-					? `Se reemplazarán: ${discardDraftSlugs.join(', ')}`
-					: 'Ninguno',
-			],
-			['Autorización', 'Una confirmación cubre el plan exacto'],
-		],
-		technicalReview: [
-			['Impacto', 'Delega a primitivas canónicas de schema, promoción y parche'],
-			['Plan', reviewed.planId],
-			['Orden', 'schema → verificar → invitaciones → parche explícito'],
-			['Controles', 'TTY · agente bloqueado · permiso ligado al plan · sin token'],
-		],
-	};
-	if (deps.requireOwnerApply) {
-		await deps.requireOwnerApply(ownerGateInput);
-		return;
-	}
-	await requireOwnerProductionApply(ownerGateInput);
 }
 
 function throwIfPlanDrifted(reviewed: ProductionApplyPlan, live: ProductionApplyPlan): void {
@@ -725,7 +681,18 @@ export async function applyProductionApplyPlan(
 	assertNoPreviewScopeForProduction();
 	const reviewed = await buildProductionApplyPlan(args, deps);
 	throwIfIneligible(reviewed);
+	return applyProductionApplyPhases(args, deps, reviewed, {
+		buildPlan: buildProductionApplyPlan,
+		applyPhase: applyReviewedProductionApplyPlan,
+	});
+}
 
+async function applyReviewedProductionApplyPlan(
+	args: ProductionApplyCliArgs,
+	deps: ProductionApplyExecuteDeps,
+	reviewed: ProductionApplyPlan,
+): Promise<ProductionApplyExecution> {
+	throwIfIneligible(reviewed);
 	const mutations = mutationItemsOf(reviewed);
 	const ownerUserId = args.ownerUserId;
 	throwIfPatchMissingOwner(mutations, ownerUserId, deps);
