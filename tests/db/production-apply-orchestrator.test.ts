@@ -4,6 +4,8 @@ import { SUPABASE_PROJECT_REFS } from '../../src/lib/intake/mutations/environmen
 import { buildMigrationPlan, type MigrationPlan } from '../../scripts/db/migration-plan.ts';
 import { OperatorError } from '../../scripts/db/operator-cli-ux.ts';
 import { MigrateApplyError } from '../../scripts/db/migrate-orchestrator.ts';
+import type { CriticalProductionBackupPreparation } from '../../scripts/db/critical-production-backup.ts';
+import { ProductionApplyTimings } from '../../scripts/db/production-apply-timings.ts';
 import { parseProductionApplyCliArgs } from '../../scripts/db/production-apply-cli-args.ts';
 import {
 	applyProductionApplyPlan,
@@ -19,6 +21,7 @@ import {
 } from '../../scripts/invitation/verify-published-images.ts';
 import {
 	formatProductionApplyPlan,
+	formatProductionApplyResult,
 	toPublicProductionApplyPlan,
 } from '../../scripts/db/production-apply-format.ts';
 import {
@@ -395,6 +398,78 @@ describe('production apply planning', () => {
 });
 
 describe('production apply execution', () => {
+	it('measures simulated schema, backup, plans and each invitation without counting owner wait', async () => {
+		let now = 0;
+		let migrated = false;
+		const timings = new ProductionApplyTimings(() => now);
+		const result = await applyProductionApplyPlan(cli(['--all-ready', '--apply']), {
+			...baseDeps({
+				preflights: {
+					alpha: invitationPreflight('alpha'),
+					beta: invitationPreflight('beta'),
+				},
+			}),
+			timings,
+			preflightSchema: () => {
+				now += 10;
+				return schemaPlan(migrated ? [] : ['20260807120000']);
+			},
+			ensureSharedBackup: () => {
+				now += 200;
+				return {
+					manifestPath: 'synthetic-manifest',
+				} as CriticalProductionBackupPreparation;
+			},
+			requireOwnerApply: async (input) => {
+				now += 100_000;
+				issueProductionWritePermit({
+					projectRef: SUPABASE_PROJECT_REFS.production,
+					operationType: 'production_apply',
+					bindingHex: input.bindingHex,
+				});
+			},
+			applySchema: async () => {
+				now += 300;
+				migrated = true;
+				return { plan: schemaPlan(), wrote: true };
+			},
+			applyInvitation: async ({ packageData }) => {
+				now += packageData.invitation.slug === 'alpha' ? 400 : 500;
+				return {
+					...invitationPreflight(packageData.invitation.slug),
+					status: 'PROMOTED',
+				} as PromotionApplyReport;
+			},
+			verifyInvitationMediaBefore: async () => {
+				now += 20;
+			},
+			verifyInvitationMedia: async () => {
+				now += 30;
+			},
+		});
+		expect(result.timings).toBe(timings.rows);
+		expect(result.timings?.filter((row) => row.phase !== 'plan')).toEqual([
+			{ phase: 'backup', durationMs: 200, status: 'completed' },
+			{ phase: 'schema', durationMs: 300, status: 'completed' },
+			{ phase: 'verification', id: 'alpha:antes', durationMs: 20, status: 'completed' },
+			{ phase: 'publication', id: 'alpha', durationMs: 400, status: 'completed' },
+			{ phase: 'verification', id: 'alpha:después', durationMs: 30, status: 'completed' },
+			{ phase: 'verification', id: 'beta:antes', durationMs: 20, status: 'completed' },
+			{ phase: 'publication', id: 'beta', durationMs: 500, status: 'completed' },
+			{ phase: 'verification', id: 'beta:después', durationMs: 30, status: 'completed' },
+		]);
+		expect(result.timings?.filter((row) => row.phase === 'plan')).toHaveLength(5);
+		expect(
+			result.timings
+				?.filter((row) => row.phase === 'plan')
+				.every((row) => row.durationMs === 10),
+		).toBe(true);
+		expect(JSON.parse(JSON.stringify(result)).timings).toEqual(timings.rows);
+		expect(formatProductionApplyResult(result)).toContain(
+			'Publicación | beta | 0.500 | Completada',
+		);
+		expect(getProductionWritePermit()).toBeNull();
+	});
 	it('authorizes schema separately, then replans and confirms publication with preserved identity', async () => {
 		const order: string[] = [];
 		let migrated = false;
