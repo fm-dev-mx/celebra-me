@@ -119,27 +119,85 @@ export async function waitForVisualHydration(page: Page): Promise<void> {
 // The fixed capture clock barely advances the animation timeline, so entrance animations are
 // still running at capture time and each screenshot depended on Playwright fast-forwarding them
 // in that instant. Finishing finite animations makes the captured state their end state.
-// A scroll-driven animation (`animation-timeline: view()` or a named scroll timeline) does not
-// stay finished: its progress keeps following the scroll position, and a complete-page capture
-// resizes the viewport, so each PNG caught it at a different point. Moving it to the document
-// timeline first pins it at its end state too. Infinite animations stay with Playwright.
+// A scroll-driven animation (`animation-timeline: view()`, a named view timeline or
+// `scroll(root)`) does not stay finished: its progress keeps following the scroll position, and a
+// complete-page capture resizes the viewport, so each PNG caught it at a different point. Its end
+// state is often an exit state (a booth photo leaving, a program item hidden), so it is pinned
+// instead at the progress it has with its subject centred on screen (a root scroll timeline at
+// the top of the page), on the document timeline and paused. Infinite animations stay with
+// Playwright.
 async function settleFiniteAnimations(page: Page): Promise<void> {
 	await page.evaluate(async () => {
-		for (const animation of document.getAnimations()) {
+		const frames = () =>
+			new Promise<void>((resolve) =>
+				requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+			);
+		const start = { x: scrollX, y: scrollY };
+		const finite = document.getAnimations().filter((animation) => {
 			try {
-				const { iterations } = animation.effect?.getComputedTiming() ?? {};
-				if (!Number.isFinite(iterations)) continue;
-				if (animation.timeline !== document.timeline)
-					animation.timeline = document.timeline;
-				if (animation.playState !== 'finished') animation.finish();
+				return Number.isFinite(animation.effect?.getComputedTiming().iterations);
 			} catch {
-				// One animation that cannot finish must not leave the rest running.
+				return false;
+			}
+		});
+		const byTimeline = new Map<AnimationTimeline, Animation[]>();
+		for (const animation of finite) {
+			const { timeline } = animation;
+			if (!timeline || timeline === document.timeline) continue;
+			byTimeline.set(timeline, [...(byTimeline.get(timeline) ?? []), animation]);
+		}
+		const pinned: Array<[Animation, number | null]> = [];
+		for (const [timeline, animations] of byTimeline) {
+			const subject = (timeline as AnimationTimeline & { subject?: Element }).subject;
+			if (subject) subject.scrollIntoView({ block: 'center', behavior: 'instant' });
+			else window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
+			await frames();
+			for (const animation of animations) {
+				let progress: number | null = null;
+				try {
+					progress = animation.effect?.getComputedTiming().progress ?? null;
+				} catch {
+					// An unreadable timing leaves the animation to be cancelled below.
+				}
+				pinned.push([animation, progress]);
+			}
+		}
+		for (const [animation, progress] of pinned) {
+			try {
+				if (progress === null || !animation.effect) {
+					animation.cancel();
+					continue;
+				}
+				animation.timeline = document.timeline;
+				animation.effect.updateTiming({
+					delay: 0,
+					endDelay: 0,
+					duration: 1000,
+					iterations: 1,
+					direction: 'normal',
+					easing: 'linear',
+					fill: 'both',
+				});
+				animation.pause();
+				animation.currentTime = progress * 1000;
+				// Playwright's `animations: 'disabled'` skips animations with a zero playback rate,
+				// so it leaves this pinned frame alone instead of finishing it.
+				animation.updatePlaybackRate(0);
+			} catch {
+				// One animation that cannot be pinned must not leave the rest running.
 				animation.cancel();
 			}
 		}
-		await new Promise<void>((resolve) =>
-			requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-		);
+		window.scrollTo({ left: start.x, top: start.y, behavior: 'instant' });
+		for (const animation of finite) {
+			try {
+				if (animation.playbackRate === 0) continue;
+				if (animation.playState !== 'finished') animation.finish();
+			} catch {
+				animation.cancel();
+			}
+		}
+		await frames();
 	});
 }
 
