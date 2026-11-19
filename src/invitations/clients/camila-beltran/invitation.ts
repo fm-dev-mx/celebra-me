@@ -116,7 +116,7 @@ const content: CanonicalEventContentInput = {
 			sectionSubtitle: '',
 			parentsTitle: 'Mis padres',
 			sectionMessage:
-				'Hoy me siento muy feliz de llegar a este momento de mi vida, el día que dejaré atrás mi infancia y comenzaré un nuevo viaje.',
+				'Hoy me siento muy feliz de llegar a este momento de mi vida, el día que dejaré atrás mi infancia y comenzaré un nuevo viaje.\n\nCon el corazón lleno de emoción, te invito a celebrar mis XV años y a compartir juntos esta noche mágica que siempre recordaré.',
 		},
 	},
 	countdown: {
