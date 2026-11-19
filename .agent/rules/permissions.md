@@ -13,11 +13,13 @@ ownership, environment boundaries and all non-overridable repository rules.
 
 Always deny forced pushes, pushes to `main`, agent Production mutations, unguarded migrations and
 reading `.env*`, `.secrets/`, `.vercel/` or `.backups/`. `gh pr merge` is denied for Codex/Gemini
-and routed to interactive Ask for Claude so the coordinator can merge approved PRs with owner
-approval; it is never auto-allowed. Native syntax cannot enforce every form of these operations. In
-particular, Codex prefix rules cannot express path-based file denies or arbitrary argument
-positions. Never interpret an adapter's coverage gap as permission. Keep the repository's guarded
-workflows and host sandbox/file-access controls in place.
+and routed to interactive Ask for Claude; it is never auto-allowed. These are native adapter
+restrictions, not the source of PR merge authority, which follows the tablero core's
+`docs/agent-rules.md`, «Review inside the session» (see [the board rule](board.md)). Do not bypass
+host restrictions; report a blocked authorized merge to the coordinator. Native syntax cannot
+enforce every form of these operations. In particular, Codex prefix rules cannot express path-based
+file denies or arbitrary argument positions. Never interpret an adapter's coverage gap as
+permission. Keep the repository's guarded workflows and host sandbox/file-access controls in place.
 
 Do not enable bypass/YOLO/Turbo modes, weaken existing denies, install an unverified App/IDE
 configuration key, or remove user-owned approvals as part of synchronization.
