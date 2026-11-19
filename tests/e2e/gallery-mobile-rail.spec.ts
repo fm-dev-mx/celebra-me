@@ -14,7 +14,7 @@ test.describe('Gallery mobile rail presentation', () => {
 		page.on('pageerror', (error) => errors.push(error.message));
 
 		await page.addInitScript(() => {
-			window.localStorage.setItem('envelope-opened-valentina-hernandez', 'true');
+			window.localStorage.setItem('envelope-opened-valentina-hernandez', String(Date.now()));
 		});
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto(ROUTE, { waitUntil: 'domcontentloaded' });
@@ -67,7 +67,7 @@ test.describe('Gallery mobile rail presentation', () => {
 
 	test('desktop restores magazine grid and hides the swipe hint', async ({ page }) => {
 		await page.addInitScript(() => {
-			window.localStorage.setItem('envelope-opened-valentina-hernandez', 'true');
+			window.localStorage.setItem('envelope-opened-valentina-hernandez', String(Date.now()));
 		});
 		await page.setViewportSize({ width: 1280, height: 800 });
 		await page.goto(ROUTE, { waitUntil: 'domcontentloaded' });

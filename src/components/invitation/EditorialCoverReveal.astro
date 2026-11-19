@@ -447,7 +447,9 @@ const shouldRenderHidden =
 	import { isVisualCaptureMode } from '@/lib/invitation/visual-capture-mode';
 	import {
 		buildRevealStorageKey,
+		buildRevealStoredValue,
 		holdPageAtTopWhileGated,
+		isStoredRevealFresh,
 		shouldRespectStoredReveal,
 	} from '@/lib/invitation/reveal-manager';
 
@@ -555,7 +557,7 @@ const shouldRenderHidden =
 			const storageKey = buildRevealStorageKey(eventSlug);
 			const storedOpened = (() => {
 				try {
-					return localStorage.getItem(storageKey) === 'true';
+					return isStoredRevealFresh(localStorage.getItem(storageKey));
 				} catch {
 					return false;
 				}
@@ -582,7 +584,7 @@ const shouldRenderHidden =
 			const rememberOpened = () => {
 				if (isDemoInvitation) return;
 				try {
-					localStorage.setItem(storageKey, 'true');
+					localStorage.setItem(storageKey, buildRevealStoredValue());
 				} catch {
 					// Ignore localStorage access errors
 				}

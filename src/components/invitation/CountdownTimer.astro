@@ -149,6 +149,11 @@ const segments = ALL_SEGMENTS.filter((segment) => resolvedUnits.includes(segment
 				}
 
 				const paddedValue = value.toString().padStart(2, '0');
+				// Flip between two tick names when the digits change, so a profile can replay a
+				// change animation; nothing is styled by default.
+				if (element.dataset.value && element.dataset.value !== paddedValue) {
+					element.dataset.tick = element.dataset.tick === 'a' ? 'b' : 'a';
+				}
 				element.textContent = paddedValue;
 				element.dataset.value = paddedValue;
 			});

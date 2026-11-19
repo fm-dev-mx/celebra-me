@@ -258,6 +258,17 @@ approval before it is published; that approval is recorded here.
   rose-gold note is confirmed; no dress formality is inferred.
 - Location: a grouped venue printed the raw `HH:mm` time; it now prints the formatted time.
 - Location map: an illustrated placeholder until the pin is confirmed (no embed, no CSP change).
+- Round 4 (2026-11-19):
+  - Envelope on phones: the stored «already opened» flag now carries a timestamp and expires
+    (`reveal-manager.ts`, the deferred-CSS promotion script, `EditorialCoverReveal.astro`); a bare
+    legacy `'true'` no longer skips the envelope.
+  - Colors on phones: `src/styles/invitation.scss` declares `color-scheme: only light` so forced
+    dark mode stops darkening the palettes.
+  - Countdown: each value flips a `data-tick` attribute when its digits change, so a profile can
+    replay a change animation; nothing is styled by default.
+  - New tool `src/styles/tools/_jewel-box-accents.scss` (mixin `rose-accents($ornament)`): the pink
+    accents, the rose ornaments, the parents' «&» and the animated countdown and calendar for a
+    jewelry-box invitation. Only camila-beltran includes it.
 
 ### Slug-scoped refinements (profile and composition)
 
@@ -277,13 +288,29 @@ approval before it is published; that approval is recorded here.
 - «Con cariño» (`closingPhrase`) renders in the page footer.
 - The local seed guest's share text carries no link; `/i/<code>` redirects to
   `/camila-beltran?invite=<id>`.
+- Round 4 (2026-11-19, client feedback S1–S6, A1–A10):
+  - More pink (S1/A2): pink section titles, a petal-to-blush parents panel and an original rose SVG
+    (`assets/rose-ornament.svg`) under the family message, the countdown footer and the gifts note,
+    and beside the location title.
+  - Type scale (S3): titles `clamp(2.75rem, 12vw, 3.6rem)`, body 17px, three families at most.
+  - Cover (A3/A4): rose-gold metallic name (clipped gradient with a solid fallback) and a bigger
+    date pill.
+  - Parents (A6): legible script names with a «&» between them.
+  - Countdown and location (S2/A7): rounded segments with a tick animation, calendar days that fade
+    in one by one, a heartbeat on the marked day, calendar links on the location.
+  - Content (A8–A10): dress code reads only «Formal» and the reserved Rose Gold line; gifts keep
+    only «Lluvia de sobres» with a line explaining it; the RSVP subcopy adds «Evento solo para
+    adultos · No niños».
+  - Motion respects `prefers-reduced-motion`.
 
 ### Client pendings
 
 Ceremony venue and pin, padrinos, Production R2 copy of the song, dress formality, programme
 acceptance and the «Rábago» accent remain pending. RSVP closes on 25 November; the client assigns
 passes in the dashboard. The photo QR is included locally through 26 December. Automatic RSVP cutoff
-still requires the deadline feature and its migration to be integrated into this checkout.
+still requires the deadline feature and its migration to be integrated into this checkout. A5 (round
+4): a message after «Con el amor de mis padres» and the date; the client will send the text, so
+nothing was written for it.
 
 ---
 

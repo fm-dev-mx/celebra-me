@@ -2,6 +2,31 @@
 export const buildRevealStorageKey = (eventSlug: string): string => `envelope-opened-${eventSlug}`;
 
 /**
+ * How long an opened gate stays open for the same browser: enough for a reload or a return from
+ * the map app, short enough that a guest who opens the link again later sees the opening again.
+ * The flag stores the opening time; the legacy permanent `'true'` value no longer counts.
+ */
+export const REVEAL_MEMORY_MS = 12 * 60 * 60 * 1000;
+
+/** Value written when a guest really opens the gate. */
+export const buildRevealStoredValue = (now: number = Date.now()): string => String(now);
+
+/** Whether a stored opening time is recent enough to skip the gate. */
+export function isStoredRevealFresh(raw: string | null, now: number = Date.now()): boolean {
+	const openedAt = Number(raw);
+	if (!Number.isFinite(openedAt) || openedAt <= 0) return false;
+	const age = now - openedAt;
+	return age >= 0 && age < REVEAL_MEMORY_MS;
+}
+
+/**
+ * The same check as `isStoredRevealFresh`, as a JavaScript expression for inline scripts that
+ * run before any module loads. `rawExpression` must evaluate to the stored string or null.
+ */
+export const buildStoredRevealFreshExpression = (rawExpression: string): string =>
+	`(function(v){var t=Number(v);var a=Date.now()-t;return isFinite(t)&&t>0&&a>=0&&a<${REVEAL_MEMORY_MS};})(${rawExpression})`;
+
+/**
  * A stored "already opened" flag skips the gate only on real invitations and only when
  * `?forceEnvelope=true` is absent.
  */
@@ -58,7 +83,7 @@ export class RevealManager {
 
 	private getStoredFlag(key: string): boolean {
 		try {
-			return window.localStorage.getItem(key) === 'true';
+			return isStoredRevealFresh(window.localStorage.getItem(key));
 		} catch {
 			return false;
 		}
@@ -67,7 +92,7 @@ export class RevealManager {
 	public setStoredFlag(): void {
 		if (this.isDemoInvitation) return;
 		try {
-			window.localStorage.setItem(this.storageKey, 'true');
+			window.localStorage.setItem(this.storageKey, buildRevealStoredValue());
 		} catch {
 			// Storage can fail in private mode
 		}

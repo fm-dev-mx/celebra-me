@@ -1,3 +1,5 @@
+import { buildStoredRevealFreshExpression } from './reveal-manager';
+
 export const INVITATION_DEFERRED_CSS_SELECTOR = 'link[data-invitation-deferred-css]';
 export const INVITATION_DEFERRED_CSS_PROMOTION_FALLBACK_MS = 8000;
 export const ENVELOPE_OPENED_EVENT = 'envelope:opened';
@@ -31,7 +33,7 @@ export function buildInvitationDeferredCssPromotionInlineScript(input: {
 		const params = new URLSearchParams(window.location.search);
 		const skip = params.get('skipEnvelope') === 'true';
 		const force = params.get('forceEnvelope') === 'true';
-		return skip || (!isDemo && !force && window.localStorage.getItem(storageKey) === 'true');
+		return skip || (!isDemo && !force && ${buildStoredRevealFreshExpression('window.localStorage.getItem(storageKey)')});
 	}
 
 	function getPaintEntries() {

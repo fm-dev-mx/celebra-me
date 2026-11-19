@@ -26,28 +26,28 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	// the rose-gold studio wall, with a warm rose-brown ink. No cold greys or mauves anywhere.
 	--jewel-cream: rgb(252 241 234);
 	--jewel-cream-rgb: 252 241 234;
-	--jewel-backdrop: rgb(240 200 194);
+	--jewel-backdrop: rgb(244 192 204);
 	--jewel-beige: rgb(246 226 214);
 	--jewel-beige-rgb: 246 226 214;
 	--jewel-white: rgb(255 250 246);
 	--jewel-white-rgb: 255 250 246;
-	--jewel-petal: rgb(240 200 194);
-	--jewel-petal-deep: rgb(230 180 172);
-	--jewel-petal-light: rgb(248 220 214);
-	--jewel-petal-shade-rgb: 196 140 128;
+	--jewel-petal: rgb(244 192 204);
+	--jewel-petal-deep: rgb(232 166 184);
+	--jewel-petal-light: rgb(250 218 226);
+	--jewel-petal-shade-rgb: 196 124 146;
 	--jewel-flap-paper: linear-gradient(
 		270deg,
 		var(--jewel-petal-light) 0%,
 		var(--jewel-petal) 100%
 	);
-	--jewel-rose: rgb(216 150 140);
-	--jewel-rose-rgb: 216 150 140;
-	--jewel-rose-deep: rgb(158 82 80);
-	--jewel-rose-deep-rgb: 158 82 80;
+	--jewel-rose: rgb(224 134 160);
+	--jewel-rose-rgb: 224 134 160;
+	--jewel-rose-deep: rgb(178 70 108);
+	--jewel-rose-deep-rgb: 178 70 108;
 	--jewel-mauve-deep: rgb(114 56 58);
-	--jewel-blush: rgb(248 222 216);
-	--jewel-blush-rgb: 248 222 216;
-	--jewel-blush-deep: rgb(240 200 194);
+	--jewel-blush: rgb(251 224 230);
+	--jewel-blush-rgb: 251 224 230;
+	--jewel-blush-deep: rgb(244 196 210);
 	--jewel-gold: rgb(206 162 124);
 	--jewel-gold-rgb: 206 162 124;
 	--jewel-gold-light: rgb(236 210 184);
@@ -65,9 +65,8 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	--jewel-wax-deep: rgb(150 104 34);
 	--jewel-wax-edge: rgb(108 72 22);
 	--jewel-bronze: rgb(114 56 58);
-	--jewel-script: 'Parisienne', var(--font-calligraphy), cursive;
+	--jewel-script: 'Parisienne', cursive;
 	--jewel-serif: 'EB Garamond Variable', 'EB Garamond', georgia, serif;
-	--jewel-title-size: clamp(2.6rem, 11vw, 3.4rem);
 	--jewel-ink: rgb(98 58 58);
 	--jewel-ink-rgb: 98 58 58;
 	--jewel-ink-soft: rgb(136 94 92);
@@ -138,18 +137,16 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	--hero-label-color: var(--jewel-white);
 	--hero-badge-text-fallback: var(--jewel-white);
 	--hero-badge-text: var(--jewel-white);
-	--hero-heading-paint: none;
-	--hero-heading-fill: var(--jewel-white);
-	--hero-heading-size: clamp(4.6rem, 23vw, 6.4rem);
+	--hero-heading-size: clamp(5.75rem, 30vw, 8rem);
 	--hero-heading-weight: 400;
 	--hero-heading-line-height: 1;
 	--hero-eyebrow-font: var(--font-label, var(--font-body));
 	--hero-eyebrow-size: 0.78rem;
 	--hero-eyebrow-weight: 500;
 	--hero-eyebrow-tracking: 0.34em;
-	--hero-date-size: 0.86rem;
-	--hero-date-tracking: 0.28em;
-	--hero-date-weight: 500;
+	--hero-date-size: clamp(1.15rem, 5vw, 1.5rem);
+	--hero-date-tracking: 0.16em;
+	--hero-date-weight: 600;
 	--hero-date-transform: uppercase;
 	--hero-divider-fill: var(--jewel-gold-light);
 	--hero-divider-margin: 0.9rem auto 1rem;
@@ -163,15 +160,7 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	);
 	--hero-copy-shadow: 0 1px 16px rgb(var(--jewel-ink-rgb) / 62%);
 
-	// The film-title opening: a champagne-to-rose-gold name and a soft warm glow.
-	--hero-cinema-gold: linear-gradient(
-		100deg,
-		rgb(255 238 214) 0%,
-		rgb(236 200 150) 30%,
-		rgb(255 246 228) 48%,
-		rgb(226 184 136) 66%,
-		rgb(255 238 214) 100%
-	);
+	// The film-title opening: a soft warm glow behind the rose-gold name.
 	--hero-cinema-shadow: rgb(var(--jewel-ink-rgb) / 55%);
 	--hero-cinema-light: rgb(255 236 205 / 90%);
 
@@ -180,7 +169,7 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	--quote-text-color-fallback: var(--jewel-ink);
 	--quote-author-color-fallback: var(--jewel-gold-ink);
 	--quote-accent-color-fallback: var(--jewel-gold);
-	--countdown-section-background: var(--jewel-beige);
+	--countdown-section-background: var(--jewel-blush);
 	--family-bg-fallback: var(--jewel-cream);
 	--family-panel-bg-fallback: transparent;
 	--family-panel-border-fallback: 0;
@@ -601,4 +590,34 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	--rsvp-button-shadow-hover:
 		inset 0 1px 0 rgb(var(--jewel-white-rgb) / 60%),
 		0 12px 22px -10px rgb(var(--jewel-rose-deep-rgb) / 60%);
+}
+
+// Fourth round: three families only (Parisienne, EB Garamond, Montserrat), a larger type scale
+// and the name in metallic rose gold; browsers without clipped text keep a solid rose gold.
+.event--camila-beltran.event--camila-beltran.theme-preset--jewelry-box {
+	// Three families only: the script, the serif for titles and labels, the sans for the UI.
+	--font-calligraphy: var(--jewel-script);
+	--font-display: var(--jewel-serif);
+	--font-label: var(--jewel-serif);
+	--jewel-title-size: clamp(2.75rem, 12vw, 3.6rem);
+	--jewel-accent-body-size: clamp(1.0625rem, 4.4vw, 1.1875rem);
+	--location-place-font-family: var(--jewel-serif);
+	--calligraphy-accent-font: var(--jewel-script);
+
+	// The name in metallic rose gold; browsers without clipped text keep a solid rose gold.
+	--hero-cinema-gold: linear-gradient(
+		100deg,
+		rgb(255 226 218) 0%,
+		rgb(232 162 158) 26%,
+		rgb(255 242 236) 46%,
+		rgb(212 136 128) 66%,
+		rgb(250 210 200) 100%
+	);
+	--hero-heading-paint: none;
+	--hero-heading-fill: rgb(246 196 188);
+
+	@supports (background-clip: text) or (-webkit-background-clip: text) {
+		--hero-heading-paint: var(--hero-cinema-gold);
+		--hero-heading-fill: transparent;
+	}
 }
