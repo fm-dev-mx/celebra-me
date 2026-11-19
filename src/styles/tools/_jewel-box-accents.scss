@@ -5,9 +5,9 @@
 // parents, rose countdown cards and a lively countdown and calendar. Include it inside the
 // client's root rule and pass the ornament url written next to the client's assets; the rules
 // double the root so they win over the shared jewel-box scenes. Sections without these classes
-// are untouched. `$cover-rose: true` adds the ornament beside the cover label under the name;
-// `$names-stroke` (a length) thickens a thin script on the parents' names.
-@mixin rose-accents($ornament, $cover-rose: false, $names-stroke: null) {
+// are untouched. `$cover-rose: true` adds the ornament beside the cover label under the name.
+// A client may set `--jewel-accent-family-title-font` to replace the script parents' title.
+@mixin rose-accents($ornament, $cover-rose: false) {
 	@at-root #{&}#{&} {
 		// Cover: a bigger date set in the serif, on a pink pill so it reads on the photograph.
 		.invitation-hero__date {
@@ -69,16 +69,13 @@
 		// Parents: a big script title, larger names in deep rose and an ampersand between them.
 		.family__title {
 			max-width: 22rem;
-			font: 400 var(--jewel-title-size) / 1.15 var(--jewel-script);
+			font: var(
+				--jewel-accent-family-title-font,
+				400 var(--jewel-title-size) / 1.15 var(--jewel-script)
+			);
 			letter-spacing: 0;
 			text-transform: none;
 			color: var(--jewel-rose-deep);
-		}
-
-		@if $names-stroke {
-			.family__member-name {
-				-webkit-text-stroke: $names-stroke currentcolor;
-			}
 		}
 
 		.family__group--parents .family__member + .family__member::before {
