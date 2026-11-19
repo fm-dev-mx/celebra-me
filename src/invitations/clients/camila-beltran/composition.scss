@@ -519,6 +519,31 @@
 				grid-column: span 2;
 			}
 		}
+
+		// Phones: two full-width screens, the header plus the first photograph (8.75rem is the
+		// header and its gap), then the two portraits over the last photograph.
+		@media (width < 768px) {
+			display: block;
+			min-height: 0;
+
+			.gallery-section__header {
+				padding-inline: 1rem;
+			}
+
+			.gallery-grid__item {
+				width: 100%;
+				height: 40svh;
+				aspect-ratio: auto;
+			}
+
+			.gallery-grid__item:first-child {
+				height: calc(100svh - 8.75rem - var(--gallery-section-padding-block));
+			}
+
+			.gallery-grid__item:last-child {
+				height: calc(60svh - var(--gallery-grid-row-gap));
+			}
+		}
 	}
 
 	.thank-you-section .closing-name {
