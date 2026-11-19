@@ -7,8 +7,7 @@
 	// The date arc lives with her assets; a url written in the shared tool would not resolve.
 	@include scenes.photo-cover(url('./assets/hero-date-arc.png'));
 
-	// Her studio photo has its own warm backdrop, so it fills the screen edge to edge; the shared
-	// inset and edge fade would leave a pink frame around it.
+	// Her studio backdrop fills the screen edge to edge; the shared inset would frame it in pink.
 	.invitation-hero__background img {
 		translate: none;
 		scale: none;
@@ -34,7 +33,6 @@
 }
 
 .event--camila-beltran {
-	// A film-title opening once the envelope opens: photo push, gold light, written name, then date.
 	@include cinema.entrance;
 
 	color: var(--jewel-ink);
