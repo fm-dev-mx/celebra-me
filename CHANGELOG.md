@@ -10,6 +10,31 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.75.0] - 2026-11-18
+
+Applies two requested adjustments to Camila Beltrán on phones. No database migrations.
+
+### Changed
+
+- Invitations: Camila Beltrán shows its gallery at full width on phones, spread over two screens,
+  and uses the quiet equalizer music control (#1061).
+
+## [0.74.0] - 2026-11-18
+
+Ships the second design round for Camila Beltrán and Daniela Yáñez's requested adjustments to
+daniela-y-david. No database migrations.
+
+### Changed
+
+- Invitations: Camila Beltrán round two refines the envelope, palette, photographs and sections, and
+  fits every section to the viewport on phone, tablet and desktop (#1045).
+- Invitations: Camila Beltrán plays «A Thousand Years» by Christina Perri as its song (#1054).
+- Invitations: daniela-y-david keeps a single gallery photograph and shows the reserved places on a
+  perforated framed pass (#1050).
+- Invitations: the floating RSVP button and the footer reply link now track the RSVP section by
+  measuring its position, so they keep working on every invitation when that section remounts
+  (#1045).
+
 ## [0.73.1] - 2026-11-14
 
 Turns on the photo-sharing add-on for Valeria Hernández. No database migrations.

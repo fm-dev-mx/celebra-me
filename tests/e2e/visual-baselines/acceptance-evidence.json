@@ -1,33 +1,31 @@
 {
-    "referenceSha": "71f802bd5d7748496df33bada768fbfaa5a33743",
-    "acceptedAt": "2026-11-19T03:52:37.871Z",
-    "matrixHash": "cbd3152ea1b0947ad893879ae91aab90f89058a61c678642dd9e81f1292fe10a",
-    "candidateManifestSha256": "e51584ffec13209131f97c20e7fa5eb668bb9e4b97f6296fe84b2b820cc5a1ef",
-    "acceptedManifestSha256": "c3b9c29d3e344fb7f5835306e897b8ec8fbce4206838af0adeb3f307c6dd0b3d",
+    "referenceSha": "1433c41ae9d8d95de3f787a09193f0e954c5af9e",
+    "acceptedAt": "2026-11-19T01:23:43.069Z",
+    "matrixHash": "6528e362893e74dd11c2c7c993832d1b7abad491d2129ab5a129a71e10f86f52",
+    "candidateManifestSha256": "a4da99b45a633a26709f3b36f42e548d8c3065a472d2abe9b8aa846d4268d5ee",
+    "acceptedManifestSha256": "c304d7c101ab5bb21ba4750727f9d908c1beb0477312cbcf7659c7ca9fe61ede",
     "reviewedPaths": [
-        "pages/invitation-boda-adriana-y-israel-desktop.png",
-        "pages/invitation-boda-adriana-y-israel-mobile.png"
+        "pages/invitation-xv-camila-beltran-mobile.png",
+        "pages/invitation-xv-camila-beltran-desktop.png"
     ],
     "items": [
         {
-            "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
+            "file": "pages/invitation-xv-camila-beltran-mobile.png",
             "status": "changed",
-            "sha256": "d0b08297c3ff7dfe5037d99eebce7d658d6bbb48ca369f93f56295a72daf70cc",
-            "previousSha256": "87f971f2f1090733b5a69300fab53cda8f94b293c8ce33fb4d2d91ac733cd204",
-            "differentPixels": 1009179,
-            "pixelRatio": 0.2859584994517031,
-            "heightDelta": -371
+            "sha256": "eab12e70ba37e1fd130a52df401e161e0fc9aff24d5908865570029f6eab699c",
+            "previousSha256": "7cfa6eb8936f6e729152e18a4e29167cb43c1360089bbb13985ec58f2c7afbec",
+            "differentPixels": 40862,
+            "pixelRatio": 0.008108215367153612
         },
         {
-            "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
+            "file": "pages/invitation-xv-camila-beltran-desktop.png",
             "status": "changed",
-            "sha256": "5e110eec7dd4f6172372811f3742d80cedcbd6c4d49369c960a74eba107053ef",
-            "previousSha256": "77944dd7d8d08d3098ce03cd78315f2f2cd747879db97898cbc3e83921225450",
-            "differentPixels": 3969615,
-            "pixelRatio": 0.296385021323872,
-            "heightDelta": -290
+            "sha256": "3eb038d28623b1cfa5e684edddd911bea03f84b562e15213c02f5643ab1e6434",
+            "previousSha256": "67d36133732cc624b30dde8e0da8caceb10bd6e9a032625223407fc7a6948889",
+            "differentPixels": 110416,
+            "pixelRatio": 0.005416627421431038
         }
     ],
-    "renderNoise": 133,
+    "renderNoise": 135,
     "removed": []
 }

@@ -163,6 +163,18 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	);
 	--hero-copy-shadow: 0 1px 16px rgb(var(--jewel-ink-rgb) / 62%);
 
+	// The film-title opening: a champagne-to-rose-gold name and a soft warm glow.
+	--hero-cinema-gold: linear-gradient(
+		100deg,
+		rgb(255 238 214) 0%,
+		rgb(236 200 150) 30%,
+		rgb(255 246 228) 48%,
+		rgb(226 184 136) 66%,
+		rgb(255 238 214) 100%
+	);
+	--hero-cinema-shadow: rgb(var(--jewel-ink-rgb) / 55%);
+	--hero-cinema-light: rgb(255 236 205 / 90%);
+
 	// Section grounds.
 	--quote-bg-fallback: var(--jewel-cream);
 	--quote-text-color-fallback: var(--jewel-ink);
@@ -524,6 +536,12 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	--gallery-item-shadow: none;
 	--gallery-item-emphasis-shadow: none;
 	--gallery-item-emphasis-border-color: transparent;
+
+	// Phones: edge-to-edge photographs over two screens instead of one shrunken mosaic.
+	@media (width < 768px) {
+		--gallery-section-padding-inline: 0;
+		--gallery-container-max-width: 100%;
+	}
 
 	@media (width >= 1024px) {
 		--gallery-container-max-width: min(64rem, 90vw, calc((100svh - 12rem) * 1.125));

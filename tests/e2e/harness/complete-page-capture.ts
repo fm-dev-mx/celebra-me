@@ -295,10 +295,18 @@ async function settleFiniteAnimations(page: Page, completePage: boolean): Promis
 					rangeName?: string;
 					offset?: unknown;
 				};
-				const range = ranges[rangeName ?? 'normal'];
+				// A length range with no name (`animation-range: 0 100svh` on `scroll(root)`) reads
+				// back as `rangeName: 'none'` with the length resolved to px, counted from the
+				// start of the scroll range. Left unmodelled it fell back to the live read, which
+				// on the loaded, unsharded CI job still held an earlier scroll position: the
+				// destenid-sofia hero photo kept its last parallax frame (22svh ≈ 200px down) at
+				// the page top.
+				const range = ranges[!rangeName || rangeName === 'none' ? 'normal' : rangeName];
+				if (!range) return null;
 				const share = unitValue(amount, 'percent');
-				if (!range || share === null) return null;
-				return range[0] + (share / 100) * (range[1] - range[0]);
+				if (share !== null) return range[0] + (share / 100) * (range[1] - range[0]);
+				const length = unitValue(amount, 'px');
+				return length === null ? null : range[0] + length;
 			};
 			const scrolled = animation as Animation & { rangeStart?: unknown; rangeEnd?: unknown };
 			const start = edge(scrolled.rangeStart, 0);
