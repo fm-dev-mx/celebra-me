@@ -280,6 +280,7 @@ const content: CanonicalEventContentInput = {
 	music: {
 		url: 'https://media.celebra-me.com/invitations/xv/camila-beltran/music-ac280437e080b10dd2b6ec51ea694b3c96173c36b5a8584bca35efb7be4719d6.mp3',
 		title: 'A Thousand Years — Christina Perri',
+		control: 'equalizer',
 		autoPlay: true,
 	},
 	sharing: {
