@@ -3,6 +3,7 @@
 @use '../../../styles/tools/jewel-box-variants' as variants;
 @use '../../../styles/tools/hero-cinematic-entrance' as cinema;
 @use '../../../styles/tools/jewel-box-accents' as accents;
+@use '../../../styles/tools/jewel-box-rose-gold' as rose-gold;
 
 .event--camila-beltran .invitation-hero {
 	// The date arc lives with her assets; a url written in the shared tool would not resolve.
@@ -390,10 +391,6 @@
 			content: '';
 		}
 
-		.dress-code__icon {
-			opacity: 85%;
-		}
-
 		.dress-code__text {
 			max-width: 30ch;
 			margin-inline: auto;
@@ -597,4 +594,5 @@
 	}
 
 	@include accents.rose-accents(url('./assets/rose-ornament.svg'), true);
+	@include rose-gold.rose-gold-finish;
 }
