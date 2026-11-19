@@ -1,6 +1,7 @@
 @use '../../../styles/tools/motion';
 @use '../../../styles/tools/jewel-box-scenes' as scenes;
 @use '../../../styles/tools/jewel-box-variants' as variants;
+@use '../../../styles/tools/hero-cinematic-entrance' as cinema;
 
 .event--camila-beltran .invitation-hero {
 	// The date arc lives with her assets; a url written in the shared tool would not resolve.
@@ -33,6 +34,9 @@
 }
 
 .event--camila-beltran {
+	// A film-title opening once the envelope opens: photo push, gold light, written name, then date.
+	@include cinema.entrance;
+
 	color: var(--jewel-ink);
 
 	.header-base,
