@@ -1,7 +1,7 @@
 @use './composition';
 
 // Adriana e Israel: the jewelry-box-wedding preset recolored as indigo stationery. Indigo leads,
-// mist and ivory carry the paper, and gold appears only as hairlines. Tokens only; layout that the
+// mist and ivory carry the paper, and silver appears only as hairlines. Tokens only; layout that the
 // variants do not expose lives in the composition.
 
 .event--adriana-y-israel.theme-preset--jewelry-box-wedding {
@@ -15,15 +15,71 @@
 	--ayi-mist-rgb: 226 229 241;
 	--ayi-ivory: rgb(250 249 245);
 	--ayi-ivory-rgb: 250 249 245;
-	--ayi-gold: rgb(201 174 118);
-	--ayi-gold-rgb: 201 174 118;
-	--ayi-gold-ink: rgb(122 100 54);
+	--ayi-silver: rgb(178 182 196);
+	--ayi-silver-rgb: 178 182 196;
+	--ayi-silver-ink: rgb(96 102 120);
+
+	// Champagne is the second accent, kept to the sprigs, the seals and the script lines; the light
+	// tone reads on indigo, the ink tone on ivory.
+	--ayi-champagne: rgb(196 166 108);
+	--ayi-champagne-light: rgb(214 190 140);
+	--ayi-champagne-ink: rgb(150 118 62);
 	--color-surface-primary: var(--ayi-ivory);
 	--color-surface-primary-rgb: var(--ayi-ivory-rgb);
 	--color-surface-dark: var(--ayi-indigo);
 	--color-surface-dark-rgb: var(--ayi-indigo-rgb);
-	--color-action-accent: var(--ayi-gold);
-	--color-action-accent-rgb: var(--ayi-gold-rgb);
+	--color-action-accent: var(--ayi-silver);
+	--color-action-accent-rgb: var(--ayi-silver-rgb);
+
+	// The shared variants fall back to gold; the accent here is pearl silver, so every variant
+	// accent token resolves to the silver set.
+	--framed-scene-rule: var(--ayi-silver);
+	--framed-scene-rule-rgb: var(--ayi-silver-rgb);
+	--framed-groups-rule-rgb: var(--ayi-silver-rgb);
+	--framed-groups-light: var(--ayi-ivory);
+	--framed-groups-wash-rgb: 224 227 238;
+	--framed-closing-gold: var(--ayi-silver);
+	--framed-closing-gold-rgb: var(--ayi-silver-rgb);
+	--rising-stack-gold: var(--ayi-silver);
+	--rising-stack-gold-rgb: var(--ayi-silver-rgb);
+	--rising-stack-gold-ink: var(--ayi-silver-ink);
+	--framed-card-rule: var(--ayi-silver);
+	--framed-card-rule-rgb: var(--ayi-silver-rgb);
+	--framed-card-rule-ink: var(--ayi-silver-ink);
+	--hero-arch-cue-spark: rgb(236 238 244);
+	--veiled-arch-gold: var(--ayi-silver);
+	--pinned-program-gold: var(--ayi-silver);
+	--pinned-program-gold-rgb: var(--ayi-silver-rgb);
+	--pinned-program-gold-ink: var(--ayi-silver-ink);
+	--framed-pass-gold-rgb: var(--ayi-silver-rgb);
+	--framed-pass-gold-ink: var(--ayi-silver-ink);
+	--veiled-photo-rule: var(--ayi-silver);
+	--veiled-photo-gold: var(--ayi-silver);
+	--framed-register-gold-rgb: var(--ayi-silver-rgb);
+
+	// Footer pull cue: a pearl orb on a soft silver pool at the bottom edge, with its label.
+	--footer-pull-shape: 50%;
+	--footer-pull-color: var(--ayi-silver);
+	--footer-pull-body: radial-gradient(
+		circle at 36% 30%,
+		rgb(255 255 255) 0%,
+		rgb(222 225 236) 45%,
+		var(--ayi-silver) 100%
+	);
+	--footer-pull-glow: rgb(var(--ayi-silver-rgb) / 45%);
+	--footer-pull-pool: radial-gradient(
+		ellipse 65% 100% at 50% 100%,
+		rgb(var(--ayi-silver-rgb) / 22%),
+		transparent 72%
+	);
+	--footer-pull-label: 'Deslice hacia arriba';
+	--footer-pull-label-color: var(--ayi-ivory);
+	--footer-pull-label-size: 0.875rem;
+	--footer-pull-breathe: footer-pull-breathe;
+	--footer-reply-lantern-glow: rgb(var(--ayi-silver-rgb) / 45%);
+	--footer-divider-line: rgb(var(--ayi-silver-rgb) / 45%);
+	--formal-chapter-metal: var(--ayi-silver);
+	--formal-chapter-metal-rgb: var(--ayi-silver-rgb);
 	--color-text-emphasis: var(--ayi-indigo);
 	--color-text-on-dark: var(--ayi-ivory);
 	--color-text-on-light: rgb(var(--ayi-indigo-deep-rgb) / 86%);
@@ -39,20 +95,52 @@
 	--family-label-font: var(--ayi-font-sans);
 	--family-meta-font: var(--ayi-font-sans);
 	--formal-chapter-label-font: var(--ayi-font-sans);
+
+	// The shared framed/veiled variants fall back to olive when their own tokens are unset; every
+	// one of them is pinned here to indigo so no olive survives. The lighter olive maps to indigo,
+	// the deep olive to a night indigo that keeps the same contrast.
+	--ayi-indigo-night: rgb(30 38 92);
+	--ayi-indigo-night-rgb: 30 38 92;
+	--framed-scene-accent: var(--ayi-indigo);
+	--framed-scene-ink: var(--ayi-indigo-night);
+	--framed-register-ground: var(--ayi-indigo);
+	--framed-register-olive-rgb: var(--ayi-indigo-rgb);
+	--framed-register-olive-deep-rgb: var(--ayi-indigo-night-rgb);
+	--veiled-photo-veil-rgb: var(--ayi-indigo-rgb);
+	--veiled-photo-veil-deep-rgb: var(--ayi-indigo-night-rgb);
+	--veiled-photo-olive-rgb: var(--ayi-indigo-rgb);
+	--veiled-photo-olive-deep-rgb: var(--ayi-indigo-night-rgb);
+	--veiled-arch-olive-rgb: var(--ayi-indigo-rgb);
+	--veiled-arch-olive-deep-rgb: var(--ayi-indigo-night-rgb);
+	--pinned-program-olive: var(--ayi-indigo);
+	--pinned-program-olive-rgb: var(--ayi-indigo-rgb);
+	--pinned-program-olive-deep: var(--ayi-indigo-deep);
+	--pinned-program-olive-deep-rgb: var(--ayi-indigo-deep-rgb);
+	--framed-card-accent: var(--ayi-indigo);
+	--framed-card-accent-rgb: var(--ayi-indigo-rgb);
+	--framed-card-ink: var(--ayi-indigo-deep);
+	--framed-card-ink-rgb: var(--ayi-indigo-deep-rgb);
+	--framed-groups-accent: var(--ayi-indigo);
+	--framed-groups-ink: var(--ayi-indigo-deep);
+	--framed-pass-olive: var(--ayi-indigo);
+	--framed-pass-olive-deep: var(--ayi-indigo-deep);
+	--framed-pass-olive-deep-rgb: var(--ayi-indigo-deep-rgb);
+	--framed-closing-olive-deep: var(--ayi-indigo-deep);
+	--rising-stack-title: var(--ayi-indigo-deep);
+	--color-action-primary: var(--ayi-indigo);
+	--color-action-primary-rgb: var(--ayi-indigo-rgb);
 	--hairline-frame-display: block;
-	--hairline-frame-ink: rgb(var(--ayi-gold-rgb) / 85%);
+	--hairline-frame-ink: rgb(var(--ayi-silver-rgb) / 85%);
 	--hairline-frame-inset: 12px;
 
 	#event-header.header-base--transparent {
 		--header-nav-color: var(--color-text-on-dark);
 	}
 
-	// Cover: the art bleeds to every edge and an indigo veil rises from the foot; no arch.
+	// A tall arched window with a silver hairline and a floating moulding, lit from behind by a
+	// soft indigo glow that rises from the flat reveal ground; the ring is the reveal's silver thread.
 	.invitation-hero[data-variant='veiled-arch'] {
-		--hero-arch-top: 0;
-		--hero-arch-width: 100%;
-		--hero-arch-height: 100%;
-		--hero-arch-radius: 0;
+		--hero-arch-radius: 999px 999px 0.25rem 0.25rem;
 		--hero-arch-moulding: transparent;
 		--hero-arch-moulding-gap: -12px;
 		--hero-arch-moulding-radius: 0;
@@ -60,10 +148,17 @@
 		--hero-arch-content-margin: 0 auto 6.5rem;
 		--hero-arch-heading-size: clamp(2.6rem, 12.5vw, 3.75rem);
 		--hero-arch-divider-margin: 1rem auto 0.85rem;
-		--hero-arch-sky: var(--ayi-indigo-deep);
+		--hero-arch-sky:
+			radial-gradient(
+				ellipse 70% 48% at var(--ayi-hero-glow-x, 50%) 36%,
+				rgb(var(--ayi-indigo-rgb) / 55%) 0%,
+				rgb(var(--ayi-indigo-deep-rgb) / 0%) 100%
+			),
+			radial-gradient(ellipse 120% 60% at 50% 110%, rgb(10 12 36) 0%, transparent 70%),
+			var(--ayi-indigo-deep);
 		--hero-arch-sky-deep: var(--ayi-indigo-deep);
-		--hero-arch-ring: transparent;
-		--hero-arch-accent: var(--ayi-gold);
+		--hero-arch-ring: var(--ayi-silver);
+		--hero-arch-accent: var(--ayi-silver);
 		--hero-arch-ink: var(--ayi-ivory);
 		--hero-arch-muted: rgb(var(--ayi-ivory-rgb) / 94%);
 		--hero-arch-photo-shade:
@@ -84,7 +179,7 @@
 		--hero-heading-weight: 500;
 		--hero-heading-paint: none;
 		--hero-heading-fill: currentcolor;
-		--hero-divider-fill: var(--ayi-gold);
+		--hero-divider-fill: var(--ayi-silver);
 		--hero-date-font: var(--font-label);
 		--hero-date-size: 0.9375rem;
 		--hero-date-weight: 600;
@@ -93,6 +188,24 @@
 		--veiled-arch-ampersand: 'e';
 		--veiled-arch-date-line: 'Sábado 10 de julio de 2027';
 		--veiled-arch-city-line: 'Oaxaca de Juárez, Oaxaca';
+
+		// Wide screens: a full-bleed portrait would crop both faces, so the photo stands whole in a
+		// tall frame on the right and the names sit on the indigo ground at the left.
+		@media (width >= 62rem) {
+			--hero-arch-top: 50%;
+			--hero-arch-width: min(38vw, 34rem);
+			--hero-arch-height: min(84svh, 48rem);
+			--ayi-hero-glow-x: 70%;
+			--hero-arch-content-margin: 0 auto 0 clamp(2rem, 8vw, 8rem);
+			--hero-arch-heading-size: clamp(4rem, 6.4vw, 6.5rem);
+			--hero-arch-divider-margin: 1.5rem 0 1.1rem;
+			--hero-arch-label-top: calc(var(--header-height-scrolled, 64px) + 2.5rem);
+			--hero-arch-photo-shade: linear-gradient(
+				0deg,
+				rgb(var(--ayi-indigo-deep-rgb) / 30%) 0%,
+				transparent 30%
+			);
+		}
 	}
 
 	// Stationery card shared by the inner sections: white paper on a mist ground, indigo branches
@@ -103,7 +216,7 @@
 	--ayi-art-sprig: url('./assets/branch-sprig.svg');
 
 	// Quote: the couple under the flower arch, full screen under an indigo veil, the text in ivory.
-	--ayi-quote-photo: url('./assets/quote.webp');
+	--ayi-quote-photo: url('./assets/hero.webp');
 	--framed-groups-sprig: var(--ayi-art-sprig);
 	--framed-scene-sprig: var(--ayi-art-sprig);
 	--framed-scene-sprig-display: block;
@@ -134,7 +247,7 @@
 
 	.family {
 		--family-bg: var(--ayi-ground);
-		--family-accent: var(--ayi-gold);
+		--family-accent: var(--ayi-silver);
 		--family-header-max-width: 100%;
 		--family-title-max-width: 16ch;
 		--family-title-size: clamp(1.35rem, 1rem + 1.6vw, 1.9rem);
@@ -159,21 +272,18 @@
 		--framed-groups-name-size: clamp(1rem, 0.9rem + 0.8svh, 1.2rem);
 	}
 
-	// Reveal: an indigo pocket-fold envelope, a gold hairline for the ink and an ivory card.
-	.envelope-wrapper[data-variant='pocket-fold'] {
-		--pocket-fold-field: var(--ayi-indigo);
-		--pocket-fold-field-deep: var(--ayi-indigo-deep);
-		--pocket-fold-ink: var(--ayi-gold);
-		--pocket-fold-star: transparent;
-		--pocket-fold-spark: transparent;
-		--pocket-fold-paper: rgb(56 68 138);
-		--pocket-fold-liner: rgb(84 96 160);
-		--pocket-fold-card-bg: var(--ayi-ivory);
-		--pocket-fold-card-ink: var(--ayi-indigo-deep);
-		--pocket-fold-card-label-ink: var(--ayi-gold-ink);
-		--pocket-fold-guest-size: clamp(2.25rem, 10.5vw, 2.85rem);
+	// Reveal: a silver stroke on the night indigo of the cover; it traces the cover arch at its ring.
+	.envelope-wrapper[data-variant='silver-thread'] {
+		--silver-thread-ground: var(--ayi-indigo-deep);
+		--silver-thread-ink: var(--ayi-silver);
+		--silver-thread-traces-arch: true;
+		--silver-thread-arch-outset: 5;
 		--env-text-primary: var(--ayi-ivory);
 		--env-text-secondary: rgb(var(--ayi-ivory-rgb) / 86%);
-		--env-instruction-color: rgb(232 216 176);
+		--env-instruction-color: rgb(222 225 234);
+
+		@media (width >= 62rem) {
+			--silver-thread-arch-outset: 8;
+		}
 	}
 }

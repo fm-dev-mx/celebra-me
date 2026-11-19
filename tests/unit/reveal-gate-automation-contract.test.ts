@@ -6,13 +6,14 @@ const readSource = (relativePath: string) =>
 
 describe('reveal gate automation contract', () => {
 	const componentSource = readSource('src/components/invitation/EnvelopeReveal.astro');
+	const timingSource = readSource('src/lib/invitation/reveal-timing.ts');
 	const managerSource = readSource('src/lib/invitation/reveal-manager.ts');
 	const routeSource = readSource('src/pages/[eventType]/[slug].astro');
 
 	it('completes the reveal through a bounded fallback when animationend never fires', () => {
 		expect(componentSource).toContain('resolveCardRiseFallbackMs');
 		expect(componentSource).toContain('CARD_RISE_FALLBACK_FLOOR_MS');
-		expect(componentSource).toContain('CARD_RISE_FALLBACK_MARGIN_MS');
+		expect(timingSource).toContain('CARD_RISE_FALLBACK_MARGIN_MS');
 
 		const requestOpen =
 			componentSource.match(/const requestOpen = \(\) => \{[\s\S]*?\n\t\t\t\};/u)?.[0] ?? '';

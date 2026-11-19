@@ -1,0 +1,117 @@
+// Silver thread: no envelope. A monogram drawn in one stroke waits on a plain ground; on open the
+// same stroke runs on to the cover (see `src/lib/invitation/silver-thread-reveal.ts`).
+// An invitation sets the palette and, when its cover has an arch the stroke should trace,
+// `--silver-thread-traces-arch: true` with `--silver-thread-arch-outset` in pixels.
+
+.envelope-wrapper[data-variant='silver-thread'] {
+	--silver-thread-ground: var(--color-surface-dark);
+	--silver-thread-ink: var(--color-cold-silver, currentcolor);
+	--silver-thread-weight: 1.25px;
+	--silver-thread-traces-arch: false;
+	--silver-thread-arch-outset: 0;
+	--env-text-primary: var(--silver-thread-ink);
+	--env-text-secondary: var(--silver-thread-ink);
+	--env-instruction-color: var(--silver-thread-ink);
+
+	justify-content: flex-end;
+	gap: 1.5rem;
+	padding: 0 1.5rem max(12svh, 3.5rem);
+
+	// The ground is its own layer so it can clear while the stroke stays on screen.
+	background: transparent;
+	perspective: none;
+
+	.silver-thread__ground {
+		position: absolute;
+		inset: 0;
+		background: var(--silver-thread-ground);
+	}
+
+	.silver-thread {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+		pointer-events: none;
+	}
+
+	.silver-thread__path {
+		fill: none;
+		stroke: var(--silver-thread-ink);
+		stroke-width: var(--silver-thread-weight);
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	// Until the script lays the stroke out there is nothing to draw.
+	&:not([data-silver-thread-ready]) .silver-thread__path {
+		visibility: hidden;
+	}
+
+	// The whole screen opens the invitation.
+	.silver-thread__trigger {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		padding: 0;
+		background: transparent;
+		border: 0;
+		cursor: pointer;
+
+		&:focus-visible {
+			outline: 2px solid var(--silver-thread-ink);
+			outline-offset: -8px;
+		}
+	}
+
+	.envelope-guest-external,
+	.envelope-external-instruction {
+		position: relative;
+		z-index: 1;
+		text-align: center;
+		filter: none;
+		transition: opacity 350ms var(--ease-standard);
+	}
+
+	.envelope-guest-external {
+		pointer-events: none;
+	}
+
+	.envelope-external-instruction {
+		opacity: 100%;
+	}
+
+	.personalized-label {
+		opacity: 72%;
+	}
+
+	.personalized-name {
+		margin-top: 0.4rem;
+		color: var(--env-text-primary);
+		letter-spacing: 0.06em;
+	}
+
+	&.is-opening {
+		.envelope-guest-external,
+		.envelope-external-instruction {
+			opacity: 0%;
+		}
+	}
+
+	// Captures hold the closed screen; there is no letter to show.
+	&.is-letter-held,
+	&.is-preview-opened {
+		.envelope-guest-external {
+			display: none;
+		}
+	}
+}
+
+// The stroke outlives the hand-over: the script clears the ground and fades the stroke itself.
+// Reduced motion and the skip path never set `is-opening`, so they keep the plain fade.
+.event-theme-wrapper[data-reveal-state='revealed']
+	.envelope-wrapper[data-variant='silver-thread'].is-opening {
+	opacity: 100%;
+}

@@ -4,8 +4,9 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
 /**
  * Wedding invitation on the jewelry-box-wedding preset, recolored by the profile into indigo
  * stationery: an indigo envelope, a full-bleed cover under an indigo veil, and light cards for the
- * inner sections, with gold only as hairlines. The couple's own photographs carry the cover (their
- * portrait under the tree), the quote (the flower arch) and a short gallery of their selfies. The
+ * inner sections, with silver only as hairlines. The couple's own photographs carry the cover (the
+ * two on a bench under a flower arch), the quote (a selfie of the two), a short gallery of their
+ * selfies and the closing thank-you. The
  * ceremony time is pending at the parish, so the ceremony entry carries no time and no calendar
  * link; the event timing follows the reception.
  */
@@ -78,7 +79,7 @@ const content: CanonicalEventContentInput = {
 	},
 	countdown: {
 		variant: 'framed-scene',
-		// The section already prints the date between gold rules; an empty footer stops the adapter
+		// The section already prints the date between silver rules; an empty footer stops the adapter
 		// from repeating it below.
 		title: 'Falta muy poco',
 		footerText: '',
@@ -130,17 +131,19 @@ const content: CanonicalEventContentInput = {
 	gallery: {
 		variant: 'rising-stack',
 		eyebrow: 'Nosotros',
-		title: 'Nuestra historia',
+		title: 'Galería',
+		// Focal points sit on the faces, which are in the upper part of every selfie. The grid cell of
+		// each photograph is set by index in composition.scss (gallery01 takes the wide strip).
 		items: [
-			{ image: 'gallery01', alt: 'Adriana e Israel sonríen juntos', focalPoint: '50% 30%' },
-			{ image: 'gallery02', alt: 'Adriana e Israel en un jardín', focalPoint: '50% 30%' },
-			{ image: 'gallery03', alt: 'Adriana e Israel en una cena', focalPoint: '50% 30%' },
+			{ image: 'gallery01', alt: 'Adriana e Israel sonríen juntos', focalPoint: '50% 10%' },
+			{ image: 'gallery02', alt: 'Adriana e Israel en un jardín', focalPoint: '50% 15%' },
+			{ image: 'gallery03', alt: 'Adriana e Israel en una cena', focalPoint: '50% 25%' },
 			{
 				image: 'gallery04',
 				alt: 'Adriana e Israel una noche de invierno',
-				focalPoint: '50% 35%',
+				focalPoint: '50% 15%',
 			},
-			{ image: 'gallery05', alt: 'Adriana e Israel de camino', focalPoint: '40% 35%' },
+			{ image: 'gallery05', alt: 'Adriana e Israel de camino', focalPoint: '50% 20%' },
 		],
 	},
 	gifts: {
@@ -196,8 +199,12 @@ const content: CanonicalEventContentInput = {
 		},
 	},
 	thankYou: {
-		// The couple's own words, from the phrase card they sent.
-		variant: 'standard',
+		// The couple's own words, from the phrase card they sent, over their selfie in green under the
+		// indigo veil (the profile maps the veil tokens). Both faces sit in the upper third; the focal
+		// point leans left so the phone crop keeps Israel's face whole.
+		variant: 'veiled-photo',
+		image: 'thankYouPortrait',
+		focalPoint: '38% 20%',
 		message:
 			'Qué suerte tenerlos en este día. Hay momentos que se vuelven todavía más especiales cuando los compartimos con las personas que queremos. Gracias por estar aquí, por acompañarnos y por formar parte de un recuerdo que guardaremos para siempre.',
 		closingName: COUPLE_NAME,
@@ -206,7 +213,7 @@ const content: CanonicalEventContentInput = {
 	navigation: [
 		{ label: 'Familia', href: '#family-section' },
 		{ label: 'Lugar', href: '#event-location' },
-		{ label: 'Nosotros', href: '#galeria' },
+		{ label: 'Galería', href: '#galeria' },
 		{ label: 'Confirmar', href: '#rsvp' },
 	],
 	quote: {
@@ -222,14 +229,15 @@ const content: CanonicalEventContentInput = {
 		// Hero formats its display date in UTC; eventTiming owns the real instant.
 		date: '2027-07-10T12:00:00.000Z',
 		backgroundImage: 'hero',
-		// Their portrait under the tree: both faces sit in the upper half, above the indigo veil.
-		focalPoint: '50% 30%',
-		focalPointMobile: '46% 30%',
+		// The flower-arch portrait: the arch fills the top and both faces sit just below the middle.
+		// Below 62rem composition.scss frames it above the names, so the names never cross a face.
+		focalPoint: '50% 20%',
+		focalPointMobile: '48% 30%',
 	},
 	envelope: {
 		disabled: false,
 		// The profile recolors the night envelope to indigo paper with an ivory card.
-		revealVariant: 'pocket-fold',
+		revealVariant: 'silver-thread',
 		cardLabel: 'BODA',
 		envelopeName: COUPLE_NAME,
 		teaserDetails: '10 · JUL · 2027 · OAXACA',
@@ -242,7 +250,7 @@ const content: CanonicalEventContentInput = {
 		documentLabel: 'A & I',
 		stampText: 'BODA',
 		stampYear: '2027',
-		microcopy: 'Tenemos el honor de invitarle',
+		microcopy: 'Toque para abrir',
 		tooltipText: 'Abrir invitación',
 	},
 	sharing: {
@@ -267,12 +275,14 @@ export default defineCanonicalInvitation({
 	assetDir: 'src/invitations/clients/adriana-y-israel/assets',
 	// Cropped from the couple's photographs; the quote photo is wired by the profile.
 	assetFiles: {
-		hero: 'hero.webp',
+		// The flower-arch portrait (#2) carries the cover; the selfie (#6) moved to the quote.
+		hero: 'quote.webp',
 		gallery01: 'gallery-01.webp',
 		gallery02: 'gallery-02.webp',
 		gallery03: 'gallery-03.webp',
 		gallery04: 'gallery-04.webp',
 		gallery05: 'gallery-05.webp',
+		thankYouPortrait: 'gallery-01.webp',
 		ogShare: 'og-share.webp',
 	},
 	deliveryScope: 'content-and-assets',

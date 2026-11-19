@@ -12,6 +12,7 @@ export const envelopeRevealVariantSchema = z.enum([
 	'pocket-fold',
 	'satin-filigree',
 	'seaside-lineart',
+	'silver-thread',
 	'storybook-lanterns',
 	'storybook-butterflies',
 ]);

@@ -1,30 +1,144 @@
 @use '../../../styles/fonts/cormorant-garamond';
+@use '../../../styles/tools/motion';
+@use '../../../styles/tools/night-stationery-variants' as stationery;
 
 // Adriana e Israel: every section renders through a shared variant (hero veiled-arch, reveal
-// pocket-fold, quote veiled-photo, family framed-groups, location pinned-program, gifts
+// silver-thread, quote veiled-photo, family framed-groups, location pinned-program, gifts
 // framed-card, personalized-access framed-pass, rsvp framed-register, footer framed-closing). The
 // client keeps only its palette, art and strings, set as tokens in the profile. The variants
 // expect Cormorant Garamond, loaded here.
 
-// Family: the sprig is a quiet rule under the heading, so the names lead.
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding
-	.family[data-variant='framed-groups']
-	.family__header-divider {
-	width: clamp(6.75rem, 32vw, 9.5rem);
-	margin: clamp(0.6rem, 1.6svh, 0.9rem) 0 clamp(0.4rem, 1.4svh, 0.9rem) -0.2rem;
+// Family: an editorial, left-aligned page. The heading and its champagne sprig hang on the left
+// margin; each group stands on a silver hairline at its left edge, the script title a step above
+// its names. From 62rem the heading takes a narrow left column and the groups the wider right
+// one, so the block reads across the screen instead of down a centered axis.
+.event--adriana-y-israel.theme-preset--jewelry-box-wedding .family[data-variant='framed-groups'] {
+	--framed-groups-title-size: clamp(2rem, 1.3rem + 3.2vw, 3.5rem);
+	--framed-groups-group-title-size: clamp(1.45rem, 1.15rem + 1.3vw, 2rem);
+	--framed-groups-name-size: clamp(1rem, 0.9rem + 0.45vw, 1.2rem);
+
+	@include stationery.margin-family(
+		rgb(var(--ayi-silver-rgb) / 70%),
+		var(--ayi-indigo),
+		var(--ayi-indigo-deep)
+	);
 }
 
-// Reveal: the guest's name leads; the small lines step back to light ivory type.
+// Cover: the inline <picture> box would hang a line-height below the frame; it fills the frame.
 .event--adriana-y-israel.theme-preset--jewelry-box-wedding
-	.envelope-wrapper[data-variant='pocket-fold'] {
+	.invitation-hero[data-variant='veiled-arch']
+	.invitation-hero__background
+	picture {
+	display: block;
+	height: 100%;
+}
+
+// Phones and tablets: the arch stands under the header and the names sit below it on the
+// indigo ground; a full-bleed cover would put them on the couple's faces.
+@media (width < 62rem) {
+	.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+		.invitation-hero[data-variant='veiled-arch'] {
+		--ayi-hero-text-room: clamp(13.25rem, 32svh, 16.5rem);
+		--hero-arch-top: calc(var(--header-height-scrolled, 64px) + 4.25rem);
+		--hero-arch-height: calc(100svh - var(--hero-arch-top) - var(--ayi-hero-text-room));
+		--hero-arch-width: min(calc(var(--hero-arch-height) * 0.68), calc(100vw - 3rem));
+
+		.invitation-hero__background {
+			inset: auto;
+			top: var(--hero-arch-top);
+			left: 50%;
+			width: var(--hero-arch-width);
+			height: var(--hero-arch-height);
+			translate: -50% 0;
+			border-radius: var(--hero-arch-radius);
+			box-shadow:
+				0 0 0 0.3125rem var(--ayi-indigo-deep),
+				0 0 0 calc(0.3125rem + 1px) var(--hero-arch-ring),
+				0 20px 44px -22px rgb(0 0 0 / 45%);
+		}
+
+		.invitation-hero__background img {
+			object-position: 50% 0%;
+		}
+
+		.invitation-hero__background::after {
+			background: none;
+		}
+
+		.invitation-hero__content {
+			margin-bottom: clamp(1.25rem, 4svh, 2.5rem);
+		}
+
+		// The names and date read from the left; the scroll cue moves to the free right edge so
+		// it never crosses the date.
+		.invitation-hero__scroll-indicator {
+			left: auto;
+			right: 1.25rem;
+			margin: 0;
+		}
+
+		.invitation-hero__title {
+			font-size: clamp(2.75rem, 7.5svh, 4rem);
+		}
+	}
+}
+
+// Wide screens: the arch stands on the right (sized by the profile tokens), its moulding follows
+// it, and the names sit on the indigo ground at the left, clear of both faces.
+@media (width >= 62rem) {
+	.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+		.invitation-hero[data-variant='veiled-arch'] {
+		justify-content: center;
+
+		.invitation-hero__label {
+			right: auto;
+			left: clamp(3rem, 8vw, 8rem);
+			width: auto;
+			text-align: left;
+		}
+
+		.invitation-hero__background {
+			inset: auto;
+			top: var(--hero-arch-top);
+			left: 70%;
+			width: var(--hero-arch-width);
+			height: var(--hero-arch-height);
+			translate: -50% -50%;
+			box-shadow:
+				0 0 0 0.5rem var(--ayi-indigo-deep),
+				0 0 0 calc(0.5rem + 1px) var(--hero-arch-ring),
+				0 24px 52px -24px rgb(0 0 0 / 45%);
+		}
+
+		.invitation-hero__background img {
+			object-position: var(--hero-focal-point-desktop, 50% 20%);
+		}
+
+		.invitation-hero__background::after {
+			background: var(--hero-arch-photo-shade);
+		}
+
+		.invitation-hero__content {
+			width: min(44vw, 36rem);
+			margin: 0 auto 0 clamp(3rem, 8vw, 8rem);
+			align-self: flex-start;
+		}
+	}
+}
+
+// Reveal: under the monogram the guest's name leads; the small lines step back to light ivory.
+.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+	.envelope-wrapper[data-variant='silver-thread'] {
 	.personalized-label {
 		font-size: 0.6875rem;
 		letter-spacing: 0.26em;
 	}
 
 	.personalized-name {
-		margin-top: 0.15rem;
-		line-height: 1.05;
+		font-size: clamp(1.75rem, 8vw, 2.4rem);
+		font-style: normal;
+		line-height: 1.1;
+		letter-spacing: 0.02em;
 	}
 
 	.envelope-external-instruction__button {
@@ -35,7 +149,53 @@
 	}
 }
 
-// Frames: only the guest pass keeps a gold hairline; the full-screen frames around the location
+// Cover rule: it ends in the sprig the opening stroke draws, so the stroke leaves something behind.
+.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+	.invitation-hero[data-variant='veiled-arch']
+	.invitation-hero__divider {
+	position: relative;
+	overflow: visible;
+	opacity: 100%;
+
+	&::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 100%;
+		width: 36px;
+		height: 18px;
+		background: var(--hero-divider-fill, currentcolor);
+		translate: 0 -50%;
+		mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 -9 36 18' fill='none' stroke='%23000' stroke-width='1.25' stroke-linecap='round'%3E%3Cpath d='M0 0C8 0 15-2 21-7C16-7 12-4 11-1C16 1 23-1 28-6C26-1 23 3 18 4C24 5 30 2 34-3'/%3E%3C/svg%3E")
+			center / 100% 100% no-repeat;
+	}
+
+	@keyframes ayi-sprig-settle {
+		from {
+			opacity: 0%;
+		}
+
+		to {
+			opacity: 100%;
+		}
+	}
+}
+
+@include motion.motion-safe {
+	.event--adriana-y-israel.theme-preset--jewelry-box-wedding[data-reveal-state='revealed']
+		.invitation-hero[data-variant='veiled-arch']
+		.invitation-hero__divider {
+		// The opening stroke has just drawn this rule; the real one only has to be there under it.
+		animation-duration: 0.5s;
+		animation-delay: 2.1s;
+
+		&::after {
+			animation: ayi-sprig-settle 0.6s ease-out 2.4s both;
+		}
+	}
+}
+
+// Frames: only the guest pass keeps a silver hairline; the full-screen frames around the location
 // and the gifts are dropped, so the page does not read as a stack of boxes.
 .event--adriana-y-israel.theme-preset--jewelry-box-wedding {
 	.countdown-section::before,
@@ -44,22 +204,132 @@
 	.gifts-section::after {
 		display: none;
 	}
+}
 
-	// A single entry: no rules above or under it.
-	.gifts-section[data-variant='framed-card'] {
-		.gifts-grid {
-			border-top-width: 0;
-		}
+// Gallery: five portrait selfies in one framed screen with no empty cell. Phones stack two
+// photographs, a wide strip and two more; tablets and desktop set three upright photographs over
+// two wider ones. The faces sit in the upper third of every photograph, so each one keeps its own
+// focal point (invitation.ts) and the wide cells crop from the top.
+.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+	.gallery-section[data-variant='rising-stack'] {
+	--rising-stack-paper: var(--ayi-ivory);
 
-		.gift-card:last-child {
-			border-bottom-width: 0;
+	height: 100svh;
+
+	.gallery-grid {
+		grid-template:
+			'a b' minmax(0, 1fr)
+			'c c' minmax(0, 1.1fr)
+			'd e' minmax(0, 1fr) / minmax(0, 1fr) minmax(0, 1fr);
+		gap: 0.6rem;
+		max-height: none;
+	}
+
+	// gallery01 (index 0) has both faces spread across the frame, so it takes the wide strip. Faces
+	// sit in the upper part of every selfie: the focal points match invitation.ts and also hold
+	// for content published before them.
+	@each $index, $area, $focal in (0 c 10%, 1 a 15%, 2 b 25%, 3 d 15%, 4 e 20%) {
+		.gallery-grid .gallery-grid__item[data-gallery-index='#{$index}'] {
+			grid-area: $area;
+
+			img {
+				object-position: 50% $focal;
+			}
 		}
 	}
+
+	// Wide screens: three upright photographs over two wider ones, gallery01 among the wide ones.
+	@media (width >= 48rem) {
+		.gallery-grid {
+			grid-template:
+				'a a b b d d' minmax(0, 1fr)
+				'c c c e e e' minmax(0, 1fr)
+				/ repeat(6, minmax(0, 1fr));
+			gap: 0.9rem;
+		}
+	}
+
+	@media (width >= 64rem) {
+		.gallery-section__container {
+			grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
+		}
+
+		.gallery-section__title {
+			font-size: clamp(3.8rem, 2.6rem + 2.2vw, 4.75rem);
+		}
+	}
+
+	@keyframes ayi-gallery-last {
+		0%,
+		60% {
+			opacity: 0%;
+			translate: 0 1rem;
+		}
+
+		90%,
+		100% {
+			opacity: 100%;
+			translate: 0 0;
+		}
+	}
+}
+
+// The fifth photograph joins the pinned sequence last.
+@include motion.motion-safe {
+	@supports (animation-timeline: view()) {
+		.event--adriana-y-israel.theme-preset--jewelry-box-wedding:not(
+				[data-scroll-scenes='static']
+			)
+			#invitation-sections-container
+			> .invitation-section-wrapper.has-motion[data-section-kind='gallery']
+			.gallery-section
+			.gallery-grid__item[data-gallery-index='4'] {
+			animation-name: ayi-gallery-last;
+		}
+	}
+}
+
+// Gifts: the night-indigo ground of the cover returns, and the single entry is an ivory envelope
+// with its flap closed by a champagne seal. The silver flourish under the heading is the only rule.
+.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+	.gifts-section[data-variant='framed-card'] {
+	@include stationery.sealed-envelope-gift(
+		$ground: var(--ayi-indigo-deep),
+		$ground-rgb: var(--ayi-indigo-deep-rgb),
+		$glow-rgb: var(--ayi-indigo-rgb),
+		$paper: var(--ayi-ivory),
+		$paper-rgb: var(--ayi-ivory-rgb),
+		$line: var(--ayi-silver),
+		$line-rgb: var(--ayi-silver-rgb),
+		$seal: var(--ayi-champagne),
+		$seal-light: var(--ayi-champagne-light)
+	);
 }
 
 // Location: the small lines step up to a readable size and each event gets more air.
 .event--adriana-y-israel.theme-preset--jewelry-box-wedding
 	.event-location[data-variant='pinned-program'] {
+	// Ground: a pale indigo paper with a faint linen weave and no ornament of its own, so the
+	// event drawings lead. The weave drifts a little against the scroll through the variant's
+	// art layer (static under reduced motion).
+	--ayi-location-paper: rgb(243 245 252);
+	--location-bg: var(--ayi-location-paper);
+	--pinned-program-paper: var(--ayi-location-paper);
+	--location-program-art-display: block;
+	--location-program-art-overflow: clip;
+	--location-program-art-drift: 1.25rem;
+	--location-program-art:
+		radial-gradient(ellipse at 50% 45%, rgb(255 255 255 / 85%), transparent 70%),
+		repeating-linear-gradient(
+			0deg,
+			rgb(var(--ayi-indigo-rgb) / 3.5%) 0 1px,
+			transparent 1px 5px
+		),
+		repeating-linear-gradient(
+			90deg,
+			rgb(var(--ayi-indigo-rgb) / 2.5%) 0 1px,
+			transparent 1px 5px
+		);
 	--pinned-program-lede-size: 0.75rem;
 	--pinned-program-program-label-size: 0.75rem;
 	--pinned-program-program-address-size: 0.9375rem;
@@ -88,6 +358,11 @@
 		margin-top: 1.25rem;
 	}
 
+	// «Agendar» is the outlined twin of «Ver mapa»: same indigo action color for its words.
+	summary.event-location__program-link {
+		color: var(--color-action-primary);
+	}
+
 	.event-location__indications-container {
 		margin-top: clamp(2rem, 5.5svh, 3rem);
 	}
@@ -99,9 +374,106 @@
 	.event-location__indications-container .event-location__enclosure {
 		--location-enclosure-last-text-size: 0.875rem;
 	}
+
+	// Scale and ornament: the hour, the heading and the drawings grow, and a silver flourish sits
+	// under the heading. Short phones keep the compact sizes so the reception and the dress code
+	// still share one screen. The drawings take full indigo ink, larger than the variant's vignette.
+	.event-location__program-entry::before {
+		background: rgb(var(--ayi-indigo-rgb));
+		justify-self: end;
+		max-width: 100%;
+	}
+
+	@media (height >= 45rem) {
+		.event-location__heading::after {
+			display: block;
+			width: 7.5rem;
+			height: 0.75rem;
+			margin-top: clamp(0.85rem, 2svh, 1.25rem);
+			background: var(--ayi-silver);
+			content: '';
+			mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 12'%3E%3Cpath d='M0 6H48M72 6H120' stroke='%23000' stroke-width='1'/%3E%3Cpath d='M60 0.5L65.5 6L60 11.5L54.5 6Z'/%3E%3Ccircle cx='51' cy='6' r='1.4'/%3E%3Ccircle cx='69' cy='6' r='1.4'/%3E%3C/svg%3E")
+				left center / contain no-repeat;
+		}
+	}
+
+	@media (width < 48rem) and (height >= 45rem) {
+		--pinned-program-heading-size: clamp(2.9rem, 11vw, 3.5rem);
+		--pinned-program-program-time-size: clamp(2.2rem, 9vw, 2.6rem);
+
+		// The hour and the drawing share one row; both stay clear of each other at 390px.
+		.event-location__program-entry::before {
+			width: clamp(6.25rem, 27vw, 7.75rem);
+		}
+	}
+
+	@media (width >= 48rem) and (width < 64rem) {
+		--pinned-program-heading-size: 3.6rem;
+		--pinned-program-program-time-size: 2.15rem;
+
+		// The program column is narrow on tablets: the hour and the drawing must not meet.
+		.event-location__program-entry::before {
+			width: 6rem;
+		}
+	}
+
+	@media (width >= 64rem) {
+		--pinned-program-heading-size: clamp(4.5rem, 3rem + 2.6vw, 5.75rem);
+		--pinned-program-program-time-size: clamp(3.75rem, 2.6rem + 1.8vw, 4.75rem);
+		--pinned-program-program-place-size: 1.75rem;
+		--pinned-program-program-address-size: 1.0625rem;
+		--pinned-program-lede-size: 0.875rem;
+
+		grid-template-columns: minmax(0, 30rem) minmax(0, 34rem);
+
+		.event-location__intro {
+			max-width: 30rem;
+		}
+
+		.event-location__program-entry::before {
+			width: 11.5rem;
+		}
+
+		.event-location__program-address {
+			max-width: 24rem;
+		}
+	}
+
+	// The hour keeps its own width and the drawing takes what is left, behind a wider gap, so
+	// «8:00 p. m.» never runs into the salon drawing. min-content lets the ceremony label wrap
+	// instead of widening the column and squeezing the chapel drawing away.
+	.event-location__program-entry {
+		grid-template-columns: min-content minmax(0, 1fr);
+		column-gap: clamp(1.5rem, 6vw, 2.5rem);
+
+		// The tablet program column is narrow: a tighter gap leaves the drawing its size.
+		@media (width >= 48rem) and (width < 64rem) {
+			column-gap: 1.25rem;
+		}
+	}
 }
 
-// The program numerals: small solid gold seals with indigo figures instead of outlined rings.
+// Short phones: the pinned scene keeps the reception (its hour, both buttons) and the dress code
+// inside one screen, so the program never shrinks under its entries and the gaps tighten.
+@media (height < 45rem) {
+	.event--adriana-y-israel.theme-preset--jewelry-box-wedding:not([data-scroll-scenes='static'])
+		#invitation-sections-container
+		> .invitation-section-wrapper.has-motion[data-section-kind='location']
+		.event-location[data-variant='pinned-program'] {
+		padding-bottom: 1.25rem;
+
+		.event-location__program {
+			flex-shrink: 0;
+			margin-top: 1.25rem;
+		}
+
+		.event-location__indications-container {
+			margin-top: 1.25rem;
+		}
+	}
+}
+
+// The program numerals: small solid champagne seals with indigo figures instead of outlined rings.
 // They belong to the pinned scene, so captures (`data-scroll-scenes='static'`) leave them out.
 .event--adriana-y-israel.theme-preset--jewelry-box-wedding:not([data-scroll-scenes='static'])
 	#invitation-sections-container
@@ -112,8 +484,8 @@
 	&::after {
 		width: 1.5rem;
 		height: 1.5rem;
-		border-color: var(--ayi-gold);
-		background: var(--ayi-gold);
+		border-color: var(--ayi-champagne);
+		background: var(--ayi-champagne);
 		font-size: 0.8rem;
 		color: var(--ayi-paper);
 	}
@@ -127,11 +499,72 @@
 	}
 }
 
-// Footer: only the reply and the credits; the cover already carries the date and the city.
+// Footer: only the reply and the credits; the cover already carries the date and the city. It is
+// held like the latest invitations: the page stops at the thank-you, and a pull past the bottom
+// (two wheel notches, or a swipe up on the pearl cue) opens it.
 .event--adriana-y-israel.theme-preset--jewelry-box-wedding
 	.invitation-footer[data-variant='framed-closing'] {
+	--invitation-footer-reveal: held;
+	--footer-open-glide: 720ms;
+
 	.footer-reply__note,
 	.footer__closing-phrase {
 		display: none;
 	}
+}
+
+// Thank-you: the couple's selfie under the indigo veil, with their words at the foot. A selfie
+// spread across a wide screen would put the message on Adriana's face, so from 62rem the photo
+// stands framed on the left, as the cover frames it on phones, and the words take the right half
+// of the indigo ground.
+@media (width >= 62rem) {
+	.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+		.thank-you-section[data-variant='veiled-photo'] {
+		--ayi-thanks-frame-top: calc(
+			var(--header-height-scrolled, 64px) + var(--preview-banner-height, 0px) + 2.5rem
+		);
+		--ayi-thanks-frame-bottom: 3.5rem;
+		--ayi-thanks-gutter: max(6vw, calc((100vw - 72rem) / 2));
+		--thank-you-bleed-veil: radial-gradient(
+			ellipse 55% 70% at 72% 50%,
+			rgb(var(--ayi-indigo-rgb) / 45%),
+			transparent 75%
+		);
+		--thank-you-bleed-photo-veil-content: none;
+
+		padding: var(--ayi-thanks-frame-top) var(--ayi-thanks-gutter) var(--ayi-thanks-frame-bottom);
+		background: var(--ayi-indigo-deep);
+
+		.photo-frame {
+			--thank-you-focal-point: 50% 12%;
+
+			inset: var(--ayi-thanks-frame-top) auto var(--ayi-thanks-frame-bottom)
+				var(--ayi-thanks-gutter);
+			width: auto;
+			height: auto;
+			aspect-ratio: 4 / 5;
+			box-shadow:
+				0 0 0 0.375rem var(--ayi-indigo-deep),
+				0 0 0 calc(0.375rem + 1px) rgb(var(--ayi-silver-rgb) / 70%),
+				0 30px 60px -24px rgb(0 0 0 / 60%);
+		}
+
+		.hairline-frame {
+			display: none;
+		}
+
+		.thank-you-content {
+			align-self: center;
+			width: min(30rem, 40vw);
+			margin: 0 0 0 auto;
+		}
+	}
+}
+
+// Champagne, the second accent, stays on the sprigs and the seals; every other accent on the page
+// is silver.
+.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+	.countdown-section[data-variant='framed-scene']
+	.countdown-container::before {
+	background: var(--ayi-champagne-light);
 }
