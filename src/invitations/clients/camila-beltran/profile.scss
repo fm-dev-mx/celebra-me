@@ -537,6 +537,12 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	--gallery-item-emphasis-shadow: none;
 	--gallery-item-emphasis-border-color: transparent;
 
+	// Phones: edge-to-edge photographs over two screens instead of one shrunken mosaic.
+	@media (width < 768px) {
+		--gallery-section-padding-inline: 0;
+		--gallery-container-max-width: 100%;
+	}
+
 	@media (width >= 1024px) {
 		--gallery-container-max-width: min(64rem, 90vw, calc((100svh - 12rem) * 1.125));
 		--gallery-grid-columns-desktop: 3;
