@@ -19,8 +19,8 @@
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 236,
-    "matrixHash": "6528e362893e74dd11c2c7c993832d1b7abad491d2129ab5a129a71e10f86f52",
+    "totalCaptures": 238,
+    "matrixHash": "cbd3152ea1b0947ad893879ae91aab90f89058a61c678642dd9e81f1292fe10a",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2959,6 +2959,30 @@
             "contentHash": "661b573b69201654a839df72f4a4ebf3da508608bb9d7467fc2adbec325eb194",
             "assetHash": "e36e5ae75c39c74fd85b4ffea8d7d74696374305e4b42c1a03f86840226cfae5",
             "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "adriana-y-israel",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "mobile",
+            "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
+            "sha256": "d0b08297c3ff7dfe5037d99eebce7d658d6bbb48ca369f93f56295a72daf70cc",
+            "contentHash": "b1ace4e5f4f7b8ed0c4e30548602c0e0f587c8beabf1354b0ccdf1a70700feb9",
+            "assetHash": "ab52fd765b29d72e6f12b8aeef332e69bb8f7f6ffb65612e245275acb50c8e42",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "adriana-y-israel",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "desktop",
+            "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
+            "sha256": "5e110eec7dd4f6172372811f3742d80cedcbd6c4d49369c960a74eba107053ef",
+            "contentHash": "b1ace4e5f4f7b8ed0c4e30548602c0e0f587c8beabf1354b0ccdf1a70700feb9",
+            "assetHash": "ab52fd765b29d72e6f12b8aeef332e69bb8f7f6ffb65612e245275acb50c8e42",
+            "comparisonResult": "ACCEPTED"
         }
     ],
     "referenceSha": "1433c41ae9d8d95de3f787a09193f0e954c5af9e",
@@ -5420,8 +5444,8 @@
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 64,
-        "matrixHash": "29af6fd814cb24244868628e42dd3d826be06603340bfd9790a4a8cb4785b955",
+        "totalCaptures": 66,
+        "matrixHash": "6fa936e12164d92f526657f8885abe0b152607fdcc5fdd4a3a5fb857542710ae",
         "cases": 32,
         "captures": [
             {
@@ -5950,6 +5974,30 @@
                 "sha256": "b3847074013ded27d37121ca29af2aae3810cc1cadff9b2b9b0600d0961ac124",
                 "contentHash": "661b573b69201654a839df72f4a4ebf3da508608bb9d7467fc2adbec325eb194",
                 "assetHash": "e36e5ae75c39c74fd85b4ffea8d7d74696374305e4b42c1a03f86840226cfae5",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "adriana-y-israel",
+                "eventType": "boda",
+                "preset": "jewelry-box-wedding",
+                "viewport": "mobile",
+                "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
+                "sha256": "d0b08297c3ff7dfe5037d99eebce7d658d6bbb48ca369f93f56295a72daf70cc",
+                "contentHash": "b1ace4e5f4f7b8ed0c4e30548602c0e0f587c8beabf1354b0ccdf1a70700feb9",
+                "assetHash": "ab52fd765b29d72e6f12b8aeef332e69bb8f7f6ffb65612e245275acb50c8e42",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "adriana-y-israel",
+                "eventType": "boda",
+                "preset": "jewelry-box-wedding",
+                "viewport": "desktop",
+                "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
+                "sha256": "5e110eec7dd4f6172372811f3742d80cedcbd6c4d49369c960a74eba107053ef",
+                "contentHash": "b1ace4e5f4f7b8ed0c4e30548602c0e0f587c8beabf1354b0ccdf1a70700feb9",
+                "assetHash": "ab52fd765b29d72e6f12b8aeef332e69bb8f7f6ffb65612e245275acb50c8e42",
                 "comparisonResult": "CANDIDATE"
             }
         ],
