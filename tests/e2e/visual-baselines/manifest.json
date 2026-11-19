@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-19T01:22:55.926Z",
+    "generatedAt": "2026-11-19T04:10:53.964Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,15 +12,15 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "a709925afef9efc92efc2a7467884817dea2757b81e491a83cc81e1b018d44a8",
-        "cssSha256": "7041b7a99156bb5dddd137ac0bbc303d079e9e320d4d3131e2d687e9b261a9a6",
+        "cssSha256": "ebcdc6dc763b8dae6ec7be84c4d8f5ac72123501baf56a0c1a0eb242b30b48be",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 236,
-    "matrixHash": "6528e362893e74dd11c2c7c993832d1b7abad491d2129ab5a129a71e10f86f52",
+    "totalCaptures": 238,
+    "matrixHash": "cbd3152ea1b0947ad893879ae91aab90f89058a61c678642dd9e81f1292fe10a",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2818,6 +2818,30 @@
         },
         {
             "kind": "invitation",
+            "slug": "adriana-y-israel",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "mobile",
+            "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
+            "sha256": "d0b08297c3ff7dfe5037d99eebce7d658d6bbb48ca369f93f56295a72daf70cc",
+            "contentHash": "b1ace4e5f4f7b8ed0c4e30548602c0e0f587c8beabf1354b0ccdf1a70700feb9",
+            "assetHash": "ab52fd765b29d72e6f12b8aeef332e69bb8f7f6ffb65612e245275acb50c8e42",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "adriana-y-israel",
+            "eventType": "boda",
+            "preset": "jewelry-box-wedding",
+            "viewport": "desktop",
+            "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
+            "sha256": "5e110eec7dd4f6172372811f3742d80cedcbd6c4d49369c960a74eba107053ef",
+            "contentHash": "b1ace4e5f4f7b8ed0c4e30548602c0e0f587c8beabf1354b0ccdf1a70700feb9",
+            "assetHash": "ab52fd765b29d72e6f12b8aeef332e69bb8f7f6ffb65612e245275acb50c8e42",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
             "slug": "andrea",
             "eventType": "xv",
             "preset": "storybook-emerald",
@@ -2961,9 +2985,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "1433c41ae9d8d95de3f787a09193f0e954c5af9e",
+    "referenceSha": "f76bf73b67bd757c0b3ec6e9363600616eb5cec0",
     "variantManifest": {
-        "generatedAt": "2026-11-19T01:22:55.926Z",
+        "generatedAt": "2026-11-19T04:10:53.964Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -2976,7 +3000,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a709925afef9efc92efc2a7467884817dea2757b81e491a83cc81e1b018d44a8",
-            "cssSha256": "7041b7a99156bb5dddd137ac0bbc303d079e9e320d4d3131e2d687e9b261a9a6",
+            "cssSha256": "ebcdc6dc763b8dae6ec7be84c4d8f5ac72123501baf56a0c1a0eb242b30b48be",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -5397,10 +5421,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "1433c41ae9d8d95de3f787a09193f0e954c5af9e"
+        "referenceSha": "f76bf73b67bd757c0b3ec6e9363600616eb5cec0"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-19T01:22:55.930Z",
+        "generatedAt": "2026-11-19T04:10:53.972Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -5413,16 +5437,16 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a709925afef9efc92efc2a7467884817dea2757b81e491a83cc81e1b018d44a8",
-            "cssSha256": "7041b7a99156bb5dddd137ac0bbc303d079e9e320d4d3131e2d687e9b261a9a6",
+            "cssSha256": "ebcdc6dc763b8dae6ec7be84c4d8f5ac72123501baf56a0c1a0eb242b30b48be",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 64,
-        "matrixHash": "29af6fd814cb24244868628e42dd3d826be06603340bfd9790a4a8cb4785b955",
-        "cases": 32,
+        "totalCaptures": 66,
+        "matrixHash": "6fa936e12164d92f526657f8885abe0b152607fdcc5fdd4a3a5fb857542710ae",
+        "cases": 33,
         "captures": [
             {
                 "kind": "invitation",
@@ -5810,6 +5834,30 @@
             },
             {
                 "kind": "invitation",
+                "slug": "adriana-y-israel",
+                "eventType": "boda",
+                "preset": "jewelry-box-wedding",
+                "viewport": "mobile",
+                "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
+                "sha256": "d0b08297c3ff7dfe5037d99eebce7d658d6bbb48ca369f93f56295a72daf70cc",
+                "contentHash": "b1ace4e5f4f7b8ed0c4e30548602c0e0f587c8beabf1354b0ccdf1a70700feb9",
+                "assetHash": "ab52fd765b29d72e6f12b8aeef332e69bb8f7f6ffb65612e245275acb50c8e42",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "adriana-y-israel",
+                "eventType": "boda",
+                "preset": "jewelry-box-wedding",
+                "viewport": "desktop",
+                "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
+                "sha256": "5e110eec7dd4f6172372811f3742d80cedcbd6c4d49369c960a74eba107053ef",
+                "contentHash": "b1ace4e5f4f7b8ed0c4e30548602c0e0f587c8beabf1354b0ccdf1a70700feb9",
+                "assetHash": "ab52fd765b29d72e6f12b8aeef332e69bb8f7f6ffb65612e245275acb50c8e42",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
                 "slug": "andrea",
                 "eventType": "xv",
                 "preset": "storybook-emerald",
@@ -5953,9 +6001,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "1433c41ae9d8d95de3f787a09193f0e954c5af9e"
+        "referenceSha": "f76bf73b67bd757c0b3ec6e9363600616eb5cec0"
     },
-    "candidateManifestSha256": "a4da99b45a633a26709f3b36f42e548d8c3065a472d2abe9b8aa846d4268d5ee",
-    "acceptedFromCommit": "1433c41ae9d8d95de3f787a09193f0e954c5af9e",
-    "acceptedAt": "2026-11-19T01:23:43.069Z"
+    "candidateManifestSha256": "2777b1a087f39c44e6ae0250717801ad9de69b76024d3f02b74c363568ff14f0",
+    "acceptedFromCommit": "f76bf73b67bd757c0b3ec6e9363600616eb5cec0",
+    "acceptedAt": "2026-11-19T04:11:32.489Z"
 }

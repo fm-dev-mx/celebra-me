@@ -81,6 +81,7 @@ const STANDALONE_REVEAL_VARIANTS = [
 	'pocket-fold',
 	'satin-filigree',
 	'seaside-lineart',
+	'silver-thread',
 	'storybook-lanterns',
 	'storybook-butterflies',
 ] as const;

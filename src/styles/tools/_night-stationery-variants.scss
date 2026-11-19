@@ -1,0 +1,342 @@
+@use 'motion';
+
+// ==========================================================================
+// NIGHT STATIONERY VARIANTS — experimental section variants for a dark, hairline-framed invitation.
+// Mixins only: nothing here emits CSS until a composition includes it.
+// Colours come in as arguments, so each invitation passes its own palette tokens.
+// ==========================================================================
+
+// Editorial family page: the heading and its sprig hang on the left margin and each group stands
+// on a hairline at its left edge; from 62rem the heading takes a narrow left column and the groups
+// the wider right one. Include on `.family[data-variant='framed-groups']`.
+@mixin margin-family($rule, $title-ink, $name-ink) {
+	.family__container {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		justify-content: center;
+		gap: clamp(1.4rem, 4.2svh, 2.75rem);
+		width: min(100%, 64rem);
+		margin-inline: auto;
+	}
+
+	.family__header,
+	.family__panel {
+		width: 100%;
+		margin-inline: 0;
+		text-align: start;
+	}
+
+	.family__header-inner {
+		align-items: flex-start;
+	}
+
+	.family__header .family__title {
+		max-width: min(100%, 14ch);
+		margin-inline: 0;
+		line-height: 1.05;
+		text-wrap: balance;
+		text-align: start;
+	}
+
+	.family__header-divider {
+		width: clamp(6.75rem, 32vw, 9.5rem);
+		margin: clamp(0.6rem, 1.6svh, 1rem) 0 0 -0.35rem;
+	}
+
+	.family__groups {
+		grid-template-columns: minmax(0, 1fr);
+		row-gap: clamp(1.1rem, 3.2svh, 2rem);
+		justify-items: stretch;
+	}
+
+	.family__group,
+	.family__group--group-1,
+	.family__group--godparents {
+		width: 100%;
+		padding: 0.15rem 0 0.15rem clamp(0.9rem, 3vw, 1.25rem);
+		border-left: 1px solid $rule;
+		background: none;
+		text-align: start;
+	}
+
+	.family__groups .family__group-title {
+		margin: 0 0 clamp(0.3rem, 0.9svh, 0.55rem);
+		color: $title-ink;
+		text-align: start;
+	}
+
+	.family__groups .family__list,
+	.family__groups .family__item,
+	.family__group--group-1 .family__list,
+	.family__group--group-1 .family__item {
+		align-items: flex-start;
+		justify-content: flex-start;
+		row-gap: 0.15rem;
+		text-align: start;
+	}
+
+	.family__groups .family__name,
+	.family__group--group-1 .family__name {
+		justify-content: flex-start;
+		line-height: 1.35;
+		text-align: start;
+		color: $name-ink;
+	}
+
+	// The godparents close the block a step lower than the parents.
+	.family__group--godparents {
+		grid-column: 1 / -1;
+		margin-top: clamp(0.25rem, 1svh, 0.75rem);
+	}
+
+	@media (width >= 48rem) {
+		.family__groups {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			column-gap: clamp(1.5rem, 4vw, 3rem);
+		}
+	}
+
+	@media (width >= 62rem) {
+		.family__container {
+			display: grid;
+			grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+			align-items: center;
+			column-gap: clamp(2.5rem, 6vw, 5.5rem);
+		}
+
+		// The right column is too narrow for two groups side by side: the names would wrap.
+		.family__groups {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+}
+
+// Sealed envelope gift: a dark ground with a soft glow, and the single entry as a small sheet of
+// stationery whose closed flap is held by a seal. Phones read one centered column; from 64rem the
+// heading stands on the left and the envelope on the right. The envelope rises and the seal
+// settles with the scroll (static under reduced motion). Include on
+// `.gifts-section[data-variant='framed-card']`.
+@mixin sealed-envelope-gift(
+	$ground,
+	$ground-rgb,
+	$glow-rgb,
+	$paper,
+	$paper-rgb,
+	$line,
+	$line-rgb,
+	$seal,
+	$seal-light
+) {
+	--sealed-gift-flap: clamp(3.25rem, 8svh, 4.25rem);
+	--sealed-gift-seal: clamp(2.6rem, 6svh, 3.1rem);
+
+	padding-block: calc(var(--header-height-scrolled, 64px) + var(--preview-banner-height, 0px))
+		clamp(1.5rem, 5svh, 3rem);
+	background:
+		radial-gradient(ellipse 70% 60% at 50% 55%, rgb(#{$glow-rgb} / 55%), transparent 75%),
+		#{$ground};
+
+	.gifts-section__container {
+		display: block;
+		max-width: 26rem;
+		text-align: center;
+	}
+
+	.gifts-section__header {
+		margin: 0 0 clamp(1.75rem, 5svh, 2.75rem);
+		text-align: center;
+	}
+
+	.gifts-section__title {
+		font-size: clamp(3rem, 2.4rem + 2.8vw, 4.75rem);
+		text-align: center;
+		color: #{$paper};
+	}
+
+	.gifts-section__flourish {
+		justify-content: center;
+		margin: clamp(0.9rem, 2.4svh, 1.4rem) auto;
+
+		.flourish-line {
+			width: 4.5rem;
+			max-width: 4.5rem;
+			background: #{$line};
+		}
+	}
+
+	.gifts-section__subtitle {
+		margin-inline: auto;
+		font-size: clamp(0.95rem, 0.9rem + 0.3vw, 1.0625rem);
+		text-align: center;
+		color: rgb(#{$paper-rgb} / 78%);
+	}
+
+	.gifts-grid {
+		border-top-width: 0;
+	}
+
+	// The envelope: a small sheet of ivory stationery with an inset silver hairline frame and a
+	// closed flap drawn as a single hairline fold, no glass blur and no heavy fills.
+	.gift-card {
+		position: relative;
+		overflow: visible;
+		width: min(100%, 18.5rem);
+		margin-inline: auto;
+		padding: 0 clamp(1.25rem, 5vw, 1.75rem) clamp(1.25rem, 3svh, 1.6rem);
+		border: 0;
+		border-radius: 2px;
+		background: #{$paper};
+		box-shadow:
+			inset 0 0 0 0.45rem #{$paper},
+			inset 0 0 0 calc(0.45rem + 1px) rgb(#{$line-rgb} / 55%),
+			0 18px 36px -22px rgb(0 0 0 / 55%);
+		backdrop-filter: none;
+	}
+
+	.gift-card::before,
+	.gift-card::after {
+		position: absolute;
+		inset: 0 0 auto;
+		display: block;
+		height: var(--sealed-gift-flap);
+		content: '';
+		clip-path: polygon(0 0, 100% 0, 50% 100%);
+		pointer-events: none;
+	}
+
+	.gift-card::after {
+		z-index: 0;
+		translate: 0 1px;
+		background: rgb(#{$line-rgb} / 70%);
+	}
+
+	.gift-card::before {
+		z-index: 1;
+		background: #{$paper};
+	}
+
+	.gift-card__inner {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+
+	// The seal closes the flap at its point.
+	.gift-card__icon-medallion {
+		width: var(--sealed-gift-seal);
+		height: var(--sealed-gift-seal);
+		margin: calc(var(--sealed-gift-flap) - var(--sealed-gift-seal) / 2) 0
+			clamp(0.9rem, 2.4svh, 1.25rem);
+		border: 0;
+		background: radial-gradient(circle at 35% 30%, #{$seal-light}, #{$seal} 70%);
+		box-shadow:
+			inset 0 0 0 0.2rem rgb(255 255 255 / 14%),
+			inset 0 0 0 calc(0.2rem + 1px) rgb(#{$ground-rgb} / 20%),
+			0 0 0 2px rgb(#{$paper-rgb}),
+			0 6px 12px -6px rgb(#{$ground-rgb} / 45%);
+		backdrop-filter: none;
+		color: #{$ground};
+	}
+
+	.gift-card__icon-inner,
+	.gift-card__icon-inner svg {
+		width: calc(var(--sealed-gift-seal) * 0.42);
+		max-width: none;
+		height: calc(var(--sealed-gift-seal) * 0.42);
+	}
+
+	.gift-card__title {
+		font-size: clamp(1.55rem, 1.4rem + 0.7vw, 1.9rem);
+		text-align: center;
+	}
+
+	.gift-card__description {
+		max-width: 14.5rem;
+		margin-top: 0.4rem;
+		font-size: clamp(0.875rem, 0.85rem + 0.15vw, 0.95rem);
+		text-align: center;
+	}
+
+	// Wide screens: the heading on the left, the envelope on the right.
+	@media (width >= 64rem) {
+		.gifts-section__container {
+			display: grid;
+			max-width: 64rem;
+			grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
+			align-items: center;
+			column-gap: clamp(3rem, 8vw, 7rem);
+		}
+
+		.gifts-section__header {
+			margin: 0;
+			text-align: start;
+		}
+
+		.gifts-section__title {
+			font-size: clamp(4.5rem, 3rem + 2.6vw, 5.75rem);
+			text-align: start;
+		}
+
+		.gifts-section__flourish {
+			justify-content: flex-start;
+			margin-inline: 0;
+		}
+
+		.gifts-section__subtitle {
+			max-width: 27rem;
+			margin-inline: 0;
+			font-size: 1.125rem;
+			text-align: start;
+		}
+
+		.gift-card {
+			width: 100%;
+		}
+	}
+
+	// The envelope rises into place and the seal settles as the section scrolls in; both play
+	// back on scroll up and stay still under reduced motion.
+	@supports (animation-timeline: view()) {
+		@include motion.motion-safe {
+			.gift-card {
+				animation: sealed-gift-rise linear both;
+				animation-timeline: view();
+				animation-range: entry 0% entry 85%;
+			}
+
+			.gift-card__icon-medallion {
+				animation: sealed-gift-settle linear both;
+				animation-timeline: view();
+				animation-range: entry 40% entry 100%;
+			}
+		}
+	}
+
+	@keyframes sealed-gift-rise {
+		from {
+			opacity: 0%;
+			translate: 0 2.5rem;
+		}
+
+		to {
+			opacity: 100%;
+			translate: 0 0;
+		}
+	}
+
+	@keyframes sealed-gift-settle {
+		from {
+			opacity: 0%;
+			scale: 1.35;
+		}
+
+		to {
+			opacity: 100%;
+			scale: 1;
+		}
+	}
+}
