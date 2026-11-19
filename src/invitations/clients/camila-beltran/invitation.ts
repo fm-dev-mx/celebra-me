@@ -112,10 +112,11 @@ const content: CanonicalEventContentInput = {
 			mother: 'Anahy Soto Acosta',
 		},
 		labels: {
-			sectionTitle: 'Con el amor de mis padres',
+			sectionTitle: 'Con la bendición de Dios y el amor de mis padres',
 			sectionSubtitle: '',
 			parentsTitle: 'Mis padres',
-			sectionMessage: 'Gracias por cada paso que me trajo hasta aquí.',
+			sectionMessage:
+				'Hoy me siento muy feliz de llegar a este momento de mi vida, el día que dejaré atrás mi infancia y comenzaré un nuevo viaje.',
 		},
 	},
 	countdown: {

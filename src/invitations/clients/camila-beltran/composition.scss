@@ -213,9 +213,13 @@
 		display: contents;
 	}
 
+	// Classic parents block: script title in gold, uppercase names between gold rules.
+	.family {
+		--camila-family-gold: rgb(172 136 82);
+		--jewel-accent-family-title-color: var(--camila-family-gold);
+	}
+
 	.family__title {
-		max-width: 20rem;
-		font: 600 0.875rem / 1.6 var(--font-label, var(--font-body));
 		text-align: center;
 	}
 
@@ -235,38 +239,36 @@
 		content: none;
 	}
 
-	// The parents' names sit in a soft card with a double gold rule, like a printed place card.
 	.family__panel {
 		width: min(100%, 32rem);
 		margin: clamp(1.75rem, 6svh, 3rem) auto 0;
-		padding: clamp(1.75rem, 5svh, 2.5rem) 1.25rem;
-		background:
-			radial-gradient(
-				90% 70% at 50% 0%,
-				color-mix(in srgb, var(--jewel-petal) 70%, transparent),
-				transparent 75%
-			),
-			var(--jewel-blush);
-		border: 1px solid var(--jewel-gold);
-		border-radius: 1.25rem;
-		outline: 1px solid var(--jewel-gold-light);
-		outline-offset: -0.45rem;
-		box-shadow: 0 1.25rem 2.5rem -1.5rem rgb(158 82 80 / 35%);
+	}
+
+	.family__group--parents {
+		width: 100%;
 	}
 
 	.family__members {
-		gap: clamp(1.5rem, 5svh, 2.5rem);
-		padding: 0;
+		gap: 0;
+		width: min(100%, 22rem);
+		margin: 0 auto;
+		padding: 1.25rem 0;
+		border-block: 1px solid var(--camila-family-gold);
 		list-style: none;
 	}
 
-	.family__member {
-		gap: 0.4rem;
+	.family .family__group--parents .family__member + .family__member::before {
+		margin: 0.5rem 0;
+		font: 400 2.2rem / 1 var(--jewel-script);
+		color: var(--camila-family-gold);
 	}
 
 	.family__member-name {
-		font: 400 var(--camila-parents-size) / 1.25 var(--camila-parents-font);
-		letter-spacing: 0.01em;
+		font: 500 clamp(1.05rem, 4.4vw, 1.3rem) / 1.35 var(--jewel-serif);
+		max-width: none;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		text-wrap: balance;
 	}
 
 	@include variants.pinned-overture;

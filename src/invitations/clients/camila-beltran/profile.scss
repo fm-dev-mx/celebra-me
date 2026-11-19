@@ -617,11 +617,8 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	--hero-heading-paint: none;
 	--hero-heading-fill: rgb(246 196 188);
 
-	// The parents' title in the italic serif and their names in the large Parisienne script.
-	--camila-parents-font: var(--jewel-script);
-	--jewel-accent-family-title-font: italic 500 clamp(1.75rem, 7.5vw, 2.125rem) / 1.2
-		var(--jewel-serif);
-	--camila-parents-size: clamp(2.5rem, 10.5vw, 3rem);
+	// The parents' title in the gold Parisienne script.
+	--jewel-accent-family-title-font: 400 clamp(2.1rem, 9vw, 2.6rem) / 1.2 var(--jewel-script);
 
 	@supports (background-clip: text) or (-webkit-background-clip: text) {
 		--hero-heading-paint: var(--hero-cinema-gold);
