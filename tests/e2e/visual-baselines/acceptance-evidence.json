@@ -1,20 +1,33 @@
 {
-    "referenceSha": "28bc32d2ba6975ee2d27c803e7640736741b9433",
-    "acceptedAt": "2026-11-18T21:45:19.995Z",
+    "referenceSha": "71f802bd5d7748496df33bada768fbfaa5a33743",
+    "acceptedAt": "2026-11-19T03:52:37.871Z",
     "matrixHash": "cbd3152ea1b0947ad893879ae91aab90f89058a61c678642dd9e81f1292fe10a",
-    "candidateManifestSha256": "6a629d4e170f61348cfd0c3f2acb57865718c52d7d949d0376eca178a2837200",
-    "acceptedManifestSha256": "82c7df32b31898ec105f6bff82d9e9e928668950475e4a502746fd113ad55494",
-    "reviewedPaths": ["pages/invitation-boda-adriana-y-israel-mobile.png"],
+    "candidateManifestSha256": "e51584ffec13209131f97c20e7fa5eb668bb9e4b97f6296fe84b2b820cc5a1ef",
+    "acceptedManifestSha256": "c3b9c29d3e344fb7f5835306e897b8ec8fbce4206838af0adeb3f307c6dd0b3d",
+    "reviewedPaths": [
+        "pages/invitation-boda-adriana-y-israel-desktop.png",
+        "pages/invitation-boda-adriana-y-israel-mobile.png"
+    ],
     "items": [
         {
             "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
             "status": "changed",
-            "sha256": "87f971f2f1090733b5a69300fab53cda8f94b293c8ce33fb4d2d91ac733cd204",
-            "previousSha256": "d783f185499c8fb036f47564dafdeede7542d490de7e68aa49a0ba8b920e8441",
-            "differentPixels": 11658,
-            "pixelRatio": 0.0033033824391985513
+            "sha256": "d0b08297c3ff7dfe5037d99eebce7d658d6bbb48ca369f93f56295a72daf70cc",
+            "previousSha256": "87f971f2f1090733b5a69300fab53cda8f94b293c8ce33fb4d2d91ac733cd204",
+            "differentPixels": 1009179,
+            "pixelRatio": 0.2859584994517031,
+            "heightDelta": -371
+        },
+        {
+            "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
+            "status": "changed",
+            "sha256": "5e110eec7dd4f6172372811f3742d80cedcbd6c4d49369c960a74eba107053ef",
+            "previousSha256": "77944dd7d8d08d3098ce03cd78315f2f2cd747879db97898cbc3e83921225450",
+            "differentPixels": 3969615,
+            "pixelRatio": 0.296385021323872,
+            "heightDelta": -290
         }
     ],
-    "renderNoise": 136,
+    "renderNoise": 133,
     "removed": []
 }
