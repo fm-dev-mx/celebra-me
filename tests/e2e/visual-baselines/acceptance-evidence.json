@@ -1,21 +1,31 @@
 {
-    "referenceSha": "557bb9f4d4580c053eea9636d3c71c8588579a7b",
-    "acceptedAt": "2026-11-19T00:59:15.498Z",
+    "referenceSha": "1433c41ae9d8d95de3f787a09193f0e954c5af9e",
+    "acceptedAt": "2026-11-19T01:23:43.069Z",
     "matrixHash": "6528e362893e74dd11c2c7c993832d1b7abad491d2129ab5a129a71e10f86f52",
-    "candidateManifestSha256": "e2d281b1ea3defb4b7b325f72a3ef54a40e2049ca192f2eaa9eac8f868ac4f6b",
-    "acceptedManifestSha256": "fd74adf60a739f2576fa34439549c991c8082e25c97ccdd8cad2551e70c006c7",
-    "reviewedPaths": ["pages/invitation-xv-camila-beltran-mobile.png"],
+    "candidateManifestSha256": "a4da99b45a633a26709f3b36f42e548d8c3065a472d2abe9b8aa846d4268d5ee",
+    "acceptedManifestSha256": "c304d7c101ab5bb21ba4750727f9d908c1beb0477312cbcf7659c7ca9fe61ede",
+    "reviewedPaths": [
+        "pages/invitation-xv-camila-beltran-mobile.png",
+        "pages/invitation-xv-camila-beltran-desktop.png"
+    ],
     "items": [
         {
             "file": "pages/invitation-xv-camila-beltran-mobile.png",
             "status": "changed",
-            "sha256": "7cfa6eb8936f6e729152e18a4e29167cb43c1360089bbb13985ec58f2c7afbec",
-            "previousSha256": "cc67b7079637e9b01f01da4fd9043d5d17789e99047657674a8219153970b3fe",
-            "differentPixels": 381994,
-            "pixelRatio": 0.07879267917881062,
-            "heightDelta": 491
+            "sha256": "eab12e70ba37e1fd130a52df401e161e0fc9aff24d5908865570029f6eab699c",
+            "previousSha256": "7cfa6eb8936f6e729152e18a4e29167cb43c1360089bbb13985ec58f2c7afbec",
+            "differentPixels": 40862,
+            "pixelRatio": 0.008108215367153612
+        },
+        {
+            "file": "pages/invitation-xv-camila-beltran-desktop.png",
+            "status": "changed",
+            "sha256": "3eb038d28623b1cfa5e684edddd911bea03f84b562e15213c02f5643ab1e6434",
+            "previousSha256": "67d36133732cc624b30dde8e0da8caceb10bd6e9a032625223407fc7a6948889",
+            "differentPixels": 110416,
+            "pixelRatio": 0.005416627421431038
         }
     ],
-    "renderNoise": 134,
+    "renderNoise": 135,
     "removed": []
 }

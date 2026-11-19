@@ -1,13 +1,13 @@
 @use '../../../styles/tools/motion';
 @use '../../../styles/tools/jewel-box-scenes' as scenes;
 @use '../../../styles/tools/jewel-box-variants' as variants;
+@use '../../../styles/tools/hero-cinematic-entrance' as cinema;
 
 .event--camila-beltran .invitation-hero {
 	// The date arc lives with her assets; a url written in the shared tool would not resolve.
 	@include scenes.photo-cover(url('./assets/hero-date-arc.png'));
 
-	// Her studio photo has its own warm backdrop, so it fills the screen edge to edge; the shared
-	// inset and edge fade would leave a pink frame around it.
+	// Her studio backdrop fills the screen edge to edge; the shared inset would frame it in pink.
 	.invitation-hero__background img {
 		translate: none;
 		scale: none;
@@ -33,6 +33,8 @@
 }
 
 .event--camila-beltran {
+	@include cinema.entrance;
+
 	color: var(--jewel-ink);
 
 	.header-base,
