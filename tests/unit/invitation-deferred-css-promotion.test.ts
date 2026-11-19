@@ -111,15 +111,25 @@ describe('invitation deferred CSS promotion inline script', () => {
 	});
 
 	it('promotes immediately for returning visitors of real invitations', () => {
-		window.localStorage.setItem(STORAGE_KEY, 'true');
+		window.localStorage.setItem(STORAGE_KEY, String(Date.now() - 60_000));
 		runScript();
 
 		expect(isPromoted()).toBe(true);
 		expect(globals.PerformanceObserver).not.toHaveBeenCalled();
 	});
 
-	it('ignores the stored flag under forceEnvelope and on demos', () => {
+	it('waits for paint when the stored opening is stale or the legacy permanent flag', () => {
 		window.localStorage.setItem(STORAGE_KEY, 'true');
+		runScript();
+		expect(isPromoted()).toBe(false);
+
+		window.localStorage.setItem(STORAGE_KEY, String(Date.now() - 13 * 60 * 60 * 1000));
+		runScript();
+		expect(isPromoted()).toBe(false);
+	});
+
+	it('ignores the stored flag under forceEnvelope and on demos', () => {
+		window.localStorage.setItem(STORAGE_KEY, String(Date.now()));
 		runScript({ search: '?forceEnvelope=true' });
 		expect(isPromoted()).toBe(false);
 

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="presentation">
+	<defs>
+		<radialGradient id="bloom" cx="50%" cy="42%" r="60%">
+			<stop offset="0" stop-color="#f9c9d6"/>
+			<stop offset=".55" stop-color="#e486a2"/>
+			<stop offset="1" stop-color="#b2466c"/>
+		</radialGradient>
+		<linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0" stop-color="#d9b48a"/>
+			<stop offset="1" stop-color="#a97f52"/>
+		</linearGradient>
+	</defs>
+	<path d="M60 84c-8 8-20 14-36 12 6-10 18-16 30-16" fill="url(#leaf)"/>
+	<path d="M60 84c8 8 20 14 36 12-6-10-18-16-30-16" fill="url(#leaf)"/>
+	<path d="M60 86v24" stroke="#a97f52" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+	<path d="M60 86C38 86 26 72 28 54c2-14 12-24 22-26-8 10-6 26 10 30 16-4 18-20 10-30 10 2 20 12 22 26 2 18-10 32-32 32z" fill="url(#bloom)"/>
+	<path d="M60 58c-12-2-18-12-16-22 4-8 10-12 16-12s12 4 16 12c2 10-4 20-16 22z" fill="#eda0b6"/>
+	<path d="M60 50c-6 0-9-6-8-11 2-4 5-6 8-6s6 2 8 6c1 5-2 11-8 11z" fill="#c95e83"/>
+	<path d="M53 40c3-3 8-3 11 0M50 62c6 4 14 4 20 0M40 70c10 8 30 8 40 0" stroke="#fbe0e6" stroke-width="1.4" stroke-linecap="round" fill="none" opacity=".75"/>
+</svg>

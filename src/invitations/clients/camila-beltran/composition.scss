@@ -2,6 +2,7 @@
 @use '../../../styles/tools/jewel-box-scenes' as scenes;
 @use '../../../styles/tools/jewel-box-variants' as variants;
 @use '../../../styles/tools/hero-cinematic-entrance' as cinema;
+@use '../../../styles/tools/jewel-box-accents' as accents;
 
 .event--camila-beltran .invitation-hero {
 	// The date arc lives with her assets; a url written in the shared tool would not resolve.
@@ -14,16 +15,13 @@
 		mask-image: none;
 	}
 
-	// Her photo has no pedestal for the curved date, and its arc ran into her hand: a straight
-	// line, aligned with the name, sits on the skirt and stops well short of the hand.
+	// No pedestal for the curved date: a straight line, aligned with the name, short of her hand.
 	@media (aspect-ratio < 5/4) {
 		.invitation-hero__date {
 			top: auto;
 			bottom: 4.5rem;
 			left: clamp(1.25rem, 6vw, 4rem);
 			translate: none;
-			color: var(--jewel-gold-ink-deep);
-			text-shadow: 0 0 0.75rem rgb(255 245 238 / 70%);
 
 			&::after {
 				display: none;
@@ -244,10 +242,10 @@
 		background:
 			radial-gradient(
 				90% 70% at 50% 0%,
-				color-mix(in srgb, var(--jewel-blush) 55%, transparent),
+				color-mix(in srgb, var(--jewel-petal) 70%, transparent),
 				transparent 75%
 			),
-			rgb(252 241 234 / 82%);
+			var(--jewel-blush);
 		border: 1px solid var(--jewel-gold);
 		border-radius: 1.25rem;
 		outline: 1px solid var(--jewel-gold-light);
@@ -266,7 +264,8 @@
 	}
 
 	.family__member-name {
-		font: 400 clamp(2.125rem, 9vw, 2.75rem) / 1.15 var(--jewel-script);
+		font: 400 clamp(2.5rem, 11vw, 3.25rem) / 1.1 var(--jewel-script);
+		letter-spacing: 0.01em;
 	}
 
 	@include variants.pinned-overture;
@@ -313,8 +312,7 @@
 
 // Scene compositions, narrative script titles, eyebrows, signature contrast and dark footer ink.
 .event--camila-beltran.theme-preset--jewelry-box {
-	// Edge-to-edge photo bands: no cream padding or mat around them, and a rose ground behind the
-	// photo so nothing pale shows while a band scrolls in or out.
+	// Edge-to-edge photo bands with a rose ground, so nothing pale shows as a band scrolls.
 	.invitation-interlude[data-presentation='framed'] {
 		@include variants.portrait-photo-band;
 	}
@@ -597,4 +595,6 @@
 		font-style: normal;
 		color: var(--jewel-gold-light);
 	}
+
+	@include accents.rose-accents(url('./assets/rose-ornament.svg'));
 }

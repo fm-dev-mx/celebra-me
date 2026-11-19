@@ -131,7 +131,7 @@ const content: CanonicalEventContentInput = {
 		variant: 'standard',
 		accessPolicy: { visibility: 'public' },
 		mapStyle: 'minimal',
-		presentationOptions: { showCalendarLinks: false, indicationsLayout: 'list' },
+		presentationOptions: { showCalendarLinks: true, indicationsLayout: 'list' },
 		introHeading: '¿Dónde?',
 		introLede:
 			'Ceremonia de XV años · 7:00 p. m. en Salón Áurea · Rev. Enrique Ruelas Carrillo.',
@@ -140,8 +140,8 @@ const content: CanonicalEventContentInput = {
 			{
 				iconName: 'DressCode',
 				styleVariant: 'reserved',
-				title: 'Celebremos con estilo',
-				text: 'El <strong>rose gold</strong> está reservado para la quinceañera. Le agradezco elegir otro color para acompañarme en esta noche especial.',
+				title: 'Formal',
+				text: 'El color <strong>Rose Gold</strong> se reserva para la quinceañera.',
 			},
 		],
 		venues: [
@@ -193,10 +193,14 @@ const content: CanonicalEventContentInput = {
 		presentation: 'catalog',
 		title: 'Regalos',
 		subtitle:
-			'Su presencia es mi mejor regalo. Si además desea tener un detalle conmigo, le comparto estas opciones.',
+			'Su presencia es mi mejor regalo. Si además desea tener un detalle conmigo, le comparto esta opción.',
 		items: [
-			{ type: 'cash', title: 'Lluvia de sobres', medallionIconName: 'Enveloped' },
-			{ type: 'cash', title: 'Regalo sorpresa', medallionIconName: 'Gift' },
+			{
+				type: 'cash',
+				title: 'Lluvia de sobres',
+				text: 'Es la tradición de entregar a la quinceañera un sobre con un obsequio en efectivo el día de la celebración.',
+				medallionIconName: 'Enveloped',
+			},
 		],
 		note: 'Habrá un baúl en la recepción para sus sobres.',
 	},
@@ -231,7 +235,8 @@ const content: CanonicalEventContentInput = {
 		variant: 'standard',
 		title: 'Confirme su asistencia',
 		// The client manages the guest list and pass counts through the host dashboard.
-		subcopy: 'Le pedimos su respuesta a más tardar el 25 de noviembre.',
+		subcopy:
+			'Evento solo para adultos · No niños. Le pedimos su respuesta a más tardar el 25 de noviembre.',
 		lockedMessage: 'Abra su enlace personalizado para confirmar su asistencia.',
 		guestCap: 2,
 		accessMode: 'personalized-only',
