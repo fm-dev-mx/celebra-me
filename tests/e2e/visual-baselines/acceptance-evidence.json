@@ -1,18 +1,18 @@
 {
-    "referenceSha": "64136e8002a4ff99d8bf86c4d5030d201dd6fa42",
-    "acceptedAt": "2026-11-19T15:56:52.445Z",
+    "referenceSha": "c83f12691bda73bc3d5b8add1b372583a2c670fa",
+    "acceptedAt": "2026-11-19T16:45:32.712Z",
     "matrixHash": "cbd3152ea1b0947ad893879ae91aab90f89058a61c678642dd9e81f1292fe10a",
-    "candidateManifestSha256": "8f80388d0e569118d2198570a6d9c5f7dcdd0eacf83678d36d325ec3afd8ecbe",
-    "acceptedManifestSha256": "d9a56c2d34433981e1693e6e26bb2930feed12d43fe4a71849fd51a27d20a8fc",
+    "candidateManifestSha256": "38236c3a36688938e0121bcee5bbdc9697b422a7b3169f2e4c24c08c61cfc1df",
+    "acceptedManifestSha256": "9b2d753b0c50cd8315c29f14be854d8f1ef18d476e4d347f2aba70fb1ba04761",
     "reviewedPaths": ["pages/invitation-xv-camila-beltran-mobile.png"],
     "items": [
         {
             "file": "pages/invitation-xv-camila-beltran-mobile.png",
             "status": "changed",
-            "sha256": "280f15a4fdccda496a694a09db12f314c1612e3fea35e9ab81a0fbfcce198f07",
-            "previousSha256": "8b8edccefbe1e7ac14cad130d20250e99328a328ef2388ec14fee414ea2574b9",
-            "differentPixels": 12791,
-            "pixelRatio": 0.002456184819698637
+            "sha256": "23ba395eacda4e5184c175ec5f7a908fac13da39b940e1f02988c163d7ee284f",
+            "previousSha256": "280f15a4fdccda496a694a09db12f314c1612e3fea35e9ab81a0fbfcce198f07",
+            "differentPixels": 10488,
+            "pixelRatio": 0.0020139524969900167
         }
     ],
     "renderNoise": 137,
