@@ -1,5 +1,6 @@
 @use './composition';
 @use '../../../styles/fonts/parisienne';
+@use '../../../styles/fonts/pinyon-script';
 
 // Camila: flat stationery in rose gold, beige, gold and white. A plain rose envelope closed with a
 // gold wax seal, a full photograph for the cover, then cream paper with dusty-rose script
@@ -595,7 +596,7 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 // Fourth round: three families only (Parisienne, EB Garamond, Montserrat), a larger type scale
 // and the name in metallic rose gold; browsers without clipped text keep a solid rose gold.
 .event--camila-beltran.event--camila-beltran.theme-preset--jewelry-box {
-	// Three families only: the script, the serif for titles and labels, the sans for the UI.
+	// The script, the serif for titles and labels, the sans for the UI (parents: see below).
 	--font-calligraphy: var(--jewel-script);
 	--font-display: var(--jewel-serif);
 	--font-label: var(--jewel-serif);
@@ -615,6 +616,10 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	);
 	--hero-heading-paint: none;
 	--hero-heading-fill: rgb(246 196 188);
+
+	// The parents' names in a formal script close to Parisienne but easier to read.
+	--camila-parents-script: 'Pinyon Script', var(--jewel-script);
+	--camila-parents-size: clamp(2.25rem, 9.5vw, 2.75rem);
 
 	@supports (background-clip: text) or (-webkit-background-clip: text) {
 		--hero-heading-paint: var(--hero-cinema-gold);
