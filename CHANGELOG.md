@@ -10,6 +10,15 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.75.0] - 2026-11-18
+
+Applies two requested adjustments to Camila Beltrán on phones. No database migrations.
+
+### Changed
+
+- Invitations: Camila Beltrán shows its gallery at full width on phones, spread over two screens,
+  and uses the quiet equalizer music control (#1061).
+
 ## [0.74.0] - 2026-11-18
 
 Ships the second design round for Camila Beltrán and Daniela Yáñez's requested adjustments to
