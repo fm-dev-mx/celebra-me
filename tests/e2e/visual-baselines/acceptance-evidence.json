@@ -1,31 +1,29 @@
 {
-    "referenceSha": "277f1f6c4f69826ed0216a9f282cd2517a2ceae5",
-    "acceptedAt": "2026-11-19T19:15:04.338Z",
+    "referenceSha": "04275e045a28ec40af9167af839b1d651aeb6768",
+    "acceptedAt": "2026-11-19T21:42:16.603Z",
     "matrixHash": "cbd3152ea1b0947ad893879ae91aab90f89058a61c678642dd9e81f1292fe10a",
-    "candidateManifestSha256": "38313ef8e4a2b318f5915a5dc5b2d32ad966c2771b0d2a62bc82faa656be1aea",
-    "acceptedManifestSha256": "e5e239cc2da402cd338a60596609bb7fc8f45e3957bd69b119b3aee9ee3e2792",
+    "candidateManifestSha256": "8d8041aa5701ece390896395092c3b00e798e02bff2be3bfb04698e5f05045b2",
+    "acceptedManifestSha256": "a190f59cc0efbbad789e5aae637b83d8081a8757a434a0714e95edd861f62908",
     "reviewedPaths": [
-        "pages/invitation-xv-camila-beltran-desktop.png",
-        "pages/invitation-xv-camila-beltran-mobile.png"
+        "pages/invitation-xv-camila-beltran-mobile.png",
+        "pages/invitation-xv-camila-beltran-desktop.png"
     ],
     "items": [
         {
-            "file": "pages/invitation-xv-camila-beltran-desktop.png",
-            "status": "changed",
-            "sha256": "dd6f5787be5cc378ad0accad67116ac4c38a221d53ecb18ec6dda79182845fa6",
-            "previousSha256": "d0888fb7a5e914d6bd8af1bf9f3a52879822b7302c1f0bdf4cadd111fba2427d",
-            "differentPixels": 1218831,
-            "pixelRatio": 0.05830879144851658,
-            "heightDelta": 122
-        },
-        {
             "file": "pages/invitation-xv-camila-beltran-mobile.png",
             "status": "changed",
-            "sha256": "fa61e70c7647e11cd46c6451fe937688dcdf7d2871c01a74b13999bdd0b56e65",
-            "previousSha256": "23ba395eacda4e5184c175ec5f7a908fac13da39b940e1f02988c163d7ee284f",
-            "differentPixels": 520076,
-            "pixelRatio": 0.09986731110074179,
-            "heightDelta": 99
+            "sha256": "5742c0da20b2658d0bc896c190343a684c17868a96980dcb2acf8ef90c612423",
+            "previousSha256": "fa61e70c7647e11cd46c6451fe937688dcdf7d2871c01a74b13999bdd0b56e65",
+            "differentPixels": 48933,
+            "pixelRatio": 0.009327180402113498
+        },
+        {
+            "file": "pages/invitation-xv-camila-beltran-desktop.png",
+            "status": "changed",
+            "sha256": "9ec85938acd33e717ddd4995647f124dfc0f602be87f044e91d425acdf09b278",
+            "previousSha256": "dd6f5787be5cc378ad0accad67116ac4c38a221d53ecb18ec6dda79182845fa6",
+            "differentPixels": 63276,
+            "pixelRatio": 0.0030018900578403242
         }
     ],
     "renderNoise": 136,
