@@ -404,3 +404,101 @@
 		}
 	}
 }
+
+// Portrait-led gallery for five photographs: the full-length portrait opens it uncropped at 3:4,
+// then a full-width photograph, two portraits side by side and a full-width close-up. From 768px
+// the portrait stands two rows tall beside the others. Include on `.gallery-section`.
+@mixin portrait-led-gallery {
+	display: grid;
+	place-items: center;
+	min-height: 100svh;
+
+	.gallery-section__container {
+		width: 100%;
+	}
+
+	// Full-length portrait with the number balloons opens the gallery and is never cropped wide.
+	.gallery-grid__item:first-child {
+		grid-column: 1 / -1;
+		aspect-ratio: 3 / 4;
+
+		@media (width >= 768px) {
+			grid-column: auto;
+			grid-row: span 2;
+			aspect-ratio: auto;
+		}
+	}
+
+	.gallery-grid__item:is(:nth-child(2), :nth-child(5)) {
+		grid-column: 1 / -1;
+		aspect-ratio: 4 / 5;
+
+		@media (width >= 768px) {
+			grid-column: auto;
+			aspect-ratio: 3 / 4;
+		}
+	}
+
+	// Phones: the full-length portrait on its own screen, then the seated photograph, both close
+	// portraits side by side, and the raised-hand close-up to finish.
+	@media (width < 768px) {
+		display: block;
+		min-height: 0;
+
+		.gallery-section__header {
+			padding-inline: 1rem;
+		}
+
+		.gallery-grid__item {
+			width: 100%;
+			aspect-ratio: auto;
+		}
+
+		.gallery-grid__item:first-child {
+			height: auto;
+			aspect-ratio: 3 / 4;
+		}
+
+		.gallery-grid__item:nth-child(2) {
+			height: 55svh;
+		}
+
+		.gallery-grid__item:is(:nth-child(3), :nth-child(4)) {
+			grid-column: auto;
+			height: 42svh;
+		}
+
+		.gallery-grid__item:nth-child(5) {
+			height: 58svh;
+		}
+	}
+}
+
+// Single bottom control: the reply pill stays centred and a touch smaller, and while it shows the
+// music button steps aside. Include on the event theme wrapper.
+@mixin centered-reply-pill {
+	.floating-cta[class] {
+		left: 50%;
+		max-width: calc(100vw - 2rem);
+	}
+
+	.floating-cta__button[class] {
+		padding: 0.5rem 1.2rem;
+		font-size: 0.72rem;
+	}
+
+	@media (width < 992px) {
+		.music-player {
+			transition:
+				bottom 220ms cubic-bezier(0.22, 1, 0.36, 1),
+				opacity 220ms ease,
+				visibility 220ms;
+		}
+
+		&:has(.floating-cta[data-visible='true']:not([hidden])) .music-player {
+			visibility: hidden;
+			opacity: 0%;
+			pointer-events: none;
+		}
+	}
+}
