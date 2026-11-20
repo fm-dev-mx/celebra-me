@@ -100,7 +100,7 @@ const content: CanonicalEventContentInput = {
 		microcopy: 'Toque el sello para abrir',
 	},
 	quote: {
-		text: 'Hay días que se sueñan desde niña. El mío ya tiene fecha, y quiero vivirlo con ustedes.',
+		text: 'Hay días que se sueñan desde niña. El mío ya tiene fecha.',
 		closingLine: 'Viernes · 11 · 12 · 26',
 	},
 	family: {
@@ -112,10 +112,11 @@ const content: CanonicalEventContentInput = {
 			mother: 'Anahy Soto Acosta',
 		},
 		labels: {
-			sectionTitle: 'Con el amor de mis padres',
+			sectionTitle: 'Con la bendición de Dios y el amor de mis padres',
 			sectionSubtitle: '',
 			parentsTitle: 'Mis padres',
-			sectionMessage: 'Gracias por cada paso que me trajo hasta aquí.',
+			sectionMessage:
+				'Hoy me siento muy feliz de llegar a este momento de mi vida, el día que dejaré atrás mi infancia y comenzaré un nuevo viaje.\n\nCon el corazón lleno de emoción, te invito a celebrar mis XV años y a compartir juntos esta noche mágica que siempre recordaré.',
 		},
 	},
 	countdown: {
@@ -132,7 +133,7 @@ const content: CanonicalEventContentInput = {
 		accessPolicy: { visibility: 'public' },
 		mapStyle: 'minimal',
 		presentationOptions: { showCalendarLinks: true, indicationsLayout: 'list' },
-		introHeading: '¿Dónde?',
+		introHeading: 'Te espero en:',
 		introLede:
 			'Ceremonia de XV años · 7:00 p. m. en Salón Áurea · Rev. Enrique Ruelas Carrillo.',
 		indicationsHeading: 'Código de vestimenta',
@@ -150,6 +151,7 @@ const content: CanonicalEventContentInput = {
 				type: 'reception',
 				venueEvent: 'Recepción',
 				time: '20:00',
+				image: 'venueSalon',
 			},
 		],
 	},
@@ -161,32 +163,12 @@ const content: CanonicalEventContentInput = {
 		items: [
 			{ time: '19:00', iconName: 'Church', label: 'Ceremonia de XV años' },
 			{ time: '20:00', iconName: 'Toast', label: 'Bienvenida y recepción' },
-			{
-				time: '20:30',
-				iconName: 'Crown',
-				label: 'Mi gran entrada',
-				description: '¡Comienza la celebración!',
-			},
-			{
-				time: '21:00',
-				iconName: 'Dinner',
-				label: 'Cena',
-				description: 'Un momento para compartir.',
-			},
-			{
-				time: '21:30',
-				iconName: 'Waltz',
-				label: 'Vals',
-				description: 'Un baile para recordar.',
-			},
-			{
-				time: '22:00',
-				iconName: 'Heel',
-				label: '¡A bailar!',
-				description: 'La pista nos espera.',
-			},
+			{ time: '20:30', iconName: 'Waltz', label: 'Mi gran entrada y vals' },
+			{ time: '21:00', iconName: 'Dinner', label: 'Brindis y cena' },
+			{ time: '21:30', iconName: 'Heel', label: '¡A bailar!' },
+			{ time: '23:00', iconName: 'Cake', label: 'Pastel' },
 		],
-		closingNote: 'Gracias por acompañarme en cada momento de esta noche.',
+		closingNote: 'Horario referencia. Los detalles finales son ajustados en evento.',
 	},
 	gifts: {
 		variant: 'standard',
@@ -325,6 +307,7 @@ export default defineCanonicalInvitation({
 		gallery03: 'gallery-03.webp',
 		gallery04: 'gallery-04.webp',
 		thankYouPortrait: 'thank-you.webp',
+		venueSalon: 'venue-salon-aurea.webp',
 		ogShare: 'og-share.webp',
 	},
 	deliveryScope: 'content-and-assets',

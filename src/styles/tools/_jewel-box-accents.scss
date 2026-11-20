@@ -6,7 +6,8 @@
 // client's root rule and pass the ornament url written next to the client's assets; the rules
 // double the root so they win over the shared jewel-box scenes. Sections without these classes
 // are untouched. `$cover-rose: true` adds the ornament beside the cover label under the name.
-// A client may set `--jewel-accent-family-title-font` to replace the script parents' title.
+// A client may set `--jewel-accent-family-title-font` and `--jewel-accent-family-title-color` to
+// replace the script parents' title.
 @mixin rose-accents($ornament, $cover-rose: false) {
 	@at-root #{&}#{&} {
 		// Cover: a bigger date set in the serif, on a pink pill so it reads on the photograph.
@@ -75,7 +76,7 @@
 			);
 			letter-spacing: 0;
 			text-transform: none;
-			color: var(--jewel-rose-deep);
+			color: var(--jewel-accent-family-title-color, var(--jewel-rose-deep));
 		}
 
 		.family__group--parents .family__member + .family__member::before {

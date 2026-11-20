@@ -3,6 +3,7 @@
 @use '../../../styles/tools/jewel-box-variants' as variants;
 @use '../../../styles/tools/hero-cinematic-entrance' as cinema;
 @use '../../../styles/tools/jewel-box-accents' as accents;
+@use '../../../styles/tools/jewel-box-rose-gold' as rose-gold;
 
 .event--camila-beltran .invitation-hero {
 	// The date arc lives with her assets; a url written in the shared tool would not resolve.
@@ -15,13 +16,38 @@
 		mask-image: none;
 	}
 
-	// No pedestal for the curved date: a straight line, aligned with the name, short of her hand.
+	// Portrait: photo lowered into its plain backdrop so the title clears her head; date small and centred.
 	@media (aspect-ratio < 5/4) {
-		.invitation-hero__date {
+		.invitation-hero__background {
+			background-color: rgb(159 104 77);
+		}
+
+		.invitation-hero__background.invitation-hero__background img {
+			translate: 0 9svh;
+		}
+
+		// Phones: enlarged photo sized by height so her head clears the title; the hand stays in frame.
+		@media (aspect-ratio < 2/3) {
+			.invitation-hero__background.invitation-hero__background img {
+				position: absolute;
+				inset: auto auto 0 -29vw;
+				width: 150vw;
+				max-width: none;
+				height: min(94svh, 215.4vw);
+				translate: none;
+				object-fit: contain;
+				object-position: 50% 100%;
+				mask-image: var(--camila-hero-phone-fade);
+			}
+		}
+
+		.invitation-hero__details .invitation-hero__date[class][class] {
 			top: auto;
 			bottom: 4.5rem;
-			left: clamp(1.25rem, 6vw, 4rem);
-			translate: none;
+			left: 50%;
+			translate: -50% 0;
+			color: var(--jewel-gold-ink-deep);
+			text-shadow: 0 0 0.75rem rgb(255 245 238 / 70%);
 
 			&::after {
 				display: none;
@@ -138,14 +164,11 @@
 		justify-content: center;
 		overflow: clip;
 		padding-block: clamp(2.5rem, 8svh, 5rem);
+		text-align: center;
 	}
 
-	// A wash in the dress tones: blush glowing at the top, champagne at the foot.
 	.quote-section {
-		background:
-			radial-gradient(120% 55% at 50% 0%, var(--jewel-petal-light), transparent 70%),
-			radial-gradient(110% 50% at 50% 100%, var(--jewel-gold-light), transparent 72%),
-			var(--jewel-beige);
+		background: var(--camila-quote-ground);
 	}
 
 	.quote-container {
@@ -180,14 +203,10 @@
 		content: '';
 	}
 
-	.quote-closing-line,
-	.family__title {
+	.quote-closing-line {
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		color: var(--jewel-gold-deep);
-	}
-
-	.quote-closing-line {
 		margin-top: 1.5rem;
 		font: 500 0.9375rem var(--font-label, var(--font-body));
 	}
@@ -198,13 +217,12 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		text-align: center;
 	}
 
 	.family__container {
 		width: min(100%, 36rem);
 		margin-inline: auto;
-		padding-inline: 1.75rem;
+		padding-inline: 1.25rem;
 	}
 
 	.family__header,
@@ -213,17 +231,18 @@
 	}
 
 	.family__title {
-		max-width: 20rem;
-		font: 600 0.875rem / 1.6 var(--font-label, var(--font-body));
-		text-align: center;
+		width: min(100%, 26rem);
+		text-wrap: balance;
 	}
 
-	.family__message {
+	.family__message[class][class] {
 		order: 1;
-		max-width: 24rem;
-		margin: clamp(2.25rem, 8svh, 4rem) auto 0;
-		font: 400 clamp(1rem, 4.2vw, 1.125rem) / 1.5 var(--jewel-serif);
-		text-align: center;
+		max-width: 21rem;
+		margin: clamp(1.75rem, 4.5svh, 2.5rem) auto 0;
+		font:
+			400 1.2rem / 1.4 'Cormorant Garamond Variable',
+			var(--jewel-serif);
+		white-space: pre-line;
 		color: var(--jewel-ink-soft);
 	}
 
@@ -234,38 +253,40 @@
 		content: none;
 	}
 
-	// The parents' names sit in a soft card with a double gold rule, like a printed place card.
 	.family__panel {
 		width: min(100%, 32rem);
-		margin: clamp(1.75rem, 6svh, 3rem) auto 0;
-		padding: clamp(1.75rem, 5svh, 2.5rem) 1.25rem;
-		background:
-			radial-gradient(
-				90% 70% at 50% 0%,
-				color-mix(in srgb, var(--jewel-petal) 70%, transparent),
-				transparent 75%
-			),
-			var(--jewel-blush);
-		border: 1px solid var(--jewel-gold);
-		border-radius: 1.25rem;
-		outline: 1px solid var(--jewel-gold-light);
-		outline-offset: -0.45rem;
-		box-shadow: 0 1.25rem 2.5rem -1.5rem rgb(158 82 80 / 35%);
+		margin: clamp(1.75rem, 4.5svh, 2.5rem) auto 0;
+		padding: 0;
 	}
 
 	.family__members {
-		gap: clamp(1.5rem, 5svh, 2.5rem);
-		padding: 0;
-		list-style: none;
+		gap: 0;
+		width: min(100%, 25rem);
+		margin: 0 auto;
+		padding: 2rem 0.875rem;
+		border: 1px solid var(--camila-family-gold);
+		outline: 1px solid var(--camila-family-gold);
+		outline-offset: -7px;
+		background: var(--camila-family-card);
+		box-shadow: 0 0.75rem 1.75rem rgb(var(--jewel-ink-rgb) / 10%);
 	}
 
-	.family__member {
-		gap: 0.4rem;
+	.family__group--parents .family__member + .family__member[class][class][class][class]::before {
+		margin: 0.5rem 0;
+		font: 400 2.4rem / 1 var(--jewel-script);
+		color: var(--camila-family-gold);
+		content: 'y';
 	}
 
 	.family__member-name {
-		font: 400 var(--camila-parents-size) / 1.25 var(--camila-parents-font);
-		letter-spacing: 0.01em;
+		font: italic 500 clamp(1.7rem, 7.3vw, 2.1rem) / 1.25 var(--jewel-serif);
+		max-width: none;
+
+		&:is(.family__group--parents .family__member + .family__member *) {
+			max-width: 8em;
+			margin-inline: auto;
+			text-wrap: balance;
+		}
 	}
 
 	@include variants.pinned-overture;
@@ -317,46 +338,28 @@
 		@include variants.portrait-photo-band;
 	}
 
-	// Each band's side ground follows its own photo's edge tones, top to bottom, so the portrait
-	// blends into the band instead of sitting on a flat grey panel.
+	// Each band's side ground follows its photo's edge tones, so the portrait blends into the band.
 	@media (width >= 48rem) {
 		.invitation-interlude[data-presentation='framed'] {
 			&[data-interlude-index='1'] {
-				background: linear-gradient(
-					rgb(197 186 185),
-					rgb(209 199 197) 50%,
-					rgb(225 213 210)
-				);
+				background: linear-gradient(var(--camila-band-1));
 			}
 
 			&[data-interlude-index='2'] {
-				background: linear-gradient(
-					rgb(192 183 178),
-					rgb(201 192 188) 50%,
-					rgb(215 195 185)
-				);
+				background: linear-gradient(var(--camila-band-2));
 			}
 
 			&[data-interlude-index='3'] {
-				background: linear-gradient(
-					rgb(210 198 194),
-					rgb(218 207 204) 50%,
-					rgb(233 225 223)
-				);
+				background: linear-gradient(var(--camila-band-3));
 			}
 
 			&[data-interlude-index='4'] {
-				background: linear-gradient(
-					rgb(178 162 162),
-					rgb(218 192 186) 50%,
-					rgb(214 196 192)
-				);
+				background: linear-gradient(var(--camila-band-4));
 			}
 		}
 	}
 
-	// The band itself stays put and opaque before, during and after its reveal (no pale flash); only
-	// the photo inside drifts. Outranks the shared media-scale reveal and the framed-band frame.
+	// The band stays opaque through its reveal (no pale flash); only the photo inside drifts.
 	#invitation-sections-container
 		> .invitation-section-wrapper[data-reveal]
 		.invitation-interlude[data-presentation='framed']
@@ -388,10 +391,6 @@
 			background: var(--camila-dress-swatch);
 			box-shadow: var(--camila-dress-swatch-ring);
 			content: '';
-		}
-
-		.dress-code__icon {
-			opacity: 85%;
 		}
 
 		.dress-code__text {
@@ -520,8 +519,7 @@
 			}
 		}
 
-		// Phones: two full-width screens, the header plus the first photograph (8.75rem is the
-		// header and its gap), then the two portraits over the last photograph.
+		// Phones: header plus first photograph (8.75rem), then both portraits over the last photo.
 		@media (width < 768px) {
 			display: block;
 			min-height: 0;
@@ -596,5 +594,6 @@
 		color: var(--jewel-gold-light);
 	}
 
-	@include accents.rose-accents(url('./assets/rose-ornament.svg'), true);
+	@include accents.rose-accents(url('./assets/rose-ornament.svg'));
+	@include rose-gold.rose-gold-finish;
 }
