@@ -1,0 +1,210 @@
+@use 'motion';
+
+// Rose accents for a jewel-box invitation: a pill date on the cover, body copy at 17px or more,
+// pink section titles, a drawn ornament closing the key sections, an ampersand between the
+// parents, rose countdown cards and a lively countdown and calendar. Include it inside the
+// client's root rule and pass the ornament url written next to the client's assets; the rules
+// double the root so they win over the shared jewel-box scenes. Sections without these classes
+// are untouched. `$cover-rose: true` adds the ornament beside the cover label under the name.
+// A client may set `--jewel-accent-family-title-font` and `--jewel-accent-family-title-color` to
+// replace the script parents' title.
+@mixin rose-accents($ornament, $cover-rose: false) {
+	@at-root #{&}#{&} {
+		// Cover: a bigger date set in the serif, on a pink pill so it reads on the photograph.
+		.invitation-hero__date {
+			padding: 0.35em 0.9em;
+			font-family: var(--jewel-serif);
+			font-size: var(--hero-date-size);
+			font-weight: var(--hero-date-weight);
+			letter-spacing: var(--hero-date-tracking);
+			color: var(--jewel-white);
+			background: rgb(var(--jewel-rose-deep-rgb) / 78%);
+			border: 1px solid rgb(255 255 255 / 55%);
+			border-radius: 999px;
+			text-shadow: none;
+		}
+
+		// Body copy at 17px or more.
+		:is(
+			.family__message,
+			.event-location__intro-lede,
+			.event-location__intro p,
+			.itinerary__subtitle,
+			.gifts-section__subtitle,
+			.gifts-section__card-text,
+			.rsvp__subcopy,
+			.dress-code__text,
+			.countdown-footer,
+			.itinerary__item-description,
+			.itinerary__closing-note,
+			.gift-card__description,
+			.gifts-section__note
+		) {
+			font-size: var(--jewel-accent-body-size);
+		}
+
+		// Section titles in a true pink.
+		:is(
+			.countdown-title,
+			.event-location__heading,
+			.gallery-section__title,
+			.rsvp__title,
+			.gifts-section__title,
+			.memories-section__title,
+			.dress-code__heading,
+			.itinerary__title
+		) {
+			color: var(--jewel-rose-deep);
+		}
+
+		// A rose closes the key sections.
+		:is(.family__message, .countdown-footer, .gifts-section__note)::after {
+			display: block;
+			width: 2.75rem;
+			height: 2.75rem;
+			margin: 1.25rem auto 0;
+			background: $ornament center / contain no-repeat;
+			content: '';
+		}
+
+		// Parents: a big script title, larger names in deep rose and an ampersand between them.
+		.family__title {
+			max-width: 22rem;
+			font: var(
+				--jewel-accent-family-title-font,
+				400 var(--jewel-title-size) / 1.15 var(--jewel-script)
+			);
+			letter-spacing: 0;
+			text-transform: none;
+			color: var(--jewel-accent-family-title-color, var(--jewel-rose-deep));
+		}
+
+		.family__group--parents .family__member + .family__member::before {
+			display: block;
+			margin-bottom: 0.25rem;
+			font: italic 400 2rem / 1 var(--jewel-serif);
+			color: var(--jewel-gold-deep);
+			content: '&';
+		}
+
+		@if $cover-rose {
+			.invitation-hero__label::after {
+				display: inline-block;
+				width: 2rem;
+				height: 2rem;
+				margin-left: 0.5rem;
+				vertical-align: middle;
+				background: $ornament center / contain no-repeat;
+				filter: drop-shadow(0 1px 2px rgb(0 0 0 / 35%));
+				content: '';
+			}
+		}
+
+		// Countdown on pink paper, with rose number cards.
+		.countdown-section {
+			background-color: var(--jewel-blush);
+		}
+
+		.countdown__segment {
+			background: var(--jewel-white);
+			border: 1px solid rgb(var(--jewel-rose-rgb) / 45%);
+			border-radius: 1rem;
+			box-shadow: 0 0.75rem 1.5rem -1rem rgb(var(--jewel-rose-deep-rgb) / 45%);
+		}
+
+		.countdown__value {
+			display: inline-block;
+			color: var(--jewel-rose-deep);
+		}
+
+		.event-calendar__day--event {
+			color: var(--jewel-white);
+		}
+
+		.event-calendar__mark path {
+			fill: var(--jewel-rose);
+			stroke: var(--jewel-rose-deep);
+		}
+
+		// Location: a pink card edge and a rose above the venue name.
+		.event-location__card-wrapper {
+			border-color: rgb(var(--jewel-rose-rgb) / 55%);
+			box-shadow: 0 1.5rem 3rem -2rem rgb(var(--jewel-rose-deep-rgb) / 55%);
+		}
+
+		.event-location__card-title {
+			color: var(--jewel-rose-deep);
+		}
+
+		.event-location__card-title::before {
+			display: block;
+			width: 2.5rem;
+			height: 2.5rem;
+			margin: 0 auto 0.5rem;
+			background: $ornament center / contain no-repeat;
+			content: '';
+		}
+
+		@include motion.motion-safe {
+			.countdown__value:is([data-tick='a'], [data-tick='b']) {
+				animation: jewel-accent-tick-a 0.45s cubic-bezier(0.2, 0.7, 0.3, 1);
+			}
+
+			.countdown__value[data-tick='b'] {
+				animation-name: jewel-accent-tick-b;
+			}
+
+			.event-calendar.is-visible .event-calendar__day {
+				animation: jewel-accent-day-in 0.5s ease-out both;
+			}
+
+			@for $i from 1 through 42 {
+				.event-calendar.is-visible .event-calendar__day:nth-child(#{$i}) {
+					animation-delay: #{$i * 25}ms;
+				}
+			}
+
+			.event-calendar.is-visible .event-calendar__day--event .event-calendar__mark {
+				transform-origin: 50% 55%;
+				animation: jewel-accent-heartbeat 1.6s ease-in-out 1.6s infinite;
+			}
+		}
+	}
+
+	@keyframes jewel-accent-tick-a {
+		from {
+			opacity: 30%;
+			transform: translateY(-0.35em);
+		}
+	}
+
+	@keyframes jewel-accent-tick-b {
+		from {
+			opacity: 30%;
+			transform: translateY(-0.35em);
+		}
+	}
+
+	@keyframes jewel-accent-day-in {
+		from {
+			opacity: 0%;
+			transform: scale(0.6);
+		}
+	}
+
+	@keyframes jewel-accent-heartbeat {
+		0%,
+		40%,
+		100% {
+			transform: scale(1);
+		}
+
+		15% {
+			transform: scale(1.18);
+		}
+
+		28% {
+			transform: scale(1.06);
+		}
+	}
+}

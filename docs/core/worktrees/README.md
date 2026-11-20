@@ -44,9 +44,11 @@ This is the one place that names them; other docs link here.
   number.
 - **Session:** `fNN · Txxx · Título` (for example `f08 · T504 · Demo editorial`), with no PR number.
   A session without a lane or task keeps a plain role name (for example `Despachador`).
-- **Merge and stash:** only the board cycle merges PRs (`gh pr merge` is denied to agents in
-  `.agent/permissions/policy.json`). Agents do not use `git stash`: it is shared across worktrees,
-  so set work aside with a WIP commit on the task branch.
+- **Merge and stash:** PR merge authority and conditions follow the tablero core's
+  `docs/agent-rules.md`, «Review inside the session» (see
+  [the board rule](../../../.agent/rules/board.md)). Native approval restrictions are described in
+  [the permissions runbook](../agent-permissions.md). Agents do not use `git stash`: it is shared
+  across worktrees, so set work aside with a WIP commit on the task branch.
 
 Roles are defaults, not permissions or domain restrictions. Explicit assignment and scoped
 authorization are required before inspecting or changing a second checkout. Clean or detached does

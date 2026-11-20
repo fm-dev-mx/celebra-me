@@ -18,6 +18,7 @@ import { invitationProvenanceReference } from '@/lib/invitation/preview/provenan
 import { buildPageContextFromViewModel, prepareInvitationPageContext } from '@/lib/invitation/page-data';
 import { resolveRoutePersonalization } from '@/lib/invitation/route-personalization';
 import Layout from '@/layouts/Layout.astro';
+import { buildStoredRevealFreshExpression } from '@/lib/invitation/reveal-manager';
 import '@/styles/invitation.scss';
 import Footer from '@/components/invitation/Footer.astro';
 import Hero from '@/components/invitation/Hero.astro';
@@ -232,6 +233,31 @@ const isDemoConversion = demoConversion !== undefined;
 // Unpaid client invitation: preview banner and image copy friction.
 const previewMode = accessMode === 'preview' && Boolean(page);
 
+// Runs before the reveal component: a guest who opened the gate recently lands on the open page.
+const storedRevealFresh = buildStoredRevealFreshExpression('window.localStorage.getItem(key)');
+const storedRevealInlineScript = `(function() {
+								try {
+									const script = document.currentScript;
+									const wrapper = script ? script.closest('.event-theme-wrapper') : null;
+									if (!wrapper) return;
+									const slug = wrapper.getAttribute('data-event-slug');
+									if (!slug) return;
+									const key = 'envelope-opened-' + slug;
+									const isDemo = wrapper.getAttribute('data-is-demo') === 'true';
+									const force = new URLSearchParams(window.location.search).get('forceEnvelope') === 'true';
+									if (!isDemo && !force && ${storedRevealFresh}) {
+										wrapper.setAttribute('data-reveal-state', 'revealed');
+										const envelope = wrapper.querySelector('ds-envelope-reveal');
+										if (envelope) {
+											envelope.hidden = true;
+										}
+										document.documentElement.classList.remove('envelope-open');
+									}
+								} catch {
+									// Ignore localStorage access errors
+								}
+							})();`;
+
 ---
 
 {
@@ -253,6 +279,7 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 			themeMode="dark"
 			headLinks={headLinks}
 		>
+			<meta slot="head" name="color-scheme" content="light only" />
 			<InvitationDeferredCssPromotion
 				slot="head"
 				eventSlug={slug}
@@ -292,30 +319,7 @@ const previewMode = accessMode === 'preview' && Boolean(page);
 				<InvitationPageScripts />
 				{
 					!skipEnvelope && page.envelope && page.envelope.revealVariant !== 'editorial-cover' && (
-						<script is:inline>
-							(function() {
-								try {
-									const script = document.currentScript;
-									const wrapper = script ? script.closest('.event-theme-wrapper') : null;
-									if (!wrapper) return;
-									const slug = wrapper.getAttribute('data-event-slug');
-									if (!slug) return;
-									const key = 'envelope-opened-' + slug;
-									const isDemo = wrapper.getAttribute('data-is-demo') === 'true';
-									const force = new URLSearchParams(window.location.search).get('forceEnvelope') === 'true';
-									if (!isDemo && !force && window.localStorage.getItem(key) === 'true') {
-										wrapper.setAttribute('data-reveal-state', 'revealed');
-										const envelope = wrapper.querySelector('ds-envelope-reveal');
-										if (envelope) {
-											envelope.hidden = true;
-										}
-										document.documentElement.classList.remove('envelope-open');
-									}
-								} catch {
-									// Ignore localStorage access errors
-								}
-							})();
-						</script>
+						<script is:inline set:html={storedRevealInlineScript} />
 					)
 				}
 

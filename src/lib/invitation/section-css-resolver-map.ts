@@ -48,6 +48,7 @@ const ENVELOPE_VARIANT_TO_ENTRYPOINT: Record<string, string> = {
 	'pocket-fold': 'pocket-fold',
 	'satin-filigree': 'satin-filigree',
 	'seaside-lineart': 'seaside-lineart',
+	'silver-thread': 'silver-thread',
 	'storybook-lanterns': 'storybook-lanterns',
 	'storybook-butterflies': 'storybook-lanterns',
 	'sage-champagne': 'sage-champagne',

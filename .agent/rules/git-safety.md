@@ -39,7 +39,9 @@ This section is the single source for that authority; other documents link here.
 
 - **Git on the task branch:** an active board task claimed in its own lane authorizes Git on its
   task branch: stage, commit, push, open the PR and delete merged branches. Bridge lanes
-  (`agente-*`) leave their changes uncommitted. Never merge by hand, force push or skip hooks.
+  (`agente-*`) leave their changes uncommitted. PR merge authority and conditions follow the tablero
+  core's `docs/agent-rules.md`, «Review inside the session», referenced by
+  [the board rule](board.md). Production merges remain owner-gated. Never force push or skip hooks.
 - **Preview data and deployment:** Preview migrations
   (`pnpm db:migrate -- --target preview --apply`),
   `pnpm invitation:release -- --slug <slug> --targets preview --apply` and

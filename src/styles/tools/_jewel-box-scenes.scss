@@ -32,8 +32,8 @@
 		}
 	}
 
-	// The name and, just below it, the label sit in the empty top-left corner. The wrapper, not the
-	// name, is placed so it keeps the name's width.
+	// The name and, below its lowest script stroke, the label sit in the empty top-left corner. The
+	// wrapper, not the name, is placed so it keeps the name's width.
 	.invitation-hero__title {
 		margin: 0;
 		font-family: var(--font-calligraphy), cursive;
@@ -57,7 +57,7 @@
 	}
 
 	.invitation-hero__label {
-		top: calc(clamp(4.75rem, 11svh, 6.5rem) + 5.5rem);
+		top: calc(clamp(4.75rem, 11svh, 6.5rem) + 7.25rem);
 	}
 
 	.invitation-hero__divider {
@@ -106,7 +106,7 @@
 		}
 
 		.invitation-hero__date {
-			top: calc(clamp(4.75rem, 11svh, 6.5rem) + 7.75rem);
+			top: calc(clamp(4.75rem, 11svh, 6.5rem) + 10rem);
 			left: clamp(1.25rem, 6vw, 4rem);
 			translate: none;
 			color: var(--jewel-gold-ink);

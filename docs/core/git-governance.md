@@ -75,10 +75,10 @@ Runtime connectivity never authorizes database, publication or release mutations
      in invitations, the database, migrations, payments, secrets or Production) is reviewed by a
      Claude subagent with a clean context; medium and high risk keep Codex or Gemini. A new commit
      makes the review stale and needs a new round at the new SHA.
-   - The coordinator merges with a merge commit (the only method the repository allows), pinned to
-     the reviewed SHA, once the review is approved at that SHA, CI is green and the pull request is
-     clean against `develop` (d100). A release in progress does not hold merges: it leaves from a
-     fixed candidate, and what merges after the cut joins the next release (d289).
+   - PR merge authority and conditions follow the tablero core's `docs/agent-rules.md`, «Review
+     inside the session» (see [the board rule](../../.agent/rules/board.md)). Use a merge commit,
+     the only method the repository allows. A release in progress does not hold merges: it leaves
+     from a fixed candidate, and what merges after the cut joins the next release (d289).
 
    The merge header, `Merge pull request #<n> from <owner>/<task-branch>`, names the branch, so
    every task has one merge commit named after its branch and reverts the same way:

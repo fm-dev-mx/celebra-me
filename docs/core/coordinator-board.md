@@ -40,15 +40,17 @@ Node upgrade.
 
 Three agents share the board, each with one fixed master chat: Claude `f05 · Coordinador principal`
 assigns work; Codex `f05 · Codex maestro` and Gemini `f05 · Gemini maestro` dispatch only their own
-assigned tasks. Only the principal coordinator coordinates, records owner decisions and merges. The
-owner identifies and renames the masters; configuration never guesses the latest chat. Gemini is one
-agent id, `gemini`, whatever tool runs it (d154); record the tool (Antigravity) in the session name.
+assigned tasks. Only the principal coordinator coordinates and records owner decisions. PR merge
+authority follows the core's `docs/agent-rules.md`, «Review inside the session»; archiving follows
+its «Claim, work, close» and «Shared rules». The owner identifies and renames the masters;
+configuration never guesses the latest chat. Gemini is one agent id, `gemini`, whatever tool runs it
+(d154); record the tool (Antigravity) in the session name.
 
-| Role                  | Who                                                        | Does                                                                 | Never                                                     |
-| --------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------- |
-| Principal coordinator | Claude `f05 · Coordinador principal`                       | Assigns tasks, records owner decisions, merges reviewed PRs          | Merges without exact-head review, green CI and a clean PR |
-| Agent master          | Codex `f05 · Codex maestro`; Gemini `f05 · Gemini maestro` | Opens work/review chats; archives its agent's finished chats         | Reassigns tasks or forwards owner authority               |
-| Worker session        | Any agent, one per task                                    | Claims one task, works in its lane and branch, opens PR, asks review | Touches tasks, lanes or branches another agent holds      |
+| Role                  | Who                                                        | Does                                                                 | Never                                                       |
+| --------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Principal coordinator | Claude `f05 · Coordinador principal`                       | Assigns tasks, records owner decisions                               | Merges outside the core's review rules                      |
+| Agent master          | Codex `f05 · Codex maestro`; Gemini `f05 · Gemini maestro` | Opens work/review chats                                              | Reassigns tasks, archives chats or forwards owner authority |
+| Worker session        | Any agent, one per task                                    | Claims one task, works in its lane and branch, opens PR, asks review | Touches tasks, lanes or branches another agent holds        |
 
 ### Session lifecycle (T541)
 
@@ -61,12 +63,12 @@ agent id, `gemini`, whatever tool runs it (d154); record the tool (Antigravity) 
 | PR       | `close` with `--pr`, `--sha` (task `en revision`, d290)    | push, PR to `develop`, rename the chat to `<lane> · T<n> · PR #<n> · …`        |
 | Revisión | `review` opens a round inside the task (T529, d288)        | **one** review chat per PR, `T<n> · PR #<n> · Revisión`; every round reuses it |
 | Cierre   | round `aprobado` at the PR head; `cambios` reopens Trabajo | git-safety finish by hand; lane back to idle (detached `develop`, clean)       |
-| Unión    | coordinator merges at the reviewed SHA; `fact`, or `sync`  | —                                                                              |
-| Archivo  | owner archives the task (d278)                             | the session or its master archives its work and review chats (d259)            |
+| Unión    | merge under the core's review rules; `fact`, or `sync`     | —                                                                              |
+| Archivo  | follow the core's archive rules                            | follow the core's session archive rules                                        |
 
 Chat ceiling: 3 fixed chats + 1 per task `en curso` + 1 per PR needing an external review chat
 (about 8–10 with WIP 3); a d288 subagent review opens no chat. Before dispatching over the ceiling,
-the coordinator asks the masters to archive finished chats.
+the coordinator asks Paco (the owner) to archive finished chats under the core's archive rules.
 
 ## Assigning work (project additions)
 

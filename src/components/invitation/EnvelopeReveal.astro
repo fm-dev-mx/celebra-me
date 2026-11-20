@@ -6,6 +6,7 @@ import CeremonialFiligree from './CeremonialFiligree.astro';
 import SeasideLineArt from './SeasideLineArt.astro';
 import StorybookLanternsArt from './StorybookLanternsArt.astro';
 import StorybookLanternSky from './StorybookLanternSky.astro';
+import SilverThreadGate from './SilverThreadGate.astro';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
 import {
 	resolveEnvelopeDataVariant,
@@ -79,6 +80,8 @@ const isNight =
 	revealVariant === 'pocket-fold' ||
 	revealVariant === 'disco-night';
 const isCelestialLetter = revealVariant === 'celestial-letter';
+// The silver thread has no envelope: a monogram drawn in one stroke opens straight onto the cover.
+const isSilverThread = revealVariant === 'silver-thread';
 // Storybook, night, celestial and Enchanted Rose letters sit inside the envelope, behind the pocket
 // front, and rise out of it.
 // Resolve from the effective variant, so an explicit `revealVariant` override wins over the preset.
@@ -129,6 +132,9 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	}
 	{isStorybook && <StorybookLanternSky motif={skyMotif} />}
 	{isStorybook && <StorybookLanternSky scene="send-off" motif={skyMotif} />}
+	{isSilverThread && <SilverThreadGate />}
+	{
+		!isSilverThread && (
 	<div class="envelope-container">
 		<div class="envelope-base"></div>
 		{
@@ -229,9 +235,11 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 			</div>
 		</div>
 	</div>
+		)
+	}
 
 	{
-		!letterInPocket && (
+		!letterInPocket && !isSilverThread && (
 			<div class="envelope-reveal-stage" data-envelope-card aria-hidden="true">
 				<InvitationRevealCard
 					card={card}
@@ -280,44 +288,18 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 		holdPageAtTopWhileGated,
 	} from '@/lib/invitation/reveal-manager';
 	import { playEnvelopeOpenChime } from '@/lib/invitation/envelope-chime';
+	import { SILVER_THREAD_EXIT_MS, mountSilverThread } from '@/lib/invitation/silver-thread-reveal';
+	import {
+		CARD_RISE_FALLBACK_FLOOR_MS,
+		resolveCardRiseFallbackMs,
+		resolveLetterHoldMs,
+	} from '@/lib/invitation/reveal-timing';
 
 	const EXIT_ANIMATION_MS = 2200;
-	const CARD_RISE_FALLBACK_MARGIN_MS = 1200;
-	const CARD_RISE_FALLBACK_FLOOR_MS = 4000;
 	const SKY_TILT_MAX_DEG = 3;
 	const ARCH_HANDOFF_HOLD_MS = 400;
 	const ARCH_HANDOFF_MS = 1300;
 	const ARCH_HANDOFF_EASE = 'cubic-bezier(0.65, 0, 0.35, 1)';
-
-	/** Longest time in a comma-separated CSS time list (`1.2s, 300ms`), in milliseconds. */
-	const readLongestMs = (value: string) =>
-		value.split(',').reduce((longest, part) => {
-			const trimmed = part.trim();
-			const parsed = Number.parseFloat(trimmed);
-			if (!Number.isFinite(parsed)) return longest;
-			return Math.max(longest, trimmed.endsWith('ms') ? parsed : parsed * 1000);
-		}, 0);
-
-	/**
-	 * Longest plausible `envCardRise` runtime for the active theme, read from computed style so
-	 * preset overrides of `--duration-reveal` stay covered. Used as the safety deadline: if
-	 * `animationend` never arrives (missing stylesheet, interrupted or throttled animation,
-	 * non-animatable card), the reveal must still complete instead of stranding `sealed`.
-	 */
-	const resolveCardRiseFallbackMs = (card: HTMLElement) => {
-		const styles = getComputedStyle(card);
-		const animated =
-			readLongestMs(styles.animationDelay) + readLongestMs(styles.animationDuration);
-
-		return Math.max(CARD_RISE_FALLBACK_FLOOR_MS, animated + CARD_RISE_FALLBACK_MARGIN_MS);
-	};
-
-	/**
-	 * Reading pause on the risen letter before the invitation takes over. Themes opt in through
-	 * `--env-letter-hold` (unset → 0, the letter hands over as soon as it lands).
-	 */
-	const resolveLetterHoldMs = (host: HTMLElement) =>
-		readLongestMs(getComputedStyle(host).getPropertyValue('--env-letter-hold'));
 
 	class DsEnvelopeReveal extends HTMLElement {
 		connectedCallback() {
@@ -477,6 +459,14 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 				}
 			};
 
+			// Silver thread: the monogram is drawn on the gate itself (static in captures).
+			const silverThread =
+				this.dataset.variant === 'silver-thread'
+					? mountSilverThread(this, {
+							reducedMotion: getMotionPreference() || isScreenshotCaptureMode(),
+						})
+					: null;
+
 			// Screenshot contract: ?reveal=letter — measurable envelope + card, no teardown.
 			if (this.dataset.previewState === 'letter') {
 				this.classList.add('is-letter-held');
@@ -582,7 +572,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					if (!isScreenshotCaptureMode()) {
 						this.hidden = true;
 					}
-				}, EXIT_ANIMATION_MS);
+				}, this.classList.contains('is-opening') && silverThread ? SILVER_THREAD_EXIT_MS : EXIT_ANIMATION_MS);
 			};
 
 			if (manager.shouldSkipEnvelope()) {
@@ -779,6 +769,8 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 					// The poster frame stays if playback is refused; the CSS opening still runs on top.
 					openingVideo.play().catch(() => {});
 				}
+				// The stroke hands over to the cover's own entrance while it is still drawing.
+				if (silverThread) return silverThread.open(completeReveal);
 				if (this.dataset.variant === 'satin-filigree') {
 					// One short flap gesture; no intermediate date card.
 					window.setTimeout(completeReveal, 900);
