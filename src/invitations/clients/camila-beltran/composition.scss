@@ -304,6 +304,24 @@
 			grid-area: auto;
 		}
 
+		// Full-screen phones: the folds run straight into the right corners, so no strip of flap
+		// is left standing along the right edge.
+		@media (aspect-ratio < 3 / 5), (height < 480px) {
+			.envelope-flap {
+				--gold-fold-x: 100%;
+				--gold-fold-reach: 0%;
+				--gold-fold-turn: 0%;
+			}
+
+			.envelope-flap::after {
+				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-10%' y='-10%' width='120%' height='120%'%3E%3CfeGaussianBlur stdDeviation='0.9'/%3E%3C/filter%3E%3Cpolyline points='100 0 48 50 100 100' fill='none' vector-effect='non-scaling-stroke' stroke='%23fffaf4' stroke-opacity='0.22' stroke-width='10' filter='url(%23b)'/%3E%3Cpolyline points='100 0 48 50 100 100' fill='none' vector-effect='non-scaling-stroke' stroke='%23fffaf4' stroke-opacity='0.62' stroke-width='1.8'/%3E%3C/svg%3E");
+			}
+
+			.envelope-pocket::after {
+				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cfilter id='b' x='-10%' y='-10%' width='120%' height='120%'%3E%3CfeGaussianBlur stdDeviation='1.1'/%3E%3C/filter%3E%3Cpolyline points='100 0 48 50 100 100' fill='none' vector-effect='non-scaling-stroke' stroke='%237d3845' stroke-opacity='0.30' stroke-width='12' stroke-linejoin='round' filter='url(%23b)'/%3E%3C/svg%3E");
+			}
+		}
+
 		&.is-opening .envelope-reveal-stage {
 			animation-duration: 180ms;
 			animation-delay: 220ms;
@@ -498,50 +516,7 @@
 	}
 
 	.gallery-section {
-		display: grid;
-		place-items: center;
-		min-height: 100svh;
-
-		.gallery-section__container {
-			width: 100%;
-		}
-
-		.gallery-grid__item:is(:first-child, :last-child) {
-			grid-column: 1 / -1;
-			aspect-ratio: 4 / 5;
-
-			@media (width >= 768px) {
-				aspect-ratio: 3 / 2;
-			}
-
-			@media (width >= 1024px) {
-				grid-column: span 2;
-			}
-		}
-
-		// Phones: header plus first photograph (8.75rem), then both portraits over the last photo.
-		@media (width < 768px) {
-			display: block;
-			min-height: 0;
-
-			.gallery-section__header {
-				padding-inline: 1rem;
-			}
-
-			.gallery-grid__item {
-				width: 100%;
-				height: 40svh;
-				aspect-ratio: auto;
-			}
-
-			.gallery-grid__item:first-child {
-				height: calc(100svh - 8.75rem - var(--gallery-section-padding-block));
-			}
-
-			.gallery-grid__item:last-child {
-				height: calc(60svh - var(--gallery-grid-row-gap));
-			}
-		}
+		@include variants.portrait-led-gallery;
 	}
 
 	.thank-you-section .closing-name {
@@ -596,4 +571,5 @@
 
 	@include accents.rose-accents(url('./assets/rose-ornament.svg'));
 	@include rose-gold.rose-gold-finish;
+	@include variants.centered-reply-pill;
 }
