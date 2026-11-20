@@ -290,6 +290,7 @@
 	}
 
 	@include variants.pinned-overture;
+	@include variants.rising-photo-reveal;
 
 	.envelope-wrapper[data-variant='storybook-lanterns'] {
 		@include scenes.flap-envelope;
