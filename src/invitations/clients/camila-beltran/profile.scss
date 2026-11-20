@@ -135,19 +135,19 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	--hero-title-color-start-fallback: var(--jewel-white);
 	--hero-title-color-mid-fallback: var(--jewel-white);
 	--hero-title-color-end-fallback: var(--jewel-white);
-	--hero-label-color: var(--jewel-white);
+	--hero-label-color: rgb(240 200 188);
 	--hero-badge-text-fallback: var(--jewel-white);
 	--hero-badge-text: var(--jewel-white);
 	--hero-heading-size: clamp(5.75rem, 30vw, 8rem);
 	--hero-heading-weight: 400;
 	--hero-heading-line-height: 1;
 	--hero-eyebrow-font: var(--font-label, var(--font-body));
-	--hero-eyebrow-size: 0.78rem;
+	--hero-eyebrow-size: 0.92rem;
 	--hero-eyebrow-weight: 500;
 	--hero-eyebrow-tracking: 0.34em;
-	--hero-date-size: clamp(1.15rem, 5vw, 1.5rem);
-	--hero-date-tracking: 0.16em;
-	--hero-date-weight: 600;
+	--hero-date-size: 0.86rem;
+	--hero-date-tracking: 0.28em;
+	--hero-date-weight: 500;
 	--hero-date-transform: uppercase;
 	--hero-divider-fill: var(--jewel-gold-light);
 	--hero-divider-margin: 0.9rem auto 1rem;
@@ -251,6 +251,31 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	--footer-pull-label-color: var(--jewel-gold-ink);
 	--footer-pull-label-size: 0.875rem;
 	--footer-pull-breathe: footer-pull-breathe;
+	--camila-quote-ground:
+		radial-gradient(120% 55% at 50% 0%, var(--jewel-petal-light), transparent 70%),
+		radial-gradient(110% 50% at 50% 100%, var(--jewel-gold-light), transparent 72%),
+		var(--jewel-beige);
+
+	// Gold-frame parents block: script title in gold, italic names on a textured double-ruled card.
+	--camila-family-gold: rgb(172 136 82);
+	--jewel-accent-family-title-color: var(--camila-family-gold);
+	--camila-family-card:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.42 0 0 0 0 0.3 0 0 0 0.16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+		radial-gradient(120% 90% at 50% 40%, rgb(253 248 241), rgb(244 231 216));
+
+	// Phone hero: the enlarged photo's top edge fades into the studio backdrop.
+	--camila-hero-phone-fade: linear-gradient(transparent, black 12%);
+
+	// Interlude side grounds, matched to each band photo's edge tones.
+	--camila-band-1: rgb(197 186 185), rgb(209 199 197) 50%, rgb(225 213 210);
+	--camila-band-2: rgb(192 183 178), rgb(201 192 188) 50%, rgb(215 195 185);
+	--camila-band-3: rgb(210 198 194), rgb(218 207 204) 50%, rgb(233 225 223);
+	--camila-band-4: rgb(178 162 162), rgb(218 192 186) 50%, rgb(214 196 192);
+
+	// Narrow portrait phones: tighter eyebrow tracking keeps «Mis XV años» off her face.
+	@media (aspect-ratio < 5/4) and (width < 390px) {
+		--hero-eyebrow-tracking: 0.22em;
+	}
 }
 
 // Gifts: two compact white tiles with a gold-ringed beige medallion, and an italic note. The
@@ -608,17 +633,17 @@ $camila-wax-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 	// The name in metallic rose gold; browsers without clipped text keep a solid rose gold.
 	--hero-cinema-gold: linear-gradient(
 		100deg,
-		rgb(255 226 218) 0%,
-		rgb(232 162 158) 26%,
-		rgb(255 242 236) 46%,
-		rgb(212 136 128) 66%,
-		rgb(250 210 200) 100%
+		rgb(250 226 214) 0%,
+		rgb(214 160 146) 26%,
+		rgb(255 243 234) 46%,
+		rgb(188 128 114) 66%,
+		rgb(242 206 192) 100%
 	);
 	--hero-heading-paint: none;
-	--hero-heading-fill: rgb(246 196 188);
+	--hero-heading-fill: rgb(236 196 182);
 
 	// The parents' title in the gold Parisienne script.
-	--jewel-accent-family-title-font: 400 clamp(2.1rem, 9vw, 2.6rem) / 1.2 var(--jewel-script);
+	--jewel-accent-family-title-font: 400 clamp(1.9rem, 8.2vw, 2.35rem) / 1.25 var(--jewel-script);
 
 	@supports (background-clip: text) or (-webkit-background-clip: text) {
 		--hero-heading-paint: var(--hero-cinema-gold);

@@ -16,15 +16,38 @@
 		mask-image: none;
 	}
 
-	// Portrait date: a straight line between fine gold rules, short of her hand (beats the rose-gold finish).
+	// Portrait: photo lowered into its plain backdrop so the title clears her head; date small and centred.
 	@media (aspect-ratio < 5/4) {
+		.invitation-hero__background {
+			background-color: rgb(159 104 77);
+		}
+
+		.invitation-hero__background.invitation-hero__background img {
+			translate: 0 9svh;
+		}
+
+		// Phones: enlarged photo sized by height so her head clears the title; the hand stays in frame.
+		@media (aspect-ratio < 2/3) {
+			.invitation-hero__background.invitation-hero__background img {
+				position: absolute;
+				inset: auto auto 0 -29vw;
+				width: 150vw;
+				max-width: none;
+				height: min(94svh, 215.4vw);
+				translate: none;
+				object-fit: contain;
+				object-position: 50% 100%;
+				mask-image: var(--camila-hero-phone-fade);
+			}
+		}
+
 		.invitation-hero__details .invitation-hero__date[class][class] {
 			top: auto;
 			bottom: 4.5rem;
-			left: clamp(1.25rem, 6vw, 4rem);
-			padding: 0.35rem 0;
-			border-block: 1px solid rgb(var(--jewel-gold-rgb) / 70%);
-			translate: none;
+			left: 50%;
+			translate: -50% 0;
+			color: var(--jewel-gold-ink-deep);
+			text-shadow: 0 0 0.75rem rgb(255 245 238 / 70%);
 
 			&::after {
 				display: none;
@@ -141,14 +164,11 @@
 		justify-content: center;
 		overflow: clip;
 		padding-block: clamp(2.5rem, 8svh, 5rem);
+		text-align: center;
 	}
 
-	// A wash in the dress tones: blush glowing at the top, champagne at the foot.
 	.quote-section {
-		background:
-			radial-gradient(120% 55% at 50% 0%, var(--jewel-petal-light), transparent 70%),
-			radial-gradient(110% 50% at 50% 100%, var(--jewel-gold-light), transparent 72%),
-			var(--jewel-beige);
+		background: var(--camila-quote-ground);
 	}
 
 	.quote-container {
@@ -183,14 +203,10 @@
 		content: '';
 	}
 
-	.quote-closing-line,
-	.family__title {
+	.quote-closing-line {
 		letter-spacing: 0.22em;
 		text-transform: uppercase;
 		color: var(--jewel-gold-deep);
-	}
-
-	.quote-closing-line {
 		margin-top: 1.5rem;
 		font: 500 0.9375rem var(--font-label, var(--font-body));
 	}
@@ -206,7 +222,7 @@
 	.family__container {
 		width: min(100%, 36rem);
 		margin-inline: auto;
-		padding-inline: 1.75rem;
+		padding-inline: 1.25rem;
 	}
 
 	.family__header,
@@ -214,19 +230,18 @@
 		display: contents;
 	}
 
-	// Gold-frame parents block: script title in gold, italic names on a double-ruled ivory card.
-	.family {
-		--camila-family-gold: rgb(172 136 82);
-		--jewel-accent-family-title-color: var(--camila-family-gold);
-
-		text-align: center;
+	.family__title {
+		width: min(100%, 26rem);
+		text-wrap: balance;
 	}
 
-	.family__message {
+	.family__message[class][class] {
 		order: 1;
-		max-width: 24rem;
-		margin: clamp(2.25rem, 8svh, 4rem) auto 0;
-		font: 400 clamp(1rem, 4.2vw, 1.125rem) / 1.5 var(--jewel-serif);
+		max-width: 21rem;
+		margin: clamp(1.75rem, 4.5svh, 2.5rem) auto 0;
+		font:
+			400 1.2rem / 1.4 'Cormorant Garamond Variable',
+			var(--jewel-serif);
 		white-space: pre-line;
 		color: var(--jewel-ink-soft);
 	}
@@ -240,35 +255,38 @@
 
 	.family__panel {
 		width: min(100%, 32rem);
-		margin: clamp(1.75rem, 6svh, 3rem) auto 0;
-	}
-
-	.family__group--parents {
-		width: 100%;
+		margin: clamp(1.75rem, 4.5svh, 2.5rem) auto 0;
+		padding: 0;
 	}
 
 	.family__members {
 		gap: 0;
-		width: min(100%, 21rem);
+		width: min(100%, 25rem);
 		margin: 0 auto;
-		padding: 2.25rem 1.5rem;
+		padding: 2rem 0.875rem;
 		border: 1px solid var(--camila-family-gold);
 		outline: 1px solid var(--camila-family-gold);
 		outline-offset: -7px;
-		background: rgb(255 251 246);
+		background: var(--camila-family-card);
 		box-shadow: 0 0.75rem 1.75rem rgb(var(--jewel-ink-rgb) / 10%);
 	}
 
-	.family .family__group--parents .family__member + .family__member::before {
-		margin: 0.4rem 0;
-		font: 400 2rem / 1 var(--jewel-script);
+	.family__group--parents .family__member + .family__member[class][class][class][class]::before {
+		margin: 0.5rem 0;
+		font: 400 2.4rem / 1 var(--jewel-script);
 		color: var(--camila-family-gold);
+		content: 'y';
 	}
 
 	.family__member-name {
-		font: italic 500 clamp(1.3rem, 5.6vw, 1.55rem) / 1.3 var(--jewel-serif);
+		font: italic 500 clamp(1.7rem, 7.3vw, 2.1rem) / 1.25 var(--jewel-serif);
 		max-width: none;
-		text-wrap: balance;
+
+		&:is(.family__group--parents .family__member + .family__member *) {
+			max-width: 8em;
+			margin-inline: auto;
+			text-wrap: balance;
+		}
 	}
 
 	@include variants.pinned-overture;
@@ -320,46 +338,28 @@
 		@include variants.portrait-photo-band;
 	}
 
-	// Each band's side ground follows its own photo's edge tones, top to bottom, so the portrait
-	// blends into the band instead of sitting on a flat grey panel.
+	// Each band's side ground follows its photo's edge tones, so the portrait blends into the band.
 	@media (width >= 48rem) {
 		.invitation-interlude[data-presentation='framed'] {
 			&[data-interlude-index='1'] {
-				background: linear-gradient(
-					rgb(197 186 185),
-					rgb(209 199 197) 50%,
-					rgb(225 213 210)
-				);
+				background: linear-gradient(var(--camila-band-1));
 			}
 
 			&[data-interlude-index='2'] {
-				background: linear-gradient(
-					rgb(192 183 178),
-					rgb(201 192 188) 50%,
-					rgb(215 195 185)
-				);
+				background: linear-gradient(var(--camila-band-2));
 			}
 
 			&[data-interlude-index='3'] {
-				background: linear-gradient(
-					rgb(210 198 194),
-					rgb(218 207 204) 50%,
-					rgb(233 225 223)
-				);
+				background: linear-gradient(var(--camila-band-3));
 			}
 
 			&[data-interlude-index='4'] {
-				background: linear-gradient(
-					rgb(178 162 162),
-					rgb(218 192 186) 50%,
-					rgb(214 196 192)
-				);
+				background: linear-gradient(var(--camila-band-4));
 			}
 		}
 	}
 
-	// The band itself stays put and opaque before, during and after its reveal (no pale flash); only
-	// the photo inside drifts. Outranks the shared media-scale reveal and the framed-band frame.
+	// The band stays opaque through its reveal (no pale flash); only the photo inside drifts.
 	#invitation-sections-container
 		> .invitation-section-wrapper[data-reveal]
 		.invitation-interlude[data-presentation='framed']
@@ -519,8 +519,7 @@
 			}
 		}
 
-		// Phones: two full-width screens, the header plus the first photograph (8.75rem is the
-		// header and its gap), then the two portraits over the last photograph.
+		// Phones: header plus first photograph (8.75rem), then both portraits over the last photo.
 		@media (width < 768px) {
 			display: block;
 			min-height: 0;
@@ -595,6 +594,6 @@
 		color: var(--jewel-gold-light);
 	}
 
-	@include accents.rose-accents(url('./assets/rose-ornament.svg'), true);
+	@include accents.rose-accents(url('./assets/rose-ornament.svg'));
 	@include rose-gold.rose-gold-finish;
 }
