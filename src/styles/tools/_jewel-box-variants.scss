@@ -502,3 +502,63 @@
 		}
 	}
 }
+
+// Rising photo reveal: each photograph comes in from transparent with a short 1rem rise as it
+// enters, the neighbour of a side-by-side pair a beat later, reversible on scroll. Motion only: it
+// changes no size or position. Include on the event root after `pinned-overture`. Captures
+// (`data-scroll-scenes='static'`) keep the previous tile motion, so no photo is frozen mid-fade.
+@mixin rising-photo-reveal {
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			#invitation-sections-container
+				> .invitation-section-wrapper[data-reveal].has-motion.has-motion
+				.gallery-section
+				.gallery-grid__item.gallery-grid__item:not([data-scroll-scenes='static'] *) {
+				animation: jewel-photo-rise linear both;
+				animation-range: entry 20% cover 45%;
+				animation-timeline: view();
+
+				// Second of each side-by-side pair: phones pair the two close portraits; from 768px
+				// the right column follows the left.
+				@media (width < 768px) {
+					&[data-gallery-index='3'] {
+						animation-name: jewel-photo-rise-late;
+					}
+				}
+
+				@media (width >= 768px) {
+					&:is([data-gallery-index='2'], [data-gallery-index='4']) {
+						animation-name: jewel-photo-rise-late;
+					}
+				}
+			}
+		}
+	}
+
+	@keyframes jewel-photo-rise {
+		0% {
+			opacity: 0%;
+			translate: 0 1rem;
+		}
+
+		60%,
+		100% {
+			opacity: 100%;
+			translate: 0 0;
+		}
+	}
+
+	@keyframes jewel-photo-rise-late {
+		0%,
+		30% {
+			opacity: 0%;
+			translate: 0 1rem;
+		}
+
+		90%,
+		100% {
+			opacity: 100%;
+			translate: 0 0;
+		}
+	}
+}
