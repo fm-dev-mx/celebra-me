@@ -505,14 +505,15 @@
 
 // Rising photo reveal: each photograph comes in from transparent with a short 1rem rise as it
 // enters, the neighbour of a side-by-side pair a beat later, reversible on scroll. Motion only: it
-// changes no size or position. Include on the event root after `pinned-overture`.
+// changes no size or position. Include on the event root after `pinned-overture`. Captures
+// (`data-scroll-scenes='static'`) keep the previous tile motion, so no photo is frozen mid-fade.
 @mixin rising-photo-reveal {
 	@include motion.motion-safe {
 		@supports (animation-timeline: view()) {
 			#invitation-sections-container
 				> .invitation-section-wrapper[data-reveal].has-motion.has-motion
 				.gallery-section
-				.gallery-grid__item.gallery-grid__item {
+				.gallery-grid__item.gallery-grid__item:not([data-scroll-scenes='static'] *) {
 				animation: jewel-photo-rise linear both;
 				animation-range: entry 20% cover 45%;
 				animation-timeline: view();
