@@ -510,6 +510,14 @@
 @mixin rising-photo-reveal {
 	@include motion.motion-safe {
 		@supports (animation-timeline: view()) {
+			// `overflow: hidden` makes the section a scroll container, so `view()` would bind to it
+			// and never advance. `clip` paints the same edge without one, so the page scroll drives it.
+			#invitation-sections-container
+				> .invitation-section-wrapper[data-reveal].has-motion.has-motion
+				.gallery-section:not([data-scroll-scenes='static'] *) {
+				overflow: clip;
+			}
+
 			#invitation-sections-container
 				> .invitation-section-wrapper[data-reveal].has-motion.has-motion
 				.gallery-section
