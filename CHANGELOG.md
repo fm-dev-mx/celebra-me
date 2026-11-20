@@ -10,6 +10,30 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.76.0] - 2026-11-20
+
+Ships Camila Beltrán's client rounds four to seven, her cinematic hero entrance, and the new Adriana
+e Israel wedding invitation. No database migrations.
+
+### Added
+
+- Invitations: the Adriana e Israel wedding invitation with its silver-thread reveal (#1051).
+
+### Changed
+
+- Invitations: Camila Beltrán opens with a cinematic hero entrance (#1063).
+- Invitations: Camila Beltrán round four brings a livelier rose-gold palette, a rose ornament,
+  larger cover lettering and date, an animated countdown, and the client's dress-code, gifts and
+  adults-only copy (#1067, #1068, #1069).
+- Invitations: Camila Beltrán round five updates the itinerary, family message and reply pill, and
+  opens the gallery with the full-length portrait (#1070, #1071).
+- Invitations: Camila Beltrán gallery photographs rise into view as the page scrolls (#1072, #1073).
+
+### Fixed
+
+- Invitations: the opening envelope is no longer skipped on phones; it is marked as opened only
+  after the guest really opens it (#1067).
+
 ## [0.75.0] - 2026-11-18
 
 Applies two requested adjustments to Camila Beltrán on phones. No database migrations.
