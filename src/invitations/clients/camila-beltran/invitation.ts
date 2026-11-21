@@ -66,14 +66,6 @@ const content: CanonicalEventContentInput = {
 			presentation: 'framed',
 			focalPoint: '50% 30%',
 		},
-		{
-			image: 'interludeAccessories',
-			afterSection: 'gallery',
-			alt: 'Aretes de gota rosa, collar fino, guante de encaje y tul rosa sobre un pedestal blanco',
-			height: 'screen',
-			focalPoint: '50% 50%',
-			presentation: 'framed',
-		},
 	],
 	hero: {
 		variant: 'standard',
@@ -192,6 +184,11 @@ const content: CanonicalEventContentInput = {
 		title: 'Galería',
 		items: [
 			{
+				image: 'gallery05',
+				alt: 'Camila de cuerpo completo con su vestido rosa entre globos dorados del número quince',
+				focalPoint: '50% 50%',
+			},
+			{
 				image: 'gallery01',
 				alt: 'Camila sentada sobre un pedestal blanco con su vestido rosa y guantes de encaje',
 				focalPoint: '50% 40%',
@@ -306,6 +303,7 @@ export default defineCanonicalInvitation({
 		gallery02: 'gallery-02.webp',
 		gallery03: 'gallery-03.webp',
 		gallery04: 'gallery-04.webp',
+		gallery05: 'gallery-05.webp',
 		thankYouPortrait: 'thank-you.webp',
 		venueSalon: 'venue-salon-aurea.webp',
 		ogShare: 'og-share.webp',

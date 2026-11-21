@@ -1,33 +1,11 @@
 {
-    "referenceSha": "7846bbed26b3ba4e2319b6f06b94d804d6e32c39",
-    "acceptedAt": "2026-11-21T00:42:18.708Z",
+    "referenceSha": "5f18976969d622d878b35aff11da217c5fd552f3",
+    "acceptedAt": "2026-11-20T19:34:23.148Z",
     "matrixHash": "cbd3152ea1b0947ad893879ae91aab90f89058a61c678642dd9e81f1292fe10a",
-    "candidateManifestSha256": "c75939df684a0289e4c389a3392bce6370dbd694dfd40f1df19e25b5da1ce042",
-    "acceptedManifestSha256": "d203d1bb127a590dd79486c88af9daa820a7ddc1345ac24cf4a026bf3a1eded8",
-    "reviewedPaths": [
-        "pages/invitation-boda-adriana-y-israel-mobile.png",
-        "pages/invitation-boda-adriana-y-israel-desktop.png"
-    ],
-    "items": [
-        {
-            "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
-            "status": "changed",
-            "sha256": "6a5f7fa968c51478ce94610e3c38c80d32f2e75df689c926c93099d326aae11a",
-            "previousSha256": "d0b08297c3ff7dfe5037d99eebce7d658d6bbb48ca369f93f56295a72daf70cc",
-            "differentPixels": 924087,
-            "pixelRatio": 0.27304146648465616,
-            "heightDelta": -292
-        },
-        {
-            "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
-            "status": "changed",
-            "sha256": "8fe43b5e1d749059357bd55b3fab377a3722cbffe0d1223d399eebb9c1dbdaa3",
-            "previousSha256": "5e110eec7dd4f6172372811f3742d80cedcbd6c4d49369c960a74eba107053ef",
-            "differentPixels": 2298046,
-            "pixelRatio": 0.17710190631203837,
-            "heightDelta": -111
-        }
-    ],
+    "candidateManifestSha256": "4a6acac1e3d0e996fa5707d882e62fcf54782db8a95749cf03a914e3421c7244",
+    "acceptedManifestSha256": "0fee2a2421a6c91c9f31efbf2a33c7daf6aa78332082dbef173da74c19db3c22",
+    "reviewedPaths": [],
+    "items": [],
     "renderNoise": 135,
     "removed": []
 }
