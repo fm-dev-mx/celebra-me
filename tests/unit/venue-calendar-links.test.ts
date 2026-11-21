@@ -30,6 +30,16 @@ describe('buildVenueCalendarLinks', () => {
 		expect(links?.googleUrl).toContain('dates=20261206T230000Z');
 	});
 
+	it('ends the entry after the venue duration, past midnight when it runs late', () => {
+		const links = buildVenueCalendarLinks(
+			{ ...venue, time: '20:00', durationMinutes: 300 },
+			{ eventTitle: 'Nuestra boda', timeZone: 'America/Mexico_City' },
+		);
+		// 20:00 to 01:00 in Mexico City (UTC-6) is 02:00Z to 07:00Z on the next day.
+		expect(links?.googleUrl).toContain('dates=20261207T020000Z%2F20261207T070000Z');
+		expect(decodeURIComponent(links?.icsHref ?? '')).toContain('DTEND:20261207T070000Z');
+	});
+
 	it('offers nothing without a time zone or a parseable time', () => {
 		expect(buildVenueCalendarLinks(venue, { eventTitle: 'Mis XV años' })).toBeNull();
 		expect(

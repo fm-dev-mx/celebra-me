@@ -45,6 +45,8 @@ const venueEntrySchema = z.object({
 	city: z.string().optional(),
 	date: z.string(),
 	time: z.string(),
+	/** How long the venue's part lasts; the calendar entry ends this many minutes after `time`. */
+	durationMinutes: z.number().int().min(15).max(1440).optional(),
 	mapUrl: venueMapUrlSchema,
 	appleMapsUrl: venueMapUrlSchema,
 	googleMapsUrl: venueMapUrlSchema,

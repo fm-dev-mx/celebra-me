@@ -10,6 +10,16 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.76.1] - 2026-11-20
+
+Finishes the Adriana e Israel wedding invitation with its indigo stationery revision. No database
+migrations.
+
+### Changed
+
+- Invitations: Adriana e Israel gets its indigo stationery revision across every section, with the
+  shared jewel-box variant styles moved into a reusable styles module (#1078).
+
 ## [0.76.0] - 2026-11-20
 
 Ships Camila Beltrán's client rounds four to seven, her cinematic hero entrance, and the new Adriana

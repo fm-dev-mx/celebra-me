@@ -18,6 +18,7 @@ interface VenueCalendarSource {
 	address?: string;
 	date: string;
 	time: string;
+	durationMinutes?: number;
 	googleMapsUrl?: string;
 }
 
@@ -47,9 +48,15 @@ export function buildVenueCalendarLinks(
 	const startsAt = deriveStartsAtUtc(`${date}T${time}`, context.timeZone);
 	if (!startsAt) return null;
 
+	// The end is an instant too, so a reception that runs past midnight ends on the next day.
+	const endsAt = venue.durationMinutes
+		? new Date(Date.parse(startsAt) + venue.durationMinutes * 60_000).toISOString()
+		: undefined;
+
 	const input: CalendarEventInput = {
 		title: `${context.eventTitle} · ${venue.venueEvent}`,
 		startsAt,
+		...(endsAt ? { endsAt } : {}),
 		timezone: context.timeZone,
 		location: {
 			venueName: venue.venueName,
