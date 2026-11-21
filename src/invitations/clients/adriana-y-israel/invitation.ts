@@ -221,6 +221,12 @@ const content: CanonicalEventContentInput = {
 		{ label: 'Galería', href: '#galeria' },
 		{ label: 'Confirmar', href: '#rsvp' },
 	],
+	music: {
+		url: 'https://media.celebra-me.com/invitations/boda/adriana-y-israel/music-f880964f3fbec2ce2abd19f433b07f11d2efc4cb97390a366785642da4ac6336.mp3',
+		title: 'Regalo de Dios (Saxofón) — Julión Álvarez',
+		control: 'equalizer',
+		autoPlay: true,
+	},
 	quote: {
 		variant: 'veiled-photo',
 		text: 'Con la bendición de Dios y de nuestros padres, tenemos el honor de invitarle a celebrar nuestro matrimonio.',
