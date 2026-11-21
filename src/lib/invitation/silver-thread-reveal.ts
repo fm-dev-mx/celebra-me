@@ -138,21 +138,25 @@ const layoutBox = (element: HTMLElement): ThreadBox => {
 
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 const easeOut = (t: number) => 1 - (1 - t) ** 3;
+// Sine curves for the opening: no sharp acceleration, so the stroke glides rather than snaps.
+const easeInOutSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
+const easeOutSine = (t: number) => Math.sin((t * Math.PI) / 2);
 const progress = (now: number, from: number, to: number) =>
 	Math.min(1, Math.max(0, (now - from) / (to - from)));
 
 const INTRO_MS = 2600;
-const ARCH_CLOSED_MS = 1200;
-const GROUND_FADE_FROM_MS = 850;
-const GROUND_FADE_MS = 750;
-const PHOTO_FROM_MS = 1000;
-const PHOTO_MS = 1200;
-const EXIT_FROM_MS = 2150;
-const EXIT_TO_MS = 3150;
-const THREAD_FADE_FROM_MS = 3350;
-const THREAD_FADE_MS = 600;
+const ARCH_CLOSED_MS = 2100;
+const UNTIE_MS = 1250;
+const GROUND_FADE_FROM_MS = 1400;
+const GROUND_FADE_MS = 1350;
+const PHOTO_FROM_MS = 1650;
+const PHOTO_MS = 1950;
+const EXIT_FROM_MS = 3500;
+const EXIT_TO_MS = 5200;
+const THREAD_FADE_FROM_MS = 5300;
+const THREAD_FADE_MS = 1100;
 /** Time from the tap at which the cover's own entrance should start. */
-export const SILVER_THREAD_HANDOVER_MS = 900;
+export const SILVER_THREAD_HANDOVER_MS = 1500;
 /** Time the gate must stay mounted after the hand-over so the stroke can finish. */
 export const SILVER_THREAD_EXIT_MS =
 	THREAD_FADE_FROM_MS + THREAD_FADE_MS - SILVER_THREAD_HANDOVER_MS + 100;
@@ -279,7 +283,7 @@ export const mountSilverThread = (
 				{
 					delay: PHOTO_FROM_MS,
 					duration: PHOTO_MS,
-					easing: 'cubic-bezier(0.65, 0, 0.35, 1)',
+					easing: 'cubic-bezier(0.37, 0, 0.63, 1)',
 					fill: 'backwards',
 				},
 			);
@@ -306,12 +310,15 @@ export const mountSilverThread = (
 			const elapsed = now - start;
 
 			// The monogram unties from its first stroke while the head runs on to close the arch.
-			const closing = easeInOut(progress(elapsed, 0, ARCH_CLOSED_MS));
-			const untying = easeInOut(progress(elapsed, 80, ARCH_CLOSED_MS - 60));
+			const closing = easeInOutSine(progress(elapsed, 0, ARCH_CLOSED_MS));
+			// The tail clears the monogram and the link early, so no loose letter hangs beside a
+			// half-drawn arch.
+			const untying = easeOutSine(progress(elapsed, 0, UNTIE_MS));
 			let head = startHead + (archEnd - startHead) * closing;
 			const tail = archStart * untying;
 			if (total > archEnd) {
-				head += (total - archEnd) * easeInOut(progress(elapsed, EXIT_FROM_MS, EXIT_TO_MS));
+				head +=
+					(total - archEnd) * easeInOutSine(progress(elapsed, EXIT_FROM_MS, EXIT_TO_MS));
 			}
 			setWindow(arch ? tail : 0, arch ? head : monogramLength, total);
 
@@ -328,7 +335,14 @@ export const mountSilverThread = (
 				);
 			}
 			path.style.opacity = String(
-				1 - progress(elapsed, THREAD_FADE_FROM_MS, THREAD_FADE_FROM_MS + THREAD_FADE_MS),
+				1 -
+					easeInOutSine(
+						progress(
+							elapsed,
+							THREAD_FADE_FROM_MS,
+							THREAD_FADE_FROM_MS + THREAD_FADE_MS,
+						),
+					),
 			);
 
 			if (!handedOver && elapsed >= SILVER_THREAD_HANDOVER_MS) {

@@ -1,0 +1,409 @@
+@use 'motion';
+@use 'night-stationery-variants' as stationery;
+
+// Indigo stationery gifts: the framed-card gifts section as a sealed ivory envelope on the
+// night-indigo ground. Included inside the invitation scope rule; reads the `--indigo-*` tokens.
+
+// Gifts on the framed-card variant.
+@mixin sealed-envelope-gifts {
+	// Gifts: the night-indigo ground of the cover returns, and the single entry is an ivory envelope
+	// with its flap closed by a champagne seal. The silver flourish under the heading is the only rule.
+	.gifts-section[data-variant='framed-card'] {
+		@include stationery.sealed-envelope-gift(
+			$ground: var(--indigo-indigo-deep),
+			$ground-rgb: var(--indigo-indigo-deep-rgb),
+			$glow-rgb: var(--indigo-indigo-rgb),
+			$paper: var(--indigo-ivory),
+			$paper-rgb: var(--indigo-ivory-rgb),
+			$line: var(--indigo-silver),
+			$line-rgb: var(--indigo-silver-rgb),
+			$seal: var(--indigo-champagne),
+			$seal-light: var(--indigo-champagne-light)
+		);
+
+		// The envelope is drawn as an illustration on the night ground: a landscape sheet of ivory
+		// stationery seen from the back, its side flaps and bottom flap meeting under the closed top
+		// flap, pressed shut with a small seal bearing the couple's initials. The title and the note
+		// sit under it on the ground, so no fold ever crosses the text.
+		--indigo-env-h: 12.75rem;
+		--sealed-gift-flap: 6.6rem;
+		--sealed-gift-seal: 2.35rem;
+
+		// The letter rises less than the open flap stands, so the flap's point shows above it.
+		--indigo-letter-rise: 5.5rem;
+
+		// Paper: a fine warm grain and long horizontal fibres, as on cotton stationery, over a warm
+		// ivory. The open flap shows the liner: a pale silver paper under a fine indigo diamond
+		// lattice, light enough to stand out on the night ground.
+		--indigo-env-paper: color-mix(
+			in srgb,
+			rgb(var(--indigo-ivory-rgb)) 94%,
+			var(--indigo-champagne)
+		);
+		--indigo-env-paper-shade: color-mix(
+			in srgb,
+			rgb(var(--indigo-ivory-rgb)) 86%,
+			var(--indigo-champagne)
+		);
+		--indigo-env-seam: rgb(var(--indigo-silver-rgb) / 55%);
+
+		// Set while the flap is shut (motion block); open by default.
+		--indigo-flap-shade: transparent;
+
+		// The closed flap: the lightest paper, with a silver hairline along both edges.
+		--indigo-env-outside:
+			linear-gradient(
+					to top right,
+					transparent calc(50% - 1.5px),
+					rgb(var(--indigo-silver-rgb) / 75%) calc(50% - 1.5px) 50%,
+					transparent 50%
+				)
+				left top / 50% 100% no-repeat,
+			linear-gradient(
+					to top left,
+					transparent calc(50% - 1.5px),
+					rgb(var(--indigo-silver-rgb) / 75%) calc(50% - 1.5px) 50%,
+					transparent 50%
+				)
+				right top / 50% 100% no-repeat,
+			var(--indigo-env-grain),
+			linear-gradient(180deg, rgb(var(--indigo-ivory-rgb)) 0%, var(--indigo-env-paper) 100%);
+		--indigo-env-liner:
+			repeating-linear-gradient(
+				45deg,
+				transparent 0 9px,
+				rgb(var(--indigo-indigo-rgb) / 22%) 9px 10px
+			),
+			repeating-linear-gradient(
+				-45deg,
+				transparent 0 9px,
+				rgb(var(--indigo-indigo-rgb) / 22%) 9px 10px
+			),
+			linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--indigo-silver) 45%, rgb(var(--indigo-ivory-rgb))) 0%,
+				color-mix(in srgb, var(--indigo-silver) 65%, rgb(var(--indigo-ivory-rgb))) 100%
+			);
+
+		// `clip` crops like `hidden` without turning the section into a scroll container, so the
+		// envelope's view timeline follows the page scroll.
+		overflow: clip;
+
+		// The open flap and the letter rise above the envelope, so the heading leaves them room.
+		@media (width < 64rem) {
+			.gifts-section__header {
+				margin-bottom: clamp(7.25rem, 15svh, 8.25rem);
+			}
+		}
+
+		// Layers, back to front: the open flap, the letter, the envelope body (`__inner::before`), the
+		// text, the closed flap, the seal. The card itself paints nothing.
+		.gift-card {
+			isolation: isolate;
+			width: min(100%, 21rem);
+			padding: 0;
+			border-radius: 0;
+			background: transparent;
+			box-shadow: none;
+			view-timeline: --indigo-envelope block;
+		}
+
+		.gift-card__inner {
+			position: relative;
+			z-index: auto;
+			padding: calc(var(--indigo-env-h) + 1.65rem) 0.5rem 0;
+			background: none;
+			box-shadow: none;
+		}
+
+		// The body, seen from the back: two side flaps fold in from the edges and the bottom flap rises
+		// over them to a point just above the middle, a shade deeper and with a soft shadow along its
+		// edge. Under the closed flap lies its own faint shadow.
+		.gift-card__inner::before {
+			--indigo-tip: 44%;
+
+			position: absolute;
+			z-index: 0;
+			inset: 0 0 auto;
+			display: block;
+			height: var(--indigo-env-h);
+			border-radius: 3px;
+			background:
+				var(--indigo-env-grain),
+				// The closed flap's shadow on the body, only while it is shut.
+				linear-gradient(
+						to top right,
+						transparent calc(50% - 0.9rem),
+						var(--indigo-flap-shade) 50%
+					)
+					left top / 50% var(--sealed-gift-flap) no-repeat,
+				linear-gradient(
+						to top left,
+						transparent calc(50% - 0.9rem),
+						var(--indigo-flap-shade) 50%
+					)
+					right top / 50% var(--sealed-gift-flap) no-repeat,
+				// Bottom flap: a hairline edge, a soft shadow above it and the deeper paper below.
+				linear-gradient(
+						to bottom right,
+						transparent calc(50% - 0.7rem),
+						rgb(var(--indigo-indigo-deep-rgb) / 7%) calc(50% - 1px),
+						var(--indigo-env-seam) calc(50% - 1px) 50%,
+						var(--indigo-env-paper-shade) 50%
+					)
+					left bottom / calc(50% + 1px) calc(100% - var(--indigo-tip)) no-repeat,
+				linear-gradient(
+						to bottom left,
+						transparent calc(50% - 0.7rem),
+						rgb(var(--indigo-indigo-deep-rgb) / 7%) calc(50% - 1px),
+						var(--indigo-env-seam) calc(50% - 1px) 50%,
+						var(--indigo-env-paper-shade) 50%
+					)
+					right bottom / 50% calc(100% - var(--indigo-tip)) no-repeat,
+				// Side flaps: hairlines from the top corners toward the middle, under the bottom flap.
+				linear-gradient(
+						to top right,
+						transparent calc(50% - 1px),
+						var(--indigo-env-seam) calc(50% - 1px) 50%,
+						transparent 50%
+					)
+					left top / 50% 58% no-repeat,
+				linear-gradient(
+						to top left,
+						transparent calc(50% - 1px),
+						var(--indigo-env-seam) calc(50% - 1px) 50%,
+						transparent 50%
+					)
+					right top / 50% 58% no-repeat,
+				var(--indigo-env-fibres),
+				linear-gradient(
+					176deg,
+					var(--indigo-env-paper) 0%,
+					var(--indigo-env-paper-shade) 100%
+				);
+			box-shadow:
+				inset 0 1px 0 rgb(255 255 255 / 80%),
+				0 1px 2px rgb(0 0 0 / 25%),
+				0 24px 38px -22px rgb(0 0 0 / 75%);
+			content: '';
+			pointer-events: none;
+		}
+
+		// The flap: open, it stands above the envelope behind the letter and shows its liner; closed,
+		// it lies over the body with its ivory outside (see the motion block below).
+		.gift-card::before {
+			z-index: -2;
+			height: var(--sealed-gift-flap);
+			border-radius: 3px 3px 0 0;
+			background: var(--indigo-env-liner);
+
+			// Straight edges that ease into a softened point, as a folded paper flap has.
+			clip-path: polygon(
+				0 0,
+				100% 0,
+				53.2% 94.5%,
+				51.2% 98.6%,
+				50% 100%,
+				48.8% 98.6%,
+				46.8% 94.5%
+			);
+			transform: perspective(40rem) rotateX(180deg);
+			transform-origin: top;
+		}
+
+		// The letter: a white card tucked in the envelope; once open, its top stands above the edge
+		// with the line.
+		.gift-card::after {
+			z-index: -1;
+			top: 0.55rem;
+			right: 1.6rem;
+			left: 1.6rem;
+			box-sizing: border-box;
+			height: calc(var(--indigo-env-h) - 1.1rem);
+			padding-top: 0.95rem;
+			border-radius: 3px;
+			background:
+				var(--indigo-env-grain),
+				color-mix(in srgb, rgb(255 255 255) 70%, rgb(var(--indigo-ivory-rgb)));
+			box-shadow:
+				inset 0 0 0 0.3rem
+					color-mix(in srgb, rgb(255 255 255) 70%, rgb(var(--indigo-ivory-rgb))),
+				inset 0 0 0 calc(0.3rem + 1px) rgb(var(--indigo-silver-rgb) / 60%),
+				0 -2px 10px -6px rgb(0 0 0 / 45%);
+			font-family: var(--font-calligraphy);
+			font-size: 1.55rem;
+			line-height: 1.12;
+			text-align: center;
+			white-space: pre;
+			color: var(--indigo-indigo-deep);
+			content: 'Su presencia es\A el mejor regalo';
+			clip-path: none;
+			translate: 0 calc(-1 * var(--indigo-letter-rise));
+		}
+
+		.gift-card__icon-medallion {
+			position: absolute;
+			z-index: 4;
+			top: calc(var(--sealed-gift-flap) - var(--sealed-gift-seal) / 2);
+			left: 50%;
+			display: grid;
+			margin: 0;
+			place-items: center;
+			translate: -50% 0;
+
+			// The seal rides the flap: it turns about the envelope's top edge and is gone once the flap
+			// stands open (the open state, as captures and reduced motion show it).
+			backface-visibility: hidden;
+			transform: perspective(40rem) rotateX(180deg);
+			transform-origin: 50% calc(var(--sealed-gift-seal) / 2 - var(--sealed-gift-flap));
+			box-shadow:
+				inset 0 0 0 0.16rem rgb(255 255 255 / 18%),
+				inset 0 0 0 calc(0.16rem + 1px) rgb(var(--indigo-indigo-deep-rgb) / 18%),
+				0 4px 8px -4px rgb(var(--indigo-indigo-deep-rgb) / 55%);
+
+			&::after {
+				grid-area: 1 / 1;
+				font-family: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+				font-size: 0.9rem;
+				font-style: italic;
+				font-weight: 600;
+				line-height: 1;
+				letter-spacing: 0.02em;
+				color: var(--indigo-indigo-deep);
+				content: 'A·I';
+			}
+		}
+
+		.gift-card__icon-inner {
+			display: none;
+		}
+
+		// Under the envelope, on the night ground: the title in ivory and the note in a softer ivory.
+		.gift-card__title {
+			position: relative;
+			z-index: 2;
+			font-size: clamp(1.5rem, 1.4rem + 0.5vw, 1.75rem);
+			letter-spacing: 0.01em;
+			color: rgb(var(--indigo-ivory-rgb));
+		}
+
+		.gift-card__description {
+			position: relative;
+			z-index: 2;
+			max-width: 17rem;
+			margin-inline: auto;
+			color: rgb(var(--indigo-ivory-rgb) / 72%);
+		}
+
+		@media (width >= 64rem) {
+			.gifts-section__container {
+				grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+			}
+		}
+	}
+
+	// The envelope opens with the scroll: it arrives sealed and stays sealed until it is wholly on
+	// screen, low in the view, then the flap lifts and the letter slides up partway. Both play back on scroll up;
+	// captures and reduced motion keep it open.
+	@supports (animation-timeline: view()) {
+		@include motion.motion-safe {
+			&:not([data-scroll-scenes='static']) .gifts-section[data-variant='framed-card'] {
+				.gift-card::before,
+				.gift-card::after {
+					animation: indigo-envelope-flap linear both;
+					animation-range: contain 4% contain 34%;
+					animation-timeline: --indigo-envelope;
+				}
+
+				.gift-card::after {
+					animation-name: indigo-envelope-letter;
+				}
+
+				.gift-card__icon-medallion {
+					animation: indigo-envelope-seal linear both;
+					animation-range: contain 4% contain 34%;
+					animation-timeline: --indigo-envelope;
+				}
+
+				.gift-card__inner::before {
+					animation: indigo-envelope-shade linear both;
+					animation-range: contain 4% contain 34%;
+					animation-timeline: --indigo-envelope;
+				}
+			}
+
+			// The opening is the envelope's entrance: the generic fade-and-rise of the card would fight
+			// the scroll-driven flap and flicker, so the card stays put and opaque.
+			&:not([data-scroll-scenes='static'])
+				#invitation-sections-container
+				> .invitation-section-wrapper[data-section-kind='gifts']
+				.gifts-section[data-variant='framed-card']
+				.gift-card.gift-card {
+				opacity: 100%;
+				animation: none;
+			}
+		}
+	}
+
+	@keyframes indigo-envelope-flap {
+		// Closed, the flap lies over the body with its ivory outside; once it stands on edge it drops
+		// behind the letter and turns to the liner.
+		0% {
+			z-index: 3;
+			background: var(--indigo-env-outside);
+			transform: perspective(40rem) rotateX(0deg);
+		}
+
+		24% {
+			z-index: 3;
+			background: var(--indigo-env-outside);
+		}
+
+		25% {
+			z-index: -2;
+			background: var(--indigo-env-liner);
+		}
+
+		50%,
+		100% {
+			z-index: -2;
+			background: var(--indigo-env-liner);
+			transform: perspective(40rem) rotateX(180deg);
+		}
+	}
+
+	// The closed flap's shadow on the body goes the moment the flap stands on edge.
+	@keyframes indigo-envelope-shade {
+		0%,
+		24% {
+			--indigo-flap-shade: rgb(var(--indigo-indigo-deep-rgb) / 12%);
+		}
+
+		25%,
+		100% {
+			--indigo-flap-shade: transparent;
+		}
+	}
+
+	@keyframes indigo-envelope-seal {
+		0% {
+			transform: perspective(40rem) rotateX(0deg);
+		}
+
+		50%,
+		100% {
+			transform: perspective(40rem) rotateX(180deg);
+		}
+	}
+
+	@keyframes indigo-envelope-letter {
+		0%,
+		45% {
+			translate: 0 0;
+		}
+
+		100% {
+			translate: 0 calc(-1 * var(--indigo-letter-rise));
+		}
+	}
+}

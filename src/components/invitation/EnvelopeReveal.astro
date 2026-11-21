@@ -132,7 +132,7 @@ const skipUrl = `${Astro.url.pathname}?${skipParams.toString()}`;
 	}
 	{isStorybook && <StorybookLanternSky motif={skyMotif} />}
 	{isStorybook && <StorybookLanternSky scene="send-off" motif={skyMotif} />}
-	{isSilverThread && <SilverThreadGate />}
+	{isSilverThread && <SilverThreadGate details={teaserDetails} />}
 	{
 		!isSilverThread && (
 	<div class="envelope-container">
