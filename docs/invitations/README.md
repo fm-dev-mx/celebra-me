@@ -56,6 +56,7 @@ Gates: `pnpm validate:invitation-preparation` (prepReadiness alignment and hygie
 | [daniela-y-martin](daniela-y-martin.md)                     | `/boda/daniela-y-martin`         | active    |
 | [destenid-sofia](destenid-sofia.md)                         | `/xv/destenid-sofia`             | active    |
 | [leslie-perez](leslie-perez.md)                             | `/xv/leslie-perez`               | delivered |
+| [maripau-charles](maripau-charles.md)                       | `/xv/maripau-charles`            | active    |
 | [melissa-y-luis-osmar](melissa-y-luis-osmar.md)             | `/boda/melissa-y-luis-osmar`     | active    |
 | [mia-pintor](mia-pintor.md)                                 | `/xv/mia-pintor`                 | active    |
 | [naydelin-paredes](naydelin-paredes.md)                     | `/xv/naydelin-paredes`           | delivered |

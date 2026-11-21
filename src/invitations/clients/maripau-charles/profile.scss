@@ -1,0 +1,159 @@
+@use './composition';
+
+// Maripau: the jewelry-box preset recolored as a black-tie night. Black carries every surface,
+// rose gold replaces the preset's yellow gold, and blush ivory carries the text. Tokens only;
+// the mirror-ball ornaments live in the composition.
+
+.event--maripau-charles.theme-preset--jewelry-box {
+	--maripau-black-rgb: 11 10 11;
+	--maripau-onyx-rgb: 21 18 20;
+	--maripau-graphite-rgb: 36 31 34;
+	--maripau-rose-gold-rgb: 219 163 150;
+	--maripau-rose-gold-deep-rgb: 183 117 112;
+	--maripau-blush-rgb: 246 232 226;
+	--maripau-mist-rgb: 196 180 176;
+	--maripau-font-serif: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
+	--maripau-font-sans: 'Montserrat Variable', montserrat, system-ui, sans-serif;
+	--maripau-foil: linear-gradient(
+		120deg,
+		rgb(var(--maripau-rose-gold-deep-rgb)) 0%,
+		rgb(var(--maripau-blush-rgb)) 38%,
+		rgb(var(--maripau-rose-gold-rgb)) 62%,
+		rgb(var(--maripau-rose-gold-deep-rgb)) 100%
+	);
+
+	// Surfaces
+	--color-surface-primary: rgb(var(--maripau-black-rgb));
+	--color-surface-primary-rgb: var(--maripau-black-rgb);
+	--color-surface-secondary: rgb(var(--maripau-onyx-rgb));
+	--color-surface-soft: rgb(var(--maripau-onyx-rgb));
+	--color-surface-elevated: rgb(var(--maripau-graphite-rgb));
+	--color-surface-elevated-rgb: var(--maripau-graphite-rgb);
+	--color-surface-dark: rgb(var(--maripau-black-rgb));
+	--color-surface-dark-rgb: var(--maripau-black-rgb);
+	--color-frame-bg: rgb(var(--maripau-onyx-rgb));
+	--color-surface-canvas: rgb(var(--maripau-black-rgb));
+	--color-border-premium: rgb(var(--maripau-rose-gold-rgb) / 30%);
+	--color-border-emphasis: rgb(var(--maripau-rose-gold-rgb));
+
+	// Text
+	--color-text-primary: rgb(var(--maripau-blush-rgb));
+	--color-text-primary-rgb: var(--maripau-blush-rgb);
+	--color-text-secondary: rgb(var(--maripau-mist-rgb));
+	--color-text-emphasis: rgb(var(--maripau-rose-gold-rgb));
+	--color-text-on-light: rgb(var(--maripau-blush-rgb) / 88%);
+	--color-text-on-dark: rgb(var(--maripau-blush-rgb));
+
+	// Accents
+	--color-action-primary: rgb(var(--maripau-rose-gold-rgb));
+	--color-action-primary-rgb: var(--maripau-rose-gold-rgb);
+	--color-action-accent: rgb(var(--maripau-rose-gold-rgb));
+	--color-action-accent-rgb: var(--maripau-rose-gold-rgb);
+	--color-border-subtle: rgb(var(--maripau-rose-gold-rgb) / 22%);
+	--color-glass-bg: rgb(var(--maripau-graphite-rgb) / 62%);
+	--color-glass-border: rgb(var(--maripau-rose-gold-rgb) / 28%);
+	--color-glass-shadow: rgb(0 0 0 / 45%);
+	--border-fine-gold: 1px solid rgb(var(--maripau-rose-gold-rgb) / 45%);
+	--gold-metallic: var(--maripau-foil);
+	--gold-glow: 0 0 24px rgb(var(--maripau-rose-gold-rgb) / 28%);
+	--shadow-subtle: 0 10px 28px rgb(0 0 0 / 35%);
+	--shadow-premium: 0 24px 60px rgb(0 0 0 / 55%);
+
+	// Type
+	--font-display: var(--maripau-font-serif);
+	--font-display-elegant: var(--maripau-font-serif);
+	--font-body: var(--maripau-font-sans);
+	--font-ui: var(--maripau-font-sans);
+	--font-label: var(--maripau-font-sans);
+
+	// Chapter headings shared by the formal variants. Cream and sand are the text on the band; ink
+	// is the text on metal surfaces.
+	--formal-chapter-band: rgb(var(--maripau-black-rgb));
+	--formal-chapter-band-rgb: var(--maripau-black-rgb);
+	--formal-chapter-cream: rgb(var(--maripau-blush-rgb));
+	--formal-chapter-cream-rgb: var(--maripau-blush-rgb);
+	--formal-chapter-sand: rgb(var(--maripau-mist-rgb));
+	--formal-chapter-sand-rgb: var(--maripau-mist-rgb);
+	--formal-chapter-metal: rgb(var(--maripau-rose-gold-rgb));
+	--formal-chapter-metal-rgb: var(--maripau-rose-gold-rgb);
+	--formal-chapter-ink: rgb(var(--maripau-black-rgb));
+	--formal-chapter-ink-rgb: var(--maripau-black-rgb);
+	--formal-chapter-title: rgb(var(--maripau-blush-rgb));
+	--formal-chapter-muted: rgb(var(--maripau-mist-rgb));
+	--formal-chapter-meta: rgb(var(--maripau-rose-gold-rgb));
+	--formal-chapter-label-font: var(--maripau-font-sans);
+
+	// Hero
+	--hero-title-color-start-fallback: rgb(var(--maripau-rose-gold-deep-rgb));
+	--hero-title-color-mid-fallback: rgb(var(--maripau-blush-rgb));
+	--hero-title-color-end-fallback: rgb(var(--maripau-rose-gold-rgb));
+	--hero-badge-text-fallback: rgb(var(--maripau-blush-rgb));
+	--hero-label-color: rgb(var(--maripau-rose-gold-rgb));
+
+	// Family
+	--family-bg-fallback: rgb(var(--maripau-black-rgb));
+	--family-panel-bg-fallback: rgb(var(--maripau-graphite-rgb) / 55%);
+	--family-text-primary-fallback: rgb(var(--maripau-blush-rgb));
+	--family-text-muted-fallback: rgb(var(--maripau-mist-rgb));
+	--family-accent-fallback: rgb(var(--maripau-rose-gold-rgb));
+	--family-divider: rgb(var(--maripau-rose-gold-rgb) / 40%);
+
+	// Gallery
+	--gallery-section-bg-fallback: rgb(var(--maripau-onyx-rgb));
+	--gallery-title-color-fallback: rgb(var(--maripau-blush-rgb));
+	--gallery-subtitle-color-fallback: rgb(var(--maripau-rose-gold-rgb));
+	--gallery-caption-bg: rgb(var(--maripau-black-rgb) / 70%);
+	--gallery-caption-color: rgb(var(--maripau-blush-rgb));
+
+	// Countdown and quote
+	--countdown-section-background: rgb(var(--maripau-black-rgb));
+
+	// Location
+	--location-outer-frame-bg: rgb(var(--maripau-black-rgb));
+	--location-inner-frame-bg: rgb(var(--maripau-onyx-rgb));
+	--location-indications-panel-bg-fallback: rgb(var(--maripau-graphite-rgb) / 55%);
+	--location-indications-panel-border-fallback: 1px solid rgb(var(--maripau-rose-gold-rgb) / 30%);
+	--location-place-color-fallback: rgb(var(--maripau-blush-rgb));
+	--location-address-color-fallback: rgb(var(--maripau-mist-rgb));
+	--location-date-color: rgb(var(--maripau-rose-gold-rgb));
+	--location-date-font-family: var(--maripau-font-serif);
+	--location-flourish-color-fallback: rgb(var(--maripau-rose-gold-rgb));
+	--location-copy-button-color: rgb(var(--maripau-rose-gold-rgb));
+	--location-copy-button-hover-color: rgb(var(--maripau-blush-rgb));
+	--location-card-hover-border-color: rgb(var(--maripau-rose-gold-rgb) / 55%);
+	--location-indication-text-color-fallback: rgb(var(--maripau-mist-rgb));
+	--location-indication-strong-color: rgb(var(--maripau-blush-rgb));
+	--location-indication-icon-color-fallback: rgb(var(--maripau-rose-gold-rgb));
+	--location-indication-item-hover-border-color: rgb(var(--maripau-rose-gold-rgb) / 45%);
+	--location-indication-item-reserved-border-color: rgb(var(--maripau-rose-gold-rgb) / 45%);
+	--location-nav-color: rgb(var(--maripau-blush-rgb));
+	--location-nav-bg: rgb(var(--maripau-rose-gold-rgb) / 8%);
+	--location-nav-hover-bg: rgb(var(--maripau-rose-gold-rgb));
+	--location-nav-hover-border-color: rgb(var(--maripau-rose-gold-rgb));
+	--location-nav-primary-bg: rgb(var(--maripau-rose-gold-rgb));
+	--location-nav-apple-color: rgb(var(--maripau-blush-rgb));
+	--location-nav-maps-color: rgb(var(--maripau-blush-rgb));
+	--location-nav-maps-bg: rgb(var(--maripau-rose-gold-rgb) / 10%);
+	--location-nav-maps-border: rgb(var(--maripau-rose-gold-rgb) / 50%);
+	--location-nav-maps-hover-bg: rgb(var(--maripau-rose-gold-rgb) / 20%);
+	--location-nav-maps-hover-border-color: rgb(var(--maripau-rose-gold-rgb));
+
+	// Guest pass
+	--pa-section-bg: rgb(var(--maripau-black-rgb));
+	--pa-card-bg-color-fallback: rgb(var(--maripau-onyx-rgb));
+	--pa-card-border-fallback: 1.5px solid rgb(var(--maripau-rose-gold-rgb) / 55%);
+	--pa-title-color-fallback: rgb(var(--maripau-rose-gold-rgb));
+	--pa-subtitle-color-fallback: rgb(var(--maripau-mist-rgb));
+	--pa-guest-color-fallback: rgb(var(--maripau-blush-rgb));
+	--rsvp-section-min-height: auto;
+
+	// Music control
+	--music-player-prompt-bg: rgb(var(--maripau-onyx-rgb) / 92%);
+	--music-player-prompt-color: rgb(var(--maripau-blush-rgb));
+	--music-player-prompt-border: rgb(var(--maripau-rose-gold-rgb) / 45%);
+	--music-player-prompt-accent: rgb(var(--maripau-rose-gold-rgb));
+	--music-player-button-bg: rgb(var(--maripau-onyx-rgb) / 92%);
+	--music-player-button-color: rgb(var(--maripau-rose-gold-rgb));
+	--music-player-button-border: rgb(var(--maripau-rose-gold-rgb) / 45%);
+	--music-player-ring-color: rgb(var(--maripau-rose-gold-rgb) / 55%);
+}
