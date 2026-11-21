@@ -10,6 +10,15 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.77.1] - 2026-11-21
+
+Adds the background song to Adriana e Israel's invitation. No database migrations.
+
+### Added
+
+- Invitations: Adriana e Israel plays "Regalo de Dios" on saxophone with the equalizer control
+  (#1087).
+
 ## [0.77.0] - 2026-11-21
 
 Adds the Maripau XV invitation and polishes Adriana e Israel's share card, reveal and program. No
