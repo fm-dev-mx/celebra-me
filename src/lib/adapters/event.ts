@@ -446,6 +446,7 @@ function toVenueEntry(v: VenueEntryInput, eventSlug: string, eventTitle: string)
 		city: v.city,
 		date: v.date,
 		time: v.time,
+		...(v.durationMinutes ? { durationMinutes: v.durationMinutes } : {}),
 		mapUrl: v.mapUrl,
 		appleMapsUrl: v.appleMapsUrl,
 		googleMapsUrl: v.googleMapsUrl,

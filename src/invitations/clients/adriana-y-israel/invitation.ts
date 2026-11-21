@@ -122,6 +122,8 @@ const content: CanonicalEventContentInput = {
 				city: 'Oaxaca',
 				date: '2027-07-10',
 				time: '20:00',
+				// The reception runs until 01:00; the calendar entry blocks those five hours.
+				durationMinutes: 300,
 				googleMapsUrl:
 					'https://www.google.com/maps/search/?api=1&query=Sal%C3%B3n+Santa+M%C3%B3nica+San+Francisco+Tutla+Oaxaca',
 				isVisible: true,
@@ -149,7 +151,7 @@ const content: CanonicalEventContentInput = {
 	gifts: {
 		variant: 'framed-card',
 		title: 'Regalos',
-		subtitle: 'Su presencia es nuestro mejor regalo. Si desea tener un detalle con nosotros:',
+		subtitle: 'Si desea tener un detalle con nosotros:',
 		items: [
 			{
 				type: 'cash',
@@ -175,16 +177,19 @@ const content: CanonicalEventContentInput = {
 			title: 'Su invitación',
 			subtitle:
 				'Hemos reservado estos lugares para usted. Le pedimos respetar el número de pases asignados.',
-			footerText: 'Le pedimos confirmar su asistencia al final de esta invitación.',
+			// The register now sits right under the pass, so the line points down instead of "at the end".
+			footerText: 'Confirme su asistencia aquí abajo para asegurar sus lugares.',
 		},
 		labels: {
 			name: 'Nombre',
-			guestCount: 'Asistentes',
-			guestHint: 'Tiene {count} lugares reservados.',
-			stepAttendance: 'Asistencia',
-			stepDetails: 'Detalles',
-			notesLabel: 'Mensaje para los novios',
-			notesPlaceholder: 'Escriba aquí su mensaje',
+			guestCount: 'Personas',
+			guestHint: 'Reservamos {count} lugares a su nombre.',
+			stepAttendance: '¿Nos acompañará?',
+			stepDetails: '¿Cuántos asistirán?',
+			confirmButton: 'Enviar confirmación',
+			notesLabel: 'Unas palabras para los novios',
+			notesPlaceholder:
+				'Un deseo, un consejo o un recuerdo para Adriana e Israel. Lo leeremos con mucho cariño.',
 		},
 		confirmationMessage: 'Gracias por confirmar.',
 		responseMessages: {

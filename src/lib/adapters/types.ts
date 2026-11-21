@@ -123,6 +123,7 @@ export interface VenueBase {
 	city?: string;
 	date: string;
 	time: string;
+	durationMinutes?: number;
 	mapUrl?: string;
 	appleMapsUrl?: string;
 	googleMapsUrl?: string;

@@ -1,0 +1,357 @@
+@use 'motion';
+
+// Indigo stationery register: the framed-pass guest pass and the framed-register RSVP form on
+// the night-indigo ground. Included inside the invitation scope rule; reads the `--indigo-*`
+// tokens.
+
+// Guest pass on the framed-pass variant.
+@mixin framed-pass-access {
+	.personalized-access[data-variant='framed-pass'] {
+		--indigo-pass-ink: var(--indigo-champagne-ink);
+
+		background:
+			var(--indigo-env-grain),
+			radial-gradient(
+				120% 70% at 50% 0%,
+				rgb(var(--indigo-indigo-rgb) / 75%) 0%,
+				transparent 70%
+			),
+			var(--indigo-indigo-deep);
+
+		// The pass sits low enough that its foot meets the register without a band of empty ground; the
+		// champagne glow that used to sit here greyed the ground right on the seam.
+		min-height: auto;
+		padding-bottom: clamp(1.25rem, 4svh, 2rem);
+
+		.personalized-access__container {
+			max-width: 24rem;
+
+			@media (width >= 48rem) {
+				max-width: 27rem;
+			}
+		}
+
+		.access-card {
+			background:
+				var(--indigo-env-grain), var(--indigo-env-fibres),
+				linear-gradient(
+					172deg,
+					rgb(var(--indigo-ivory-rgb)) 0%,
+					color-mix(in srgb, rgb(var(--indigo-ivory-rgb)) 90%, var(--indigo-champagne))
+						100%
+				);
+			border-color: color-mix(in srgb, var(--indigo-champagne) 75%, transparent);
+			box-shadow:
+				0 28px 60px rgb(0 0 0 / 38%),
+				0 3px 10px rgb(0 0 0 / 22%),
+				inset 0 1px 0 rgb(255 255 255 / 70%);
+
+			// The lattice band along the head of the card, inside the silver frame.
+			&::before {
+				top: 0.4rem;
+				right: 0.4rem;
+				left: 0.4rem;
+				width: auto;
+				height: 0.7rem;
+				aspect-ratio: auto;
+				background:
+					repeating-linear-gradient(
+						45deg,
+						transparent 0 5px,
+						rgb(var(--indigo-indigo-rgb) / 30%) 5px 6px
+					),
+					repeating-linear-gradient(
+						-45deg,
+						transparent 0 5px,
+						rgb(var(--indigo-indigo-rgb) / 30%) 5px 6px
+					),
+					color-mix(in srgb, var(--indigo-mist) 70%, transparent);
+				border-bottom: 1px solid
+					color-mix(in srgb, var(--indigo-champagne) 70%, transparent);
+				border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+			}
+
+			&::after {
+				border-color: rgb(var(--indigo-silver-rgb) / 65%);
+			}
+		}
+
+		.access-card__header {
+			padding-top: 0.6rem;
+		}
+
+		// A small champagne seal with an indigo star pressed into it.
+		.access-card__seal {
+			width: clamp(2.4rem, 6svh, 2.9rem);
+			padding: 0.45rem;
+			background: radial-gradient(
+				circle at 35% 30%,
+				var(--indigo-champagne-light) 0%,
+				var(--indigo-champagne) 60%,
+				var(--indigo-champagne-ink) 100%
+			);
+			border-radius: 50%;
+			box-shadow:
+				0 2px 5px rgb(var(--indigo-indigo-deep-rgb) / 25%),
+				inset 0 0 0 2px color-mix(in srgb, var(--indigo-champagne-light) 60%, transparent);
+			color: var(--indigo-indigo-deep);
+			opacity: 100%;
+		}
+
+		.access-card__eyebrow,
+		.access-card__label {
+			color: var(--indigo-pass-ink);
+		}
+
+		.access-card__divider {
+			background: linear-gradient(
+				90deg,
+				transparent 0%,
+				color-mix(in srgb, var(--indigo-champagne) 80%, transparent) 50%,
+				transparent 100%
+			);
+
+			&::after {
+				background: var(--indigo-champagne);
+			}
+		}
+
+		.access-card__party,
+		.access-card__count-frame {
+			background: radial-gradient(
+				120% 140% at 50% 0%,
+				rgb(var(--indigo-indigo-rgb)) 0%,
+				var(--indigo-indigo-deep) 100%
+			);
+			border: 1px solid var(--indigo-champagne);
+			box-shadow:
+				0 6px 14px rgb(var(--indigo-indigo-deep-rgb) / 28%),
+				inset 0 0 0 3px var(--indigo-indigo-deep),
+				inset 0 0 0 4px color-mix(in srgb, var(--indigo-champagne) 45%, transparent);
+			color: var(--indigo-champagne-light);
+		}
+
+		.access-card__count {
+			color: var(--indigo-champagne-light);
+		}
+
+		.access-card__footer {
+			border-top-color: color-mix(in srgb, var(--indigo-champagne) 80%, transparent);
+
+			&::before,
+			&::after {
+				background: var(--indigo-indigo-deep);
+				border-color: color-mix(in srgb, var(--indigo-champagne) 75%, transparent);
+			}
+		}
+
+		// Short phones: the card tightens so the whole pass fits one screen.
+		@media (height <= 700px) {
+			--framed-pass-guest-size: 1.9rem;
+			--framed-pass-party-size: 1.35rem;
+
+			.access-card__body {
+				gap: 0.75rem;
+				margin-top: 0.75rem;
+			}
+		}
+	}
+}
+
+// RSVP on the framed-register variant.
+@mixin framed-register-rsvp {
+	// RSVP: the register keeps its night-indigo ground. The step lantern turns silver (the preset's
+	// amber is off the palette), the button carries indigo letters on its silver fill, and the details
+	// step, which holds a single field, centers it on the column like the rest of the form.
+	.rsvp-section:has(> .rsvp[data-variant='framed-register']) {
+		--rsvp-steps-track: rgb(var(--indigo-ivory-rgb) / 18%);
+		--rsvp-steps-lantern: var(--indigo-silver);
+		--rsvp-steps-glow: rgb(var(--indigo-silver-rgb) / 45%);
+
+		.rsvp[data-variant='framed-register'] {
+			--formal-chapter-button-color: var(--indigo-indigo-deep);
+			--formal-chapter-button-color-hover: var(--indigo-indigo-deep);
+			--formal-chapter-button-bg-hover: rgb(var(--indigo-ivory-rgb));
+		}
+
+		.rsvp-steps[data-step='details'] .rsvp__extra-fields-inner {
+			grid-template-columns: 1fr;
+			justify-items: center;
+		}
+
+		.rsvp-steps[data-step='details'] .rsvp__field {
+			width: min(100%, 15rem);
+			text-align: center;
+		}
+
+		.rsvp-steps[data-step='details'] .rsvp__label {
+			justify-content: center;
+			width: 100%;
+			text-align: center;
+		}
+
+		.rsvp-steps[data-step='details'] .rsvp__field input {
+			font-family: var(--indigo-font-serif);
+			font-size: 1.5rem;
+			text-align: center;
+		}
+
+		.rsvp__guest-hint {
+			grid-row: auto;
+			text-align: center;
+		}
+
+		// The message step invites a note: the field is a framed sheet with a faint ivory wash and a
+		// silver hairline, tall enough to write in, and the prompt reads in the serif italic.
+		.rsvp-steps[data-step='message'] .rsvp__field textarea {
+			min-height: 8.5rem;
+			padding: 1rem 1.1rem;
+			border: 1px solid rgb(var(--indigo-silver-rgb) / 55%);
+			border-radius: 4px;
+			background: rgb(var(--indigo-ivory-rgb) / 7%);
+			box-shadow: inset 0 0 0 4px rgb(var(--indigo-indigo-deep-rgb) / 25%);
+			font-family: var(--indigo-font-serif);
+			font-size: 1.15rem;
+			line-height: 1.5;
+			transition:
+				border-color 0.25s ease,
+				background-color 0.25s ease,
+				box-shadow 0.25s ease;
+
+			&::placeholder {
+				font-style: italic;
+				color: rgb(var(--indigo-ivory-rgb) / 70%);
+				opacity: 100%;
+			}
+
+			&:focus {
+				border-color: var(--indigo-silver);
+				background: rgb(var(--indigo-ivory-rgb) / 11%);
+				box-shadow: 0 0 0 3px rgb(var(--indigo-silver-rgb) / 22%);
+				outline: none;
+			}
+		}
+
+		// The two answers are framed choices, as on an engraved reply card: a silver hairline each, the
+		// label in the serif, and the chosen one lit with an ivory wash and a full silver edge.
+		.rsvp__radio-group {
+			display: grid;
+			gap: 0.65rem;
+		}
+
+		.rsvp__radio-group .rsvp__radio-card,
+		.rsvp__radio-group .rsvp__radio-card:last-child {
+			min-height: 3.5rem;
+			padding: 0.9rem 1.1rem;
+			border: 1px solid rgb(var(--indigo-silver-rgb) / 38%);
+			border-radius: 4px;
+			transition:
+				border-color 0.25s ease,
+				background-color 0.25s ease;
+
+			&:hover {
+				border-color: rgb(var(--indigo-silver-rgb) / 70%);
+				background: rgb(var(--indigo-ivory-rgb) / 6%);
+			}
+
+			&:has(input:checked) {
+				border-color: var(--indigo-silver);
+				background: rgb(var(--indigo-ivory-rgb) / 11%);
+			}
+		}
+
+		.rsvp__radio-label {
+			font-family: var(--indigo-font-serif);
+			font-size: 1.2rem;
+			font-weight: 500;
+			letter-spacing: 0;
+		}
+
+		// Every forward action is the same polished silver pill: a mirror gradient with a diagonal
+		// highlight that sweeps across on hover, a soft silver halo, and the couple's serif in italics
+		// instead of tracked capitals. The send button no longer drops to an outline on the last step.
+		.rsvp .rsvp__button,
+		.rsvp .rsvp__button--idle {
+			min-height: 3.4rem;
+			padding-inline: 2rem;
+			border: 1px solid rgb(var(--indigo-ivory-rgb) / 85%);
+			border-radius: 999px;
+			background:
+				linear-gradient(
+						115deg,
+						transparent 30%,
+						rgb(var(--indigo-ivory-rgb) / 75%) 45%,
+						transparent 60%
+					) -180%
+					0 / 250% 100% no-repeat,
+				linear-gradient(
+					180deg,
+					rgb(var(--indigo-ivory-rgb)) 0%,
+					color-mix(in srgb, var(--indigo-silver) 35%, rgb(var(--indigo-ivory-rgb))) 40%,
+					color-mix(in srgb, var(--indigo-silver) 85%, rgb(var(--indigo-ivory-rgb))) 100%
+				);
+			box-shadow:
+				inset 0 1px 0 rgb(255 255 255 / 90%),
+				inset 0 -1px 0 rgb(var(--indigo-indigo-deep-rgb) / 18%),
+				0 0 0 4px rgb(var(--indigo-silver-rgb) / 14%),
+				0 0 26px rgb(var(--indigo-silver-rgb) / 35%),
+				0 12px 24px -14px rgb(0 0 0 / 75%);
+			font-family: var(--indigo-font-serif);
+			font-size: 1.3rem;
+			font-style: italic;
+			font-weight: 500;
+			letter-spacing: 0.02em;
+			text-transform: none;
+			color: var(--indigo-indigo-deep);
+			transition:
+				background-position 0.9s ease,
+				box-shadow 0.3s ease,
+				transform 0.3s ease;
+
+			&:hover:not(:disabled) {
+				background-position:
+					180% 0,
+					0 0;
+				box-shadow:
+					inset 0 1px 0 rgb(255 255 255 / 90%),
+					inset 0 -1px 0 rgb(var(--indigo-indigo-deep-rgb) / 18%),
+					0 0 0 5px rgb(var(--indigo-silver-rgb) / 20%),
+					0 0 34px rgb(var(--indigo-silver-rgb) / 50%),
+					0 14px 26px -14px rgb(0 0 0 / 80%);
+				color: var(--indigo-indigo-deep);
+				transform: translateY(-1px);
+			}
+
+			@include motion.reduced-motion {
+				transition: none;
+
+				&:hover:not(:disabled) {
+					transform: none;
+				}
+			}
+
+			&:focus-visible {
+				outline: 2px solid rgb(var(--indigo-ivory-rgb));
+				outline-offset: 3px;
+			}
+		}
+
+		// «Atrás» steps back quietly: small silver capitals with a chevron, no underline.
+		.rsvp__cancel-link {
+			font-size: 0.72rem;
+			letter-spacing: 0.22em;
+			text-decoration: none;
+			color: rgb(var(--indigo-silver-rgb) / 85%);
+
+			&::before {
+				margin-right: 0.45em;
+				content: '‹';
+				font-size: 1.1em;
+			}
+
+			&:hover {
+				color: rgb(var(--indigo-ivory-rgb));
+			}
+		}
+	}
+}

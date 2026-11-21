@@ -1,11 +1,18 @@
 ---
-// Silver thread gate: the ground, the stroke the script lays out, and a full-screen open control.
+// Silver thread gate: the ground, the stroke the script lays out, an optional details line under
+// the monogram, and a full-screen open control.
+interface Props {
+	details?: string;
+}
+
+const { details } = Astro.props;
 ---
 
 <div class="silver-thread__ground" data-silver-thread-ground aria-hidden="true"></div>
 <svg class="silver-thread" aria-hidden="true" focusable="false">
 	<path class="silver-thread__path" data-silver-thread-path d=""></path>
 </svg>
+{details && <p class="silver-thread__details">{details}</p>}
 <button
 	type="button"
 	class="silver-thread__trigger"
