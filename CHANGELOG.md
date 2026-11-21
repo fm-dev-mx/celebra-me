@@ -10,6 +10,20 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.77.0] - 2026-11-21
+
+Adds the Maripau XV invitation and polishes Adriana e Israel's share card, reveal and program. No
+database migrations.
+
+### Added
+
+- Invitations: the Maripau XV invitation (#1082).
+
+### Fixed
+
+- Invitations: Adriana e Israel shares a 1200×630 couple photo, keeps the reveal text clear of the
+  monogram at every viewport, and scrolls smoothly back up through the pinned program (#1083).
+
 ## [0.76.1] - 2026-11-20
 
 Finishes the Adriana e Israel wedding invitation with its indigo stationery revision. No database
