@@ -181,27 +181,27 @@ References:
 Source label: `source:hr-photos` (opaque). Seven originals from the couple, numbered #1–#7 in the
 order of the transfer. Each derivative is cropped for its role and encoded as WebP.
 
-| source | quality            | dims      | orientation | role      | processing     | derivative        |
-| ------ | ------------------ | --------- | ----------- | --------- | -------------- | ----------------- |
-| #6     | `production-ready` | 3672×4896 | portrait    | hero      | crop 2:3, WebP | `hero.webp`       |
-| #2     | `production-ready` | 4284×5712 | portrait    | quote     | crop 2:3, WebP | `quote.webp`      |
-| #4     | `production-ready` | 3672×4896 | portrait    | gallery 1 | crop 4:5, WebP | `gallery-01.webp` |
-| #5     | `production-ready` | 3672×4896 | portrait    | gallery 2 | crop 4:5, WebP | `gallery-02.webp` |
-| #3     | `production-ready` | 3024×4032 | portrait    | gallery 3 | crop 4:5, WebP | `gallery-03.webp` |
-| #7     | `production-ready` | 3024×4032 | portrait    | gallery 4 | crop 4:5, WebP | `gallery-04.webp` |
-| #1     | `production-ready` | 3024×4032 | portrait    | gallery 5 | crop 4:5, WebP | `gallery-05.webp` |
-| #6     | `production-ready` | 3672×4896 | portrait    | OG card   | crop 1.9:1     | `og-share.webp`   |
+| source | quality            | dims      | orientation | role      | processing                                          | derivative        |
+| ------ | ------------------ | --------- | ----------- | --------- | --------------------------------------------------- | ----------------- |
+| #6     | `production-ready` | 3672×4896 | portrait    | hero      | crop 2:3, WebP                                      | `hero.webp`       |
+| #2     | `production-ready` | 4284×5712 | portrait    | quote     | crop 2:3, WebP                                      | `quote.webp`      |
+| #4     | `production-ready` | 3672×4896 | portrait    | gallery 1 | crop 4:5, WebP                                      | `gallery-01.webp` |
+| #5     | `production-ready` | 3672×4896 | portrait    | gallery 2 | crop 4:5, WebP                                      | `gallery-02.webp` |
+| #3     | `production-ready` | 3024×4032 | portrait    | gallery 3 | crop 4:5, WebP                                      | `gallery-03.webp` |
+| #7     | `production-ready` | 3024×4032 | portrait    | gallery 4 | crop 4:5, WebP                                      | `gallery-04.webp` |
+| #1     | `production-ready` | 3024×4032 | portrait    | gallery 5 | crop 4:5, WebP                                      | `gallery-05.webp` |
+| #2     | `production-ready` | 4284×5712 | portrait    | OG card   | crop 1.9:1 from the quote crop, both faces in frame | `og-share.webp`   |
 
 No derivative is upscaled.
 
 ### Uniqueness table (required before READY_*)
 
-| role     | source             | derivative        | intentional multi-role?                      |
-| -------- | ------------------ | ----------------- | -------------------------------------------- |
-| hero     | #6                 | `hero.webp`       | yes — the share card repeats the cover photo |
-| quote    | #2                 | `quote.webp`      | no                                           |
-| gallery  | #4, #5, #3, #7, #1 | `gallery-0N.webp` | no                                           |
-| OG share | #6                 | `og-share.webp`   | yes — same portrait as the cover             |
+| role     | source             | derivative        | intentional multi-role?                   |
+| -------- | ------------------ | ----------------- | ----------------------------------------- |
+| hero     | #6                 | `hero.webp`       | no                                        |
+| quote    | #2                 | `quote.webp`      | yes — the share card reuses this portrait |
+| gallery  | #4, #5, #3, #7, #1 | `gallery-0N.webp` | no                                        |
+| OG share | #2                 | `og-share.webp`   | yes — same portrait as the quote          |
 
 ---
 

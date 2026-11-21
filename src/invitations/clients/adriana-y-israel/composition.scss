@@ -74,6 +74,15 @@
 	.silver-thread__details {
 		color: color-mix(in srgb, var(--indigo-champagne-light) 72%, var(--indigo-ivory));
 	}
+
+	// Phones held sideways: a smaller name keeps the action line on screen.
+	@media (height <= 34rem) {
+		padding-bottom: 0.5rem;
+
+		.personalized-name {
+			font-size: 1.5rem;
+		}
+	}
 }
 
 // Frames: only the guest pass keeps a silver hairline; the full-screen frames around the location
@@ -177,6 +186,40 @@
 			.gallery-section
 			.gallery-grid__item[data-gallery-index='4'] {
 			animation-name: indigo-gallery-last;
+		}
+
+		// The ceremony is already on the card while it rises over the countdown, so scrolling back
+		// up never leaves an empty program on screen.
+		.event--adriana-y-israel.theme-preset--jewelry-box-wedding:not(
+				[data-scroll-scenes='static']
+			)
+			#invitation-sections-container
+			> .invitation-section-wrapper.has-motion[data-section-kind='location']:has(
+				.event-location[data-variant='pinned-program']
+			)
+			.event-location
+			.event-location__program-entry:first-child {
+			animation-name: adriana-pinned-ceremony;
+		}
+	}
+}
+
+// Keyframes of the ceremony entry above, kept inside the slug scope.
+/* stylelint-disable-next-line no-duplicate-selectors */
+.event--adriana-y-israel.theme-preset--jewelry-box-wedding {
+	@keyframes adriana-pinned-ceremony {
+		0%,
+		34% {
+			visibility: visible;
+			opacity: 100%;
+			translate: 0 0;
+		}
+
+		46%,
+		100% {
+			visibility: hidden;
+			opacity: 0%;
+			translate: -2.5rem 0;
 		}
 	}
 }
@@ -284,6 +327,26 @@
 /* stylelint-disable-next-line no-duplicate-selectors */
 .event--adriana-y-israel.theme-preset--jewelry-box-wedding {
 	@include indigo-stationery-scenes.pinned-program-location;
+
+	// Wide, short screens (phones held sideways): the pinned card is only as tall as the screen, so
+	// the program entries drop their vignette and the second one its extra air, leaving room for
+	// the dress code under them.
+	@media (height < 30rem) and (width >= 48rem) {
+		&:not([data-scroll-scenes='static'])
+			#invitation-sections-container
+			> .invitation-section-wrapper.has-motion[data-section-kind='location']
+			.event-location[data-variant='pinned-program'] {
+			.event-location__program-entry::before {
+				display: none;
+			}
+
+			.event-location__program
+				.event-location__program-entry
+				+ .event-location__program-entry {
+				padding-top: 0.9rem;
+			}
+		}
+	}
 }
 
 // Footer: only the reply and the credits; the cover already carries the date and the city. It is
