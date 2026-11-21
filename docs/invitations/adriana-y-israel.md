@@ -65,7 +65,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | rsvpConfirmationMode  | api                                                        | inferred       | owner-session | Platform default                                                 |
 | rsvpAccessMode        | personalized-only                                          | inferred       | owner-session | Personal links per guest                                         |
 | rsvpDeadline          | [[PENDIENTE:RSVP_DEADLINE]]                                | pending        | owner-session | Copy states no date                                              |
-| musicUrl              | [[PENDIENTE:MUSIC]]                                        | pending        | wa-export     | YouTube reference sent; no audio file encoded yet                |
+| musicUrl              | Julión Álvarez — Regalo de Dios (saxophone)                | verified       | owner-session | 64 kbps MP3 supplied by the owner; sha `f880964f…`               |
 | giftsMode             | Lluvia de sobres                                           | verified       | wa-export     |                                                                  |
 | thankYouText          | Qué suerte tenerlos en este día. Hay momentos que… siempre | verified       | wa-export     | From the phrase card; «teneros» corrected to «tenerlos»          |
 | itinerary             | —                                                          | not_applicable | wa-export     | Not requested                                                    |
@@ -85,7 +85,7 @@ client has not confirmed stays hidden or silent; nothing is invented.
 
 - Ceremony time: the ceremony entry shows no hour and no calendar link.
 - Photographs: received; cover, quote, gallery and share card use the couple's originals.
-- Name spelling, RSVP deadline, children policy and music are pending.
+- Name spelling, RSVP deadline and children policy are pending.
 
 Deterministic question: **Is the available information sufficient to prepare this invitation?**
 Answer: `yes`.
@@ -100,7 +100,6 @@ Answer: `yes`.
 | [[PENDIENTE:NAME_SPELLING]] | nameSpelling | Family names shown as written by the client      |
 | [[PENDIENTE:RSVP_DEADLINE]] | rsvpDeadline | RSVP copy states no date                         |
 | [[PENDIENTE:PASS_RULES]]    | passRules    | No seat or children policy; never «solo adultos» |
-| [[PENDIENTE:MUSIC]]         | musicUrl     | No music player                                  |
 
 Tokens live in this document only; no token is rendered to guests.
 
@@ -140,7 +139,7 @@ Release scope: published to Preview; Production follows in the owner's daily win
 | client-provided        | thank-you phrase card                                               |
 | client-provided photos | hero, quote, gallery (five selfies), share card                     |
 | omitted                | itinerary (not requested)                                           |
-| unresolved             | music                                                               |
+| unresolved             | —                                                                   |
 
 Guest-facing copy is an agent draft in the "usted" register, pending client approval.
 
