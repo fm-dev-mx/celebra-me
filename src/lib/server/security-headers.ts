@@ -196,10 +196,6 @@ export const PERMANENT_REDIRECTS: readonly PermanentRedirectRule[] = [
 		source: '/boda/adriana-e-israel',
 		destination: '/adriana-y-israel',
 	},
-	{
-		source: '/adriana-e-israel/i/:shortId',
-		destination: '/adriana-y-israel/i/:shortId',
-	},
 ];
 
 const PARAM_PLACEHOLDER = /:([A-Za-z_][A-Za-z0-9_]*)/g;

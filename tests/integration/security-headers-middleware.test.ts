@@ -61,10 +61,6 @@ const EXPECTED_REDIRECTS = [
 		source: '/boda/adriana-e-israel',
 		destination: '/adriana-y-israel',
 	},
-	{
-		source: '/adriana-e-israel/i/:shortId',
-		destination: '/adriana-y-israel/i/:shortId',
-	},
 ];
 
 const PREVIEW_PATH = /^\/dashboard\/invitaciones\/[^/]+\/preview$/;
@@ -215,15 +211,8 @@ describe('Middleware permanent redirects', () => {
 		'/bautizo/demo-bautizo-angelic-presence',
 		'/adriana-y-israel',
 		'/adriana-y-israel/i/ABC123',
-		'/adriana-e-israel/i/ABC123/extra',
 	])('leaves %s alone', (pathname) => {
 		expect(resolvePermanentRedirectPath(pathname)).toBeNull();
-	});
-
-	it('sends the misspelled Adriana e Israel guest link to the published one', () => {
-		expect(resolvePermanentRedirectPath('/adriana-e-israel/i/ABC123')).toBe(
-			'/adriana-y-israel/i/ABC123',
-		);
 	});
 
 	it('answers a renamed demo URL with a 301 that keeps the query string', async () => {
