@@ -10,6 +10,15 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.77.2] - 2026-11-21
+
+Sends the shared Adriana e Israel link to the published invitation. No database migrations.
+
+### Fixed
+
+- Invitations: `/adriana-e-israel` and `/boda/adriana-e-israel` answer with a permanent redirect to
+  `/adriana-y-israel` (#1092).
+
 ## [0.77.1] - 2026-11-21
 
 Adds the background song to Adriana e Israel's invitation. No database migrations.
