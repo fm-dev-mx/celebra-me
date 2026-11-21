@@ -184,6 +184,22 @@ export const PERMANENT_REDIRECTS: readonly PermanentRedirectRule[] = [
 		source: '/primera-comunion/demo-primera-comunion-illustrated',
 		destination: '/comunion-angelical',
 	},
+	{
+		source: '/adriana-e-israel',
+		destination: '/adriana-y-israel',
+	},
+	{
+		source: '/adriana-e-israel/',
+		destination: '/adriana-y-israel',
+	},
+	{
+		source: '/boda/adriana-e-israel',
+		destination: '/adriana-y-israel',
+	},
+	{
+		source: '/adriana-e-israel/i/:shortId',
+		destination: '/adriana-y-israel/i/:shortId',
+	},
 ];
 
 const PARAM_PLACEHOLDER = /:([A-Za-z_][A-Za-z0-9_]*)/g;
