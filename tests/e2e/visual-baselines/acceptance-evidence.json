@@ -1,31 +1,33 @@
 {
-    "referenceSha": "7f3d177fb6551670e751a21bcdf4c6c00891b2f9",
-    "acceptedAt": "2026-11-20T03:35:30.435Z",
+    "referenceSha": "7846bbed26b3ba4e2319b6f06b94d804d6e32c39",
+    "acceptedAt": "2026-11-21T00:42:18.708Z",
     "matrixHash": "cbd3152ea1b0947ad893879ae91aab90f89058a61c678642dd9e81f1292fe10a",
-    "candidateManifestSha256": "7a122198f539c53b4fa5930da928d18d66bd1f219a287610b6c2662c7739d179",
-    "acceptedManifestSha256": "c06857b33174c17a8af86a597adac5d11d05805962b29ba99746c5640012bb83",
+    "candidateManifestSha256": "c75939df684a0289e4c389a3392bce6370dbd694dfd40f1df19e25b5da1ce042",
+    "acceptedManifestSha256": "d203d1bb127a590dd79486c88af9daa820a7ddc1345ac24cf4a026bf3a1eded8",
     "reviewedPaths": [
-        "pages/invitation-xv-camila-beltran-mobile.png",
-        "pages/invitation-xv-camila-beltran-desktop.png"
+        "pages/invitation-boda-adriana-y-israel-mobile.png",
+        "pages/invitation-boda-adriana-y-israel-desktop.png"
     ],
     "items": [
         {
-            "file": "pages/invitation-xv-camila-beltran-mobile.png",
+            "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
             "status": "changed",
-            "sha256": "ac7fb11346d426d0ebcf4a1c73ce823cb918fad4bb0bad50816ab8ad38beb19e",
-            "previousSha256": "5742c0da20b2658d0bc896c190343a684c17868a96980dcb2acf8ef90c612423",
-            "differentPixels": 57062,
-            "pixelRatio": 0.010876659270950082
+            "sha256": "6a5f7fa968c51478ce94610e3c38c80d32f2e75df689c926c93099d326aae11a",
+            "previousSha256": "d0b08297c3ff7dfe5037d99eebce7d658d6bbb48ca369f93f56295a72daf70cc",
+            "differentPixels": 924087,
+            "pixelRatio": 0.27304146648465616,
+            "heightDelta": -292
         },
         {
-            "file": "pages/invitation-xv-camila-beltran-desktop.png",
+            "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
             "status": "changed",
-            "sha256": "79727e29c323789a72796424b0edf0e8993847cbf68369443ae174024df71bec",
-            "previousSha256": "9ec85938acd33e717ddd4995647f124dfc0f602be87f044e91d425acdf09b278",
-            "differentPixels": 23896,
-            "pixelRatio": 0.00113365517450775
+            "sha256": "8fe43b5e1d749059357bd55b3fab377a3722cbffe0d1223d399eebb9c1dbdaa3",
+            "previousSha256": "5e110eec7dd4f6172372811f3742d80cedcbd6c4d49369c960a74eba107053ef",
+            "differentPixels": 2298046,
+            "pixelRatio": 0.17710190631203837,
+            "heightDelta": -111
         }
     ],
-    "renderNoise": 136,
+    "renderNoise": 135,
     "removed": []
 }
