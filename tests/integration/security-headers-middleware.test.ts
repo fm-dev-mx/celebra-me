@@ -49,6 +49,18 @@ const EXPECTED_REDIRECTS = [
 		source: '/primera-comunion/demo-primera-comunion-illustrated',
 		destination: '/comunion-angelical',
 	},
+	{
+		source: '/adriana-e-israel',
+		destination: '/adriana-y-israel',
+	},
+	{
+		source: '/adriana-e-israel/',
+		destination: '/adriana-y-israel',
+	},
+	{
+		source: '/boda/adriana-e-israel',
+		destination: '/adriana-y-israel',
+	},
 ];
 
 const PREVIEW_PATH = /^\/dashboard\/invitaciones\/[^/]+\/preview$/;
@@ -197,6 +209,8 @@ describe('Middleware permanent redirects', () => {
 		'/bautizo/demo-bautismo-angelic-presence/extra',
 		'/demo-bautismo-angelic-presence',
 		'/bautizo/demo-bautizo-angelic-presence',
+		'/adriana-y-israel',
+		'/adriana-y-israel/i/ABC123',
 	])('leaves %s alone', (pathname) => {
 		expect(resolvePermanentRedirectPath(pathname)).toBeNull();
 	});
