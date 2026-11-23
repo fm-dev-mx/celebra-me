@@ -10,6 +10,16 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.77.3] - 2026-11-23
+
+Updates Adriana e Israel's photos and ceremony details. No database migrations.
+
+### Changed
+
+- Invitations: Adriana e Israel gets the new hero, quote and thank-you photos (crossfades turn off
+  with reduced motion), a one-column framed footer, and the ceremony at 17:00 in Claveles 291, Las
+  Flores Sur, Santa Lucía del Camino, with short Maps links for both venues (#1101).
+
 ## [0.77.2] - 2026-11-21
 
 Sends the shared Adriana e Israel link to the published invitation. No database migrations.
