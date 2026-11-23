@@ -267,19 +267,20 @@ const content: CanonicalEventContentInput = {
 };
 
 export default defineCanonicalInvitation({
-	slug: 'adriana-y-israel',
+	slug: 'adriana-e-israel',
+	previousSlugs: ['adriana-y-israel'],
 	eventType: 'boda',
 	title: `Nuestra boda — ${COUPLE_NAME}`,
 	clientName: 'Adriana Rivas',
 	themeId: 'jewelry-box-wedding',
-	visualProfileId: 'adriana-y-israel',
+	visualProfileId: 'adriana-e-israel',
 	eventTiming: WEDDING_TIMING,
 	content,
 	managedIdentityId: '219a037e-f9f3-4cdf-9827-3739ea60d14c',
 	managedIdentityProvenance: 'persisted',
 	lifecycle: 'published',
 	hostLoginAlias: 'adriana_rivas',
-	assetDir: 'src/invitations/clients/adriana-y-israel/assets',
+	assetDir: 'src/invitations/clients/adriana-e-israel/assets',
 	// Cropped from the couple's photographs; the two quote photos are wired by the profile.
 	assetFiles: {
 		hero: 'hero-01.webp',
