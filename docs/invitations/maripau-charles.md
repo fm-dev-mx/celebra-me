@@ -220,7 +220,7 @@ Source label: `source:wa-export`. Delivery WebP files (quality 84, normal EXIF o
 ## Implementation Constraints
 
 - Canonical definition: `src/invitations/clients/maripau-charles/invitation.ts`
-  (`defineCanonicalInvitation`, `owner-approved`, `published`, `content-and-assets`).
+  (`defineCanonicalInvitation`, `persisted`, `published`, `content-and-assets`).
 - RSVP is `personalized-only` with `api` confirmation; `guestCap: 1` is the content default until
   the guest list arrives.
 - Preview and Production releases follow `docs/domains/intake/production-flow.md` and require their
