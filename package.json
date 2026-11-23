@@ -206,9 +206,9 @@
     },
     "devDependencies": {
         "@astrojs/check": "^0.9.12",
-        "@astrojs/cloudflare": "14.4.8",
+        "@astrojs/cloudflare": "14.4.9",
         "@astrojs/react": "7.1.9",
-        "@astrojs/sitemap": "^3.7.5",
+        "@astrojs/sitemap": "^3.7.6",
         "@axe-core/playwright": "^4.13.0",
         "@commitlint/cli": "^21.2.4",
         "@commitlint/config-conventional": "^21.2.4",
@@ -227,7 +227,7 @@
         "@types/sanitize-html": "^2.16.1",
         "@typescript/native": "npm:typescript@7.0.2",
         "age-encryption": "0.3.1",
-        "astro": "7.4.12",
+        "astro": "7.4.13",
         "astro-eslint-parser": "^3.2.0",
         "astro-robots-txt": "^1.0.0",
         "aws4fetch": "1.0.20",
@@ -259,7 +259,7 @@
         "typescript": "npm:@typescript/typescript6@6.0.2",
         "typescript-eslint": "^8.72.1",
         "vite": "8.3.8",
-        "wrangler": "4.159.0"
+        "wrangler": "4.163.0"
     },
     "lint-staged": {
         "*.{ts,tsx,js,jsx,mjs,cjs}": ["eslint --fix --cache", "prettier --write"],
