@@ -1,33 +1,30 @@
 {
-    "referenceSha": "0326dc9d11cbc40f2c130af35164302b24a65628",
-    "acceptedAt": "2026-11-23T19:48:58.325Z",
-    "matrixHash": "cbd3152ea1b0947ad893879ae91aab90f89058a61c678642dd9e81f1292fe10a",
-    "candidateManifestSha256": "0f42e5eba7c90e053a1dbc7abf0f6bf6eb9acaf8d949ed1d9bb1d3fbf301186e",
-    "acceptedManifestSha256": "ed837e63dee81e293af430fd39cbfede5337f2b441860cb2938c3b383ef6a21d",
+    "referenceSha": "04808a873e65b07f006ef01c188ea2238ff118fc",
+    "acceptedAt": "2026-11-23T23:45:43.987Z",
+    "matrixHash": "dde65a1588b6250cc04a81e939808185e59ed54894e284135200e287b2bd5b9f",
+    "candidateManifestSha256": "2e5179c0c0d91ae697270cdccaf3309083f2315a0ed58d14248df0f27f32500e",
+    "acceptedManifestSha256": "46ec3da04ca54982eda72a808144b10183d780058d0ef4ed02a0ffc2b1c45ceb",
     "reviewedPaths": [
+        "pages/invitation-boda-adriana-e-israel-desktop.png",
+        "pages/invitation-boda-adriana-e-israel-mobile.png",
         "pages/invitation-boda-adriana-y-israel-desktop.png",
         "pages/invitation-boda-adriana-y-israel-mobile.png"
     ],
     "items": [
         {
-            "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
-            "status": "changed",
-            "sha256": "258f72ded2919f6f71ddf288d208b683837cc07a5877c305815d66869de9d368",
-            "previousSha256": "8fe43b5e1d749059357bd55b3fab377a3722cbffe0d1223d399eebb9c1dbdaa3",
-            "differentPixels": 1314520,
-            "pixelRatio": 0.10256866416978777,
-            "heightDelta": -26
+            "file": "pages/invitation-boda-adriana-e-israel-mobile.png",
+            "status": "new",
+            "sha256": "87ddbc34db7682671fd75257dae5625c091fc69697888f446034bcd3aeb80a58"
         },
         {
-            "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
-            "status": "changed",
-            "sha256": "57bf78c6c7f1d5f0350cdd25b78877ba2998536150420d451c10b92e6cafdb6f",
-            "previousSha256": "6a5f7fa968c51478ce94610e3c38c80d32f2e75df689c926c93099d326aae11a",
-            "differentPixels": 459238,
-            "pixelRatio": 0.1404165672946975,
-            "heightDelta": 21
+            "file": "pages/invitation-boda-adriana-e-israel-desktop.png",
+            "status": "new",
+            "sha256": "65ac10db846d54776e16ce5d878908555b0247e7102d45237775782f03e03af1"
         }
     ],
-    "renderNoise": 135,
-    "removed": []
+    "renderNoise": 136,
+    "removed": [
+        "pages/invitation-boda-adriana-y-israel-mobile.png",
+        "pages/invitation-boda-adriana-y-israel-desktop.png"
+    ]
 }

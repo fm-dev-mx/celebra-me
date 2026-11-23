@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-23T19:47:29.833Z",
+    "generatedAt": "2026-11-23T23:44:12.202Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -20,7 +20,7 @@
     "status": "ACCEPTED",
     "mode": "accepted",
     "totalCaptures": 238,
-    "matrixHash": "cbd3152ea1b0947ad893879ae91aab90f89058a61c678642dd9e81f1292fe10a",
+    "matrixHash": "dde65a1588b6250cc04a81e939808185e59ed54894e284135200e287b2bd5b9f",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -2818,25 +2818,25 @@
         },
         {
             "kind": "invitation",
-            "slug": "adriana-y-israel",
+            "slug": "adriana-e-israel",
             "eventType": "boda",
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
-            "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
-            "sha256": "57bf78c6c7f1d5f0350cdd25b78877ba2998536150420d451c10b92e6cafdb6f",
-            "contentHash": "4f564f3bfefd1df8ea043d6c9f791e63e0778004d2b3b8352873af7ea14d3163",
+            "file": "pages/invitation-boda-adriana-e-israel-mobile.png",
+            "sha256": "87ddbc34db7682671fd75257dae5625c091fc69697888f446034bcd3aeb80a58",
+            "contentHash": "f20d28d8e1d1dfd02932e04174f491df3f371900f90ca2f2f190bb35321b3dba",
             "assetHash": "9a20605e62f1b1327ab958b08c6fa57ed2665a234d4f3990fed3cd587a15e774",
             "comparisonResult": "ACCEPTED"
         },
         {
             "kind": "invitation",
-            "slug": "adriana-y-israel",
+            "slug": "adriana-e-israel",
             "eventType": "boda",
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
-            "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
-            "sha256": "258f72ded2919f6f71ddf288d208b683837cc07a5877c305815d66869de9d368",
-            "contentHash": "4f564f3bfefd1df8ea043d6c9f791e63e0778004d2b3b8352873af7ea14d3163",
+            "file": "pages/invitation-boda-adriana-e-israel-desktop.png",
+            "sha256": "65ac10db846d54776e16ce5d878908555b0247e7102d45237775782f03e03af1",
+            "contentHash": "f20d28d8e1d1dfd02932e04174f491df3f371900f90ca2f2f190bb35321b3dba",
             "assetHash": "9a20605e62f1b1327ab958b08c6fa57ed2665a234d4f3990fed3cd587a15e774",
             "comparisonResult": "ACCEPTED"
         },
@@ -2985,9 +2985,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "0326dc9d11cbc40f2c130af35164302b24a65628",
+    "referenceSha": "04808a873e65b07f006ef01c188ea2238ff118fc",
     "variantManifest": {
-        "generatedAt": "2026-11-23T19:47:29.833Z",
+        "generatedAt": "2026-11-23T23:44:12.202Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -5421,10 +5421,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "0326dc9d11cbc40f2c130af35164302b24a65628"
+        "referenceSha": "04808a873e65b07f006ef01c188ea2238ff118fc"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-23T19:47:29.840Z",
+        "generatedAt": "2026-11-23T23:44:12.212Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -5445,7 +5445,7 @@
         "status": "CANDIDATE",
         "mode": "candidate",
         "totalCaptures": 66,
-        "matrixHash": "6fa936e12164d92f526657f8885abe0b152607fdcc5fdd4a3a5fb857542710ae",
+        "matrixHash": "41c22964b83f0aa4b8daab63b6ccc72ee33f7bb09088a7baaa1bdc3a57c55f94",
         "cases": 33,
         "captures": [
             {
@@ -5834,25 +5834,25 @@
             },
             {
                 "kind": "invitation",
-                "slug": "adriana-y-israel",
+                "slug": "adriana-e-israel",
                 "eventType": "boda",
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
-                "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
-                "sha256": "57bf78c6c7f1d5f0350cdd25b78877ba2998536150420d451c10b92e6cafdb6f",
-                "contentHash": "4f564f3bfefd1df8ea043d6c9f791e63e0778004d2b3b8352873af7ea14d3163",
+                "file": "pages/invitation-boda-adriana-e-israel-mobile.png",
+                "sha256": "87ddbc34db7682671fd75257dae5625c091fc69697888f446034bcd3aeb80a58",
+                "contentHash": "f20d28d8e1d1dfd02932e04174f491df3f371900f90ca2f2f190bb35321b3dba",
                 "assetHash": "9a20605e62f1b1327ab958b08c6fa57ed2665a234d4f3990fed3cd587a15e774",
                 "comparisonResult": "CANDIDATE"
             },
             {
                 "kind": "invitation",
-                "slug": "adriana-y-israel",
+                "slug": "adriana-e-israel",
                 "eventType": "boda",
                 "preset": "jewelry-box-wedding",
                 "viewport": "desktop",
-                "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
-                "sha256": "258f72ded2919f6f71ddf288d208b683837cc07a5877c305815d66869de9d368",
-                "contentHash": "4f564f3bfefd1df8ea043d6c9f791e63e0778004d2b3b8352873af7ea14d3163",
+                "file": "pages/invitation-boda-adriana-e-israel-desktop.png",
+                "sha256": "65ac10db846d54776e16ce5d878908555b0247e7102d45237775782f03e03af1",
+                "contentHash": "f20d28d8e1d1dfd02932e04174f491df3f371900f90ca2f2f190bb35321b3dba",
                 "assetHash": "9a20605e62f1b1327ab958b08c6fa57ed2665a234d4f3990fed3cd587a15e774",
                 "comparisonResult": "CANDIDATE"
             },
@@ -6001,9 +6001,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "0326dc9d11cbc40f2c130af35164302b24a65628"
+        "referenceSha": "04808a873e65b07f006ef01c188ea2238ff118fc"
     },
-    "candidateManifestSha256": "0f42e5eba7c90e053a1dbc7abf0f6bf6eb9acaf8d949ed1d9bb1d3fbf301186e",
-    "acceptedFromCommit": "0326dc9d11cbc40f2c130af35164302b24a65628",
-    "acceptedAt": "2026-11-23T19:48:58.325Z"
+    "candidateManifestSha256": "2e5179c0c0d91ae697270cdccaf3309083f2315a0ed58d14248df0f27f32500e",
+    "acceptedFromCommit": "04808a873e65b07f006ef01c188ea2238ff118fc",
+    "acceptedAt": "2026-11-23T23:45:43.987Z"
 }
