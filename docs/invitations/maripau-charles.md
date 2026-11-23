@@ -125,6 +125,9 @@ No unresolved blocking owner decisions.
   the approved look. Without a personal link, RSVP shows its own message with no deadline. On phones
   the three location numerals sit on the left of the arch, clear of the progress rail. The closing
   reads as a letter on phones and tablets: portrait, message and signature share the left edge.
+- 2026-11-23 (D15): the owner authorized Production today with the watermarked photos and the
+  provisional maps (D8); `lifecycle` moves to `published` and the D9 hold ends. Swapping photos or
+  maps needs another release.
 
 ## Agent Recommendations
 
@@ -217,7 +220,7 @@ Source label: `source:wa-export`. Delivery WebP files (quality 84, normal EXIF o
 ## Implementation Constraints
 
 - Canonical definition: `src/invitations/clients/maripau-charles/invitation.ts`
-  (`defineCanonicalInvitation`, `owner-approved`, `in_progress`, `content-and-assets`).
+  (`defineCanonicalInvitation`, `owner-approved`, `published`, `content-and-assets`).
 - RSVP is `personalized-only` with `api` confirmation; `guestCap: 1` is the content default until
   the guest list arrives.
 - Preview and Production releases follow `docs/domains/intake/production-flow.md` and require their
@@ -225,10 +228,11 @@ Source label: `source:wa-export`. Delivery WebP files (quality 84, normal EXIF o
 
 ## Creative Direction & Acceptance
 
-**Human creative outcome:** `PENDING`
+**Human creative outcome:** `ACCEPTED`
 
-The owner approved every section in Local, one at a time, on 2026-11-23 (D12). Final acceptance of
-the whole invitation and any Preview or Production release are still pending.
+The owner approved every section in Local, one at a time, on 2026-11-23 (D12), and authorized the
+Production release the same day (D15), which settles the D9 condition. Photos and maps stay
+provisional (D8).
 
 ## Preparation Readiness History
 
