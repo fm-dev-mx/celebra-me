@@ -1,0 +1,694 @@
+@use 'shared-light';
+@use '../../../tools/motion';
+
+// Envelope, in the manner of the reference: laid cotton paper a step deeper than the ivory field,
+// a gold wax medallion, a foil-lined throat and flap, and a framed letter that is drawn out of the
+// pocket. The envelope declares its tokens on its own wrapper, so they are set there.
+$envelope-fibre: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='f' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03 0.34' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.4 0 0 0 0 0.27 1.7 0 0 0 -0.84'/%3E%3C/filter%3E%3Crect width='320' height='320' filter='url(%23f)' opacity='0.2'/%3E%3C/svg%3E");
+$envelope-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.31 0 0 0 0 0.2 1.35 0 0 0 -0.56'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)' opacity='0.34'/%3E%3C/svg%3E");
+
+// Flap silhouette, inset: the foil liner of the throat (container coordinates) and of the flap's
+// inside face (flap coordinates). Both stay inside the closed flap, so no gold shows until it lifts.
+$throat-liner: polygon(
+	5% 0,
+	95% 0,
+	86.5% 32%,
+	69.5% 42%,
+	55% 46.5%,
+	45% 46.5%,
+	30.5% 42%,
+	13.5% 32%
+);
+$throat-rim: polygon(
+	4% 0,
+	96% 0,
+	87.3% 32.6%,
+	70% 42.8%,
+	55.2% 47.4%,
+	44.8% 47.4%,
+	30% 42.8%,
+	12.7% 32.6%
+);
+$flap-liner: polygon(
+	4% 3%,
+	96% 3%,
+	94.4% 11%,
+	85% 65.5%,
+	68.4% 84.4%,
+	54.4% 93.6%,
+	45.6% 93.6%,
+	31.6% 84.4%,
+	15% 65.5%,
+	5.6% 11%
+);
+$flap-rim: polygon(
+	3% 1.6%,
+	97% 1.6%,
+	95.4% 10.6%,
+	86% 66.4%,
+	69% 85.6%,
+	54.8% 95.2%,
+	45.2% 95.2%,
+	31% 85.6%,
+	14% 66.4%,
+	4.6% 10.6%
+);
+
+.event-theme-wrapper[data-event-slug] .envelope-wrapper:where([data-variant='ivory-medallion']) {
+	// Liner: champagne tissue printed with a fine gold diamond lattice; the gold stays a line, not
+	// a slab, so the open envelope reads as paper.
+	--vellum-liner:
+		repeating-linear-gradient(
+			45deg,
+			rgb(255 255 255 / 0%) 0 7px,
+			rgb(var(--vellum-foil-mid-rgb) / 34%) 7px 7.7px
+		),
+		repeating-linear-gradient(
+			-45deg,
+			rgb(255 255 255 / 0%) 0 7px,
+			rgb(var(--vellum-foil-mid-rgb) / 34%) 7px 7.7px
+		),
+		radial-gradient(ellipse 70% 90% at 50% 0%, rgb(255 252 244 / 70%) 0%, transparent 100%),
+		linear-gradient(170deg, rgb(248 239 222) 0%, rgb(236 222 196) 100%);
+	--vellum-liner-rim: linear-gradient(
+		118deg,
+		rgb(var(--vellum-foil-hi-rgb) / 100%) 0%,
+		rgb(var(--vellum-foil-mid-rgb) / 100%) 50%,
+		rgb(var(--vellum-foil-deep-rgb) / 100%) 100%
+	);
+
+	// Opening timeline. The seal is pressed and lifts; the envelope settles lower while the flap
+	// opens, so the open flap stays on screen; the letter is drawn fully out of the pocket, then
+	// comes forward while the envelope sinks away.
+	--vellum-flap-delay: 0.45s;
+	--vellum-lower: 76px;
+	--vellum-recede-delay: 2.3s;
+	--vellum-recede-duration: 1.05s;
+	--vellum-seam-offset: 52px;
+	--vellum-letter-start: 42%;
+	--vellum-letter-peak: -50%;
+	--ivory-medallion-letter-monogram: '\2666';
+	--env-bg:
+		#{$envelope-grain} 0 0 / 240px 240px,
+		radial-gradient(
+			ellipse 85% 58% at 50% 44%,
+			rgb(255 254 250) 0%,
+			rgb(251 246 238) 55%,
+			rgb(240 231 217) 100%
+		);
+	--env-paper-bg:
+		linear-gradient(
+			128deg,
+			rgb(255 255 255 / 46%) 0%,
+			rgb(255 255 255 / 0%) 38%,
+			rgb(var(--vellum-berry-rgb) / 0%) 62%,
+			rgb(var(--vellum-berry-rgb) / 7%) 100%
+		),
+		radial-gradient(
+			ellipse 120% 110% at 48% 44%,
+			transparent 62%,
+			rgb(var(--vellum-rose-rgb) / 20%) 100%
+		),
+		#{$envelope-fibre} 0 0 / 320px 320px, #{$envelope-grain} 0 0 / 240px 240px,
+		linear-gradient(168deg, rgb(250 243 231) 0%, rgb(237 225 205) 100%);
+	--env-paper-sheen: linear-gradient(
+		180deg,
+		rgb(255 255 255 / 0%) 0%,
+		rgb(255 255 255 / 0%) 100%
+	);
+	--env-paper-border: rgb(var(--vellum-foil-mid-rgb) / 50%);
+	--env-accent: rgb(var(--vellum-rose-deep-rgb) / 100%);
+	--env-text-primary: rgb(var(--vellum-rose-deep-rgb) / 100%);
+	--env-text-secondary: rgb(var(--vellum-muted-rgb) / 100%);
+	--env-seal-accent: rgb(var(--vellum-foil-mid-rgb) / 100%);
+	--env-shadow-container:
+		0 1px 1px rgb(var(--vellum-berry-rgb) / 14%),
+		0 10px 18px rgb(var(--vellum-berry-rgb) / 10%),
+		0 34px 60px rgb(var(--vellum-berry-rgb) / 16%);
+
+	// The medallion SVG keeps an inner margin, so the box runs larger than the visible disc.
+	--env-seal-size-min: 84px;
+	--env-seal-size-max: 104px;
+	--env-seal-size-ratio: 26;
+	--env-seal-hint-display: none;
+	--env-name-text-shadow: none;
+	--duration-reveal: 1.5s;
+	--env-card-rise-delay: 1.15s;
+	--env-card-rise-duration: 2.25s;
+	--env-card-rise-ease: linear;
+	--env-letter-hold: 1.4s;
+	--env-exit-delay: 0s;
+
+	// Gold wax: foil highlight to deep antique gold, with dark-gold initials.
+	--wax-seal-highlight: rgb(var(--vellum-foil-hi-rgb) / 100%);
+	--wax-seal-mid: rgb(var(--vellum-foil-mid-rgb) / 100%);
+	--wax-seal-deep: rgb(var(--vellum-rose-deep-rgb) / 100%);
+	--wax-seal-letter: rgb(98 72 36);
+	--wax-seal-shadow: rgb(var(--vellum-berry-rgb) / 100%);
+	--wax-seal-emboss-shadow: rgb(98 72 36);
+
+	// Letter: cotton stock with gold-ink labels. The paper layers replace the shared scan-line
+	// grain. The shadow stack draws the cut edge: a lit top bevel, a toned lower bevel and a 1px
+	// thickness line under the sheet before the soft lift.
+	// Stationery: a blush wash with a candlelit crown over the cotton stock.
+	--reveal-card-bg:
+		radial-gradient(
+			ellipse 80% 42% at 50% 0%,
+			rgb(var(--vellum-foil-hi-rgb) / 38%) 0%,
+			transparent 100%
+		),
+		radial-gradient(
+			ellipse 90% 50% at 50% 100%,
+			rgb(var(--vellum-blush-rgb) / 85%) 0%,
+			transparent 100%
+		),
+		var(--vellum-paper);
+	--reveal-card-border: rgb(var(--vellum-foil-mid-rgb) / 30%);
+	--reveal-card-radius: 2px;
+	--reveal-card-grain-opacity: 0;
+	--reveal-card-text-primary: rgb(var(--vellum-rose-deep-rgb) / 100%);
+	--reveal-card-text-secondary: rgb(var(--vellum-muted-rgb) / 100%);
+	--reveal-card-accent: rgb(var(--vellum-foil-mid-rgb) / 100%);
+	--reveal-card-font-display: var(--font-display);
+	--reveal-card-shadow:
+		var(--vellum-paper-edge-shadow), 0 18px 40px rgb(var(--vellum-berry-rgb) / 11%);
+
+	@media (width >= 768px) {
+		--vellum-seam-offset: 45px;
+	}
+
+	// Throat: the foil liner and its darker rim sit on the back panel, hidden by the closed flap.
+	.envelope-base::before {
+		background:
+			linear-gradient(
+				to bottom,
+				rgb(var(--vellum-berry-rgb) / 16%) 0%,
+				rgb(var(--vellum-berry-rgb) / 0%) 24%
+			),
+			var(--vellum-liner);
+		opacity: 100%;
+		clip-path: $throat-liner;
+	}
+
+	.envelope-base::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		background: var(--vellum-liner-rim);
+		clip-path: $throat-rim;
+		pointer-events: none;
+	}
+
+	// Pocket: the two side seams of the folded paper and a lit lip under the throat.
+	.envelope-pocket::before {
+		background:
+			linear-gradient(
+					to bottom,
+					transparent 50%,
+					rgb(255 255 255 / 60%) 50%,
+					rgb(255 255 255 / 0%) calc(50% + 9px)
+				)
+				0 0 / 100% 100% no-repeat,
+			linear-gradient(
+					to bottom right,
+					transparent calc(50% - 1.5px),
+					rgb(255 255 255 / 55%) calc(50% - 0.6px),
+					rgb(var(--vellum-berry-rgb) / 13%) 50%,
+					rgb(var(--vellum-berry-rgb) / 4%) calc(50% + 1px),
+					transparent calc(50% + 16px)
+				)
+				left bottom / 50% 46% no-repeat,
+			linear-gradient(
+					to bottom left,
+					transparent calc(50% - 1.5px),
+					rgb(255 255 255 / 55%) calc(50% - 0.6px),
+					rgb(var(--vellum-berry-rgb) / 13%) 50%,
+					rgb(var(--vellum-berry-rgb) / 4%) calc(50% + 1px),
+					transparent calc(50% + 16px)
+				)
+				right bottom / 50% 46% no-repeat;
+		opacity: 100%;
+	}
+
+	.envelope-pocket::after {
+		right: 0;
+		left: 0;
+		background: rgb(var(--vellum-rose-deep-rgb) / 26%);
+	}
+
+	// Flap: its inside face is foil-lined; the liner shows once the flap turns past 90°.
+	.envelope-flap {
+		filter: drop-shadow(0 1.5px 1px rgb(var(--vellum-berry-rgb) / 24%))
+			drop-shadow(0 12px 18px rgb(var(--vellum-berry-rgb) / 17%));
+	}
+
+	.envelope-flap::before {
+		z-index: 1;
+		background:
+			linear-gradient(
+				to top,
+				rgb(var(--vellum-berry-rgb) / 12%) 0%,
+				rgb(var(--vellum-berry-rgb) / 0%) 40%
+			),
+			var(--vellum-liner);
+		opacity: 0%;
+		clip-path: $flap-liner;
+	}
+
+	// A gold edge under the liner, like the rim of the throat.
+	.envelope-flap::after {
+		z-index: 0;
+		background: var(--vellum-liner-rim);
+		opacity: 0%;
+		clip-path: $flap-rim;
+	}
+
+	// The shared shade paints over the flap's own paper and greys it; the liner carries the turn.
+	.envelope-flap-shadow {
+		display: none;
+	}
+
+	// The shared reduced-motion rule would otherwise show the letter over the closed envelope.
+	&:not(.is-opening, .is-letter-held, .is-preview-opened) .envelope-reveal-stage {
+		visibility: hidden;
+	}
+
+	// A held letter stands alone on the field, as it does at the end of the opening.
+	&.is-letter-held .envelope-base,
+	&.is-letter-held .envelope-container::after {
+		opacity: 0%;
+	}
+
+	// Engraved frame: a foil double rule with an L-shaped flourish in every corner.
+	.invitation-reveal-card::after {
+		--corner: 1.35rem;
+		--ink: rgb(var(--vellum-foil-mid-rgb) / 95%);
+
+		content: '';
+		position: absolute;
+		inset: 0.55rem;
+		z-index: 0;
+		border: 1px solid rgb(var(--vellum-foil-mid-rgb) / 70%);
+		outline: 1px solid rgb(var(--vellum-foil-mid-rgb) / 38%);
+		outline-offset: -5px;
+		background:
+			linear-gradient(var(--ink), var(--ink)) top 8px left 8px / var(--corner) 2px no-repeat,
+			linear-gradient(var(--ink), var(--ink)) top 8px left 8px / 2px var(--corner) no-repeat,
+			linear-gradient(var(--ink), var(--ink)) top 8px right 8px / var(--corner) 2px no-repeat,
+			linear-gradient(var(--ink), var(--ink)) top 8px right 8px / 2px var(--corner) no-repeat,
+			linear-gradient(var(--ink), var(--ink)) bottom 8px left 8px / var(--corner) 2px
+				no-repeat,
+			linear-gradient(var(--ink), var(--ink)) bottom 8px left 8px / 2px var(--corner)
+				no-repeat,
+			linear-gradient(var(--ink), var(--ink)) bottom 8px right 8px / var(--corner) 2px
+				no-repeat,
+			linear-gradient(var(--ink), var(--ink)) bottom 8px right 8px / 2px var(--corner)
+				no-repeat;
+		pointer-events: none;
+	}
+
+	// A taller card in the proportion of a printed invitation, with room around the name.
+	.invitation-reveal-card__inner {
+		min-height: min(56svh, 28rem);
+		padding: clamp(2.2rem, 7svh, 3.2rem) clamp(1.75rem, 8vw, 2.75rem);
+	}
+
+	// Monogram medallion: the seal's initials repeated in a fine double gold ring.
+	.invitation-reveal-card__inner::before {
+		content: var(--ivory-medallion-letter-monogram);
+		display: grid;
+		place-items: center;
+		width: 3.4rem;
+		aspect-ratio: 1;
+		margin: 0 auto clamp(0.9rem, 3svh, 1.4rem);
+		border: 1px solid rgb(var(--vellum-foil-mid-rgb) / 80%);
+		border-radius: 50%;
+		box-shadow:
+			0 0 0 3px var(--vellum-paper),
+			0 0 0 4px rgb(var(--vellum-foil-mid-rgb) / 40%);
+		font-family: var(--font-display);
+		font-size: 1.15rem;
+		font-style: italic;
+		letter-spacing: 0.04em;
+		line-height: 1;
+		color: rgb(var(--vellum-foil-deep-rgb) / 100%);
+	}
+
+	// Label between two short foil rules.
+	.invitation-reveal-card__label {
+		display: flex;
+		gap: 0.7rem;
+		align-items: center;
+		justify-content: center;
+		letter-spacing: 0.32em;
+		color: rgb(var(--vellum-rose-deep-rgb) / 100%);
+
+		&::before,
+		&::after {
+			content: '';
+			width: 1.6rem;
+			height: 1px;
+			background: rgb(var(--vellum-foil-mid-rgb) / 80%);
+		}
+	}
+
+	// The name is inked in script with a deep foil gradient, as the closing signature is.
+	.invitation-reveal-card__name {
+		margin-block: 0.2rem 0;
+		padding-block: 0.12em;
+		font-family: 'Pinyon Script', var(--font-display);
+		font-size: clamp(3.4rem, 17vw, 4.6rem);
+		font-weight: 400;
+		line-height: 1.1;
+		background: linear-gradient(
+			110deg,
+			rgb(var(--vellum-rose-deep-rgb)) 0%,
+			rgb(var(--vellum-foil-deep-rgb)) 48%,
+			rgb(var(--vellum-foil-mid-rgb)) 60%,
+			rgb(var(--vellum-rose-deep-rgb)) 100%
+		);
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+	}
+
+	// The card date abbreviates the month; the tagline carries the full date.
+	.invitation-reveal-card__date {
+		display: none;
+	}
+
+	.invitation-reveal-card__tagline {
+		margin-top: 0.2rem;
+		font-family: var(--font-display);
+		font-size: 1.05rem;
+		font-style: italic;
+		letter-spacing: 0.04em;
+		color: rgb(var(--vellum-muted-rgb) / 100%);
+	}
+
+	// Foil rule with a small diamond at its centre.
+	.invitation-reveal-card__divider {
+		position: relative;
+		width: min(8rem, 46%);
+		margin-top: clamp(0.9rem, 3svh, 1.3rem);
+		background: var(--vellum-foil-rule);
+		overflow: visible;
+
+		&::after {
+			content: '';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 6px;
+			height: 6px;
+			background: rgb(var(--vellum-foil-mid-rgb) / 100%);
+			box-shadow: 0 0 0 3px var(--vellum-paper);
+			transform: translate(-50%, -50%) rotate(45deg);
+		}
+	}
+
+	.invitation-reveal-card__guest-label {
+		letter-spacing: 0.24em;
+		opacity: 100%;
+		color: rgb(var(--vellum-rose-deep-rgb) / 100%);
+	}
+
+	.invitation-reveal-card__guest-name {
+		letter-spacing: 0.02em;
+		color: rgb(var(--vellum-ink-rgb) / 100%);
+	}
+
+	// Two initials at the medallion's default size crowd the embossed ring; CSS px on SVG text
+	// are viewBox units.
+	.envelope-seal-button__visual text {
+		font-size: var(--ivory-medallion-monogram-size, 36px);
+	}
+
+	// The seal rests on the paper: a tight contact shadow and a soft cast one.
+	.envelope-seal-button .envelope-seal-button__visual {
+		filter: drop-shadow(0 2px 1.5px rgb(var(--vellum-berry-rgb) / 34%))
+			drop-shadow(0 9px 14px rgb(var(--vellum-berry-rgb) / 22%));
+		animation: none;
+	}
+
+	.envelope-seal-button__pulse {
+		display: none;
+	}
+
+	@include motion.motion-safe {
+		.envelope-seal-button .envelope-seal-button__visual {
+			animation: vellum-seal-idle 4.2s ease-in-out infinite;
+		}
+
+		// Opening. The front of the envelope stays while its parts leave one by one: the seal is
+		// pressed and lifts away, the name fades, the flap turns over and shows its liner.
+		&.is-opening .envelope-tease {
+			opacity: 100%;
+		}
+
+		&.is-opening .envelope-zone--identity,
+		&.is-opening .envelope-zone--stamp {
+			animation: vellum-fade-out 0.45s 0.1s both var(--ease-standard);
+		}
+
+		&.is-opening .envelope-seal-button {
+			animation: vellum-seal-break 0.62s both;
+		}
+
+		// The whole envelope settles lower as it opens, so the turned flap stays on screen.
+		&.is-opening .envelope-container {
+			animation: vellum-envelope-lower 1.05s 0.3s both cubic-bezier(0.45, 0, 0.2, 1);
+		}
+
+		&.is-opening .envelope-flap {
+			animation:
+				vellum-flap-open var(--duration-reveal) var(--vellum-flap-delay) both linear,
+				vellum-envelope-recede var(--vellum-recede-duration) var(--vellum-recede-delay)
+					forwards cubic-bezier(0.4, 0, 0.6, 1);
+		}
+
+		&.is-opening .envelope-flap::before,
+		&.is-opening .envelope-flap::after {
+			animation: vellum-flap-inside var(--duration-reveal) var(--vellum-flap-delay) both
+				linear;
+		}
+
+		// The letter starts inside the pocket: the stage is masked at the seam and follows the
+		// envelope down while the sheet is drawn up and out; then the mask opens and the sheet comes
+		// forward to its resting place. The stage animation keeps the shared `envCardRise` prefix:
+		// the opening script hands over when it ends.
+		&.is-opening .envelope-reveal-stage {
+			animation:
+				envCardRiseIvoryMedallion var(--env-card-rise-duration) var(--env-card-rise-delay)
+					both linear,
+				vellum-stage-follow calc(var(--env-card-rise-delay) + var(--env-card-rise-duration))
+					both linear;
+			mask-image: linear-gradient(to bottom, rgb(0 0 0) calc(100% - 5px), transparent 100%);
+			mask-repeat: no-repeat;
+			mask-size: 100% 300%;
+		}
+
+		&.is-opening .invitation-reveal-card {
+			animation: vellum-letter-rise var(--env-card-rise-duration) var(--env-card-rise-delay)
+				both linear;
+		}
+
+		&.is-opening .envelope-base,
+		&.is-opening .envelope-pocket,
+		&.is-opening .envelope-container::after {
+			animation: vellum-envelope-recede var(--vellum-recede-duration)
+				var(--vellum-recede-delay) forwards cubic-bezier(0.4, 0, 0.6, 1);
+		}
+	}
+}
+
+// The letter leaves a beat before the field fades, so no text ghosts over the cover.
+@include motion.motion-safe {
+	.event-theme-wrapper[data-event-slug][data-reveal-state='revealed']
+		.envelope-wrapper:where([data-variant='ivory-medallion']).is-opening
+		.invitation-reveal-card {
+		animation: vellum-letter-leave 0.55s both var(--ease-standard);
+	}
+}
+
+@keyframes vellum-seal-idle {
+	0%,
+	100% {
+		filter: drop-shadow(0 2px 1.5px rgb(var(--vellum-berry-rgb) / 34%))
+			drop-shadow(0 9px 14px rgb(var(--vellum-berry-rgb) / 22%));
+		transform: translateY(0);
+	}
+
+	50% {
+		filter: drop-shadow(0 3px 2.5px rgb(var(--vellum-berry-rgb) / 28%))
+			drop-shadow(0 13px 20px rgb(var(--vellum-berry-rgb) / 20%));
+		transform: translateY(-1.5px);
+	}
+}
+
+// Pressed into the paper, then lifted away with a slight turn, as a seal comes off.
+@keyframes vellum-seal-break {
+	0% {
+		opacity: 100%;
+		scale: 1;
+		translate: 0 0;
+		rotate: 0deg;
+		animation-timing-function: cubic-bezier(0.3, 0, 0.6, 1);
+	}
+
+	20% {
+		opacity: 100%;
+		scale: 0.92;
+		translate: 0 1px;
+		rotate: 0deg;
+		animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
+	}
+
+	46% {
+		opacity: 100%;
+		scale: 1.02;
+		translate: 0 -4px;
+		rotate: -4deg;
+		animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+	}
+
+	100% {
+		opacity: 0%;
+		scale: 1.06;
+		translate: 0 -26px;
+		rotate: -9deg;
+	}
+}
+
+@keyframes vellum-fade-out {
+	100% {
+		opacity: 0%;
+		translate: 0 6px;
+	}
+}
+
+@keyframes vellum-envelope-lower {
+	100% {
+		translate: 0 var(--vellum-lower);
+	}
+}
+
+// The flap unsticks, turns over with an even, decelerating sweep and comes to rest past
+// vertical, with no bounce.
+@keyframes vellum-flap-open {
+	0% {
+		transform: rotateX(0deg);
+		animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.4);
+	}
+
+	12% {
+		transform: rotateX(8deg);
+		animation-timing-function: cubic-bezier(0.35, 0.15, 0.7, 0.85);
+	}
+
+	44% {
+		transform: rotateX(90deg);
+		animation-timing-function: cubic-bezier(0.15, 0.45, 0.3, 1);
+	}
+
+	84% {
+		transform: rotateX(173deg);
+		animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+	}
+
+	100% {
+		transform: rotateX(170deg);
+	}
+}
+
+@keyframes vellum-flap-inside {
+	0%,
+	43.9% {
+		opacity: 0%;
+	}
+
+	44%,
+	100% {
+		opacity: 100%;
+	}
+}
+
+// The stage keeps its resting transform; only its seam mask and opacity move.
+@keyframes envCardRiseIvoryMedallion {
+	0% {
+		opacity: 0%;
+		transform: translateY(var(--reveal-card-rest-y)) scale(1);
+		mask-size: 100% calc(50% - var(--vellum-seam-offset) - var(--reveal-card-rest-y));
+	}
+
+	6% {
+		opacity: 100%;
+	}
+
+	58% {
+		mask-size: 100% calc(50% - var(--vellum-seam-offset) - var(--reveal-card-rest-y));
+		animation-timing-function: cubic-bezier(0.5, 0, 0.3, 1);
+	}
+
+	74% {
+		mask-size: 100% 300%;
+	}
+
+	100% {
+		opacity: 100%;
+		transform: translateY(var(--reveal-card-rest-y)) scale(1);
+		mask-size: 100% 300%;
+	}
+}
+
+// The stage follows the envelope down so the seam mask stays on the pocket, then returns as
+// the letter comes forward. Its timeline starts at the click.
+@keyframes vellum-stage-follow {
+	0%,
+	8.8% {
+		translate: 0 0;
+		animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1);
+	}
+
+	39.7%,
+	74% {
+		translate: 0 var(--vellum-lower);
+		animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1);
+	}
+
+	100% {
+		translate: 0 0;
+	}
+}
+
+// Drawn straight up until the whole sheet clears the pocket, then brought forward.
+@keyframes vellum-letter-rise {
+	0% {
+		transform: translateY(var(--vellum-letter-start)) scale(0.82);
+		animation-timing-function: cubic-bezier(0.35, 0, 0.25, 1);
+	}
+
+	56% {
+		transform: translateY(var(--vellum-letter-peak)) scale(0.82);
+		animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1);
+	}
+
+	100% {
+		transform: none;
+	}
+}
+
+@keyframes vellum-envelope-recede {
+	100% {
+		opacity: 0%;
+		translate: 0 56px;
+	}
+}
+
+@keyframes vellum-letter-leave {
+	100% {
+		opacity: 0%;
+		transform: translateY(-10px) scale(1.015);
+	}
+}

@@ -1,0 +1,1527 @@
+@use 'stacked-venue-plates';
+@use '../../../tools/motion';
+
+// Location plays as three scenes: each venue is an arched window with its own line drawing,
+// the hour set large, and one map button; the guest notes close as the third scene.
+// Passes and RSVP follow right below, so the jump button to them is not needed.
+.event-theme-wrapper[data-event-slug] .event-location:where([data-variant='arched-scenes']) {
+	--location-stack-gap: 0;
+	--location-gap: 0;
+	--location-padding-block: clamp(3.5rem, 6vw, 5.5rem) clamp(3.5rem, 6vw, 5.5rem)
+		clamp(3rem, 5vw, 4.5rem);
+	--location-padding-inline: 1rem;
+	--location-place-font-size: clamp(1.55rem, 4.2vw, 1.85rem);
+	--location-place-line-height: 1.15;
+	--location-place-letter-spacing: 0;
+	--location-card-shadow: none;
+	--location-divider-display: none;
+	--location-indications-spacing: 0;
+	--location-indications-heading-margin-bottom: 2.25rem;
+	--location-indication-icon-bg: transparent;
+	--location-indication-icon-border: none;
+	--location-indication-icon-color: rgb(var(--vellum-rose-deep-rgb));
+	--location-indication-icon-opacity: 100%;
+	--location-indication-icon-svg-size: 22px;
+	--location-indication-icon-svg-stroke: 1px;
+	--location-indication-text-font-family: var(--vellum-font-serif);
+	--location-indication-text-font-size: clamp(1.15rem, 2.6vw, 1.3rem);
+	--location-indication-text-line-height: 1.4;
+	--location-indication-text-letter-spacing: 0;
+	--location-indication-text-color: rgb(var(--vellum-ink-rgb));
+	--location-indication-strong-color: rgb(var(--vellum-rose-deep-rgb));
+	--location-indication-strong-font-weight: 600;
+	--vellum-scene-line: linear-gradient(
+		165deg,
+		rgb(var(--vellum-foil-deep-rgb)) 0%,
+		rgb(var(--vellum-rose-rgb)) 48%,
+		rgb(var(--vellum-rose-deep-rgb)) 100%
+	);
+	--vellum-scene-church: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='%23000' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 176h156M70 181h60M60 186h80'/%3E%3Cpath d='M44 176V72h22v104M134 176V72h22v104'/%3E%3Cpath d='M44 72q11-22 22 0M134 72q11-22 22 0M41 72h28M131 72h28M44 108h22M134 108h22'/%3E%3Cpath d='M55 53V40M51 45h8M145 53V40M141 45h8'/%3E%3Cpath d='M51 98V87a4 4 0 0 1 8 0v11zM141 98V87a4 4 0 0 1 8 0v11z'/%3E%3Cpath d='M51 150v-14a4 4 0 0 1 8 0v14zM141 150v-14a4 4 0 0 1 8 0v14z'/%3E%3Cpath d='M66 110l34-25 34 25M66 116h68M73 116l27-20 27 20'/%3E%3Cpath d='M100 85V68M95 74h10'/%3E%3Ccircle cx='100' cy='132' r='9'/%3E%3Ccircle cx='100' cy='132' r='3.5'/%3E%3Cpath d='M100 123v-0M91 132h5.5M103.500 132h5.500M100 123v5.500M100 135.500v5.500'/%3E%3Cpath d='M87 176v-18a13 13 0 0 1 26 0v18M91 176v-17a9 9 0 0 1 18 0v17M100 150v26'/%3E%3Cpath d='M74 162v-8a3 3 0 0 1 6 0v8zM120 162v-8a3 3 0 0 1 6 0v8z'/%3E%3Cpath d='M26 58v8M22 62h8M174 30v6M171 33h6M100 30v6M97 33h6'/%3E%3C/svg%3E");
+	--vellum-scene-hall: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='%23000' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 176h156M50 181h100M42 186h116'/%3E%3Cpath d='M46 176v-70M154 176v-70M40 106h120M40 99h120M40 99v7M160 99v7'/%3E%3Cpath d='M44 99l56-28 56 28M58 97l42-21 42 21'/%3E%3Ccircle cx='100' cy='89' r='3.500'/%3E%3Cpath d='M54 176v-70M82 176v-70M118 176v-70M146 176v-70'/%3E%3Cpath d='M59 176v-36a9 9 0 0 1 18 0v36M123 176v-36a9 9 0 0 1 18 0v36'/%3E%3Cpath d='M87 176v-42a13 13 0 0 1 26 0v42M91 176v-41a9 9 0 0 1 18 0v41M100 126v50'/%3E%3Cpath d='M54 113q14 12 28 0M82 113q18 13 36 0M118 113q14 12 28 0'/%3E%3Cpath d='M68 146v30M132 146v30'/%3E%3Cpath d='M100 52v8M96 56h8M32 66v6M29 69h6M168 60v6M165 63h6M70 44v4M68 46h4M132 40v4M130 42h4'/%3E%3C/svg%3E");
+	--vellum-scene-hotel: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='%23000' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 176h156M52 181h96M44 186h112'/%3E%3Cpath d='M62 176V62h76v114M57 62h86M57 56h86M57 56v6M143 56v6'/%3E%3Cpath d='M82 56V44h36v12M88 50h24'/%3E%3Cpath d='M100 30v8M96 34h8'/%3E%3Cpath d='M72 86V76a6 6 0 0 1 12 0v10zM72 108V98a6 6 0 0 1 12 0v10zM72 130V120a6 6 0 0 1 12 0v10zM94 86V76a6 6 0 0 1 12 0v10zM94 108V98a6 6 0 0 1 12 0v10zM94 130V120a6 6 0 0 1 12 0v10zM116 86V76a6 6 0 0 1 12 0v10zM116 108V98a6 6 0 0 1 12 0v10zM116 130V120a6 6 0 0 1 12 0v10z'/%3E%3Cpath d='M70 92h16M92 92h16M114 92h16M70 114h16M92 114h16M114 114h16'/%3E%3Cpath d='M89 176v-22a11 11 0 0 1 22 0v22M100 143v33M93 176v-21a7 7 0 0 1 7-7M107 176v-21a7 7 0 0 0-7-7'/%3E%3Cpath d='M80 142q20-11 40 0M80 142v5M120 142v5'/%3E%3Cpath d='M62 112H40v64M138 112h22v64M36 112h26M138 112h26M36 107h26M138 107h26'/%3E%3Cpath d='M45 138v-9a5 5 0 0 1 10 0v9zM145 138v-9a5 5 0 0 1 10 0v9zM45 162v-9a5 5 0 0 1 10 0v9zM145 162v-9a5 5 0 0 1 10 0v9z'/%3E%3Cpath d='M74 176v-12M70 164h8M126 176v-12M122 164h8'/%3E%3Cpath d='M30 62v6M27 65h6M170 52v6M167 55h6M46 40v4M44 42h4M154 84v4M152 86h4'/%3E%3C/svg%3E");
+
+	counter-reset: vellum-scene;
+
+	.nav-button-container {
+		display: none;
+	}
+
+	.event-location__container {
+		gap: 0;
+	}
+
+	// One scene per venue, about a screen tall on a phone.
+	.event-location__card-wrapper {
+		position: relative;
+		justify-content: center;
+		align-items: center;
+		gap: 1.5rem;
+		min-height: min(100svh, 44rem);
+		margin-block: 0;
+		padding-block: 2.5rem;
+		counter-increment: vellum-scene;
+		view-timeline: --vellum-venue block;
+	}
+
+	.event-location__card-wrapper + .event-location__card-wrapper {
+		margin-block-start: 0;
+		padding-block-start: 2.5rem;
+
+		// A foil thread carries the eye from one scene to the next.
+		&::before {
+			content: '';
+			position: absolute;
+			top: -1.75rem;
+			left: 50%;
+			width: 1px;
+			height: 3.5rem;
+			background: linear-gradient(
+				rgb(var(--vellum-rose-rgb) / 0%),
+				rgb(var(--vellum-rose-rgb) / 70%),
+				rgb(var(--vellum-rose-rgb) / 0%)
+			);
+			transform-origin: 50% 0;
+		}
+	}
+
+	// Scene label: the name of the moment between two hairlines.
+	.event-location__card-title {
+		display: flex;
+		align-items: center;
+		gap: 0.85rem;
+		padding: 0;
+		font-size: var(--arched-scenes-card-title-size, 0.68rem);
+		letter-spacing: 0.24em;
+
+		&::before,
+		&::after {
+			content: '';
+			position: static;
+			order: 0;
+			display: block;
+			width: 1.75rem;
+			height: 1px;
+			margin: 0;
+			background: rgb(var(--vellum-rose-rgb) / 60%);
+		}
+	}
+
+	// The plate dissolves: no box, the scene sits straight on the paper.
+	.event-location__card.event-location__card {
+		position: relative;
+		isolation: isolate;
+		align-items: center;
+		flex: 0 0 auto;
+		height: auto;
+		overflow: visible;
+		padding-bottom: calc(2.75rem + 1.75rem);
+		border: 0;
+		border-radius: 0;
+		background: none;
+		box-shadow: none;
+
+		&::after {
+			display: none;
+		}
+
+		// The scene numeral, large and faint, half hidden behind the window.
+		&::before {
+			content: counter(vellum-scene, decimal-leading-zero);
+			position: absolute;
+			z-index: -1;
+			inset: 0.75rem auto auto 50%;
+			display: block;
+			width: auto;
+			height: auto;
+			margin-inline-start: calc(-1 * min(11.75rem, 49vw));
+			border: 0;
+			background: none;
+			box-shadow: none;
+			opacity: 100%;
+			font-family: var(--vellum-font-serif);
+			font-size: var(--arched-scenes-ghost-numeral-size, clamp(10.5rem, 52vw, 14rem));
+			font-style: italic;
+			font-weight: 400;
+			line-height: 0.8;
+			letter-spacing: -0.04em;
+			color: rgb(var(--vellum-rose-rgb) / 17%);
+			pointer-events: none;
+		}
+	}
+
+	.event-location__card-wrapper
+		+ .event-location__card-wrapper
+		.event-location__card.event-location__card::before {
+		inset-inline: auto 50%;
+		margin-inline: 0 calc(-1 * min(11.75rem, 49vw));
+	}
+
+	// The third numeral returns to the first side.
+	.event-location__card-wrapper
+		+ .event-location__card-wrapper
+		+ .event-location__card-wrapper
+		.event-location__card.event-location__card::before {
+		inset-inline: 50% auto;
+		margin-inline: calc(-1 * min(11.75rem, 49vw)) 0;
+	}
+
+	// Phones: the side margin beside the window is narrow, so the numeral shrinks until both
+	// digits fit there instead of one hiding behind the window. Every numeral sits on the left:
+	// the right margin carries the progress rail.
+	@media (width < 768px) {
+		--arched-scenes-ghost-numeral-size: clamp(5.5rem, 31vw, 8rem);
+
+		.event-location__card-wrapper
+			+ .event-location__card-wrapper
+			.event-location__card.event-location__card::before {
+			inset-inline: 50% auto;
+			margin-inline: calc(-1 * min(11.75rem, 49vw)) 0;
+		}
+	}
+
+	.event-location__card-map-preview.event-location__card-map-preview {
+		position: static;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		overflow: visible;
+		min-height: 0;
+		background: none;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	// The arched window.
+	.event-location__card-map-preview-art {
+		position: relative;
+		overflow: hidden;
+		width: clamp(11.5rem, 50vw, 13.5rem);
+		height: auto;
+		min-height: 0;
+		aspect-ratio: 4 / 5;
+		border: 1px solid rgb(var(--vellum-rose-rgb) / 62%);
+		border-radius: var(--arched-scenes-arch-radius, 999px 999px 2px 2px);
+		background: var(--vellum-scene-sky);
+		box-shadow:
+			inset 0 0 0 6px rgb(255 253 249),
+			inset 0 0 0 7px rgb(var(--vellum-rose-rgb) / 40%),
+			0 0 0 10px rgb(var(--vellum-pearl-rgb)),
+			0 0 0 11px rgb(var(--vellum-rose-rgb) / 26%),
+			0 34px 54px -30px rgb(var(--vellum-ink-rgb) / 48%);
+
+		// Low sun or moon behind the building.
+		&::after {
+			content: '';
+			position: absolute;
+			top: var(--vellum-scene-halo-top);
+			left: var(--vellum-scene-halo-left);
+			width: var(--vellum-scene-halo-size);
+			aspect-ratio: 1;
+			border-radius: 50%;
+			background: var(--vellum-scene-halo);
+			translate: -50% 0;
+		}
+
+		// The venue, drawn in a fine gold line.
+		&::before {
+			content: '';
+			position: absolute;
+			z-index: 1;
+			inset: auto 9% 7%;
+			aspect-ratio: 1;
+			background: var(--vellum-scene-line);
+			mask: var(--vellum-scene-art) center / contain no-repeat;
+		}
+	}
+
+	// Ceremony at dusk, reception at night, the hotel at first light.
+	.event-location__card--ceremony {
+		--vellum-scene-art: var(--vellum-scene-church);
+		--vellum-scene-sky: linear-gradient(
+			180deg,
+			rgb(255 253 249) 0%,
+			rgb(var(--vellum-pearl-rgb)) 34%,
+			rgb(var(--vellum-foil-hi-rgb) / 78%) 100%
+		);
+		--vellum-scene-star-rgb: var(--vellum-rose-rgb);
+		--vellum-scene-ground-rgb: var(--vellum-petal-rgb);
+		--vellum-scene-halo-top: 24%;
+		--vellum-scene-halo-left: 50%;
+		--vellum-scene-halo-size: 60%;
+		--vellum-scene-halo: radial-gradient(
+			circle,
+			rgb(255 253 249 / 95%) 0%,
+			rgb(var(--vellum-foil-hi-rgb) / 62%) 38%,
+			rgb(var(--vellum-foil-hi-rgb) / 0%) 70%
+		);
+	}
+
+	.event-location__card--reception {
+		--vellum-scene-art: var(--vellum-scene-hall);
+		--vellum-scene-sky: linear-gradient(
+			180deg,
+			rgb(30 26 22) 0%,
+			rgb(var(--vellum-ink-rgb)) 56%,
+			rgb(72 58 44) 100%
+		);
+		--vellum-scene-line: linear-gradient(
+			165deg,
+			rgb(var(--vellum-foil-hi-rgb)) 0%,
+			rgb(var(--vellum-petal-rgb)) 52%,
+			rgb(var(--vellum-foil-hi-rgb)) 100%
+		);
+		--vellum-scene-star-rgb: var(--vellum-foil-hi-rgb);
+		--vellum-scene-ground-rgb: var(--vellum-foil-deep-rgb);
+		--vellum-scene-halo-top: 11%;
+		--vellum-scene-halo-left: 73%;
+		--vellum-scene-halo-size: 22%;
+		--vellum-scene-halo: radial-gradient(
+			circle,
+			rgb(var(--vellum-foil-hi-rgb)) 0 34%,
+			rgb(var(--vellum-foil-hi-rgb) / 26%) 37%,
+			rgb(var(--vellum-foil-hi-rgb) / 0%) 70%
+		);
+
+		.event-location__card-map-preview-pin {
+			color: rgb(var(--vellum-foil-hi-rgb));
+		}
+	}
+
+	// The suggested hotel: a pale sky with the sun low behind the building. It has no hour,
+	// and the date belongs to the celebration, not to the stay.
+	.event-location__card--custom {
+		--vellum-scene-art: var(--vellum-scene-hotel);
+		--vellum-scene-sky: linear-gradient(
+			180deg,
+			rgb(var(--vellum-petal-rgb) / 62%) 0%,
+			rgb(var(--vellum-pearl-rgb)) 46%,
+			rgb(255 253 249) 100%
+		);
+		--vellum-scene-star-rgb: var(--vellum-rose-rgb);
+		--vellum-scene-ground-rgb: var(--vellum-petal-rgb);
+		--vellum-scene-halo-top: 58%;
+		--vellum-scene-halo-left: 50%;
+		--vellum-scene-halo-size: 84%;
+		--vellum-scene-halo: radial-gradient(
+			circle,
+			rgb(255 253 249) 0%,
+			rgb(var(--vellum-foil-hi-rgb) / 72%) 30%,
+			rgb(var(--vellum-foil-hi-rgb) / 0%) 68%
+		);
+
+		.event-location__card-content-date {
+			display: none;
+		}
+	}
+
+	// The shared block silhouette gives way to the drawing; the grid span becomes the sky layer.
+	.event-location__card-map-preview-artwork {
+		display: none;
+	}
+
+	.event-location__card-map-preview-grid {
+		position: absolute;
+		inset: 0;
+		display: block;
+		opacity: 100%;
+		background:
+			radial-gradient(
+				circle at 20% 24%,
+				rgb(var(--vellum-scene-star-rgb) / 85%) 0 1px,
+				transparent 1.6px
+			),
+			radial-gradient(
+				circle at 34% 13%,
+				rgb(var(--vellum-scene-star-rgb) / 55%) 0 0.8px,
+				transparent 1.4px
+			),
+			radial-gradient(
+				circle at 80% 26%,
+				rgb(var(--vellum-scene-star-rgb) / 75%) 0 1px,
+				transparent 1.6px
+			),
+			radial-gradient(
+				circle at 88% 44%,
+				rgb(var(--vellum-scene-star-rgb) / 50%) 0 0.8px,
+				transparent 1.4px
+			),
+			radial-gradient(
+				circle at 12% 46%,
+				rgb(var(--vellum-scene-star-rgb) / 55%) 0 0.8px,
+				transparent 1.4px
+			),
+			radial-gradient(
+				circle at 62% 9%,
+				rgb(var(--vellum-scene-star-rgb) / 45%) 0 0.7px,
+				transparent 1.3px
+			),
+			radial-gradient(
+				circle at 27% 37%,
+				rgb(var(--vellum-scene-star-rgb) / 40%) 0 0.7px,
+				transparent 1.3px
+			);
+		mask: none;
+
+		&::before {
+			display: none;
+		}
+
+		// Ground: a low rise behind the building, with a horizon hairline.
+		&::after {
+			content: '';
+			position: absolute;
+			inset: auto -25% -20%;
+			display: block;
+			height: 42%;
+			border-top: 1px solid rgb(var(--vellum-scene-star-rgb) / 32%);
+			border-radius: 50%;
+			background: radial-gradient(
+				ellipse at 50% 0,
+				rgb(var(--vellum-scene-ground-rgb) / 55%),
+				rgb(var(--vellum-scene-ground-rgb) / 0%) 70%
+			);
+		}
+	}
+
+	.event-location__card-map-preview-pin {
+		z-index: 2;
+		inset: 9% auto auto 50%;
+		width: 1.5rem;
+		height: 1.5rem;
+		border: 0;
+		background: none;
+		box-shadow: none;
+		color: rgb(var(--vellum-rose-deep-rgb));
+		translate: -50% 0;
+
+		svg {
+			width: 1.25rem;
+			height: 1.25rem;
+			stroke-width: 1;
+		}
+	}
+
+	// «Ver mapa» is the one action of the scene: a pill at its foot.
+	.event-location__card-map-preview-foot {
+		position: absolute;
+		bottom: 0;
+		left: 50%;
+		justify-content: center;
+		width: auto;
+		min-height: 2.75rem;
+		padding: 0 1.6rem;
+		border: 1px solid rgb(var(--vellum-rose-rgb) / 70%);
+		border-radius: var(--arched-scenes-map-foot-radius, 999px);
+		background: rgb(255 253 249 / 82%);
+		box-shadow: 0 14px 24px -18px rgb(var(--vellum-ink-rgb) / 45%);
+		white-space: nowrap;
+		translate: -50% 0;
+		transition:
+			background-color 240ms ease,
+			border-color 240ms ease;
+	}
+
+	.event-location__card-map-preview-label {
+		font-size: var(--arched-scenes-map-label-size, 0.68rem);
+		letter-spacing: 0.22em;
+		color: rgb(var(--vellum-ink-rgb));
+	}
+
+	.event-location__card-map-preview-action svg {
+		stroke-width: 1;
+		color: rgb(var(--vellum-rose-deep-rgb));
+	}
+
+	.event-location__card-map-preview:hover .event-location__card-map-preview-foot,
+	.event-location__card-map-preview:focus-visible .event-location__card-map-preview-foot {
+		border-color: rgb(var(--vellum-rose-deep-rgb));
+		background: rgb(var(--vellum-blush-rgb));
+	}
+
+	.event-location__card-map-preview:focus-visible {
+		outline: none;
+
+		.event-location__card-map-preview-foot {
+			outline: 2px solid rgb(var(--vellum-rose-deep-rgb));
+			outline-offset: 3px;
+		}
+	}
+
+	// Hour first and large, then the venue, then date and city as a quiet caption.
+	.event-location__card-content {
+		flex: none;
+		padding: 1.5rem 0 0;
+	}
+
+	.event-location__card-content-list {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin: 0;
+	}
+
+	.event-location__card-content-hour {
+		order: 1;
+		margin: 0 0 0.55rem;
+		font-size: var(--arched-scenes-hour-size, clamp(3.1rem, 14vw, 4.4rem));
+		font-weight: 400;
+		font-variant-numeric: lining-nums;
+		line-height: 0.95;
+		letter-spacing: -0.01em;
+		color: rgb(var(--vellum-ink-rgb));
+		white-space: nowrap;
+	}
+
+	.event-location__card-content-place {
+		order: 2;
+		margin: 0 0 0.85rem;
+		padding: 0;
+		border: 0;
+		background: none;
+		box-shadow: none;
+		font-style: italic;
+	}
+
+	.event-location__card-content-date {
+		order: 3;
+		margin: 0 0 0.3rem;
+		font-family: var(--vellum-font-sans);
+		font-size: var(--arched-scenes-date-size, 0.66rem);
+		font-weight: 500;
+		letter-spacing: 0.24em;
+	}
+
+	.event-location__card-content-address.event-location__card-content-address {
+		order: 4;
+		justify-content: center;
+		padding: 0;
+		border: 0;
+		font-size: var(--arched-scenes-address-size, 0.66rem);
+		letter-spacing: 0.24em;
+		text-align: center;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: rgb(var(--vellum-muted-rgb));
+	}
+
+	// Third scene: the dress code on a night plate shaped like the windows above, and the two
+	// practical notes side by side below it.
+	.event-location__indications-container {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		max-width: 30rem;
+		min-height: min(100svh, 46rem);
+		padding: 3rem 1rem;
+		border: 0;
+		background: none;
+		text-align: center;
+		view-timeline: --vellum-notes block;
+	}
+
+	.event-location__indications {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-items: start;
+		gap: 2.25rem 0;
+		border: 0;
+		background: none;
+		box-shadow: none;
+		backdrop-filter: none;
+	}
+
+	.event-location__indication-item {
+		position: relative;
+		overflow: visible;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.85rem;
+		padding: 0 0.9rem;
+		border-top: 0;
+		text-align: center;
+	}
+
+	.event-location__indication-item:nth-child(2) {
+		grid-column: 1 / -1;
+	}
+
+	.event-location__indication-icon {
+		display: grid;
+		flex: none;
+		place-items: center;
+		width: 3rem;
+		height: 3rem;
+		border: 1px solid rgb(var(--vellum-rose-rgb) / 55%);
+		border-radius: 50%;
+		box-shadow:
+			0 0 0 4px rgb(255 253 249),
+			0 0 0 5px rgb(var(--vellum-rose-rgb) / 22%);
+
+		svg {
+			stroke-width: 1;
+		}
+	}
+
+	.event-location__indication-text {
+		max-width: 22rem;
+		font-size: var(--arched-scenes-indication-text-size, 1.05rem);
+		text-align: center;
+		text-wrap: balance;
+	}
+
+	// Emphasis inside a note is set in italics, as in the venue names.
+	.event-location__indication-text strong {
+		font-style: italic;
+		font-weight: 500;
+	}
+
+	// The dress code leads: «All black» set large in gold on the night plate.
+	.event-location__indication-item:first-child {
+		--location-indication-text-color: rgb(var(--vellum-pearl-rgb) / 84%);
+		--location-indication-icon-color: rgb(var(--vellum-foil-hi-rgb));
+
+		isolation: isolate;
+		overflow: hidden;
+		grid-column: 1 / -1;
+		justify-self: center;
+		gap: 1.1rem;
+		width: min(100%, 17.5rem);
+		padding: 3.75rem 1.5rem 2.6rem;
+		border: 1px solid rgb(var(--vellum-rose-rgb) / 70%);
+		border-radius: var(--arched-scenes-arch-radius, 999px 999px 2px 2px);
+		background:
+			radial-gradient(
+				ellipse 90% 46% at 50% 100%,
+				rgb(var(--vellum-foil-deep-rgb) / 34%),
+				rgb(var(--vellum-foil-deep-rgb) / 0%) 72%
+			),
+			linear-gradient(
+				180deg,
+				rgb(30 26 22) 0%,
+				rgb(var(--vellum-ink-rgb)) 58%,
+				rgb(66 54 42) 100%
+			);
+		box-shadow:
+			inset 0 0 0 6px rgb(255 253 249),
+			inset 0 0 0 7px rgb(var(--vellum-rose-rgb) / 45%),
+			0 0 0 10px rgb(var(--vellum-pearl-rgb)),
+			0 0 0 11px rgb(var(--vellum-rose-rgb) / 26%),
+			0 34px 54px -30px rgb(var(--vellum-ink-rgb) / 55%);
+
+		// A slow sheen crosses the plate with the scroll.
+		&::before {
+			content: '';
+			position: absolute;
+			z-index: -1;
+			inset: 0 -60%;
+			display: block;
+			background: linear-gradient(
+				112deg,
+				rgb(var(--vellum-foil-hi-rgb) / 0%) 38%,
+				rgb(var(--vellum-foil-hi-rgb) / 13%) 50%,
+				rgb(var(--vellum-foil-hi-rgb) / 0%) 62%
+			);
+			pointer-events: none;
+		}
+
+		// A few stars under the arch.
+		&::after {
+			content: '';
+			position: absolute;
+			z-index: -1;
+			inset: 0;
+			display: block;
+			background:
+				radial-gradient(
+					circle at 24% 21%,
+					rgb(var(--vellum-foil-hi-rgb) / 80%) 0 1px,
+					transparent 1.6px
+				),
+				radial-gradient(
+					circle at 73% 16%,
+					rgb(var(--vellum-foil-hi-rgb) / 65%) 0 1px,
+					transparent 1.6px
+				),
+				radial-gradient(
+					circle at 84% 34%,
+					rgb(var(--vellum-foil-hi-rgb) / 50%) 0 0.8px,
+					transparent 1.4px
+				),
+				radial-gradient(
+					circle at 14% 40%,
+					rgb(var(--vellum-foil-hi-rgb) / 50%) 0 0.8px,
+					transparent 1.4px
+				),
+				radial-gradient(
+					circle at 60% 27%,
+					rgb(var(--vellum-foil-hi-rgb) / 40%) 0 0.7px,
+					transparent 1.3px
+				);
+			pointer-events: none;
+		}
+
+		.event-location__indication-icon {
+			border-color: rgb(var(--vellum-foil-hi-rgb) / 60%);
+			box-shadow: 0 0 0 5px rgb(var(--vellum-foil-hi-rgb) / 8%);
+		}
+
+		.event-location__indication-text {
+			font-size: var(--arched-scenes-indication-text-size-wide, 1.1rem);
+			color: rgb(var(--vellum-pearl-rgb) / 84%);
+		}
+
+		strong {
+			display: block;
+			margin-block: 0.45rem 0.3rem;
+			font-size: var(--arched-scenes-indication-strong-size, clamp(2.7rem, 11.5vw, 3.3rem));
+			font-style: italic;
+			font-weight: 500;
+			line-height: 1;
+			color: rgb(var(--vellum-foil-hi-rgb));
+		}
+	}
+
+	// From a tablet up the venue scenes share one screen, and the notes run in a row.
+	@media (width >= 768px) {
+		.event-location__container {
+			flex-direction: row;
+			justify-content: center;
+			align-items: stretch;
+			max-width: 70rem;
+			margin-inline: auto;
+		}
+
+		.event-location__card-wrapper {
+			flex: 1 1 0;
+			justify-content: flex-start;
+			min-width: 0;
+			min-height: 0;
+			padding-block: 1.5rem 2.5rem;
+			padding-inline: clamp(0.5rem, 1.6vw, 1.5rem);
+		}
+
+		// Three columns: the hour is sized to its column, and every numeral sits on the
+		// same side so no two of them meet.
+		.event-location__card-content-hour {
+			font-size: var(--arched-scenes-hour-size-wide, clamp(2.3rem, 5.2vw, 4.4rem));
+		}
+
+		.event-location__card-content-place,
+		.event-location__card-content-address.event-location__card-content-address {
+			max-width: calc(min(70rem, 100vw) / 3 - 2.5rem);
+			margin-inline: auto;
+			line-height: 1.5;
+			text-wrap: balance;
+			white-space: normal;
+		}
+
+		.event-location__card-wrapper.event-location__card-wrapper.event-location__card-wrapper
+			.event-location__card.event-location__card::before {
+			inset-inline: 50% auto;
+			margin-inline: calc(-1 * min(14.5rem, 17vw)) 0;
+		}
+
+		.event-location__card-wrapper + .event-location__card-wrapper {
+			padding-block-start: 1.5rem;
+
+			&::before {
+				top: 12%;
+				left: 0;
+				height: 76%;
+			}
+		}
+
+		.event-location__indications-container {
+			max-width: 62rem;
+			min-height: 0;
+			padding-block: 3.5rem 1rem;
+		}
+
+		.event-location__indications {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			align-items: center;
+			gap: 2rem;
+		}
+
+		.event-location__indication-item:first-child,
+		.event-location__indication-item:nth-child(2) {
+			grid-column: auto;
+		}
+
+		.event-location__indication-text {
+			max-width: 17rem;
+		}
+	}
+
+	// Scroll-linked and reversible. Still under reduced motion, where the venues stand one
+	// below the other.
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			.event-location__indications-heading,
+			.event-location__indication-item {
+				animation: vellum-scene-rise linear both;
+				animation-timeline: --vellum-notes;
+				animation-range: entry 10% cover 26%;
+			}
+
+			// The plate comes forward first; a sheen crosses it for as long as it is on screen.
+			.event-location__indication-item:first-child {
+				animation-name: vellum-notes-plate;
+				animation-range: entry 22% cover 36%;
+
+				&::before {
+					animation: vellum-notes-sheen linear both;
+					animation-timeline: --vellum-notes;
+					animation-range: entry 0% exit 100%;
+				}
+
+				.event-location__indication-icon {
+					animation: vellum-notes-ring linear both;
+					animation-timeline: --vellum-notes;
+					animation-range: cover 22% cover 36%;
+				}
+
+				strong {
+					animation: vellum-scene-rise linear both;
+					animation-timeline: --vellum-notes;
+					animation-range: cover 26% cover 40%;
+				}
+			}
+
+			.event-location__indication-item:nth-child(2) {
+				animation-range: cover 32% cover 44%;
+			}
+
+			// Tablet, desktop and short screens: each venue enters on its own as it arrives.
+			@media (width >= 768px), (height < 560px) {
+				.event-location__card-title,
+				.event-location__card-content-hour,
+				.event-location__card-content-place,
+				.event-location__card-content-date,
+				.event-location__card-content-address,
+				.event-location__card-map-preview-foot {
+					animation: vellum-scene-rise linear both;
+					animation-timeline: --vellum-venue;
+				}
+
+				.event-location__card-title {
+					animation-range: entry 0% cover 24%;
+				}
+
+				.event-location__card-map-preview-art {
+					animation: vellum-scene-arch linear both;
+					animation-timeline: --vellum-venue;
+					animation-range: entry 0% cover 34%;
+
+					&::before {
+						animation: vellum-scene-draw linear both;
+						animation-timeline: --vellum-venue;
+						animation-range: cover 16% cover 44%;
+					}
+
+					&::after {
+						animation: vellum-scene-halo linear both;
+						animation-timeline: --vellum-venue;
+						animation-range: entry 0% exit 100%;
+					}
+				}
+
+				.event-location__card-map-preview-pin {
+					animation: vellum-scene-pin linear both;
+					animation-timeline: --vellum-venue;
+					animation-range: cover 34% cover 48%;
+				}
+
+				.event-location__card-content-hour {
+					animation-name: vellum-scene-hour;
+					animation-range: cover 22% cover 42%;
+				}
+
+				.event-location__card-content-place {
+					animation-range: cover 27% cover 44%;
+				}
+
+				.event-location__card-content-date {
+					animation-range: cover 30% cover 46%;
+				}
+
+				.event-location__card-content-address {
+					animation-range: cover 32% cover 47%;
+				}
+
+				.event-location__card-map-preview-foot {
+					animation-name: vellum-scene-pill;
+					animation-range: cover 34% cover 48%;
+				}
+
+				.event-location__card-wrapper + .event-location__card-wrapper::before {
+					animation: vellum-scene-thread linear both;
+					animation-timeline: --vellum-venue;
+					animation-range: entry 0% cover 22%;
+				}
+			}
+
+			// Phone: one pinned scene. The stage holds for two screens of scroll while the
+			// window stays in place: the church is drawn inside it, then rolls away and the
+			// hall is drawn in the same window, and the hour turns from the first to the second.
+			@media (width < 768px) and (height >= 560px) {
+				.event-location__container {
+					display: grid;
+					grid-template-columns: minmax(0, 1fr);
+					height: 420svh;
+					view-timeline: --vellum-route block;
+
+					// Progress rail at the edge: a hairline and a bead that travels with the scroll.
+					&::before,
+					&::after {
+						content: '';
+						position: sticky;
+						z-index: 3;
+						top: calc(50svh - 2.25rem);
+						grid-area: 1 / 1;
+						place-self: start end;
+						pointer-events: none;
+						animation: vellum-route-rail linear both;
+						animation-timeline: --vellum-route;
+						animation-range: entry 70% entry 100%;
+					}
+
+					&::before {
+						width: 1px;
+						height: 4.5rem;
+						margin-inline-end: calc(0.85rem + 3px);
+						background: linear-gradient(
+							rgb(var(--vellum-rose-rgb) / 0%),
+							rgb(var(--vellum-rose-rgb) / 60%) 18%,
+							rgb(var(--vellum-rose-rgb) / 60%) 82%,
+							rgb(var(--vellum-rose-rgb) / 0%)
+						);
+					}
+
+					&::after {
+						width: 7px;
+						height: 7px;
+						margin-inline-end: 0.85rem;
+						border-radius: 50%;
+						background: rgb(var(--vellum-rose-deep-rgb));
+						box-shadow: 0 0 0 3px rgb(var(--vellum-petal-rgb) / 45%);
+						animation:
+							vellum-route-rail linear both,
+							vellum-route-travel linear both;
+						animation-timeline: --vellum-route;
+						animation-range:
+							entry 70% entry 100%,
+							contain 0% contain 100%;
+					}
+				}
+
+				// Id-level specificity: the wrapper also carries the generic editorial reveal.
+				.event-location__container
+					.event-location__card-wrapper.event-location__card-wrapper:is(
+						#invitation-sections-container *
+					)[data-reveal-item] {
+					position: sticky;
+					top: 0;
+					grid-area: 1 / 1;
+					align-self: start;
+					justify-content: flex-start;
+					height: 100svh;
+					min-height: 0;
+					padding-block: clamp(2.25rem, calc((100svh - 31rem) / 2), 12rem) 0;
+					animation: vellum-route-first linear both;
+					animation-timeline: --vellum-route;
+					animation-range: contain 0% contain 62.5%;
+					view-timeline: none;
+
+					&::before {
+						display: none;
+					}
+				}
+
+				.event-location__container
+					.event-location__card-wrapper.event-location__card-wrapper:is(
+						#invitation-sections-container *
+					)[data-reveal-item]
+					+ .event-location__card-wrapper {
+					padding-block-start: clamp(2.25rem, calc((100svh - 31rem) / 2), 12rem);
+					animation-name: vellum-route-middle;
+					animation-range: contain 0% contain 100%;
+				}
+
+				.event-location__container
+					.event-location__card-wrapper.event-location__card-wrapper:is(
+						#invitation-sections-container *
+					)[data-reveal-item]
+					+ .event-location__card-wrapper
+					+ .event-location__card-wrapper {
+					animation-name: vellum-route-second;
+					animation-range: contain 43.75% contain 100%;
+				}
+
+				// A venue reached with the keyboard shows at once, whatever the scroll position.
+				.event-location__container
+					.event-location__card-wrapper.event-location__card-wrapper:is(
+						#invitation-sections-container *
+					)[data-reveal-item]:focus-within {
+					z-index: 2;
+					background: rgb(var(--vellum-pearl-rgb));
+					animation: none;
+
+					*,
+					*::before {
+						animation: none;
+					}
+				}
+
+				.event-location__card-map-preview-art {
+					width: min(clamp(11.5rem, 50vw, 13.5rem), 29svh);
+				}
+
+				// First venue: arrives while the stage comes up, leaves before the midpoint.
+				.event-location__card-wrapper:first-child {
+					.event-location__card-title,
+					.event-location__card-content-hour,
+					.event-location__card-content-place,
+					.event-location__card-content-date,
+					.event-location__card-content-address {
+						animation:
+							vellum-scene-rise linear both,
+							vellum-route-leave linear both;
+						animation-timeline: --vellum-route;
+					}
+
+					.event-location__card-title {
+						animation-range:
+							entry 30% entry 62%,
+							contain 18.75% contain 25%;
+					}
+
+					.event-location__card-map-preview-art {
+						animation: vellum-scene-arch linear both;
+						animation-timeline: --vellum-route;
+						animation-range: entry 30% entry 78%;
+
+						&::before {
+							animation:
+								vellum-scene-draw linear both,
+								vellum-route-roll-up linear both;
+							animation-timeline: --vellum-route;
+							animation-range:
+								entry 62% contain 2.5%,
+								contain 22.5% contain 30.625%;
+						}
+
+						&::after {
+							animation: vellum-scene-halo linear both;
+							animation-timeline: --vellum-route;
+							animation-range: entry 0% contain 31.25%;
+						}
+					}
+
+					.event-location__card-map-preview-pin {
+						animation:
+							vellum-scene-pin linear both,
+							vellum-route-leave-centered linear both;
+						animation-timeline: --vellum-route;
+						animation-range:
+							entry 88% contain 3.75%,
+							contain 21.25% contain 26.25%;
+					}
+
+					.event-location__card-content-hour {
+						animation-name: vellum-scene-hour, vellum-route-leave;
+						animation-range:
+							entry 66% entry 96%,
+							contain 23.75% contain 30.625%;
+					}
+
+					.event-location__card-content-place {
+						animation-range:
+							entry 72% entry 100%,
+							contain 22.5% contain 28.75%;
+					}
+
+					.event-location__card-content-date {
+						animation-range:
+							entry 76% contain 1.25%,
+							contain 21.25% contain 27.5%;
+					}
+
+					.event-location__card-content-address {
+						animation-range:
+							entry 80% contain 2.5%,
+							contain 20.625% contain 26.875%;
+					}
+
+					.event-location__card-map-preview-foot {
+						animation:
+							vellum-scene-pill linear both,
+							vellum-route-leave-centered linear both;
+						animation-timeline: --vellum-route;
+						animation-range:
+							entry 84% contain 3.75%,
+							contain 20% contain 26.25%;
+					}
+				}
+
+				// Second venue: drawn in the same window, then rolls away in turn.
+				.event-location__card-wrapper:first-child + .event-location__card-wrapper {
+					.event-location__card-title,
+					.event-location__card-content-hour,
+					.event-location__card-content-place,
+					.event-location__card-content-date,
+					.event-location__card-content-address {
+						animation:
+							vellum-scene-rise linear both,
+							vellum-route-leave linear both;
+						animation-timeline: --vellum-route;
+					}
+
+					.event-location__card-title {
+						animation-name: vellum-scene-rise, vellum-route-leave;
+						animation-range:
+							contain 31.25% contain 36.25%,
+							contain 59.375% contain 65.625%;
+					}
+
+					.event-location__card-map-preview-art {
+						&::before {
+							animation:
+								vellum-scene-draw linear both,
+								vellum-route-roll-up linear both;
+							animation-timeline: --vellum-route;
+							animation-range:
+								contain 31.25% contain 41.25%,
+								contain 63.125% contain 71.25%;
+						}
+
+						&::after {
+							animation: vellum-scene-halo linear both;
+							animation-timeline: --vellum-route;
+							animation-range: contain 31.25% contain 71.875%;
+						}
+					}
+
+					.event-location__card-map-preview-pin {
+						animation:
+							vellum-scene-pin linear both,
+							vellum-route-leave-centered linear both;
+						animation-timeline: --vellum-route;
+						animation-range:
+							contain 38.75% contain 43.75%,
+							contain 61.875% contain 66.875%;
+					}
+
+					.event-location__card-content-hour {
+						animation-name: vellum-scene-hour, vellum-route-leave;
+						animation-range:
+							contain 31.875% contain 38.75%,
+							contain 64.375% contain 71.25%;
+					}
+
+					.event-location__card-content-place {
+						animation-name: vellum-scene-rise, vellum-route-leave;
+						animation-range:
+							contain 34.375% contain 40.625%,
+							contain 63.125% contain 69.375%;
+					}
+
+					.event-location__card-content-date {
+						animation-name: vellum-scene-rise, vellum-route-leave;
+						animation-range:
+							contain 36.25% contain 42.5%,
+							contain 61.875% contain 68.125%;
+					}
+
+					.event-location__card-content-address {
+						animation-name: vellum-scene-rise, vellum-route-leave;
+						animation-range:
+							contain 37.5% contain 43.75%,
+							contain 61.25% contain 67.5%;
+					}
+
+					.event-location__card-map-preview-foot {
+						animation:
+							vellum-scene-pill linear both,
+							vellum-route-leave-centered linear both;
+						animation-timeline: --vellum-route;
+						animation-range:
+							contain 38.75% contain 45%,
+							contain 60.625% contain 66.875%;
+					}
+				}
+
+				// Third venue: the hotel closes the route and stays.
+				.event-location__card-wrapper
+					+ .event-location__card-wrapper
+					+ .event-location__card-wrapper {
+					.event-location__card-title,
+					.event-location__card-content-hour,
+					.event-location__card-content-place,
+					.event-location__card-content-date,
+					.event-location__card-content-address {
+						animation: vellum-scene-rise linear both;
+						animation-timeline: --vellum-route;
+					}
+
+					.event-location__card-title {
+						animation-name: vellum-scene-rise;
+						animation-range: contain 71.875% contain 76.875%;
+					}
+
+					.event-location__card-map-preview-art {
+						&::before {
+							animation: vellum-scene-draw linear both;
+							animation-timeline: --vellum-route;
+							animation-range: contain 71.875% contain 81.875%;
+						}
+
+						&::after {
+							animation: vellum-scene-halo linear both;
+							animation-timeline: --vellum-route;
+							animation-range: contain 71.875% exit 100%;
+						}
+					}
+
+					.event-location__card-map-preview-pin {
+						animation: vellum-scene-pin linear both;
+						animation-timeline: --vellum-route;
+						animation-range: contain 79.375% contain 84.375%;
+					}
+
+					.event-location__card-content-hour {
+						animation-name: vellum-scene-hour;
+						animation-range: contain 72.5% contain 79.375%;
+					}
+
+					.event-location__card-content-place {
+						animation-name: vellum-scene-rise;
+						animation-range: contain 75% contain 81.25%;
+					}
+
+					.event-location__card-content-date {
+						animation-name: vellum-scene-rise;
+						animation-range: contain 76.875% contain 83.125%;
+					}
+
+					.event-location__card-content-address {
+						animation-name: vellum-scene-rise;
+						animation-range: contain 78.125% contain 84.375%;
+					}
+
+					.event-location__card-map-preview-foot {
+						animation: vellum-scene-pill linear both;
+						animation-timeline: --vellum-route;
+						animation-range: contain 79.375% contain 85.625%;
+					}
+				}
+			}
+
+			// Depth layers. Tablet, desktop and short screens follow each venue's own timeline.
+			@media (width >= 768px), (height < 560px) {
+				.event-location__card.event-location__card::before {
+					animation: vellum-scene-ghost linear both;
+					animation-timeline: --vellum-venue;
+					animation-range: entry 0% exit 100%;
+				}
+
+				.event-location__card-map-preview-grid {
+					animation: vellum-scene-stars linear both;
+					animation-timeline: --vellum-venue;
+					animation-range: entry 20% exit 100%;
+				}
+			}
+
+			// Phone: the layers drift through each half of the pinned scene and hand over with it.
+			@media (width < 768px) and (height >= 560px) {
+				.event-location__card-wrapper:first-child {
+					.event-location__card.event-location__card::before {
+						animation:
+							vellum-scene-ghost linear both,
+							vellum-route-fade linear both;
+						animation-timeline: --vellum-route;
+						animation-range:
+							entry 0% contain 31.25%,
+							contain 23.75% contain 30.625%;
+					}
+
+					.event-location__card-map-preview-grid {
+						animation:
+							vellum-scene-stars linear both,
+							vellum-route-fade linear both;
+						animation-timeline: --vellum-route;
+						animation-range:
+							entry 50% contain 30.625%,
+							contain 25% contain 30.625%;
+					}
+				}
+
+				.event-location__card-wrapper:first-child + .event-location__card-wrapper {
+					.event-location__card.event-location__card::before {
+						animation:
+							vellum-scene-ghost linear both,
+							vellum-route-rail linear both,
+							vellum-route-fade linear both;
+						animation-timeline: --vellum-route;
+						animation-range:
+							contain 31.25% contain 71.875%,
+							contain 31.25% contain 38.75%,
+							contain 64.375% contain 71.25%;
+					}
+
+					.event-location__card-map-preview-grid {
+						animation:
+							vellum-scene-stars linear both,
+							vellum-route-fade linear both;
+						animation-timeline: --vellum-route;
+						animation-range:
+							contain 31.25% contain 71.875%,
+							contain 65.625% contain 71.25%;
+					}
+				}
+
+				.event-location__card-wrapper
+					+ .event-location__card-wrapper
+					+ .event-location__card-wrapper {
+					.event-location__card.event-location__card::before {
+						animation:
+							vellum-scene-ghost linear both,
+							vellum-route-rail linear both;
+						animation-timeline: --vellum-route;
+						animation-range:
+							contain 71.875% exit 100%,
+							contain 71.875% contain 79.375%;
+					}
+
+					.event-location__card-map-preview-grid {
+						animation: vellum-scene-stars linear both;
+						animation-timeline: --vellum-route;
+						animation-range: contain 71.875% contain 100%;
+					}
+				}
+			}
+		}
+	}
+}
+
+// The location heading takes the foil; the other section titles stay in ink.
+.event-theme-wrapper[data-event-slug]
+	:where(.event-location[data-variant='arched-scenes'])
+	.event-location__heading {
+	background: var(--vellum-foil);
+	background-clip: text;
+	color: transparent;
+
+	// Editorial motion splits titles into animated words; each word is its own layer,
+	// so it carries the foil itself or it paints as transparent text.
+	.word {
+		background: inherit;
+		background-clip: text;
+		color: transparent;
+	}
+}
+
+@keyframes vellum-scene-rise {
+	from {
+		opacity: 0%;
+		translate: 0 1.25rem;
+	}
+}
+
+@keyframes vellum-scene-arch {
+	from {
+		opacity: 0%;
+		translate: 0 3rem;
+		scale: 0.92;
+	}
+}
+
+@keyframes vellum-scene-draw {
+	from {
+		clip-path: inset(100% 0 0 0);
+		translate: 0 5%;
+	}
+
+	to {
+		clip-path: inset(0 0 0 0);
+		translate: 0 0;
+	}
+}
+
+@keyframes vellum-scene-halo {
+	from {
+		translate: -50% 38%;
+	}
+
+	to {
+		translate: -50% -24%;
+	}
+}
+
+@keyframes vellum-scene-pin {
+	from {
+		opacity: 0%;
+		translate: -50% -1.25rem;
+	}
+}
+
+@keyframes vellum-scene-hour {
+	from {
+		opacity: 0%;
+		translate: 0 1.5rem;
+		letter-spacing: 0.08em;
+	}
+}
+
+@keyframes vellum-scene-pill {
+	from {
+		opacity: 0%;
+		translate: -50% 1rem;
+	}
+}
+
+@keyframes vellum-scene-thread {
+	from {
+		scale: 1 0;
+		opacity: 0%;
+	}
+}
+
+@keyframes vellum-route-leave {
+	to {
+		opacity: 0%;
+		translate: 0 -1.5rem;
+	}
+}
+
+@keyframes vellum-route-leave-centered {
+	to {
+		opacity: 0%;
+		translate: -50% -1rem;
+	}
+}
+
+@keyframes vellum-route-roll-up {
+	to {
+		clip-path: inset(0 0 100% 0);
+		translate: 0 -5%;
+	}
+}
+
+// The stage swaps venues at the midpoint; the window itself never leaves.
+@keyframes vellum-route-first {
+	0%,
+	49.9% {
+		opacity: 100%;
+		pointer-events: auto;
+	}
+
+	50%,
+	100% {
+		opacity: 0%;
+		pointer-events: none;
+	}
+}
+
+@keyframes vellum-route-second {
+	0%,
+	49.9% {
+		opacity: 0%;
+		pointer-events: none;
+	}
+
+	50%,
+	100% {
+		opacity: 100%;
+		pointer-events: auto;
+	}
+}
+
+@keyframes vellum-route-middle {
+	0%,
+	31.219% {
+		opacity: 0%;
+		pointer-events: none;
+	}
+
+	31.25%,
+	71.844% {
+		opacity: 100%;
+		pointer-events: auto;
+	}
+
+	71.875%,
+	100% {
+		opacity: 0%;
+		pointer-events: none;
+	}
+}
+
+@keyframes vellum-route-travel {
+	to {
+		translate: 0 calc(4.5rem - 7px);
+	}
+}
+
+@keyframes vellum-route-rail {
+	from {
+		opacity: 0%;
+	}
+}
+
+@keyframes vellum-scene-stars {
+	0% {
+		opacity: 0%;
+		translate: 0 10%;
+	}
+
+	22% {
+		opacity: 100%;
+	}
+
+	100% {
+		translate: 0 -5%;
+	}
+}
+
+@keyframes vellum-scene-ghost {
+	from {
+		translate: 0 3rem;
+	}
+
+	to {
+		translate: 0 -3rem;
+	}
+}
+
+@keyframes vellum-route-fade {
+	to {
+		opacity: 0%;
+	}
+}
+
+@keyframes vellum-notes-plate {
+	from {
+		opacity: 0%;
+		translate: 0 3rem;
+		scale: 0.93;
+	}
+}
+
+@keyframes vellum-notes-sheen {
+	from {
+		translate: -45% 0;
+	}
+
+	to {
+		translate: 45% 0;
+	}
+}
+
+@keyframes vellum-notes-ring {
+	from {
+		opacity: 0%;
+		scale: 0.6;
+	}
+}

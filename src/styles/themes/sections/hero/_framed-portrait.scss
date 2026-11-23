@@ -3,6 +3,7 @@
 :where(.invitation-hero):is(
 	[data-variant='framed-portrait'],
 	[data-variant='cased-portrait'],
+	[data-variant='passe-partout-portrait'],
 	[data-variant='disco-stage']
 ) {
 	--hero-title-size-fallback: clamp(4rem, 10vw, 6.5rem);
@@ -11,6 +12,7 @@
 .invitation-hero.framed-portrait-hero:is(
 		[data-variant='framed-portrait'],
 		[data-variant='cased-portrait'],
+		[data-variant='passe-partout-portrait'],
 		[data-variant='disco-stage']
 	) {
 	position: relative;

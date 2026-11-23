@@ -181,11 +181,9 @@ describe('canonical variant governance', () => {
 		expect(formalRegister).toContain('--formal-chapter-band');
 		expect(formalRegister).toContain('.rsvp__radio-card');
 		expect(formalRegister).toContain(
-			".rsvp-section:has(.rsvp[data-variant='formal-register'])",
+			".rsvp-section:has(.rsvp:is([data-variant='formal-register'], [data-variant='engraved-register']))",
 		);
-		expect(formalRegister).not.toContain(
-			".rsvp-section:has(> .rsvp[data-variant='formal-register'])",
-		);
+		expect(formalRegister).not.toMatch(/\.rsvp-section:has\(>/);
 		expect(formalRegister).toMatch(/\.rsvp__title[\s\S]*letter-spacing:\s*normal/);
 
 		for (const profile of [victoria, renata]) {

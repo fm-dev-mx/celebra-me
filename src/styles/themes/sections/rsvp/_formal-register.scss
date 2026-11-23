@@ -18,7 +18,9 @@
 	--formal-chapter-metal-rgb: 176 142 96;
 }
 
-.invitation-section-wrapper[data-section-kind='rsvp']:has(.rsvp[data-variant='formal-register']) {
+.invitation-section-wrapper[data-section-kind='rsvp']:has(
+		.rsvp:is([data-variant='formal-register'], [data-variant='engraved-register'])
+	) {
 	--color-text-primary: var(--formal-chapter-cream);
 	--color-text-primary-rgb: var(--formal-chapter-cream-rgb);
 	--color-text-secondary: rgb(var(--formal-chapter-cream-rgb) / 82%);
@@ -32,7 +34,7 @@
 // Match every shell that contains the register, including the nested
 // `.rsvp-section` wrappers used by the interactive island. A child combinator
 // would leave the outer shell on the shared full-viewport RSVP padding.
-.rsvp-section:has(.rsvp[data-variant='formal-register']) {
+.rsvp-section:has(.rsvp:is([data-variant='formal-register'], [data-variant='engraved-register'])) {
 	--rsvp-bg-fallback: var(--formal-chapter-band);
 
 	display: grid;
@@ -44,7 +46,7 @@
 	background: var(--rsvp-bg, var(--rsvp-bg-fallback));
 }
 
-.rsvp[data-variant='formal-register'] {
+.rsvp:is([data-variant='formal-register'], [data-variant='engraved-register']) {
 	--formal-chapter-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', georgia, serif;
 	--formal-chapter-body: 'Instrument Sans Variable', system-ui, sans-serif;
 	--formal-chapter-label:
@@ -513,7 +515,7 @@
 // `--formal-register-open: formal-register-open`; the default `none` keeps the static chapter.
 @supports (animation-timeline: view()) {
 	@include a11y.motion-safe {
-		.rsvp[data-variant='formal-register'] {
+		.rsvp:is([data-variant='formal-register'], [data-variant='engraved-register']) {
 			.rsvp__header,
 			.rsvp__form,
 			.rsvp__locked-card {

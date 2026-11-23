@@ -5,6 +5,6 @@
 // indication-panel layout (through the shared venue-plates mixin). Profiles may tint
 // --location-* / semantic tokens; they must not redefine the plate grid or duplicate these
 // selectors.
-.event-location[data-variant='stacked-venue-plates'] {
+.event-location:is([data-variant='stacked-venue-plates'], [data-variant='arched-scenes']) {
 	@include plates.venue-plates;
 }

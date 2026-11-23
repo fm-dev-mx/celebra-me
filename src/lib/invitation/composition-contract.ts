@@ -7,7 +7,7 @@ import {
 } from '@/lib/theme/theme-contract';
 
 /** Footer variants. The footer stays outside the section registry: it renders on every page. */
-export const FOOTER_VARIANTS = ['standard', 'framed-closing'] as const;
+export const FOOTER_VARIANTS = ['standard', 'framed-closing', 'foil-colophon'] as const;
 export type FooterVariant = (typeof FOOTER_VARIANTS)[number];
 
 const RENDER_PLAN_TARGETS = [

@@ -24,7 +24,7 @@ const content: CanonicalEventContentInput = {
 	isDemo: false,
 	title: `Mis XV años — ${CELEBRANT_NAME}`,
 	description: 'Le invito a celebrar conmigo mis XV años el 8 de enero de 2027.',
-	theme: { preset: 'jewelry-box' },
+	theme: { preset: 'jewelry-box', motion: 'editorial' },
 	eventTiming: TIMING,
 	sectionOrder: [
 		'personalizedAccess',
@@ -37,42 +37,35 @@ const content: CanonicalEventContentInput = {
 		'thankYou',
 	],
 	composition: {
+		footerVariant: 'foil-colophon',
 		intersections: {
 			rsvp: { family: 'arch', source: 'location' },
 			thankYou: { family: 'atmospheric-blend', source: 'gifts' },
 		},
 	},
 	hero: {
-		variant: 'framed-portrait',
-		name: CELEBRANT_NAME,
+		variant: 'passe-partout-portrait',
+		// "Maripau" leads in script; the surnames follow as a tracked line.
+		name: `${CELEBRANT_NAME} Charles Montante`,
 		label: 'Mis XV años',
 		// Hero formats its display date in UTC; eventTiming owns the real instant.
 		date: '2027-01-08T12:00:00.000Z',
 		backgroundImage: 'hero',
-		focalPoint: '50% 30%',
-		focalPointMobile: '50% 30%',
+		focalPoint: '50% 50%',
+		focalPointMobile: '50% 50%',
 		presentation: { venueIndex: 0, nameLeadWords: 1 },
 		scrollLabel: 'Descubra los detalles',
-		ambientVideo: {
-			webm: '/videos/maripau-charles/hero-loop.webm',
-			mp4: '/videos/maripau-charles/hero-loop.mp4',
-			poster: '/videos/maripau-charles/hero-loop-poster.webp',
-		},
 	},
 	envelope: {
 		disabled: false,
 		variant: 'jewelry-box',
+		revealVariant: 'ivory-medallion',
 		sealStyle: 'wax',
 		sealIcon: 'wax-medallion',
 		sealInitials: 'MP',
 		cardTagline: 'Viernes 8 de enero de 2027',
 		microcopy: 'Toque para abrir la invitación',
 		teaserDetails: '8 de enero de 2027 · Monclova',
-		openingVideo: {
-			webm: '/videos/maripau-charles/opening.webm',
-			mp4: '/videos/maripau-charles/opening.mp4',
-			poster: '/videos/maripau-charles/poster.webp',
-		},
 	},
 	family: {
 		variant: 'ceremonial-family',
@@ -89,12 +82,21 @@ const content: CanonicalEventContentInput = {
 		},
 	},
 	interludes: [
+		// Full-screen portrait right after the cover (and the pass, when there is one).
+		{
+			image: 'gallery02',
+			afterSection: 'personalizedAccess',
+			alt: 'Retrato de Maripau sonriendo bajo el candelabro.',
+			height: 'tall',
+			focalPoint: '50% 30%',
+		},
 		{
 			image: 'interludeSpotlight',
 			afterSection: 'countdown',
 			alt: 'Maripau recostada en el estudio, sonriendo a la cámara.',
-			height: 'tall',
-			focalPoint: '50% 45%',
+			height: 'medium',
+			focalPoint: '92% 38%',
+			focalPointDesktop: '50% 36%',
 		},
 	],
 	gallery: {
@@ -104,24 +106,23 @@ const content: CanonicalEventContentInput = {
 		items: [
 			{ image: 'gallery01', alt: 'Maripau de pie con vestido negro de lentejuelas.' },
 			{ image: 'gallery03', alt: 'Maripau sentada en una silla de director.' },
-			{
-				image: 'gallery02',
-				layoutRole: 'feature',
-				alt: 'Retrato horizontal de Maripau sentada en el estudio.',
-			},
 			{ image: 'gallery05', alt: 'Maripau de espaldas con vestido rojo bajo un candelabro.' },
-			{ image: 'gallery04', alt: 'Maripau recostada en el estudio con atuendo negro.' },
+			{
+				image: 'gallery04',
+				layoutRole: 'feature',
+				alt: 'Maripau recostada en el estudio con atuendo negro.',
+			},
 		],
 	},
 	countdown: {
-		variant: 'standard',
+		variant: 'foil-calendar',
 		title: 'Falta muy poco',
 		footerText: '',
 	},
 	location: {
-		variant: 'stacked-venue-plates',
+		variant: 'arched-scenes',
 		accessPolicy: { visibility: 'public' },
-		presentationOptions: { showNavigationButtons: true, showFlourishes: false },
+		presentationOptions: { showNavigationButtons: false, showFlourishes: false },
 		introEyebrow: CITY,
 		introHeading: 'Ceremonia y recepción',
 		mapStyle: 'dark',
@@ -133,16 +134,6 @@ const content: CanonicalEventContentInput = {
 				text: 'Código de vestimenta: <strong>All black</strong> (todo de negro).',
 			},
 			{ iconName: 'Forbidden', styleVariant: 'default', text: 'Celebración sin niños.' },
-			{
-				iconName: 'Calendar',
-				styleVariant: 'default',
-				text: 'Confirme su asistencia a más tardar el <strong>domingo 20 de diciembre</strong>.',
-			},
-			{
-				iconName: 'MapLocation',
-				styleVariant: 'default',
-				text: 'Hospedaje sugerido: San Patricio Hotel Estudio, Río de Janeiro 807, Col. Guadalupe. Al reservar mencione el código <strong>Maripau Xv</strong>.',
-			},
 		],
 		venues: [
 			{
@@ -165,12 +156,26 @@ const content: CanonicalEventContentInput = {
 				googleMapsUrl: mapsSearch(`Salón Marencco, ${CITY}`),
 				isVisible: true,
 			},
+			{
+				type: 'custom',
+				venueEvent: 'Hospedaje sugerido',
+				venueName: 'San Patricio Hotel Estudio',
+				address: 'Río de Janeiro 807, Col. Guadalupe',
+				date: EVENT_DATE_LABEL,
+				time: '',
+				googleMapsUrl: mapsSearch(
+					`San Patricio Hotel Estudio, Río de Janeiro 807, Guadalupe, ${CITY}`,
+				),
+				isVisible: true,
+			},
 		],
 	},
 	rsvp: {
-		variant: 'formal-register',
+		variant: 'engraved-register',
 		title: 'Confirme su asistencia',
 		subcopy: 'Le agradeceré confirmar su asistencia a más tardar el domingo 20 de diciembre.',
+		lockedMessage:
+			'Su pase es personal. Para confirmar, abra el enlace que le compartí junto con esta invitación.',
 		guestCap: 1,
 		accessMode: 'personalized-only',
 		confirmationMode: 'api',
@@ -201,21 +206,15 @@ const content: CanonicalEventContentInput = {
 		},
 	},
 	gifts: {
-		variant: 'standard',
+		variant: 'sealed-envelope',
 		title: 'Regalos',
 		subtitle:
 			'Su presencia es mi mejor regalo. Si además desea tener un detalle conmigo, esta es mi sugerencia:',
 		items: [{ type: 'cash', title: 'Lluvia de sobres' }],
 	},
 	thankYou: {
-		variant: 'portrait-letter',
+		variant: 'inked-letter',
 		image: 'thankYouPortrait',
-		// The cover's mirror-ball room plays its lights over the closing portrait.
-		ambientVideo: {
-			webm: '/videos/maripau-charles/hero-loop.webm',
-			mp4: '/videos/maripau-charles/hero-loop.mp4',
-			poster: '/videos/maripau-charles/hero-loop-poster.webp',
-		},
 		focalPoint: '50% 30%',
 		message:
 			'Gracias por ser parte de esta noche tan especial. Su compañía hará de mis XV años un recuerdo inolvidable.',
