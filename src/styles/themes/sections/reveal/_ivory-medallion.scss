@@ -328,7 +328,7 @@ $flap-rim: polygon(
 			0 0 0 3px var(--vellum-paper),
 			0 0 0 4px rgb(var(--vellum-foil-mid-rgb) / 40%);
 		font-family: var(--font-display);
-		font-size: 1.15rem;
+		font-size: var(--ivory-medallion-initials-size, 1.15rem);
 		font-style: italic;
 		letter-spacing: 0.04em;
 		line-height: 1;
@@ -358,7 +358,7 @@ $flap-rim: polygon(
 		margin-block: 0.2rem 0;
 		padding-block: 0.12em;
 		font-family: 'Pinyon Script', var(--font-display);
-		font-size: clamp(3.4rem, 17vw, 4.6rem);
+		font-size: var(--ivory-medallion-name-size, clamp(3.4rem, 17vw, 4.6rem));
 		font-weight: 400;
 		line-height: 1.1;
 		background: linear-gradient(
@@ -381,7 +381,7 @@ $flap-rim: polygon(
 	.invitation-reveal-card__tagline {
 		margin-top: 0.2rem;
 		font-family: var(--font-display);
-		font-size: 1.05rem;
+		font-size: var(--ivory-medallion-tagline-size, 1.05rem);
 		font-style: italic;
 		letter-spacing: 0.04em;
 		color: rgb(var(--vellum-muted-rgb) / 100%);
