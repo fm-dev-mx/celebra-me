@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-23T19:28:56.392Z",
+    "generatedAt": "2026-11-23T19:47:29.833Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -12,7 +12,7 @@
         "timezone": "UTC",
         "deviceScaleFactor": 1,
         "lockfileSha256": "a709925afef9efc92efc2a7467884817dea2757b81e491a83cc81e1b018d44a8",
-        "cssSha256": "db058aa9c581884d69a0faf245ada63d6fb423a15c760de61f81e80f7cbb6a9a",
+        "cssSha256": "03b21964e208137dbd6dcd048dc7f311a0022df1fbc1140fd12d769b66e86c54",
         "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
         "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
         "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -2991,9 +2991,9 @@
             "preset": "jewelry-box-wedding",
             "viewport": "mobile",
             "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
-            "sha256": "6a5f7fa968c51478ce94610e3c38c80d32f2e75df689c926c93099d326aae11a",
-            "contentHash": "ed02cfe24ede5071e604f8f790f65567087a3603f418123b3cc2b079136c6a47",
-            "assetHash": "ab52fd765b29d72e6f12b8aeef332e69bb8f7f6ffb65612e245275acb50c8e42",
+            "sha256": "57bf78c6c7f1d5f0350cdd25b78877ba2998536150420d451c10b92e6cafdb6f",
+            "contentHash": "4f564f3bfefd1df8ea043d6c9f791e63e0778004d2b3b8352873af7ea14d3163",
+            "assetHash": "9a20605e62f1b1327ab958b08c6fa57ed2665a234d4f3990fed3cd587a15e774",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -3003,9 +3003,9 @@
             "preset": "jewelry-box-wedding",
             "viewport": "desktop",
             "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
-            "sha256": "8fe43b5e1d749059357bd55b3fab377a3722cbffe0d1223d399eebb9c1dbdaa3",
-            "contentHash": "ed02cfe24ede5071e604f8f790f65567087a3603f418123b3cc2b079136c6a47",
-            "assetHash": "ab52fd765b29d72e6f12b8aeef332e69bb8f7f6ffb65612e245275acb50c8e42",
+            "sha256": "258f72ded2919f6f71ddf288d208b683837cc07a5877c305815d66869de9d368",
+            "contentHash": "4f564f3bfefd1df8ea043d6c9f791e63e0778004d2b3b8352873af7ea14d3163",
+            "assetHash": "9a20605e62f1b1327ab958b08c6fa57ed2665a234d4f3990fed3cd587a15e774",
             "comparisonResult": "ACCEPTED"
         },
         {
@@ -3153,9 +3153,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "c380044d117b80d8cd235992d4ccac10ba0ab1d1",
+    "referenceSha": "0326dc9d11cbc40f2c130af35164302b24a65628",
     "variantManifest": {
-        "generatedAt": "2026-11-23T19:28:56.392Z",
+        "generatedAt": "2026-11-23T19:47:29.833Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -3168,7 +3168,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a709925afef9efc92efc2a7467884817dea2757b81e491a83cc81e1b018d44a8",
-            "cssSha256": "db058aa9c581884d69a0faf245ada63d6fb423a15c760de61f81e80f7cbb6a9a",
+            "cssSha256": "03b21964e208137dbd6dcd048dc7f311a0022df1fbc1140fd12d769b66e86c54",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -5757,10 +5757,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "c380044d117b80d8cd235992d4ccac10ba0ab1d1"
+        "referenceSha": "0326dc9d11cbc40f2c130af35164302b24a65628"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-23T19:28:56.401Z",
+        "generatedAt": "2026-11-23T19:47:29.840Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -5773,7 +5773,7 @@
             "timezone": "UTC",
             "deviceScaleFactor": 1,
             "lockfileSha256": "a709925afef9efc92efc2a7467884817dea2757b81e491a83cc81e1b018d44a8",
-            "cssSha256": "db058aa9c581884d69a0faf245ada63d6fb423a15c760de61f81e80f7cbb6a9a",
+            "cssSha256": "03b21964e208137dbd6dcd048dc7f311a0022df1fbc1140fd12d769b66e86c54",
             "assetSha256": "98ecbbf6ac06d2ca2d891f989c76be65a57ed4d02000dc016fd0726d539a3564",
             "fontSha256": "9bcee32b307b85434f22cd004c35f4c4bb0f865f3b18982bbf10f6bfceac7648",
             "osImageDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
@@ -6175,9 +6175,9 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "mobile",
                 "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
-                "sha256": "6a5f7fa968c51478ce94610e3c38c80d32f2e75df689c926c93099d326aae11a",
-                "contentHash": "ed02cfe24ede5071e604f8f790f65567087a3603f418123b3cc2b079136c6a47",
-                "assetHash": "ab52fd765b29d72e6f12b8aeef332e69bb8f7f6ffb65612e245275acb50c8e42",
+                "sha256": "57bf78c6c7f1d5f0350cdd25b78877ba2998536150420d451c10b92e6cafdb6f",
+                "contentHash": "4f564f3bfefd1df8ea043d6c9f791e63e0778004d2b3b8352873af7ea14d3163",
+                "assetHash": "9a20605e62f1b1327ab958b08c6fa57ed2665a234d4f3990fed3cd587a15e774",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -6187,9 +6187,9 @@
                 "preset": "jewelry-box-wedding",
                 "viewport": "desktop",
                 "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
-                "sha256": "8fe43b5e1d749059357bd55b3fab377a3722cbffe0d1223d399eebb9c1dbdaa3",
-                "contentHash": "ed02cfe24ede5071e604f8f790f65567087a3603f418123b3cc2b079136c6a47",
-                "assetHash": "ab52fd765b29d72e6f12b8aeef332e69bb8f7f6ffb65612e245275acb50c8e42",
+                "sha256": "258f72ded2919f6f71ddf288d208b683837cc07a5877c305815d66869de9d368",
+                "contentHash": "4f564f3bfefd1df8ea043d6c9f791e63e0778004d2b3b8352873af7ea14d3163",
+                "assetHash": "9a20605e62f1b1327ab958b08c6fa57ed2665a234d4f3990fed3cd587a15e774",
                 "comparisonResult": "CANDIDATE"
             },
             {
@@ -6337,9 +6337,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "c380044d117b80d8cd235992d4ccac10ba0ab1d1"
+        "referenceSha": "0326dc9d11cbc40f2c130af35164302b24a65628"
     },
-    "candidateManifestSha256": "e46398bae5ea1f8eb1568c39572898e6868dd8a6adf04ea871cf77f2c7ff6824",
-    "acceptedFromCommit": "c380044d117b80d8cd235992d4ccac10ba0ab1d1",
-    "acceptedAt": "2026-11-23T19:30:03.645Z"
+    "candidateManifestSha256": "0f42e5eba7c90e053a1dbc7abf0f6bf6eb9acaf8d949ed1d9bb1d3fbf301186e",
+    "acceptedFromCommit": "0326dc9d11cbc40f2c130af35164302b24a65628",
+    "acceptedAt": "2026-11-23T19:48:58.325Z"
 }

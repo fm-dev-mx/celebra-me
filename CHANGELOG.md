@@ -10,6 +10,38 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.77.2] - 2026-11-21
+
+Sends the shared Adriana e Israel link to the published invitation. No database migrations.
+
+### Fixed
+
+- Invitations: `/adriana-e-israel` and `/boda/adriana-e-israel` answer with a permanent redirect to
+  `/adriana-y-israel` (#1092).
+
+## [0.77.1] - 2026-11-21
+
+Adds the background song to Adriana e Israel's invitation. No database migrations.
+
+### Added
+
+- Invitations: Adriana e Israel plays "Regalo de Dios" on saxophone with the equalizer control
+  (#1087).
+
+## [0.77.0] - 2026-11-21
+
+Adds the Maripau XV invitation and polishes Adriana e Israel's share card, reveal and program. No
+database migrations.
+
+### Added
+
+- Invitations: the Maripau XV invitation (#1082).
+
+### Fixed
+
+- Invitations: Adriana e Israel shares a 1200×630 couple photo, keeps the reveal text clear of the
+  monogram at every viewport, and scrolls smoothly back up through the pinned program (#1083).
+
 ## [0.76.1] - 2026-11-20
 
 Finishes the Adriana e Israel wedding invitation with its indigo stationery revision. No database
