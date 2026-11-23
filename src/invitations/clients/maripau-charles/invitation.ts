@@ -242,7 +242,7 @@ export default defineCanonicalInvitation({
 	content,
 	managedIdentityId: 'b8645313-9ca2-410f-9dca-5224e6f2f554',
 	managedIdentityProvenance: 'owner-approved',
-	lifecycle: 'in_progress',
+	lifecycle: 'published',
 	hostLoginAlias: 'maripau_charles',
 	assetDir: 'src/invitations/clients/maripau-charles/assets',
 	assetFiles: {

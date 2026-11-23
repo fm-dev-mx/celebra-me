@@ -125,6 +125,9 @@ No unresolved blocking owner decisions.
   the approved look. Without a personal link, RSVP shows its own message with no deadline. On phones
   the three location numerals sit on the left of the arch, clear of the progress rail. The closing
   reads as a letter on phones and tablets: portrait, message and signature share the left edge.
+- 2026-11-23 (D15): the owner authorized Production today with the watermarked photos and the
+  provisional maps (D8); `lifecycle` moves to `published`. Swapping photos or maps needs another
+  release.
 
 ## Agent Recommendations
 
