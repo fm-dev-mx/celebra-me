@@ -87,11 +87,10 @@
 
 // Frames: only the guest pass keeps a silver hairline; the full-screen frames around the location
 // and the gifts are dropped, so the page does not read as a stack of boxes.
-// Each scene mixin keeps its own scope rule so the cascade order stays as authored.
+// Each scene mixin below keeps its own scope rule so the cascade order stays as authored.
 /* stylelint-disable-next-line no-duplicate-selectors */
 .event--adriana-y-israel.theme-preset--jewelry-box-wedding {
-	// Cotton stationery shared by the gifts envelope and the guest pass: a fine warm grain and long
-	// horizontal fibres.
+	// Cotton stationery shared by the gifts envelope and the guest pass: fine grain, long fibres.
 	--indigo-env-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.38 0 0 0 0 0.26 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url%28%23n%29'/%3E%3C/svg%3E");
 	--indigo-env-fibres: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.01 0.35' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.43 0 0 0 0 0.3 0.6 0 0 0 -0.36'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url%28%23f%29'/%3E%3C/svg%3E");
 
@@ -226,7 +225,6 @@
 
 // Gifts: the night-indigo ground of the cover returns, and the single entry is an ivory envelope
 // with its flap closed by a champagne seal (shared indigo stationery gifts).
-// Each scene mixin keeps its own scope rule so the cascade order stays as authored.
 /* stylelint-disable-next-line no-duplicate-selectors */
 .event--adriana-y-israel.theme-preset--jewelry-box-wedding {
 	@include indigo-stationery-gifts.sealed-envelope-gifts;
@@ -316,14 +314,12 @@
 	}
 }
 
-// Each scene mixin keeps its own scope rule so the cascade order stays as authored.
 /* stylelint-disable-next-line no-duplicate-selectors */
 .event--adriana-y-israel.theme-preset--jewelry-box-wedding {
 	@include indigo-stationery-register.framed-pass-access;
 }
 
 // Location: the small lines step up to a readable size and each event gets more air.
-// Each scene mixin keeps its own scope rule so the cascade order stays as authored.
 /* stylelint-disable-next-line no-duplicate-selectors */
 .event--adriana-y-israel.theme-preset--jewelry-box-wedding {
 	@include indigo-stationery-scenes.pinned-program-location;
@@ -484,7 +480,6 @@
 }
 
 // RSVP: the register keeps its night-indigo ground (shared indigo stationery register).
-// Each scene mixin keeps its own scope rule so the cascade order stays as authored.
 /* stylelint-disable-next-line no-duplicate-selectors */
 .event--adriana-y-israel.theme-preset--jewelry-box-wedding {
 	@include indigo-stationery-register.framed-register-rsvp;
@@ -547,54 +542,59 @@
 	}
 }
 
-// Quote: the second portrait takes the unused texture layer and crossfades on the hero's rhythm, on
-// `filter: opacity()` (as the hero does) because `opacity` belongs to the scroll animations.
+// Quote: both portraits start at the section top (the header hides on scroll); the second crossfades
+// on the hero's rhythm via `filter: opacity()`, since `opacity` belongs to the scroll animations.
 .event--adriana-y-israel.theme-preset--jewelry-box-wedding
-	.quote-section[data-variant='veiled-photo']
+	.quote-section[data-variant='veiled-photo'] {
+	&::before {
+		top: 0;
+	}
+
 	.quote-texture {
-	position: absolute;
-	z-index: -1;
-	inset: calc(var(--header-height-scrolled, 70px) + var(--preview-banner-height, 0px)) 0 auto;
-	display: block;
-	aspect-ratio: 2 / 3;
-	background: var(--indigo-quote-photo-02) 50% 0 / 100% auto no-repeat;
-	opacity: 100%;
-	mix-blend-mode: normal;
-	filter: opacity(0%);
-	transform-origin: 50% 30%;
-	pointer-events: none;
-	animation: adriana-israel-crossfade 14s ease-in-out infinite;
+		position: absolute;
+		z-index: -1;
+		inset: 0 0 auto;
+		display: block;
+		aspect-ratio: 2 / 3;
+		background: var(--indigo-quote-photo-02) 50% 0 / 100% auto no-repeat;
+		opacity: 100%;
+		mix-blend-mode: normal;
+		filter: opacity(0%);
+		transform-origin: 50% 30%;
+		pointer-events: none;
+		animation: adriana-israel-crossfade 14s ease-in-out infinite;
 
-	@media (width >= 62rem) {
-		inset: calc(var(--header-height-scrolled, 70px) + var(--preview-banner-height, 0px)) 50% 0 0;
-		aspect-ratio: auto;
-		background-size: cover;
-	}
-
-	@include motion.reduced-motion {
-		display: none;
-	}
-
-	@supports (animation-timeline: view()) {
-		@include motion.motion-safe {
-			animation:
-				indigo-quote-near linear both,
-				adriana-israel-crossfade 14s ease-in-out infinite;
-			animation-timeline: --veiled-photo-stage, auto;
-		}
-	}
-
-	@keyframes adriana-israel-crossfade {
-		0%,
-		35%,
-		95%,
-		100% {
-			filter: opacity(0%);
+		@media (width >= 62rem) {
+			inset: 0 50% 0 0;
+			aspect-ratio: auto;
+			background-size: cover;
 		}
 
-		45%,
-		85% {
-			filter: opacity(100%);
+		@include motion.reduced-motion {
+			display: none;
+		}
+
+		@supports (animation-timeline: view()) {
+			@include motion.motion-safe {
+				animation:
+					indigo-quote-near linear both,
+					adriana-israel-crossfade 14s ease-in-out infinite;
+				animation-timeline: --veiled-photo-stage, auto;
+			}
+		}
+
+		@keyframes adriana-israel-crossfade {
+			0%,
+			35%,
+			95%,
+			100% {
+				filter: opacity(0%);
+			}
+
+			45%,
+			85% {
+				filter: opacity(100%);
+			}
 		}
 	}
 }
