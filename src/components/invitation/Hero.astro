@@ -94,6 +94,7 @@ const isFramedPortrait =
 	variant === 'framed-portrait' ||
 	variant === 'bleed-portrait' ||
 	variant === 'cased-portrait' ||
+	variant === 'passe-partout-portrait' ||
 	variant === 'disco-stage';
 const isCeremonialPortrait = variant === 'ceremonial-portrait';
 const isNightArch = variant === 'night-arch' || variant === 'veiled-arch';
@@ -200,7 +201,7 @@ if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
 	isCeremonialPortrait ? (
 	<CeremonialPortraitHero {...Astro.props} />
 	) : isFramedPortrait ? (
-	<FramedPortraitHero {...Astro.props} variant={variant === 'bleed-portrait' || variant === 'cased-portrait' || variant === 'disco-stage' ? variant : 'framed-portrait'} />
+	<FramedPortraitHero {...Astro.props} variant={variant === 'bleed-portrait' || variant === 'cased-portrait' || variant === 'passe-partout-portrait' || variant === 'disco-stage' ? variant : 'framed-portrait'} />
 	) : isEditorialCover ? (
 	<EditorialCoverHero
 		{...Astro.props}

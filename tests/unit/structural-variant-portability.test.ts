@@ -713,7 +713,9 @@ describe('registry-driven canonical variant portability', () => {
 
 		expect(combined).toContain(".invitation-hero[data-variant='split-cover']");
 		expect(combined).toContain(".event-location[data-variant='split-map']");
-		expect(combined).toContain(".event-location[data-variant='stacked-venue-plates']");
+		expect(combined).toContain(
+			".event-location:is([data-variant='stacked-venue-plates'], [data-variant='arched-scenes'])",
+		);
 		expect(combined).toContain(".event-location[data-variant='night-route']");
 		expect(combined).toContain(".event-location[data-variant='star-route']");
 		expect(stackedPlates).toContain('@include plates.venue-plates');
@@ -732,7 +734,9 @@ describe('registry-driven canonical variant portability', () => {
 		expect(combined).toContain(".itinerary[data-variant='editorial-ledger']");
 		expect(combined).toContain(".itinerary[data-variant='editorial-program']");
 		expect(combined).toContain(".personalized-access[data-variant='formal-pass']");
-		expect(combined).toContain(".rsvp[data-variant='formal-register']");
+		expect(combined).toContain(
+			".rsvp:is([data-variant='formal-register'], [data-variant='engraved-register'])",
+		);
 		expect(combined).toContain(".gallery-section[data-variant='single-keepsake']");
 		expect(combined).toContain(".thank-you-section[data-variant='editorial-back-cover']");
 		expect(editorialLedger).toContain('.itinerary__item-icon-wrapper');
