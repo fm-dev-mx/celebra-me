@@ -3,7 +3,8 @@
 .envelope-wrapper[data-variant='celestial-blue'],
 .envelope-wrapper[data-variant='enchanted-rose'],
 .envelope-wrapper[data-variant='jewelry-box'],
-.envelope-wrapper[data-variant='jewelry-box-wedding'] {
+.envelope-wrapper[data-variant='jewelry-box-wedding'],
+.envelope-wrapper[data-variant='ivory-medallion'] {
 	--env-bg-fallback: radial-gradient(
 		ellipse at 50% 40%,
 		var(--color-surface-primary) 0%,

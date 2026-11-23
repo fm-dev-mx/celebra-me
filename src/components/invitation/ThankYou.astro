@@ -45,7 +45,7 @@ const {
 } = Astro.props;
 // Optional split into a display line and a secondary line; profiles style the two spans.
 const closingNameSplit = splitLeadWords(closingName, closingNameLeadWords);
-const usesEditorialLayout = variant === 'editorial-back-cover' || variant === 'portrait-letter' || variant === 'portrait-keepsake' || variant === 'last-song';
+const usesEditorialLayout = variant === 'editorial-back-cover' || variant === 'portrait-letter' || variant === 'inked-letter' || variant === 'portrait-keepsake' || variant === 'last-song';
 const hasSubjectAwareOverlay = Boolean(overlayAnchor || overlaySafeArea);
 
 const firstLetter = message.charAt(0);

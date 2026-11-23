@@ -1,0 +1,217 @@
+@use '../../../tools/motion';
+
+// Countdown: one lifted stationery card on the ivory field. The days lead in large numerals;
+// hours, minutes and seconds sit beneath, divided by foil hairlines.
+.event-theme-wrapper[data-event-slug] .countdown-section:where([data-variant='foil-calendar']) {
+	--countdown-section-background: var(--color-surface-primary);
+	--shadow-premium: none;
+	--color-glass-shadow: transparent;
+	--countdown-label-size: clamp(0.6rem, 1.6vw, 0.7rem);
+	--countdown-label-spacing: 0.16em;
+	--countdown-label-color: rgb(var(--vellum-rose-deep-rgb));
+	--countdown-label-opacity: 1;
+	--countdown-date-size: 1rem;
+	--countdown-date-spacing: 0.06em;
+	--motion-stagger-step: 0ms;
+	--vellum-countdown-sheen: linear-gradient(
+		100deg,
+		rgb(var(--vellum-ink-rgb)) 0%,
+		rgb(var(--vellum-ink-rgb)) 36%,
+		rgb(var(--vellum-foil-deep-rgb)) 50%,
+		rgb(var(--vellum-ink-rgb)) 64%,
+		rgb(var(--vellum-ink-rgb)) 100%
+	);
+
+	padding-block: clamp(3.5rem, 6vw, 5rem);
+
+	// Champagne halo behind the card, in place of the preset's dotted texture.
+	.countdown-texture {
+		background: radial-gradient(
+			ellipse min(26rem, 72vw) 17rem at 50% 54%,
+			rgb(var(--vellum-foil-hi-rgb) / 46%) 0%,
+			rgb(var(--vellum-foil-hi-rgb) / 14%) 48%,
+			transparent 72%
+		);
+		opacity: 100%;
+	}
+
+	.countdown-title {
+		margin-bottom: 2.5rem;
+		color: var(--color-text-primary);
+		font-family: var(--font-display);
+		font-size: var(--foil-calendar-title-size, clamp(2.5rem, 5vw, 3.5rem));
+		font-weight: 500;
+		letter-spacing: 0;
+		line-height: 1.1;
+		text-transform: none;
+	}
+
+	.countdown-title::after {
+		background: var(--vellum-foil-rule);
+	}
+
+	.countdown__timer {
+		position: relative;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0;
+		max-width: 27rem;
+		margin-inline: auto;
+		padding: clamp(1.25rem, 4vw, 1.9rem) clamp(0.9rem, 4vw, 1.75rem);
+		border: 1px solid rgb(var(--vellum-rose-rgb) / 45%);
+		border-radius: var(--foil-calendar-timer-radius, 2px);
+		background: var(--vellum-paper);
+		box-shadow:
+			var(--vellum-paper-edge-shadow),
+			0 1.5rem 2.75rem -1.75rem rgb(var(--vellum-ink-rgb) / 34%);
+
+		// Foil inner frame.
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0.4rem;
+			border: 1px solid rgb(var(--vellum-foil-mid-rgb) / 40%);
+			pointer-events: none;
+		}
+	}
+
+	// The cells are not interactive, so the preset's lift-on-hover is removed.
+	.countdown__segment,
+	.countdown__segment:hover {
+		padding: clamp(0.85rem, 2.5vw, 1.1rem) 0.25rem clamp(0.4rem, 1.5vw, 0.6rem);
+		background: none;
+		backdrop-filter: none;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+		transform: none;
+	}
+
+	.countdown__segment[data-unit='minutes'],
+	.countdown__segment[data-unit='seconds'] {
+		border-inline-start: 1px solid rgb(var(--vellum-foil-mid-rgb) / 45%);
+	}
+
+	.countdown__value {
+		background: var(--vellum-countdown-sheen) 50% 0 / 260% 100%;
+		background-clip: text;
+		color: transparent;
+		font-size: var(--foil-calendar-value-size, clamp(2rem, 7.5vw, 2.75rem));
+		line-height: 1;
+		letter-spacing: 0;
+		-webkit-text-fill-color: transparent;
+	}
+
+	.countdown__label {
+		font-family: var(--font-label);
+		font-weight: 500;
+		color: rgb(var(--vellum-rose-deep-rgb));
+	}
+
+	// The days take the full width of the card, closed by a foil rule with a lozenge.
+	.countdown__segment[data-unit='days'] {
+		grid-column: 1 / -1;
+		margin-bottom: clamp(0.5rem, 2vw, 0.85rem);
+		padding-block: clamp(0.5rem, 2vw, 0.85rem) clamp(1.35rem, 4vw, 1.75rem);
+
+		.countdown__value {
+			font-size: var(--foil-calendar-hero-value-size, clamp(5rem, 24vw, 7.25rem));
+			line-height: 0.9;
+		}
+
+		.countdown__label {
+			margin-top: 0.5rem;
+			font-size: var(--foil-calendar-label-size, clamp(0.72rem, 2.2vw, 0.82rem));
+			letter-spacing: 0.42em;
+			text-indent: 0.42em;
+		}
+
+		&::after {
+			content: '';
+			position: absolute;
+			inset: auto 8% 0;
+			height: 1px;
+			background: var(--vellum-foil-rule);
+		}
+
+		&::before {
+			content: '';
+			position: absolute;
+			bottom: -0.2rem;
+			left: 50%;
+			width: 0.4rem;
+			height: 0.4rem;
+			background: var(--vellum-foil);
+			box-shadow: 0 0 0 0.3rem rgb(var(--vellum-pearl-rgb));
+			transform: translateX(-50%) rotate(45deg);
+		}
+	}
+
+	.countdown-date {
+		margin-top: clamp(2rem, 5vw, 2.75rem);
+	}
+
+	.countdown__value,
+	.countdown-date {
+		font-variant-numeric: lining-nums tabular-nums;
+	}
+
+	// Scroll-linked and reversible: the card settles and a gold glint crosses the numerals as
+	// the section passes through the viewport. Without motion both rest in their final state.
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			// Named on the section: the numerals sit inside a clipping wrapper, which would
+			// otherwise become their timeline source.
+			view-timeline: --vellum-countdown block;
+
+			.countdown__timer {
+				animation: vellum-countdown-settle linear both;
+				animation-timeline: --vellum-countdown;
+				animation-range: entry 0% cover 42%;
+			}
+
+			.countdown-texture {
+				animation: vellum-countdown-halo linear both;
+				animation-timeline: --vellum-countdown;
+				animation-range: entry 10% cover 38%;
+			}
+
+			.countdown__value {
+				animation: vellum-countdown-glint linear both;
+				animation-timeline: --vellum-countdown;
+				animation-range: entry 55% exit 45%;
+			}
+		}
+	}
+}
+
+@keyframes vellum-countdown-settle {
+	from {
+		scale: 0.94;
+	}
+
+	to {
+		scale: 1;
+	}
+}
+
+@keyframes vellum-countdown-halo {
+	from {
+		opacity: 0%;
+		scale: 0.8;
+	}
+
+	to {
+		opacity: 100%;
+		scale: 1;
+	}
+}
+
+@keyframes vellum-countdown-glint {
+	from {
+		background-position: 100% 0;
+	}
+
+	to {
+		background-position: 0% 0;
+	}
+}

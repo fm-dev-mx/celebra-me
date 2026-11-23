@@ -1,0 +1,151 @@
+@use '../../../tools/motion';
+
+// Footer: the closing's ivory runs on into the footer with no seam. A foil hairline
+// that fades at both ends opens it, the farewell is written in the signature's script, and the
+// platform's lines sit below in one quiet centred column. It is held like the latest
+// invitations: the page stops at the closing, and a pull past the bottom opens it.
+.event-theme-wrapper[data-event-slug] .invitation-footer:where([data-variant='foil-colophon']) {
+	--invitation-footer-reveal: held;
+	--footer-reveal-duration: 520ms;
+	--footer-reveal-rise: 0.25rem;
+	--footer-border-color: transparent;
+	--footer-bg: rgb(var(--vellum-pearl-rgb));
+	--footer-sky:
+		linear-gradient(
+				90deg,
+				transparent 0%,
+				rgb(var(--vellum-foil-mid-rgb) / 70%) 50%,
+				transparent 100%
+			)
+			top / min(22rem, 78%) 1px no-repeat,
+		linear-gradient(
+			90deg,
+			rgb(var(--vellum-blush-rgb) / var(--vellum-footer-wash, 26%)) 0%,
+			rgb(var(--vellum-blush-rgb) / 10%) 100%
+		),
+		linear-gradient(180deg, transparent 40%, rgb(var(--vellum-blush-rgb) / 70%) 100%);
+	--footer-padding-bottom: 2.25rem;
+
+	// The farewell steps back to the book's italic serif so the signature above stays the only
+	// script on the closing screen.
+	--footer-closing-font: var(--font-display);
+	--footer-closing-size: clamp(1.2rem, 4vw, 1.45rem);
+	--footer-closing-style: italic;
+	--footer-closing-color: rgb(var(--vellum-rose-deep-rgb));
+	--footer-divider-line: var(--vellum-foil-rule);
+	--footer-divider-glow: none;
+	--footer-content-gap: 1.1rem;
+	--footer-primary-row-direction-sm: column;
+	--footer-primary-row-gap-sm: 1.1rem;
+	--footer-logo-width: 88px;
+	--footer-logo-opacity: 85%;
+	--footer-contact-padding: 0 1.15rem;
+	--footer-contact-border: 1px solid rgb(var(--vellum-rose-rgb) / 70%);
+	--footer-contact-bg: rgb(255 253 249 / 82%);
+	--footer-contact-color: rgb(var(--vellum-ink-rgb));
+	--footer-contact-weight: 400;
+	--footer-control-font-size: 0.6rem;
+	--footer-control-letter-spacing: 0.22em;
+	--footer-rights-size: 0.66rem;
+	--footer-powered-opacity: 100%;
+	--footer-link-tap-padding: 1.1rem;
+	--footer-replay-font-size: 0.66rem;
+	--footer-replay-color: rgb(var(--vellum-rose-deep-rgb));
+	--footer-replay-opacity: 100%;
+
+	// The held state collapses the footer to one pixel; padding there would leave a bare strip.
+	&:not([data-footer-reveal='held']) {
+		padding-top: clamp(3.25rem, 9vw, 4.5rem);
+	}
+
+	// The closing's diagonal ground ends deeper on the left of a wide screen.
+	@media (width >= 992px) {
+		--vellum-footer-wash: 50%;
+	}
+
+	.footer__closing-phrase {
+		margin-bottom: 0.75rem;
+		font-weight: 400;
+		line-height: 1.3;
+		letter-spacing: 0.02em;
+	}
+
+	// A longer foil rule with a small diamond at its centre instead of the glowing dot.
+	.footer__divider {
+		width: min(11rem, 52%);
+		margin-bottom: 1.6rem;
+
+		&::before {
+			width: 5px;
+			height: 5px;
+			border-radius: 0;
+			margin-top: -2.5px;
+			background: rgb(var(--vellum-rose-rgb));
+			rotate: 45deg;
+		}
+	}
+
+	// The contact reads as an engraved tag: a foil hairline on the paper itself, tracked ink, no
+	// lift and no underline.
+	.whatsapp-button {
+		gap: 0.5rem;
+		min-height: 2.25rem;
+		border-color: rgb(var(--vellum-foil-mid-rgb) / 80%);
+		background: transparent;
+		color: rgb(var(--vellum-rose-deep-rgb));
+		box-shadow: none;
+		text-decoration: none;
+
+		svg,
+		img {
+			width: 0.75rem;
+			height: 0.75rem;
+			opacity: 100%;
+		}
+
+		&:hover {
+			border-color: rgb(var(--vellum-rose-deep-rgb));
+			background: rgb(var(--vellum-blush-rgb) / 55%);
+			color: rgb(var(--vellum-ink-rgb));
+			box-shadow: none;
+		}
+	}
+
+	// The platform's lines sit in the quiet voice of a colophon.
+	.footer__rights {
+		max-width: 19rem;
+		margin-inline: auto;
+		line-height: 1.7;
+		letter-spacing: 0.06em;
+		color: rgb(var(--vellum-muted-rgb));
+		text-wrap: balance;
+
+		a {
+			color: inherit;
+			text-decoration-color: rgb(var(--vellum-foil-mid-rgb) / 70%);
+			text-decoration-thickness: 1px;
+			text-underline-offset: 0.25em;
+		}
+	}
+
+	// The replay hangs from a short foil rule, set apart from the colophon above it.
+	.footer__replay-link {
+		flex-direction: column;
+		gap: 0.7rem;
+		margin-top: 0.6rem;
+		color: rgb(var(--vellum-rose-deep-rgb));
+
+		&::before {
+			content: '';
+			display: block;
+			width: 1px;
+			height: 1.6rem;
+			margin-inline: auto;
+			background: linear-gradient(180deg, transparent, rgb(var(--vellum-foil-mid-rgb) / 85%));
+		}
+	}
+
+	.footer__replay-link:hover {
+		color: rgb(var(--vellum-ink-rgb));
+	}
+}

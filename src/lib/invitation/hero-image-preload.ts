@@ -69,6 +69,7 @@ export function buildHeroImagePreloads(hero: HeroImageInput): HeroImagePreload[]
 		hero.variant === 'framed-portrait' ||
 		hero.variant === 'bleed-portrait' ||
 		hero.variant === 'cased-portrait' ||
+		hero.variant === 'passe-partout-portrait' ||
 		hero.variant === 'disco-stage'
 	) {
 		const portrait = hero.backgroundImage && portraitSource(hero.backgroundImage);
