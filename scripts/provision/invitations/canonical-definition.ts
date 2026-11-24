@@ -9,6 +9,8 @@ import {
 
 export interface CanonicalInvitationOptions {
 	slug: string;
+	/** Retired slugs of the same managed identity; drives the guarded rekey. */
+	previousSlugs?: readonly string[];
 	eventType: string;
 	title: string;
 	themeId: string;
@@ -94,6 +96,7 @@ export function defineCanonicalInvitation(
 	const assetKeys = new Set(Object.keys(options.assetFiles));
 	return defineInvitation({
 		slug: options.slug,
+		...(options.previousSlugs ? { previousSlugs: options.previousSlugs } : {}),
 		managedIdentityId: options.managedIdentityId,
 		managedIdentityProvenance: options.managedIdentityProvenance,
 		createdAt: '2026-08-29T00:00:00.000Z',
