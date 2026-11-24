@@ -147,7 +147,8 @@ test.describe('lead capture form', () => {
 		for (const control of await controls.all()) {
 			if (!(await control.isVisible())) continue;
 			const size = await control.boundingBox();
-			expect(size?.height ?? 0).toBeGreaterThanOrEqual(44);
+			// Chromium can report a 44px control as 43.999998 (float rounding).
+			expect(size?.height ?? 0).toBeGreaterThan(43.99);
 		}
 		await page.screenshot({ path: testInfo.outputPath('lead-capture-mobile.png') });
 	});
