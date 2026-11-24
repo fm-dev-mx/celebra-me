@@ -6,7 +6,8 @@ import { expect, test, type Page } from '@playwright/test';
  * the folio. The capture API is mocked, so nothing is written to a database.
  *
  * The dialog renders only with a real contact number (CONTACT_WHATSAPP); without one the CTAs
- * keep linking straight to WhatsApp and this spec has nothing to check.
+ * keep linking straight to WhatsApp and this spec has nothing to check. The canonical fixture server
+ * always sets that number, so there a missing dialog is a failure.
  */
 
 const LEAD_CODE = 'CM-E2E234';
@@ -34,7 +35,12 @@ async function mockCapture(page: Page) {
 }
 
 async function requireDialog(page: Page) {
-	const count = await page.locator('[data-lead-capture-dialog]').count();
+	const dialog = page.locator('[data-lead-capture-dialog]');
+	if (process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES === 'true') {
+		await expect(dialog).toBeAttached();
+		return;
+	}
+	const count = await dialog.count();
 	test.skip(
 		count === 0,
 		'CONTACT_WHATSAPP is a placeholder; the capture dialog is not rendered.',
