@@ -33,6 +33,7 @@ describe('uploadToStorage', () => {
 		expect(fetchSpy).toHaveBeenCalledWith(
 			'http://127.0.0.1:54321/storage/v1/object/invitation-assets/invitations/inv-1/original/asset.webp',
 			expect.objectContaining({
+				signal: expect.any(AbortSignal),
 				method: 'POST',
 				headers: expect.objectContaining({
 					apikey: SECRET_KEY,
@@ -51,6 +52,7 @@ describe('uploadToStorage', () => {
 		expect(fetchSpy).toHaveBeenCalledWith(
 			'http://127.0.0.1:54321/storage/v1/object/invitation-assets',
 			{
+				signal: expect.any(AbortSignal),
 				method: 'DELETE',
 				headers: {
 					apikey: SECRET_KEY,
@@ -60,6 +62,16 @@ describe('uploadToStorage', () => {
 				body: JSON.stringify({ prefixes: ['invitation-data/order-1/photo.jpg'] }),
 			},
 		);
+	});
+
+	it('gives uploads a longer deadline than deletions', async () => {
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true } as Response);
+		const timeoutSpy = jest.spyOn(AbortSignal, 'timeout');
+
+		await uploadToStorage('bucket', 'a.webp', new Blob(['image']), 'image/webp');
+		await deleteFromStorage('bucket', 'a.webp');
+
+		expect(timeoutSpy.mock.calls).toEqual([[60_000], [15_000]]);
 	});
 
 	it('reports Storage deletion failures without leaking provider details', async () => {

@@ -107,6 +107,15 @@ function buildGuestUpdateBody(input: UpdateGuestInput) {
 	return updateBody;
 }
 
+/**
+ * A value inside `or=(…)` ends at the first comma or parenthesis unless it is double-quoted, so a
+ * search such as «(668) 123 4567» would silently drop the conditions after it. Only logic trees
+ * understand the quotes; a plain `column=ilike.…` filter reads them literally.
+ */
+function quoteLogicTreeValue(value: string): string {
+	return encodeURIComponent(`"${value.replace(/["\\]/g, '\\$&')}"`);
+}
+
 export async function findGuestsByEvent(
 	filters: GuestFilters,
 	hostAccessToken: string,
@@ -123,16 +132,14 @@ export async function findGuestsByEvent(
 		const raw = filters.search.trim();
 		if (raw) {
 			const digitsOnly = raw.replace(/\D/g, '');
-			const orConditions = [`full_name.ilike.*${encodeURIComponent(raw)}*`];
 			if (digitsOnly) {
 				const phoneTerm = digitsOnly.length > 10 ? digitsOnly.slice(-10) : digitsOnly;
-				orConditions.push(`phone.ilike.*${encodeURIComponent(phoneTerm)}*`);
+				queryParts.push(
+					`or=(full_name.ilike.${quoteLogicTreeValue(`*${raw}*`)},phone.ilike.*${phoneTerm}*)`,
+				);
+			} else {
+				queryParts.push(`full_name=ilike.*${encodeURIComponent(raw)}*`);
 			}
-			queryParts.push(
-				orConditions.length > 1
-					? `or=(${orConditions.join(',')})`
-					: orConditions[0].replace('.ilike.', '=ilike.'),
-			);
 		}
 	}
 	if (filters.delivery && filters.delivery !== 'all') {

@@ -23,6 +23,8 @@ const publishedMock = findPublishedByInvitationId as jest.Mock;
 describe('engagement maintenance', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		jest.spyOn(console, 'error').mockImplementation(() => undefined);
+		jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 		publishedMock.mockResolvedValue({ content: { theme: { preset: 'jewelry-box' } } });
 		computeMock.mockResolvedValue({ status: 'ok' });
 		anonymizeMock.mockResolvedValue(0);
@@ -74,6 +76,23 @@ describe('engagement maintenance', () => {
 		expect(computeMock).toHaveBeenNthCalledWith(2, 'e2', 'rolling', null, null);
 		expect(result.snapshotsFailed).toBe(1);
 		expect(result.snapshotsWritten).toBe(1);
+	});
+
+	it('logs which snapshot failed without copying the thrown message', async () => {
+		candidatesMock.mockResolvedValue([
+			{ event_id: 'e1', invitation_project_id: 'p1', snapshot_kind: 'rolling' },
+		]);
+		publishedMock.mockRejectedValue(new Error('private content'));
+		computeMock.mockRejectedValue(new Error('private row'));
+
+		await runEngagementMaintenance();
+
+		const logs = [jest.mocked(console.warn).mock.calls, jest.mocked(console.error).mock.calls];
+		expect(logs).toEqual([
+			[[expect.any(String), expect.objectContaining({ invitationId: 'p1' })]],
+			[[expect.any(String), expect.objectContaining({ eventId: 'e1', kind: 'rolling' })]],
+		]);
+		expect(JSON.stringify(logs)).not.toContain('private');
 	});
 
 	it('anonymizes in bounded batches', async () => {
