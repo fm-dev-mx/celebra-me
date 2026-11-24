@@ -1,4 +1,4 @@
-# Canonical Invitation Preparation State — `adriana-y-israel`
+# Canonical Invitation Preparation State — `adriana-e-israel`
 
 > Schema owner: `docs/core/invitation-creation-contract.md` Executable evaluation:
 > `src/lib/invitation-preparation/` (**prepReadiness SSOT**) Skill:
@@ -10,7 +10,7 @@
 
 | Parameter              | Value                     |
 | ---------------------- | ------------------------- |
-| **Slug**               | `adriana-y-israel`        |
+| **Slug**               | `adriana-e-israel`        |
 | **Host Login Alias**   | `adriana_rivas`           |
 | **Event Type**         | `boda`                    |
 | **Preparation Status** | `READY_WITH_PLACEHOLDERS` |
@@ -37,7 +37,7 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 
 | field                 | value                                                      | classification | source        | notes                                                            |
 | --------------------- | ---------------------------------------------------------- | -------------- | ------------- | ---------------------------------------------------------------- |
-| slug                  | adriana-y-israel                                           | verified       | owner-session | Route `/boda/adriana-y-israel`                                   |
+| slug                  | adriana-e-israel                                           | verified       | owner-session | Route `/boda/adriana-e-israel`                                   |
 | hostLoginAlias        | adriana_rivas                                              | inferred       | wa-export     | Bride's first surname taken from her father's name               |
 | celebrantName         | Adriana                                                    | verified       | wa-export     | Bride; contracting client                                        |
 | secondaryName         | Israel                                                     | verified       | wa-export     | Groom                                                            |
@@ -149,7 +149,7 @@ Guest-facing copy is an agent draft in the "usted" register, pending client appr
 | --------------------------------- | -------------------------------------------------------------- | ------------------- |
 | Selected theme preset             | `jewelry-box-wedding`                                          | inferred            |
 | Recommended preset alternatives   | None verified for `boda`                                       | recommendation only |
-| Selected variant / visual profile | profile `adriana-y-israel`: indigo, mist, ivory; gold hairline | inferred            |
+| Selected variant / visual profile | profile `adriana-e-israel`: indigo, mist, ivory; gold hairline | inferred            |
 | Client color requirements         | Azul índigo                                                    | verified            |
 | Recommended palette               | Indigo leads; mist ground; ivory cards; gold hairlines only    | recommendation only |
 | Hero photo and focal crop         | Portrait under the tree; faces above the veil, focal 50% 30%   | applied             |
@@ -210,7 +210,7 @@ appears in the page.
 
 ## Implementation Constraints
 
-- Lane A: client folder `src/invitations/clients/adriana-y-israel/` (definition `invitation.ts`,
+- Lane A: client folder `src/invitations/clients/adriana-e-israel/` (definition `invitation.ts`,
   token-only `profile.scss`, slug-scoped `composition.scss`, `assets/`).
 - No new preset: the palette is re-declared in the slug profile over `jewelry-box-wedding`.
 - Modern `revealVariant` only; the base storybook envelope is not used.

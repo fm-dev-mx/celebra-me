@@ -180,7 +180,7 @@ invitation profiles.
   waits on a plain ground with the guest name and one instruction; on open the same stroke runs on
   to the cover and the ground clears under it. When `--silver-thread-traces-arch: true` the stroke
   traces the hero arch on its way. Reduced motion keeps a static monogram and a plain fade. Profiles
-  tune it only through `--silver-thread-*` tokens; `adriana-y-israel` is its first consumer.
+  tune it only through `--silver-thread-*` tokens; `adriana-e-israel` is its first consumer.
 - envelope.revealVariant seaside-lineart: a shoreline letter. Flat sky field with a fine grain, a
   clean envelope front (name, recipient, pearl wax `shell` seal), one instruction, a wave liner
   shown while the flap opens, and a deckle-edged card with a single shell over a hand-drawn
