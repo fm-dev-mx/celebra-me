@@ -2,6 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { CANONICAL_HOST_ACCESS_TOKEN } from '../../scripts/playwright/canonical-host-fixture';
 import { isVisualParityDeferred } from './harness/visual-baseline-policy';
 import { gotoAfterIslandEffect } from './harness/hydrated-navigation';
+import { waitForSettledAnimations } from './harness/settled-animations';
 
 const EVENT_ID = 'eaeb63e4-809b-427b-a52d-c61c2328c900';
 const ROUTE = `/dashboard/invitados?eventId=${EVENT_ID}`;
@@ -243,11 +244,7 @@ async function expectKeyboardFocusRing(button: Locator) {
 async function expectMobileFooterCancel(modal: Locator) {
 	// The entry animation scales the dialog, so measure only once it has settled.
 	await expect(modal).toBeVisible();
-	await modal.evaluate((element) =>
-		Promise.all(
-			element.getAnimations({ subtree: true }).map((animation) => animation.finished),
-		),
-	);
+	await waitForSettledAnimations(modal.page());
 	const closeBtn = modal.locator('.btn-close');
 	await expect(closeBtn).toBeVisible();
 	const closeBox = await closeBtn.boundingBox();
@@ -337,7 +334,6 @@ test.describe('Mobile guest dashboard walkthrough at 390px', () => {
 		const searchInput = page.locator('input[type="search"]');
 		await expect(searchInput).toBeVisible();
 		await searchInput.fill('Carlos');
-		await page.waitForTimeout(350);
 
 		// Verify Carlos is shown and Sofía is filtered out
 		await expect(page.locator('text=Carlos Gómez')).toBeVisible();
@@ -345,7 +341,6 @@ test.describe('Mobile guest dashboard walkthrough at 390px', () => {
 
 		// Clear search
 		await searchInput.clear();
-		await page.waitForTimeout(350);
 		await expect(page.locator('text=Sofía Martínez')).toBeVisible();
 		await expect(page.locator('text=Carlos Gómez')).toBeVisible();
 
@@ -357,7 +352,7 @@ test.describe('Mobile guest dashboard walkthrough at 390px', () => {
 
 		// 2. Switch to Tarjetas view and verify button layout styling
 		await switchToCardsView(page);
-		await page.waitForTimeout(300);
+		await expect(page.locator('.guest-card').first()).toBeVisible();
 
 		// Verify no horizontal overflow in cards view at 390px
 		const hasCardsOverflow = await page.evaluate(

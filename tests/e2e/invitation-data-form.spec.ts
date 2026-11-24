@@ -278,12 +278,20 @@ test.describe('invitation data form', () => {
 				}),
 			});
 		});
+		await page.clock.install();
 		await page.goto(FORM_PATH);
 
 		await page.getByLabel(/Nombre\(s\) de quien celebra/).fill('Andrea');
 		await expect(page.getByText('Este enlace ya no es válido.')).toBeVisible();
-		// Past the retry delay: no further save goes out.
-		await page.waitForTimeout(6_000);
+		// Past the retry delay: no further save goes out. The request sent afterwards reaches the
+		// mock behind any save the timers had fired.
+		await page.clock.fastForward(6_000);
+		await page.evaluate(() =>
+			fetch('/api/mi-invitacion', {
+				method: 'POST',
+				body: JSON.stringify({ action: 'load' }),
+			}),
+		);
 		expect(actions.filter((action) => action === 'save')).toHaveLength(1);
 	});
 });

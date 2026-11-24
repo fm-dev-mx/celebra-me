@@ -55,7 +55,7 @@ async function fillValidForm(page: Page) {
 	await dialog.getByLabel(/Su ciudad/).fill('Los Mochis');
 	await dialog.getByLabel('Su WhatsApp').fill('668 111 2233');
 	// The honeypot timer drops submissions faster than a person could type.
-	await page.waitForTimeout(2_100);
+	await page.clock.setSystemTime(Date.now() + 2_100);
 }
 
 test.describe('lead capture form', () => {
