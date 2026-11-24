@@ -6,10 +6,10 @@ import { normalizeConsentSnapshot } from '@/lib/tracking/consent-policy';
 import {
 	TrackingEventSchema,
 	PublicTrackingEventSchema,
-	INTERNAL_TRACKING_EVENT_NAMES,
 	hasUnsafeEventProperties,
 	sanitizeEventProperties,
 } from '@/lib/tracking/event-contract';
+import { INTERNAL_TRACKING_EVENT_NAMES } from '@/lib/tracking/event-names';
 
 describe('internal traffic exclusion', () => {
 	it('excludes dashboard-authenticated users, opt-out cookies, and preview/local environments', () => {
