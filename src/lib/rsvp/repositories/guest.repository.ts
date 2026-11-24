@@ -21,6 +21,8 @@ import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
 const TABLE = 'guest_invitations';
 const ACTIVE_GUEST_FILTER = 'deleted_at=is.null';
+const GUEST_PAGE_SIZE = 1000;
+const MAX_GUEST_PAGES = 100; // Safe upper bound (100,000 guests) to prevent infinite loops
 
 function buildGuestInsertBody(input: CreateGuestInput) {
 	const { phone, countryCode } = normalizeOptionalPhonePair({
@@ -147,9 +149,23 @@ export async function findGuestsByEvent(
 	}
 	queryParts.push('order=updated_at.desc');
 
-	return findMany(TABLE, queryParts.join('&'), '*', toGuestRecord, {
-		authToken: hostAccessToken,
-	});
+	const baseQuery = queryParts.join('&');
+	const allRecords: GuestInvitationRecord[] = [];
+	let offset = 0;
+
+	for (let page = 0; page < MAX_GUEST_PAGES; page++) {
+		const pageQuery = `${baseQuery}&limit=${GUEST_PAGE_SIZE}&offset=${offset}`;
+		const batch = await findMany(TABLE, pageQuery, '*', toGuestRecord, {
+			authToken: hostAccessToken,
+		});
+		allRecords.push(...batch);
+		if (batch.length < GUEST_PAGE_SIZE) {
+			break;
+		}
+		offset += GUEST_PAGE_SIZE;
+	}
+
+	return allRecords;
 }
 
 export async function createGuestInvitation(

@@ -595,4 +595,63 @@ describe('asset-reconciliation engine', () => {
 			/Asset pruning requires verified definition and target invitation identity/i,
 		);
 	});
+
+	it('blocks reconciliation when storage state is unknown due to network or probe error', () => {
+		const result = reconcileAssets({
+			canonicalAssets: [mockStorageCanonicalAsset],
+			targetDbAssets: [mockTargetDbRecord],
+			observedStorage: {
+				[mockTargetDbRecord.storagePath]: {
+					present: 'unknown',
+					sha256: null,
+					error: 'fetch failed (ECONNRESET)',
+				},
+			},
+			policy: 'missing',
+		});
+		expect(result.blocked).toBe(true);
+		expect(result.blockReason).toMatch(/Error de red o verificación al sondear Storage/i);
+		expect(result.reconciledAssets[0]?.classification).toBe('INVALID');
+		expect(result.reconciledAssets[0]?.plannedAction).toBe('BLOCK');
+		expect(result.reconciledAssets[0]?.reasonCode).toBe('ASSET_STORAGE_PROBE_ERROR');
+	});
+
+	it('blocks pruning when unreferenced asset storage state is unknown', () => {
+		const unreferenced: TargetAssetRecord = {
+			...mockTargetDbRecord,
+			id: 'ffffffff-ffff-4fff-8fff-ffffffffffff',
+			invitationId: '3d14155c-5c1e-4b47-a87a-0aa8af25e795',
+			displayName: 'Unreferenced Asset',
+			storagePath: 'managed/romina-rios-chaparro/old.webp',
+			managedByDefinitionSlug: 'romina-rios-chaparro',
+			managedSourceKey: 'old-photo',
+		};
+		const result = reconcileAssets({
+			canonicalAssets: [mockStorageCanonicalAsset],
+			targetDbAssets: [mockTargetDbRecord, unreferenced],
+			observedStorage: {
+				[mockTargetDbRecord.storagePath]: {
+					present: true,
+					sha256: mockCanonicalAsset.sha256,
+				},
+				[unreferenced.storagePath]: {
+					present: 'unknown',
+					sha256: null,
+					error: 'network timeout',
+				},
+			},
+			pruneAssets: true,
+			definitionSlug: 'romina-rios-chaparro',
+			targetInvitationId: '3d14155c-5c1e-4b47-a87a-0aa8af25e795',
+		});
+		expect(result.blocked).toBe(true);
+		expect(result.unreferencedAssets).toContainEqual(
+			expect.objectContaining({
+				targetAssetId: unreferenced.id,
+				classification: 'INVALID',
+				plannedAction: 'BLOCK',
+				reasonCode: 'ASSET_STORAGE_PROBE_ERROR',
+			}),
+		);
+	});
 });

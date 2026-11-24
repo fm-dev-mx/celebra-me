@@ -12,14 +12,12 @@ import { selectPackageApprovalAssetHashes } from './approval-asset-hashes.ts';
 import {
 	assertR2MutationTarget,
 	buildR2AssetObjectKey,
-	buildR2SocialImageUrl,
 	uploadOrReconcileR2Asset,
 	verifyR2Asset,
 } from './r2-adapter.ts';
 import {
 	R2_INVITATION_MEDIA,
 	buildR2PublicUrl,
-	isR2InvitationMediaUrl,
 } from '../../src/lib/intake/services/r2-invitation-media.ts';
 import {
 	classifyDbTarget,
@@ -410,7 +408,7 @@ function fetchTargetDbAssets(
 	return targetDbAssets;
 }
 
-async function probeStorageStates(
+export async function probeStorageStates(
 	assets: InvitationPackageAsset[],
 	targetDbAssets: TargetAssetRecord[],
 	targetStorageUrl: string,
@@ -451,15 +449,27 @@ async function probeStorageStates(
 							httpStatus: fetchRes.status,
 						};
 						probedHashes[storagePath] = hash;
-					} else {
+					} else if (fetchRes.status === 404) {
 						observedStorage[storagePath] = {
 							present: false,
 							sha256: null,
 							httpStatus: fetchRes.status,
 						};
+					} else {
+						observedStorage[storagePath] = {
+							present: 'unknown',
+							sha256: null,
+							httpStatus: fetchRes.status,
+							error: `HTTP ${fetchRes.status}`,
+						};
 					}
-				} catch {
-					observedStorage[storagePath] = { present: false, sha256: null };
+				} catch (err) {
+					const message = err instanceof Error ? err.message : String(err);
+					observedStorage[storagePath] = {
+						present: 'unknown',
+						sha256: null,
+						error: message,
+					};
 				}
 			}),
 		);
@@ -474,10 +484,23 @@ function hashTargetAssetState(
 	targetDbAssets: TargetAssetRecord[],
 	observedStorage: Record<string, ObservedStorageState>,
 ): string {
+	// Exclude non-deterministic network error strings from the asset state hash
+	// to preserve deterministic hashing across transient network errors
+	const normalizedObserved: Record<
+		string,
+		{ present: boolean | 'unknown'; sha256: string | null; httpStatus?: number }
+	> = {};
+	for (const [key, val] of Object.entries(observedStorage)) {
+		normalizedObserved[key] = {
+			present: val.present,
+			sha256: val.sha256,
+			...(val.httpStatus !== undefined ? { httpStatus: val.httpStatus } : {}),
+		};
+	}
 	return sha256Hex(
 		JSON.stringify({
 			rows: [...targetDbAssets].sort((a, b) => a.storagePath.localeCompare(b.storagePath)),
-			observedStorage,
+			observedStorage: normalizedObserved,
 		}),
 	);
 }
@@ -1671,161 +1694,20 @@ function analyzeTargetDrift(
 	};
 }
 
-export interface HostedAssetIdentityRow {
-	id: string;
-	display_name: string;
-	storage_path: string;
-	secure_url?: string | null;
-	bucket?: string | null;
-	deleted_at?: string | null;
-	managed_by_definition_slug?: string | null;
-	managed_source_key?: string | null;
-}
+import {
+	type HostedAssetIdentityRow,
+	selectHostedAssetIdentityRow,
+	resolveHostedUploadedAssetSrc,
+	rewriteUploadedDeliverySrcs,
+	applyUploadedSecureUrlsToRefs,
+} from './hosted-asset-identity.ts';
 
-function uniqueHostedAssetIdentityRows(
-	candidateRows: readonly HostedAssetIdentityRow[],
-): HostedAssetIdentityRow[] {
-	return [...new Map(candidateRows.map((row) => [row.id, row])).values()];
-}
-
-function throwAmbiguousHostedAssetIdentity(displayName: string): never {
-	throw new Error(
-		`La identidad del archivo "${displayName}" no se puede resolver de forma unívoca en el destino; no se reutilizará una fila arbitraria.`,
-	);
-}
-
-function hasHostedAssetBucketParity(
-	row: HostedAssetIdentityRow,
-	asset: Pick<InvitationPackageAsset, 'bucket'>,
-): boolean {
-	return typeof row.bucket !== 'string' || row.bucket === asset.bucket;
-}
-
-/**
- * Reuse a live managed row by its canonical definition identity before falling
- * back to path or display name. Path matching requires bucket parity (a null
- * row bucket matches any bucket). If none, reuse a soft-deleted row with the
- * same (bucket, storage_path) so ON CONFLICT (id) can undelete it.
- * Display-name matching ignores deleted rows to avoid colliding with a live alias.
- */
-export function selectHostedAssetIdentityRow(input: {
-	asset: Pick<InvitationPackageAsset, 'key' | 'displayName' | 'storagePath' | 'bucket'>;
-	rows: readonly HostedAssetIdentityRow[];
-	definitionSlug: string;
-	preferredAssetIds?: ReadonlySet<string>;
-}): HostedAssetIdentityRow | null {
-	const liveRows = input.rows.filter((row) => row.deleted_at == null);
-	const managedMatches = liveRows.filter(
-		(row) =>
-			row.managed_by_definition_slug === input.definitionSlug &&
-			row.managed_source_key === input.asset.key,
-	);
-	if (managedMatches.length > 1) {
-		throwAmbiguousHostedAssetIdentity(input.asset.displayName);
-	}
-	if (managedMatches[0]) return managedMatches[0];
-
-	const byPath = new Map<string, HostedAssetIdentityRow[]>();
-	const byDisplayName = new Map<string, HostedAssetIdentityRow[]>();
-	for (const row of liveRows) {
-		const pathRows = byPath.get(row.storage_path) ?? [];
-		pathRows.push(row);
-		byPath.set(row.storage_path, pathRows);
-		const displayRows = byDisplayName.get(row.display_name) ?? [];
-		displayRows.push(row);
-		byDisplayName.set(row.display_name, displayRows);
-	}
-	const candidates = uniqueHostedAssetIdentityRows([
-		...(byPath.get(input.asset.storagePath) ?? []).filter((row) =>
-			hasHostedAssetBucketParity(row, input.asset),
-		),
-		...(byDisplayName.get(input.asset.displayName) ?? []),
-	]);
-	const preferredAssetIds = input.preferredAssetIds ?? new Set<string>();
-	const preferred = candidates.filter((row) => preferredAssetIds.has(row.id));
-	if (preferred.length === 1) return preferred[0]!;
-	if (preferred.length > 1 || candidates.length > 1) {
-		throwAmbiguousHostedAssetIdentity(input.asset.displayName);
-	}
-	if (candidates[0]) return candidates[0];
-
-	const deletedPathMatches = uniqueHostedAssetIdentityRows(
-		input.rows.filter(
-			(row) =>
-				row.deleted_at != null &&
-				row.storage_path === input.asset.storagePath &&
-				hasHostedAssetBucketParity(row, input.asset),
-		),
-	);
-	if (deletedPathMatches.length > 1) {
-		throwAmbiguousHostedAssetIdentity(input.asset.displayName);
-	}
-	return deletedPathMatches[0] ?? null;
-}
-
-function isHttpUrl(value: string): boolean {
-	return /^https?:\/\//i.test(value.trim());
-}
-
-/**
- * Delivery src for a hosted uploaded ref. R2 package assets must never
- * rematerialize to a Supabase Storage URL.
- */
-export function resolveHostedUploadedAssetSrc(
-	asset: InvitationPackageAsset,
-	existingRecord: HostedAssetIdentityRow | null,
-	targetStorageUrl: string,
-): string {
-	if (asset.provider === 'r2') {
-		const persisted = existingRecord?.secure_url?.trim();
-		if (persisted && isHttpUrl(persisted)) return persisted;
-		const packaged = asset.secureUrl?.trim();
-		if (packaged && isHttpUrl(packaged)) return packaged;
-		throw new Error(`R2 package asset "${asset.key}" is missing secureUrl.`);
-	}
-	const storagePath = existingRecord?.storage_path ?? asset.storagePath;
-	return `${targetStorageUrl}/${storagePath}`;
-}
-
-export function rewriteUploadedDeliverySrcs(
-	value: unknown,
-	assetRefs: UploadedAssetMap,
-	parentKey?: string,
-): unknown {
-	if (Array.isArray(value)) {
-		return value.map((item) => rewriteUploadedDeliverySrcs(item, assetRefs, parentKey));
-	}
-	if (value === null || typeof value !== 'object') return value;
-	const record = value as Record<string, unknown>;
-	if (record.type === 'uploaded' && typeof record.assetId === 'string') {
-		const ref = Object.values(assetRefs).find(
-			(candidate) => candidate.assetId === record.assetId,
-		);
-		if (!ref) return record;
-		const src =
-			parentKey === 'ogImage' && isR2InvitationMediaUrl(ref.src)
-				? buildR2SocialImageUrl(ref.src)
-				: ref.src;
-		return { ...record, src };
-	}
-	return Object.fromEntries(
-		Object.entries(record).map(([key, item]) => [
-			key,
-			rewriteUploadedDeliverySrcs(item, assetRefs, key),
-		]),
-	);
-}
-
-function applyUploadedSecureUrlsToRefs(
-	assetRefs: UploadedAssetMap,
-	assets: InvitationPackageAsset[],
-): void {
-	for (const asset of assets) {
-		const ref = assetRefs[asset.key];
-		if (!ref || !asset.secureUrl || !isHttpUrl(asset.secureUrl)) continue;
-		assetRefs[asset.key] = { ...ref, src: asset.secureUrl };
-	}
-}
+export {
+	type HostedAssetIdentityRow,
+	selectHostedAssetIdentityRow,
+	resolveHostedUploadedAssetSrc,
+	rewriteUploadedDeliverySrcs,
+};
 
 function resolveTargetAssetRefs(
 	pkg: InvitationPackageData,

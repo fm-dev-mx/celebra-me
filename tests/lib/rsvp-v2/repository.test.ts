@@ -287,5 +287,28 @@ describe('rsvp repository', () => {
 				'deleted_at=is.null',
 			);
 		});
+
+		it('paginates guests when count exceeds page size (1000)', async () => {
+			const page1 = Array.from({ length: 1000 }, (_, i) =>
+				makeGuestRow({ id: `guest-${i}`, full_name: `Guest ${i}` }),
+			);
+			const page2 = Array.from({ length: 50 }, (_, i) =>
+				makeGuestRow({ id: `guest-${1000 + i}`, full_name: `Guest ${1000 + i}` }),
+			);
+
+			supabaseRestRequestMock.mockResolvedValueOnce(page1);
+			supabaseRestRequestMock.mockResolvedValueOnce(page2);
+
+			const results = await findGuestsByEvent({ eventId: 'evt-1' }, 'token');
+
+			expect(results).toHaveLength(1050);
+			expect(supabaseRestRequestMock).toHaveBeenCalledTimes(2);
+			expect(supabaseRestRequestMock.mock.calls[0]?.[0]?.pathWithQuery).toContain(
+				'limit=1000&offset=0',
+			);
+			expect(supabaseRestRequestMock.mock.calls[1]?.[0]?.pathWithQuery).toContain(
+				'limit=1000&offset=1000',
+			);
+		});
 	});
 });
