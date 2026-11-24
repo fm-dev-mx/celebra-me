@@ -117,6 +117,36 @@ describe('buildHostedAssetUpsertSql', () => {
 		expect(setClause).not.toMatch(/\binvitation_id\s*=/);
 	});
 
+	it('keeps an object under the old slug only after a verified rekey', () => {
+		const oldKey = `invitations/cumple/alba-vieja/family-${familyAsset.sha256}.webp`;
+		const input = {
+			assetId: '7bce748d-8c86-40e3-b28e-0b5523640034',
+			targetInvitationId: '28110aef-078d-46bd-857c-893e10e11bc1',
+			asset: {
+				...r2Asset,
+				providerPublicId: oldKey,
+				secureUrl: `https://media-staging.celebra-me.com/${oldKey}`,
+			},
+			definitionSlug,
+			operationId: '11111111-1111-4111-8111-111111111111',
+			targetEnvironment: 'preview' as const,
+			eventType: 'cumple',
+			slug: definitionSlug,
+		};
+		expect(() => buildHostedAssetUpsertSql(input)).toThrow();
+		expect(() => buildHostedAssetUpsertSql({ ...input, verifiedRekeyFrom: 'otra' })).toThrow();
+		expect(buildHostedAssetUpsertSql({ ...input, verifiedRekeyFrom: 'alba-vieja' })).toContain(
+			`'${oldKey}'`,
+		);
+		expect(() =>
+			buildHostedAssetUpsertSql({
+				...input,
+				verifiedRekeyFrom: 'alba-vieja',
+				asset: { ...input.asset, secureUrl: `https://media.celebra-me.com/${oldKey}` },
+			}),
+		).toThrow('canonical destination URL');
+	});
+
 	it('refuses to update a row owned by another invitation', () => {
 		expect(sql).toContain('where invitation_assets.invitation_id = excluded.invitation_id');
 	});
