@@ -1,7 +1,7 @@
 import { isDevEnvironment } from '@/lib/environment';
-import { SUPABASE_PROJECT_REFS } from '@/lib/intake/mutations/environment-identity';
 import { isLocalProcess, isLocalSupabaseUrl } from '@/lib/server/deploy-identity';
 import { getEnv } from '@/lib/server/env';
+import { isPreviewSupabaseUrl } from '@/lib/server/preview-supabase-url';
 
 export interface DevMfaBypassInput {
 	devMfaBypass: string | undefined;
@@ -9,20 +9,6 @@ export interface DevMfaBypassInput {
 	isDevServer: boolean;
 	supabaseUrl: string | undefined;
 	celebraRuntimeTarget: string | undefined;
-}
-
-/** Preview-project host only — never Production or other remote projects. */
-function isPreviewSupabaseUrl(urlString: string | undefined): boolean {
-	if (!urlString) return false;
-	try {
-		const url = new URL(urlString);
-		if (url.protocol !== 'https:' || url.username || url.password) return false;
-		const hostname = url.hostname.toLowerCase();
-		const ref = SUPABASE_PROJECT_REFS.preview;
-		return hostname === `${ref}.supabase.co` || hostname === `${ref}.supabase.com`;
-	} catch {
-		return false;
-	}
 }
 
 function readDefaultInput(): DevMfaBypassInput {
