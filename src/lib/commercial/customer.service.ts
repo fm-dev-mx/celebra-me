@@ -1,5 +1,5 @@
+import { emptyToUndefined } from '@/lib/shared/data-utils';
 import {
-	emptyToUndefined,
 	findCommercialCustomerByEmail,
 	findCommercialCustomerByPhone,
 	linkCommercialLeadToCustomer,

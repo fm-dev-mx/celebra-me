@@ -11,13 +11,8 @@ import {
 	firstViewerNode,
 	queryCloudflareGraphql,
 } from '../cloudflare-graphql';
-import {
-	type ProviderFailure,
-	asRows,
-	fetchProviderJson,
-	finiteNumber,
-	isRecord,
-} from '../provider-request';
+import { isRecord } from '@/lib/shared/data-utils';
+import { type ProviderFailure, asRows, fetchProviderJson, finiteNumber } from '../provider-request';
 import type { CloudflareCollectorConfig } from './collector-config';
 import type { DatasetResult, PlatformSnapshotFailure } from './types';
 

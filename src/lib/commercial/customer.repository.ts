@@ -1,3 +1,4 @@
+import { emptyToUndefined } from '@/lib/shared/data-utils';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { normalizeReferralCode } from '@/lib/commercial/referrals';
 
@@ -90,11 +91,6 @@ interface CommercialCustomerRow {
 
 const LEAD_SELECT =
 	'id,lead_code,channel,status,customer_id,name,email,phone,phone_e164,event_type,package_interest,utm_source,utm_medium,utm_campaign,created_at,is_past_sale,referred_by_customer_id,referral_code_used,referrer_external_id';
-
-export function emptyToUndefined(value: string | undefined): string | undefined {
-	const trimmed = value?.trim();
-	return trimmed ? trimmed : undefined;
-}
 
 function toLeadCandidate(row: CommercialLeadRow): CommercialLeadCandidate {
 	return {

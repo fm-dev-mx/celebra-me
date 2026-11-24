@@ -5,6 +5,7 @@ import {
 	boolFallback,
 	num,
 	numFallback,
+	emptyToUndefined,
 	normalizeDate,
 	mergeOverlay,
 } from '@/lib/shared/data-utils';
@@ -88,6 +89,24 @@ describe('numFallback', () => {
 		expect(numFallback(null)).toBe(0);
 		expect(numFallback('42')).toBe(0);
 		expect(numFallback(undefined)).toBe(0);
+	});
+});
+
+describe('emptyToUndefined', () => {
+	it('returns undefined for undefined or null', () => {
+		expect(emptyToUndefined(undefined)).toBeUndefined();
+		expect(emptyToUndefined(null)).toBeUndefined();
+	});
+
+	it('returns undefined for empty string or whitespace-only strings', () => {
+		expect(emptyToUndefined('')).toBeUndefined();
+		expect(emptyToUndefined('   ')).toBeUndefined();
+		expect(emptyToUndefined('\t\n')).toBeUndefined();
+	});
+
+	it('returns trimmed string for non-empty text', () => {
+		expect(emptyToUndefined('hello')).toBe('hello');
+		expect(emptyToUndefined('  hello world  ')).toBe('hello world');
 	});
 });
 

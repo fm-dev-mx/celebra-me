@@ -5,7 +5,8 @@
  * reads the snapshots it stores.
  */
 
-import { finiteNumber, isRecord } from './provider-request';
+import { isRecord } from '@/lib/shared/data-utils';
+import { finiteNumber } from './provider-request';
 
 export const ACCOUNT_ID_PATTERN = /^[0-9a-f]{32}$/i;
 

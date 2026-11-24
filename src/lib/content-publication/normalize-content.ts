@@ -1,9 +1,7 @@
+import { isRecord } from '@/lib/shared/data-utils';
+
 export type CanonicalJson =
 	null | string | number | boolean | CanonicalJson[] | { [key: string]: CanonicalJson };
-
-function isObject(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 export function normalizeForPublication(value: unknown): CanonicalJson {
 	if (value === undefined) return null;
@@ -14,7 +12,7 @@ export function normalizeForPublication(value: unknown): CanonicalJson {
 	if (Array.isArray(value)) {
 		return value.map((item) => normalizeForPublication(item));
 	}
-	if (isObject(value)) {
+	if (isRecord(value)) {
 		const result: Record<string, CanonicalJson> = {};
 		for (const key of Object.keys(value).sort((a, b) => a.localeCompare(b))) {
 			result[key] = normalizeForPublication(value[key]);

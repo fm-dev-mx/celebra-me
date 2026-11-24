@@ -3,6 +3,7 @@ import {
 	findSupabaseStorageUrls,
 	isRemoteMediaInvitation,
 	isRemoteHostedAsset,
+	isHttpUrl,
 } from '../../src/lib/intake/services/remote-media-hosting';
 
 describe('remote media hosting', () => {
@@ -34,6 +35,16 @@ describe('remote media hosting', () => {
 		).toBe(true);
 		expect(isRemoteHostedAsset({ provider: 'supabase', secureUrl: null })).toBe(false);
 		expect(isRemoteHostedAsset({ provider: 'r2', secureUrl: '' })).toBe(false);
+	});
+
+	it('validates http and https URLs correctly with isHttpUrl', () => {
+		expect(isHttpUrl('http://example.com')).toBe(true);
+		expect(isHttpUrl('https://media.celebra-me.com/asset.webp')).toBe(true);
+		expect(isHttpUrl('  https://example.com/spaced  ')).toBe(true);
+		expect(isHttpUrl('ftp://example.com')).toBe(false);
+		expect(isHttpUrl('/relative/path.webp')).toBe(false);
+		expect(isHttpUrl('')).toBe(false);
+		expect(isHttpUrl('   ')).toBe(false);
 	});
 
 	it('detects Supabase storage URLs', () => {

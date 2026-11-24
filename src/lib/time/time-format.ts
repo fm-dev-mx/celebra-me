@@ -1,7 +1,4 @@
-function str(value: unknown): string | undefined {
-	if (typeof value === 'string' && value.length > 0) return value;
-	return undefined;
-}
+import { str } from '@/lib/shared/data-utils';
 
 const TIME_24H_REGEX = /^(\d{2}):(\d{2})(?::\d{2})?$/;
 /** Accepts `6:00 PM`, `6:00 pm`, and Spanish display forms `6:00 p. m.` / `6:00 a.m.`. */
