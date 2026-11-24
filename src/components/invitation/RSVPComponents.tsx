@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { forwardRef, useState } from 'react';
 import type { FocusEventHandler, ReactNode, RefObject, SyntheticEvent } from 'react';
 import { useRsvpContext } from '@/components/invitation/rsvp-context';
@@ -583,13 +583,13 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 					)}
 				</div>
 				{attendanceStatus !== null && (
-					<motion.div
+					<m.div
 						className="rsvp__actions"
 						initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
 					>
-						<motion.button
+						<m.button
 							type="submit"
 							disabled={isSubmitting}
 							className={`rsvp__button rsvp__button--${submitStatus}`}
@@ -604,7 +604,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 									attendanceStatus={attendanceStatus}
 								/>
 							</span>
-						</motion.button>
+						</m.button>
 						{showCancelEdit && onCancelEdit && (
 							<button
 								type="button"
@@ -614,7 +614,7 @@ export const RsvpFormView = forwardRef<HTMLElement, RsvpFormViewProps>((props, r
 								Cancelar
 							</button>
 						)}
-					</motion.div>
+					</m.div>
 				)}
 			</form>
 		</RsvpShell>

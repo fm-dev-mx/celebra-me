@@ -286,6 +286,11 @@ jest.mock('framer-motion', () => {
 
 	return {
 		motion,
+		// `m` renders like `motion`; LazyMotion only supplies features, so it passes children through.
+		m: motion,
+		LazyMotion: ({ children }: { children: React.ReactNode }) =>
+			React.createElement(React.Fragment, null, children),
+		domAnimation: {},
 		AnimatePresence: ({ children }: { children: React.ReactNode }) =>
 			React.createElement(React.Fragment, null, children),
 		useReducedMotion: () => false,
