@@ -1,9 +1,9 @@
 {
-    "referenceSha": "610b22a05b927f6fcd8e2ef4dd820aadc8b73a52",
-    "acceptedAt": "2026-11-24T00:02:39.343Z",
-    "matrixHash": "366a0e1123bea29661c48966e4f08512f194dce2cf3d946318a7f1ffbb2a2b75",
-    "candidateManifestSha256": "59ea57ce0e669deef0172bf3875ac919b50768610c323dd0e5882d62714bd077",
-    "acceptedManifestSha256": "04b057694f46ebfa145c0106c6882d11b94bad6fa458f2fe2900b5d579ae4c6d",
+    "referenceSha": "7ee6b5c7d1c29312a0f2427ab7e8d0939fc1fb9d",
+    "acceptedAt": "2026-11-24T00:25:27.062Z",
+    "matrixHash": "7f0b37f16e877c178860187e2211460f124703eae395aed58f8d7318a8894c52",
+    "candidateManifestSha256": "94fa2d968f442a86e5d29d3c050b484669d7b75ae51d6b49e612eaff2f9a59df",
+    "acceptedManifestSha256": "3bfa48c797f73ea16ca20ed742dd073a4a3afff508ab8e5f0adee044044aee76",
     "reviewedPaths": [
         "pages/invitation-xv-maripau-charles-mobile.png",
         "pages/invitation-xv-maripau-charles-desktop.png"
