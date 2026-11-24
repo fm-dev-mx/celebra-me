@@ -13,7 +13,11 @@ import {
 import { LOCATION_VARIANTS } from '@/lib/invitation/section-variants';
 
 /** Variants built on the shared venue plates: two or more venues, optional compact cards. */
-const PLATE_VARIANTS: ReadonlySet<string> = new Set(['stacked-venue-plates', 'night-route']);
+const PLATE_VARIANTS: ReadonlySet<string> = new Set([
+	'stacked-venue-plates',
+	'arched-scenes',
+	'night-route',
+]);
 
 /** Printed-program variants: one or more venues, optionally a pinned route scene. */
 const PROGRAM_VARIANTS: ReadonlySet<string> = new Set(['program-sheet', 'pinned-program']);
@@ -143,6 +147,7 @@ export const locationSchema = z
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[4]) }),
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[5]) }),
 		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[6]) }),
+		locationBaseSchema.strict().extend({ variant: z.literal(LOCATION_VARIANTS[7]) }),
 	])
 	.superRefine((location, context) => {
 		if (
@@ -180,7 +185,7 @@ export const locationSchema = z
 				code: 'custom',
 				path: ['presentationOptions', 'venueCard'],
 				message:
-					'location.presentationOptions.venueCard=compact requires stacked-venue-plates or night-route',
+					'location.presentationOptions.venueCard=compact requires stacked-venue-plates, arched-scenes or night-route',
 			});
 		}
 

@@ -185,16 +185,24 @@ export const PERMANENT_REDIRECTS: readonly PermanentRedirectRule[] = [
 		destination: '/comunion-angelical',
 	},
 	{
-		source: '/adriana-e-israel',
-		destination: '/adriana-y-israel',
+		source: '/adriana-y-israel',
+		destination: '/adriana-e-israel',
 	},
 	{
-		source: '/adriana-e-israel/',
-		destination: '/adriana-y-israel',
+		source: '/adriana-y-israel/',
+		destination: '/adriana-e-israel',
 	},
 	{
-		source: '/boda/adriana-e-israel',
-		destination: '/adriana-y-israel',
+		source: '/boda/adriana-y-israel',
+		destination: '/adriana-e-israel',
+	},
+	{
+		source: '/boda/adriana-y-israel/i/:shortId',
+		destination: '/boda/adriana-e-israel/i/:shortId',
+	},
+	{
+		source: '/i/adriana-y-israel/:code',
+		destination: '/i/adriana-e-israel/:code',
 	},
 ];
 

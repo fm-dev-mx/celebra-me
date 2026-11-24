@@ -1,0 +1,189 @@
+@use '../../../tools/motion';
+
+// Gifts: the espresso band continues from the confirmation and the single
+// suggestion reads as a sealed envelope (flap hairlines + ringed medallion).
+.event-theme-wrapper[data-event-slug] .gifts-section:where([data-variant='sealed-envelope']) {
+	--gifts-bg: rgb(var(--vellum-berry-rgb));
+	--gifts-text-color: rgb(var(--vellum-pearl-rgb) / 86%);
+	--gifts-title-color: rgb(var(--vellum-foil-hi-rgb));
+	--gifts-subtitle-color: rgb(var(--vellum-pearl-rgb) / 86%);
+	--gifts-card-title-color: rgb(var(--vellum-pearl-rgb));
+	--gifts-card-bg: rgb(var(--vellum-pearl-rgb) / 4%);
+	--gifts-card-border: 1px solid rgb(var(--vellum-foil-mid-rgb) / 46%);
+	--gifts-card-shadow: 0 1.5rem 3rem -1.5rem rgb(0 0 0 / 55%);
+	--gifts-card-hover-shadow: 0 1.5rem 3rem -1.5rem rgb(0 0 0 / 55%);
+	--gifts-card-hover-transform: none;
+	--gifts-card-radius: 2px;
+	--gifts-card-padding: 0;
+	--gifts-card-title-font: var(--vellum-font-serif);
+	--gifts-card-title-size: 1.5rem;
+	--gifts-card-title-weight: 400;
+	--gifts-icon-size: 3.5rem;
+	--gifts-icon-color: rgb(var(--vellum-foil-hi-rgb));
+	--gifts-icon-bg: rgb(var(--vellum-berry-rgb));
+	--gifts-icon-border: 1px solid rgb(var(--vellum-foil-mid-rgb) / 80%);
+	--gifts-icon-shadow:
+		0 0 0 0.3rem rgb(var(--vellum-berry-rgb)),
+		0 0 0 calc(0.3rem + 1px) rgb(var(--vellum-foil-mid-rgb) / 34%),
+		0 0 2.5rem rgb(var(--vellum-foil-hi-rgb) / 22%);
+	--gifts-padding-block: clamp(2.25rem, 5vw, 3.5rem) clamp(2.75rem, 6vw, 4.5rem);
+	--gifts-header-margin-bottom: 1.5rem;
+	--gifts-title-size: clamp(1.9rem, 4.6vw, 2.75rem);
+	--gifts-title-weight: 400;
+	--gifts-title-letter-spacing: 0.06em;
+	--gifts-subtitle-size: 1rem;
+	--gifts-subtitle-line-height: 1.6;
+	--gifts-subtitle-max-width: 30rem;
+	--gifts-separator-display: none;
+
+	position: relative;
+	isolation: isolate;
+	overflow: clip;
+
+	// Candlelight continuing from the confirmation, mirrored to the right.
+	&::before {
+		content: '';
+		position: absolute;
+		inset: 18% 0 auto;
+		z-index: -1;
+		height: 20rem;
+		background: radial-gradient(
+			ellipse 34% 48% at 66% 50%,
+			rgb(var(--vellum-foil-mid-rgb) / 16%),
+			transparent 70%
+		);
+		pointer-events: none;
+	}
+
+	.gifts-section__title {
+		background: linear-gradient(
+			100deg,
+			rgb(var(--vellum-foil-hi-rgb)) 0%,
+			rgb(var(--vellum-foil-mid-rgb)) 48%,
+			rgb(var(--vellum-foil-hi-rgb)) 100%
+		);
+		background-clip: text;
+		color: transparent;
+
+		.word {
+			background: inherit;
+			background-clip: text;
+			color: transparent;
+		}
+	}
+
+	.gifts-section__flourish {
+		margin-block: 0.6rem 0.9rem;
+		color: rgb(var(--vellum-foil-mid-rgb));
+	}
+
+	.gifts-section__subtitle {
+		font-family: var(--vellum-font-sans);
+		text-wrap: pretty;
+	}
+
+	.gifts-grid[data-count='1'] {
+		grid-template-columns: minmax(0, 22rem);
+	}
+
+	.gift-card {
+		overflow: visible;
+		backdrop-filter: none;
+
+		// Envelope flap: two hairlines meeting where the medallion sits.
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0 0 auto;
+			height: 4.75rem;
+			background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 50' preserveAspectRatio='none'%3E%3Cpath d='M0 0L50 50L100 0' fill='none' stroke='rgb(198 160 96)' stroke-opacity='.6' stroke-width='1' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E")
+				center / 100% 100% no-repeat;
+			pointer-events: none;
+		}
+	}
+
+	.gift-card__inner {
+		padding: 3rem 1.25rem 1.6rem;
+		gap: 0;
+	}
+
+	.gift-card__icon-medallion {
+		margin-block-end: 1.15rem;
+		backdrop-filter: none;
+	}
+
+	.gift-card__title {
+		font-style: italic;
+		letter-spacing: 0.01em;
+		margin-block-end: 0;
+	}
+
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			&::before {
+				animation: vellum-gifts-glow linear both;
+				animation-timeline: view();
+				animation-range: entry 0% exit 100%;
+			}
+
+			.gift-card {
+				animation: vellum-gifts-envelope linear both;
+				animation-timeline: view();
+				animation-range: entry 0% cover 34%;
+
+				&::before {
+					animation: vellum-gifts-flap linear both;
+					animation-timeline: view();
+					animation-range: entry 20% cover 40%;
+				}
+			}
+
+			.gift-card__icon-medallion {
+				animation: vellum-gifts-seal linear both;
+				animation-timeline: view();
+				animation-range: entry 40% cover 42%;
+			}
+		}
+	}
+}
+
+@keyframes vellum-gifts-glow {
+	0% {
+		translate: 0 4rem;
+		opacity: 40%;
+	}
+
+	50% {
+		opacity: 100%;
+	}
+
+	100% {
+		translate: 0 -3rem;
+		opacity: 60%;
+	}
+}
+
+@keyframes vellum-gifts-envelope {
+	from {
+		translate: 0 2.25rem;
+		opacity: 0%;
+	}
+}
+
+@keyframes vellum-gifts-flap {
+	from {
+		clip-path: inset(0 0 100% 0);
+	}
+
+	to {
+		clip-path: inset(0 0 0 0);
+	}
+}
+
+@keyframes vellum-gifts-seal {
+	from {
+		scale: 0.6;
+		rotate: -18deg;
+		opacity: 0%;
+	}
+}

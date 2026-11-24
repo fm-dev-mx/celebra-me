@@ -1,0 +1,169 @@
+@use 'formal-register';
+@use '../../../tools/motion';
+
+// Engraved register: the formal register on an espresso band, with an engraved ghost numeral.
+
+.event-theme-wrapper[data-event-slug] .rsvp.rsvp[data-variant='engraved-register'] {
+	// The register ships its own body face; this invitation keeps the profile sans.
+	--formal-chapter-body: var(--vellum-font-sans);
+	--formal-register-body-size: 1rem;
+	--formal-register-label-size: 0.8rem;
+	--formal-register-title-weight: 400;
+	--formal-register-open: formal-register-open;
+
+	position: relative;
+	isolation: isolate;
+
+	// Candlelight behind the heading: depth without a panel.
+	&::before {
+		content: '';
+		position: absolute;
+		inset: -3.5rem 0 auto;
+		z-index: -2;
+		height: 15rem;
+		background: radial-gradient(
+			ellipse 46% 46% at 30% 50%,
+			rgb(var(--vellum-foil-mid-rgb) / 20%) 0%,
+			rgb(var(--vellum-foil-mid-rgb) / 6%) 55%,
+			transparent 100%
+		);
+		pointer-events: none;
+	}
+
+	// Ghost numeral: the celebration itself as the backdrop of the register.
+	&::after {
+		content: 'XV';
+		position: absolute;
+		inset: -0.75rem 0 auto auto;
+		z-index: -1;
+		font-family: var(--vellum-font-serif);
+		font-size: var(--engraved-register-ghost-size, clamp(8.5rem, 34vw, 15rem));
+		font-weight: 300;
+		line-height: 0.8;
+		letter-spacing: -0.02em;
+		color: transparent;
+		-webkit-text-stroke: 1px rgb(var(--vellum-foil-mid-rgb) / 30%);
+		pointer-events: none;
+		user-select: none;
+		mask-image: linear-gradient(180deg, rgb(0 0 0) 30%, transparent 96%);
+	}
+
+	.rsvp__header {
+		margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+	}
+
+	// The shared eyebrow is a fixed English label; it is replaced in place by a Spanish one
+	// followed by a short foil rule.
+	.rsvp__eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 0.85rem;
+		margin-bottom: 0.7rem;
+		font-size: var(--engraved-register-eyebrow-size, 0);
+
+		&::before {
+			content: 'Confirmación';
+			font-size: var(--formal-register-eyebrow-size, 0.68rem);
+			color: rgb(var(--vellum-foil-hi-rgb));
+		}
+
+		&::after {
+			content: '';
+			width: clamp(2.5rem, 12vw, 4.5rem);
+			height: 1px;
+			background: linear-gradient(90deg, rgb(var(--vellum-foil-mid-rgb)), transparent);
+		}
+	}
+
+	// Champagne foil where metal reads best; solid champagne is the fallback.
+	.rsvp__title {
+		letter-spacing: 0.04em;
+		color: rgb(var(--vellum-foil-hi-rgb));
+
+		@supports (background-clip: text) {
+			background: linear-gradient(
+				100deg,
+				rgb(var(--vellum-foil-hi-rgb)) 0%,
+				rgb(var(--vellum-foil-mid-rgb)) 48%,
+				rgb(var(--vellum-foil-hi-rgb)) 100%
+			);
+			background-clip: text;
+			color: transparent;
+
+			.word {
+				background: inherit;
+				background-clip: text;
+				color: transparent;
+			}
+		}
+	}
+
+	.rsvp__subcopy {
+		color: rgb(var(--vellum-pearl-rgb) / 86%);
+	}
+
+	.rsvp__legend {
+		color: rgb(var(--vellum-foil-hi-rgb) / 92%);
+	}
+
+	// Answers read as two lines of a register, ruled in foil.
+	.rsvp__radio-group .rsvp__radio-card {
+		min-height: 3.75rem;
+		padding-inline: 0.85rem;
+		border-top-color: rgb(var(--vellum-foil-mid-rgb) / 42%);
+		transition: background-color 0.3s ease;
+
+		&:last-child {
+			border-bottom-color: rgb(var(--vellum-foil-mid-rgb) / 42%);
+		}
+
+		&:has(input:checked) {
+			background: linear-gradient(
+				90deg,
+				rgb(var(--vellum-foil-mid-rgb) / 22%),
+				rgb(var(--vellum-foil-mid-rgb) / 4%)
+			);
+			box-shadow: inset 2px 0 0 rgb(var(--vellum-foil-hi-rgb));
+		}
+	}
+
+	// Locked state: the note sits on a foil-ruled card instead of floating on the band.
+	&[data-state='locked'] .rsvp__locked-card {
+		gap: 0.75rem;
+		padding: 1.35rem 0 0 1.15rem;
+		border-top: 1px solid rgb(var(--vellum-foil-mid-rgb) / 42%);
+		border-left: 2px solid rgb(var(--vellum-foil-hi-rgb));
+		border-image: linear-gradient(180deg, rgb(var(--vellum-foil-hi-rgb)), transparent) 1;
+	}
+
+	&[data-state='locked'] .rsvp__locked-message {
+		font-style: italic;
+		font-weight: 400;
+	}
+
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			&::after {
+				animation: vellum-register-ghost linear both;
+				animation-timeline: view();
+				animation-range: entry 0% exit 100%;
+			}
+		}
+	}
+}
+
+@keyframes vellum-register-ghost {
+	0% {
+		translate: 0 3.5rem;
+		opacity: 30%;
+	}
+
+	45% {
+		opacity: 100%;
+	}
+
+	100% {
+		translate: 0 -2.5rem;
+		opacity: 70%;
+	}
+}

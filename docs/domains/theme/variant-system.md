@@ -44,16 +44,16 @@ audit tooling (`pnpm invitation:published-audit`).
 - **Hero:** `standard`, `editorial-cover`, `split-cover`, `framed-portrait`, `bleed-portrait`,
   `cased-portrait`, `disco-stage`, `ceremonial-portrait`, `night-arch` (the photograph inside an
   arched window on a night sky, names below; wide screens put the arch on the right), `veiled-arch`
-  (requires `hero.backgroundImage`).
+  (requires `hero.backgroundImage`), `passe-partout-portrait`.
 - **Family:** `standard`, `split-groups`, `asymmetric-groups`, `ceremonial-family`, `framed-groups`;
   the three group layouts require at least two explicit `groups`.
 - **Location:** `standard`, `split-map`, `stacked-venue-plates`, `night-route` (the venue plates as
   numbered stops on one rail under a night sky; editorial invitations draw the rail with scroll),
   `star-route` (editorial rows that alternate a large photo with the time and venue data around one
   line with a star per venue; the intro lede moves to a footnote), `program-sheet`, `pinned-program`
-  (one visible venue or more); prerequisites are enforced by the owning schema.
-  `stacked-venue-plates` and `night-route` need at least two visible venues and accept
-  `venueCard: 'compact'`; `star-route` also needs two visible venues.
+  (one visible venue or more), `arched-scenes`; prerequisites are enforced by the owning schema.
+  `stacked-venue-plates`, `arched-scenes` and `night-route` need at least two visible venues and
+  accept `venueCard: 'compact'`; `star-route` also needs two visible venues.
 - **Gallery:** `uniform-grid`, `editorial-mosaic`, `magazine-spread`, `feature-mosaic`,
   `feature-stack`, `paired-feature-band`, `index-choreography`, `single-keepsake`,
   `narrative-stack`, `mirrored-mosaic`, `paired-portraits`, `album-assemble`, `photo-booth`,
@@ -67,15 +67,16 @@ audit tooling (`pnpm invitation:published-audit`).
   CSS where supported, otherwise a plain list; requires `itinerary.items`).
 - **Gifts:** `standard`, `editorial-catalog`, `gift-tag` (the whole registry fits one screen: a
   flush-left heading, beside the cards on wide screens; the store card as a tag with a bow and a
-  number pill; the cash gift as a strip; tokens `--gifts-tag-*`), `framed-card`.
-- **RSVP:** `standard`, `editorial-press-pass`, `formal-register`, `reply-card`, `framed-register`.
+  number pill; the cash gift as a strip; tokens `--gifts-tag-*`), `framed-card`, `sealed-envelope`.
+- **RSVP:** `standard`, `editorial-press-pass`, `formal-register`, `reply-card`, `framed-register`,
+  `engraved-register`.
 - **Personalized Access:** `standard`, `ornamented`, `editorial-pass`, `formal-pass`, `reply-card`,
   `framed-pass`.
 - **Thank You:** `standard`, `editorial-back-cover`, `portrait-letter`, `full-bleed-photo`,
-  `portrait-keepsake`, `last-song`, `ceremonial-closing`, `veiled-photo`; `full-bleed-photo` and
-  `veiled-photo` require `thankYou.image`.
+  `portrait-keepsake`, `last-song`, `ceremonial-closing`, `veiled-photo`, `inked-letter`;
+  `full-bleed-photo` and `veiled-photo` require `thankYou.image`.
 - **Countdown:** `standard`, `editorial-folio`, `magazine-folio`, `clock-face`, `written-days`,
-  `mirror-ball`, `framed-scene`.
+  `mirror-ball`, `framed-scene`, `foil-calendar`.
 - **Quote:** `standard`, `neon-sign`, `veiled-photo`.
 - **Memories:** `card`; requires `memories.publicSlug`. It has no default variant, because the
   section exists only for invitations with a memory space.
@@ -179,7 +180,7 @@ invitation profiles.
   waits on a plain ground with the guest name and one instruction; on open the same stroke runs on
   to the cover and the ground clears under it. When `--silver-thread-traces-arch: true` the stroke
   traces the hero arch on its way. Reduced motion keeps a static monogram and a plain fade. Profiles
-  tune it only through `--silver-thread-*` tokens; `adriana-y-israel` is its first consumer.
+  tune it only through `--silver-thread-*` tokens; `adriana-e-israel` is its first consumer.
 - envelope.revealVariant seaside-lineart: a shoreline letter. Flat sky field with a fine grain, a
   clean envelope front (name, recipient, pearl wax `shell` seal), one instruction, a wave liner
   shown while the flap opens, and a deckle-edged card with a single shell over a hand-drawn
@@ -280,6 +281,26 @@ invitation profiles.
   and an outlined store button, closed by a thin frame. `--framed-card-*`.
 - rsvp.framed-register: the formal-register underline form as a one-screen centered composition.
   `--framed-register-*`.
+- hero.passe-partout-portrait: framed-portrait markup with a gold hairline mount set in from the
+  edge, tracked small-caps occasion and cue, a script name, and a title-card entrance after the
+  reveal. Materials from `--vellum-*` tokens.
+- location.arched-scenes: the stacked-venue-plates markup played as three scenes: an arched window
+  per venue with its line drawing, the hour set large and one map button, the guest notes as the
+  third scene. Needs two visible venues. `--vellum-*` and `--vellum-scene-*` tokens.
+- rsvp.engraved-register: the formal-register form on an espresso band with an engraved ghost
+  numeral. `--vellum-foil-*` and the `--formal-register-*` tokens.
+- gifts.sealed-envelope: the single suggestion as a sealed envelope (flap hairlines and a ringed
+  medallion) on the espresso band. `--vellum-*` tokens.
+- thankYou.inked-letter: the portrait-letter layout with an inked signature, a champagne field and
+  an offset foil outline behind the arch. `--vellum-*` tokens.
+- countdown.foil-calendar: one lifted stationery card; the days in large numerals over hours,
+  minutes and seconds divided by foil hairlines. `--vellum-*` tokens.
+- envelope.revealVariant ivory-medallion: laid cotton envelope with a gold wax medallion, a
+  foil-lined throat and flap, and a framed letter drawn from the pocket; built on the shared light
+  reveal sheet. Tokens on the envelope wrapper (`--vellum-*`, `--reveal-card-*`).
+- footer `composition.footerVariant: 'foil-colophon'`: the closing's ivory runs into the footer; a
+  fading foil hairline, a script farewell and the platform lines in one centred column. Loaded from
+  `footer/_foil-colophon.scss`.
 - personalizedAccess.framed-pass: the formal-pass ticket inside a framed page with a corner sprig.
   `--framed-pass-*` (art-corner, gold-ink, gold-rgb, olive, olive-deep, paper, stage-top).
 - thankYou.veiled-photo: full-bleed-photo markup under a deep veil on one screen. Requires

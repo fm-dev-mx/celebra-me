@@ -1,0 +1,269 @@
+@use 'portrait-letter-layout' as letter;
+@use '../../../tools/motion';
+
+// Inked letter: the portrait-letter layout with an inked signature and a champagne field.
+
+.thank-you-section[data-variant='inked-letter'] {
+	@include letter.composition;
+}
+
+// Closing: the espresso band of the gifts melts into champagne and ivory, and the
+// portrait arch stands in front of an offset foil outline. Everything is legible at rest;
+// scroll only opens the frame, settles the portrait and draws the rule.
+.event-theme-wrapper[data-event-slug] .thank-you-section[data-variant='inked-letter'] {
+	--color-warm-ivory: rgb(var(--vellum-pearl-rgb));
+	--color-warm-ivory-rgb: var(--vellum-pearl-rgb);
+	--color-candle-gold-rgb: var(--vellum-foil-hi-rgb);
+	--color-antique-gold: rgb(var(--vellum-rose-deep-rgb));
+	--color-antique-gold-rgb: var(--vellum-foil-mid-rgb);
+	--color-blush-pink-rgb: var(--vellum-blush-rgb);
+	--color-rose-shadow-rgb: var(--vellum-berry-rgb);
+	--color-deep-rose-red: rgb(var(--vellum-foil-deep-rgb));
+	--color-velvet-burgundy: rgb(var(--vellum-foil-deep-rgb));
+	--thank-you-letter-ambient-opacity: 0%;
+	--thank-you-letter-padding: clamp(5.75rem, 15vw, 8rem) clamp(1.5rem, 6vw, 4.5rem)
+		clamp(2.25rem, 6vw, 4rem);
+	--thank-you-letter-padding-block: clamp(8rem, 14svh, 9.5rem) clamp(4rem, 8svh, 5.5rem);
+	--thank-you-letter-grid-min-height: 0;
+	--thank-you-letter-message-size: clamp(1.15rem, 0.7vw + 1rem, 1.6rem);
+	--thank-you-letter-signature-size: clamp(3rem, 9vw, 4.75rem);
+	--thank-you-portrait-shadow:
+		0 1.75rem 3.5rem rgb(var(--vellum-berry-rgb) / 22%),
+		0 0.35rem 0.9rem rgb(var(--vellum-berry-rgb) / 12%);
+	--thank-you-letter-image-filter: saturate(1.02) contrast(1.03);
+	--thank-you-letter-background:
+		linear-gradient(
+				180deg,
+				rgb(var(--vellum-berry-rgb)) 0%,
+				rgb(var(--vellum-berry-rgb) / 72%) 18%,
+				rgb(var(--vellum-petal-rgb) / 50%) 52%,
+				transparent 100%
+			)
+			top / 100% clamp(4.75rem, 13vw, 8rem) no-repeat,
+		radial-gradient(
+				ellipse 90% 100% at 38% 0%,
+				rgb(var(--vellum-foil-hi-rgb) / 45%) 0%,
+				transparent 100%
+			)
+			top / 100% clamp(9rem, 22vw, 14rem) no-repeat,
+		linear-gradient(
+			170deg,
+			rgb(var(--vellum-pearl-rgb)) 0%,
+			rgb(var(--vellum-blush-rgb)) 55%,
+			rgb(var(--vellum-pearl-rgb)) 100%
+		);
+
+	// The variant's grain layer becomes a short foil rule that settles the bridge.
+	&::before {
+		inset: clamp(4rem, 10.5vw, 6.25rem) auto auto 50%;
+		width: 4rem;
+		height: 1px;
+		background: var(--vellum-foil-rule);
+		opacity: 100%;
+		transform: translateX(-50%);
+	}
+
+	.thank-you-editorial {
+		gap: clamp(1.5rem, 5vw, 3rem);
+	}
+
+	// Single column: a letter reads from one edge, so the portrait shares the left margin of the
+	// text and signature. Desktop keeps the portrait centred in its own column.
+	.thank-you-editorial__media {
+		position: relative;
+		width: clamp(9.5rem, min(46vw, 23.5svh), 15rem);
+
+		// On phones the portrait spans the opening line of the letter beneath it.
+		@media (width < 1024px) {
+			justify-self: start;
+			width: min(100% - 2.75rem, 23rem);
+		}
+
+		// Offset foil arch behind the portrait.
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			z-index: -1;
+			border: 1px solid rgb(var(--vellum-foil-mid-rgb) / 78%);
+			border-radius: var(--inked-letter-arch-radius, 999px 999px 0.8rem 0.8rem);
+			translate: 0.7rem 0.7rem;
+			pointer-events: none;
+		}
+
+		// Candlelight halo that lifts the arch off the page.
+		&::after {
+			content: '';
+			position: absolute;
+			inset: -14% -22%;
+			z-index: -2;
+			background: radial-gradient(
+				ellipse 50% 50% at 50% 46%,
+				rgb(var(--vellum-foil-hi-rgb) / 62%) 0%,
+				transparent 100%
+			);
+			pointer-events: none;
+		}
+	}
+
+	.thank-you-editorial__copy {
+		max-width: 26rem;
+	}
+
+	.thank-you-message {
+		background: none;
+		-webkit-text-fill-color: currentcolor;
+		color: rgb(var(--vellum-ink-rgb));
+		line-height: 1.5;
+	}
+
+	// A compact letter cannot carry a floated initial without breaking "Gracias".
+	.thank-you-message .drop-cap {
+		float: none;
+		margin: 0;
+		color: inherit;
+		font-size: inherit;
+		font-weight: inherit;
+		line-height: inherit;
+		text-shadow: none;
+	}
+
+	// The signature never waits for a class: it is visible at rest.
+	.signature-block {
+		margin-top: clamp(0.75rem, 3vw, 1.5rem);
+		opacity: 100%;
+		transform: none;
+		filter: none;
+		transition: none;
+	}
+
+	// Deep foil keeps the script above 4.5:1 on ivory.
+	.closing-name {
+		padding-block: 0.1em;
+		font-family: 'Pinyon Script', var(--font-display);
+		font-weight: 400;
+		line-height: 1.15;
+		background: linear-gradient(
+			110deg,
+			rgb(var(--vellum-rose-deep-rgb)) 0%,
+			rgb(var(--vellum-foil-deep-rgb)) 50%,
+			rgb(var(--vellum-rose-deep-rgb)) 100%
+		);
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+
+		// Editorial motion splits the name into words. Each word paints the foil itself and
+		// the parent stops painting, or the script shows twice.
+		&:has(.word) {
+			background: none;
+		}
+
+		.word {
+			background: linear-gradient(
+				110deg,
+				rgb(var(--vellum-rose-deep-rgb)) 0%,
+				rgb(var(--vellum-foil-deep-rgb)) 50%,
+				rgb(var(--vellum-rose-deep-rgb)) 100%
+			);
+			background-clip: text;
+			-webkit-text-fill-color: transparent;
+			color: transparent;
+			text-shadow: none;
+		}
+	}
+
+	@media (width >= 1024px) {
+		.thank-you-editorial {
+			gap: clamp(3.5rem, 6vw, 6rem);
+		}
+
+		.thank-you-editorial__media {
+			width: clamp(17rem, 23vw, 21rem);
+
+			&::before {
+				translate: 1.1rem 1.1rem;
+			}
+		}
+
+		.thank-you-editorial__copy {
+			max-width: 30rem;
+			padding-top: 0;
+		}
+	}
+
+	@include motion.motion-safe {
+		@supports (animation-timeline: view()) {
+			&::before {
+				animation: vellum-closing-rule linear both;
+				animation-timeline: view();
+				animation-range: entry 10% entry 70%;
+			}
+
+			.thank-you-editorial__media::before {
+				animation: vellum-closing-frame linear both;
+				animation-timeline: view();
+				animation-range: entry 20% cover 42%;
+			}
+
+			.thank-you-editorial__media::after {
+				animation: vellum-closing-halo linear both;
+				animation-timeline: view();
+				animation-range: entry 10% cover 45%;
+			}
+
+			.photo-image {
+				animation: vellum-closing-portrait linear both;
+				animation-timeline: view();
+				animation-range: entry 0% cover 48%;
+			}
+
+			.signature-block {
+				animation: vellum-closing-signature linear both;
+				animation-timeline: view();
+				animation-range: entry 40% entry 110%;
+			}
+		}
+	}
+}
+
+@keyframes vellum-closing-media {
+	from {
+		translate: 0 1.5rem;
+		opacity: 0%;
+	}
+}
+
+@keyframes vellum-closing-rule {
+	from {
+		scale: 0 1;
+		opacity: 0%;
+	}
+}
+
+@keyframes vellum-closing-frame {
+	from {
+		translate: 0 0;
+		opacity: 0%;
+	}
+}
+
+@keyframes vellum-closing-halo {
+	from {
+		scale: 0.7;
+		opacity: 0%;
+	}
+}
+
+@keyframes vellum-closing-portrait {
+	from {
+		scale: 1.16;
+	}
+}
+
+@keyframes vellum-closing-signature {
+	from {
+		translate: 0 1rem;
+		opacity: 0%;
+	}
+}
