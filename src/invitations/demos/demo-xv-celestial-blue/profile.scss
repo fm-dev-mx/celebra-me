@@ -182,9 +182,8 @@
 	.invitation-hero[data-variant='standard'] {
 		--hero-isolation: isolate;
 		--hero-content-z-index: 2;
-		--hero-media-reveal-animation: celestial-hero-media-reveal;
 
-		// The editorial hero replaces the photograph animation once revealed; keep the entrance there.
+		// Photograph entrance, on the editorial hero's own hook: it starts when the envelope opens.
 		--hero-photo-drift: celestial-hero-media-reveal;
 		--hero-photo-drift-duration: 0.86s;
 		--hero-constellation-display: block;

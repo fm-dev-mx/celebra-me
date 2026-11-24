@@ -292,6 +292,24 @@ test('gives Celestial its constellation hero, folio turns and stacked access car
 	}
 });
 
+test('plays the Celestial photo entrance when the envelope opens, not behind it', async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.emulateMedia({ reducedMotion: 'no-preference' });
+	await page.goto('/xv/demo-xv-celestial-blue?forceEnvelope=true');
+
+	const photo = page.locator('.invitation-hero__background img');
+	const wrapper = page.locator('.event-theme-wrapper');
+	await expect(wrapper).toHaveAttribute('data-reveal-state', 'sealed');
+	expect(await photo.evaluate((element) => element.getAnimations().length)).toBe(0);
+
+	await page.getByRole('button', { name: 'Abrir sobre de la invitación' }).click();
+	await expect(wrapper).toHaveAttribute('data-reveal-state', 'revealed', { timeout: 10_000 });
+	await expect(photo).toHaveCSS('animation-name', 'celestial-hero-media-reveal');
+	await expect(photo).toHaveCSS('opacity', '1');
+});
+
 test('keeps Celestial section entrances pending during a slow read, then reveals each family on scroll', async ({
 	page,
 }) => {
