@@ -10,6 +10,21 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.77.4] - 2026-11-23
+
+Publishes Maripau Charles' XV invitation and moves Adriana e Israel to its new slug. No database
+migrations.
+
+### Changed
+
+- Invitations: Maripau Charles gets the redesigned XV invitation with shared vellum variants (#1102)
+  and is ready to publish (#1106).
+- Invitations: Adriana e Israel drops the quote band and moves to `adriana-e-israel` (#1107).
+- Provisioning: a verified rekey can keep the R2 objects stored under the old slug (#1108).
+- Provisioning: a metadata repair after a verified rekey keeps the old slug's objects (#1109), and a
+  verified rekey can upload changed assets under the new slug (#1110).
+- Provisioning: the release hash baseline records both invitations as applied to Preview (#1111).
+
 ## [0.77.3] - 2026-11-23
 
 Updates Adriana e Israel's photos and ceremony details. No database migrations.
