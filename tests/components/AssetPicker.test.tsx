@@ -220,4 +220,38 @@ describe('AssetPicker', () => {
 			expect(screen.getByLabelText('Cerrar selector de imágenes')).toBeInTheDocument();
 		});
 	});
+
+	it('clears the previous import error when the import is retried', async () => {
+		const importAnswers: Promise<unknown>[] = [
+			Promise.resolve({
+				ok: false,
+				status: 500,
+				json: async () => ({ error: { message: 'Falló la importación.' } }),
+			}),
+			new Promise(() => undefined),
+		];
+		jest.spyOn(globalThis, 'fetch').mockImplementation(((url: string) =>
+			String(url).includes('/import-bundled')
+				? importAnswers.shift()
+				: Promise.resolve({
+						ok: true,
+						json: async () => ({
+							assets: [
+								{
+									...MOCK_ASSETS.assets[0],
+									isBundled: true,
+									bundledKey: 'hero',
+								},
+							],
+						}),
+					})) as never);
+
+		render(<AssetPicker invitationId="test-id" onSelect={jest.fn()} onClose={jest.fn()} />);
+		const item = await screen.findByLabelText('Seleccionar Foto 1');
+		fireEvent.click(item);
+		expect(await screen.findByText('Falló la importación.')).toBeInTheDocument();
+
+		fireEvent.click(item);
+		expect(screen.queryByText('Falló la importación.')).not.toBeInTheDocument();
+	});
 });

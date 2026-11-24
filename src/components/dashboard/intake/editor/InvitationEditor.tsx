@@ -57,6 +57,7 @@ import {
 	applySectionToBaseline,
 	buildSectionSaveValue,
 	getDirtySectionKey,
+	isSectionUnchanged,
 } from '@/lib/intake/services/section-content-mapper';
 import {
 	getPublicationFeedback,
@@ -170,6 +171,13 @@ export default function InvitationEditor({ initialContext }: Props) {
 		metadataFromContext(initialContext),
 	);
 	const [dirty, setDirty] = useState<Set<string>>(new Set());
+	// Latest values, so a save can tell whether the admin kept typing while it was in flight.
+	const latestContent = useRef(content);
+	const latestMetadata = useRef(metadata);
+	useEffect(() => {
+		latestContent.current = content;
+		latestMetadata.current = metadata;
+	}, [content, metadata]);
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [success, setSuccess] = useState<Record<string, string>>({});
 	const [previewVersion, setPreviewVersion] = useState(0);
@@ -202,6 +210,16 @@ export default function InvitationEditor({ initialContext }: Props) {
 		setSuccess((current) => ({ ...current, [section]: '' }));
 	};
 
+	const settleSaved = (section: string, unchanged: boolean, message: string) => {
+		setDirty((current) => {
+			const next = new Set(current);
+			if (unchanged) next.delete(section);
+			else next.add(section);
+			return next;
+		});
+		if (unchanged) setSuccess((current) => ({ ...current, [section]: message }));
+	};
+
 	const updateContent = <Key extends keyof DraftContent>(key: Key, value: DraftContent[Key]) => {
 		setContent((current) => ({ ...current, [key]: value }));
 		markDirty(getDirtySectionKey(key));
@@ -224,12 +242,11 @@ export default function InvitationEditor({ initialContext }: Props) {
 				expectedUpdatedAt,
 			);
 			updateContentBaseline(section, content);
-			setDirty((current) => {
-				const next = new Set(current);
-				next.delete(section);
-				return next;
-			});
-			setSuccess((current) => ({ ...current, [section]: 'Sección guardada.' }));
+			settleSaved(
+				section,
+				isSectionUnchanged(content, latestContent.current, section),
+				'Sección guardada.',
+			);
 			if (shouldRefreshPreview) refreshSavedPreview();
 			return result;
 		} catch (error) {
@@ -246,14 +263,10 @@ export default function InvitationEditor({ initialContext }: Props) {
 		try {
 			const invitation = await editor.saveMetadata(metadata, expectedUpdatedAt);
 			const nextMetadata = metadataFromContext({ ...editor.context, invitation });
-			setMetadata(nextMetadata);
+			const unchanged = latestMetadata.current === metadata;
+			if (unchanged) setMetadata(nextMetadata);
 			setMetadataBaseline(nextMetadata);
-			setDirty((current) => {
-				const next = new Set(current);
-				next.delete('metadata');
-				return next;
-			});
-			setSuccess((current) => ({ ...current, metadata: 'Datos guardados.' }));
+			settleSaved('metadata', unchanged, 'Datos guardados.');
 			if (shouldRefreshPreview) refreshSavedPreview();
 			return invitation;
 		} catch (error) {

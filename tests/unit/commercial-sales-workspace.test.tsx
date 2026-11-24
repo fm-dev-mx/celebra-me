@@ -731,4 +731,61 @@ describe('SalesWorkspace — customer lookup & CAPI polling', () => {
 		expect(urls.some((u) => u.includes('conv-new'))).toBe(true);
 		expect(statusCalls).toHaveLength(1);
 	});
+
+	it('ignores a slow answer for the previously selected customer', async () => {
+		const pending: Array<{ url: string; resolve: (value: ApiResult<unknown>) => void }> = [];
+		getSpy.mockImplementation((url: string) => {
+			if (/commercial\/(customers|orders|timeline)\?/.test(url)) {
+				return new Promise((resolve) => pending.push({ url, resolve }));
+			}
+			return Promise.resolve({ ok: true, status: 200, data: { data: [] } });
+		});
+		const answer = (customerId: string, name: string) => {
+			for (const { url, resolve } of pending.filter((entry) =>
+				entry.url.includes(customerId),
+			)) {
+				const data = url.includes('/customers?')
+					? { id: customerId, displayName: name, email: `${customerId}@example.com` }
+					: url.includes('/orders?')
+						? [
+								{
+									id: `order-${customerId}`,
+									orderNumber: `ORD-${customerId}`,
+									customerId,
+									status: 'confirmed',
+									eventType: 'xv',
+									currency: 'MXN',
+									totalAmount: 1000,
+									depositAmount: 500,
+									amountPaid: 0,
+								},
+							]
+						: [];
+				resolve({ ok: true, status: 200, data: { data } });
+			}
+		};
+		render(
+			<SalesWorkspace
+				initialLeads={[
+					{ ...defaultLead, id: 'lA', leadCode: 'LA', name: 'Ana', customerId: 'cust-a' },
+					{
+						...defaultLead,
+						id: 'lB',
+						leadCode: 'LB',
+						name: 'Berta',
+						customerId: 'cust-b',
+					},
+				]}
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole('button', { name: /Ana/ }));
+		fireEvent.click(screen.getByRole('button', { name: /Berta/ }));
+		await act(async () => answer('cust-b', 'Berta'));
+		expect((await screen.findAllByText(/ORD-cust-b/)).length).toBeGreaterThan(0);
+		await act(async () => answer('cust-a', 'Ana'));
+
+		expect(screen.getAllByText(/ORD-cust-b/).length).toBeGreaterThan(0);
+		expect(screen.queryByText(/ORD-cust-a/)).not.toBeInTheDocument();
+	});
 });
