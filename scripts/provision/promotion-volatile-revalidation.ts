@@ -129,6 +129,8 @@ function readJsonObject(stdout: string): Record<string, unknown> {
  * Concurrent identity drift vs planned managed-identity backfill.
  * A still-null Production identity is the planned repair, not PLAN_DRIFT.
  * A different UUID, extra row, or owner/slug change is concurrent drift.
+ * A verified Production rename (the live row still carries one of the package's
+ * previousSlugs) holds only when its managed identity already matches exactly.
  */
 export function reviewedInvitationIdentityHolds(input: {
 	plannedCreate: boolean;
@@ -137,18 +139,22 @@ export function reviewedInvitationIdentityHolds(input: {
 	targetOwnerUserId: string;
 	expectedManagedIdentityId: string;
 	expectedSlug: string;
+	previousSlugs?: ReadonlyArray<string>;
 }): boolean {
 	if (input.plannedCreate) return input.matches.length === 0;
 	if (input.matches.length !== 1) return false;
 	const row = input.matches[0]!;
 	const liveIdentity =
 		typeof row.managed_identity_id === 'string' ? row.managed_identity_id : null;
-	return (
-		row.id === input.targetInvitationId &&
-		row.created_by === input.targetOwnerUserId &&
-		row.slug === input.expectedSlug &&
-		(liveIdentity === input.expectedManagedIdentityId || liveIdentity === null)
-	);
+	if (row.id !== input.targetInvitationId || row.created_by !== input.targetOwnerUserId) {
+		return false;
+	}
+	if (row.slug === input.expectedSlug) {
+		return liveIdentity === input.expectedManagedIdentityId || liveIdentity === null;
+	}
+	const renamedFrom =
+		typeof row.slug === 'string' && (input.previousSlugs ?? []).includes(row.slug);
+	return renamedFrom && liveIdentity === input.expectedManagedIdentityId;
 }
 
 function defaultReadTargetState(input: {
@@ -222,6 +228,7 @@ select json_build_object(
 			targetOwnerUserId,
 			expectedManagedIdentityId: input.packageData.invitation.managedIdentityId,
 			expectedSlug: plan.invitationSlug,
+			previousSlugs: input.packageData.invitation.previousSlugs ?? [],
 		})
 	) {
 		throw new Error(
