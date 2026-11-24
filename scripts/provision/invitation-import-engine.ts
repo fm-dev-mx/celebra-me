@@ -301,6 +301,27 @@ function loadTargetInvitationRows(
 	);
 }
 
+/**
+ * Production never accepts a free-form --rekey-from. A rename is implied only when the package
+ * lists the old slug in previousSlugs, the active row on that slug already carries the SAME
+ * managedIdentityId, and the new slug is free. Anything else falls through to REKEY_REQUIRED.
+ */
+export function deriveProductionRekeyFrom(input: {
+	slug: string;
+	managedIdentityId: string;
+	previousSlugs: readonly string[];
+	activeRows: ReadonlyArray<Record<string, unknown>>;
+}): string | undefined {
+	if (input.activeRows.some((row) => String(row.slug) === input.slug)) return undefined;
+	for (const previousSlug of input.previousSlugs) {
+		const hit = input.activeRows.find((row) => String(row.slug) === previousSlug);
+		if (hit && String(hit.managed_identity_id ?? '') === input.managedIdentityId) {
+			return previousSlug;
+		}
+	}
+	return undefined;
+}
+
 function rowToManagedIdentity(row: Record<string, unknown> | null | undefined): {
 	id: string;
 	slug: string;
@@ -490,9 +511,7 @@ export function assertReconciledMutationTargets(
  * and UPLOAD and OVERWRITE write the new binary under the new slug's own key
  * (`uploadOrReconcileR2Asset` derives it from the target identity), so the old object remains.
  */
-const SOURCE_DELETING_ASSET_ACTIONS: ReadonlySet<string> = new Set([
-	'PRUNE_STORAGE_AND_METADATA',
-]);
+const SOURCE_DELETING_ASSET_ACTIONS: ReadonlySet<string> = new Set(['PRUNE_STORAGE_AND_METADATA']);
 
 /**
  * A metadata repair after a verified rekey must keep the row on the object that already exists
@@ -1945,7 +1964,21 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		rekeyFrom: options.rekeyFrom,
 	});
 	const activeRows = invitationRows.filter((row) => row.archived_at === null);
-	const rekeyFrom = options.rekeyFrom?.trim();
+	const rekeyFrom =
+		options.rekeyFrom?.trim() ||
+		(expectedTarget === 'production'
+			? deriveProductionRekeyFrom({
+					slug: pkg.invitation.slug,
+					managedIdentityId,
+					previousSlugs,
+					activeRows,
+				})
+			: undefined);
+	if (rekeyFrom && !options.rekeyFrom) {
+		console.log(
+			`[IDENTITY_REKEY] Production rename verified by managedIdentityId ${managedIdentityId}: "${rekeyFrom}" -> "${pkg.invitation.slug}" (R2 objects stay under the old prefix).`,
+		);
+	}
 	let existingInvitationRow: Record<string, unknown> | null;
 	if (rekeyFrom) {
 		const sourceByOldSlug = activeRows.find((row) => String(row.slug) === rekeyFrom) ?? null;

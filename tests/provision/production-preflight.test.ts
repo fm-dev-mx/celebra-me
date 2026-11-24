@@ -197,6 +197,22 @@ describe('Production read-only preflight integration', () => {
 		expect((error as ProductionPreflightError).safeReason).toMatch(/^No fue posible verificar/);
 	});
 
+	it('shows the rekey guard message instead of masking it', async () => {
+		writeApproval();
+		const message =
+			'REKEY_REQUIRED: Managed identity abc is still bound to slug "old-slug". Rerun with --rekey-from old-slug.';
+		const error = await runProductionPreflight({
+			packageData: packageData(),
+			now,
+			getProductionDbUrl: () => ({ url: 'postgresql://redacted@production.invalid/db' }),
+			runEngine: async () => {
+				throw new Error(message);
+			},
+		}).catch((caught: unknown) => caught);
+		expect(error).toBeInstanceOf(ProductionPreflightError);
+		expect((error as ProductionPreflightError).safeReason).toBe(message);
+	});
+
 	it('rejects an empty or malformed inspection result', async () => {
 		writeApproval();
 		await expect(
