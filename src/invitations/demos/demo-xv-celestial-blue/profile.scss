@@ -183,6 +183,10 @@
 		--hero-isolation: isolate;
 		--hero-content-z-index: 2;
 		--hero-media-reveal-animation: celestial-hero-media-reveal;
+
+		// The editorial hero replaces the photograph animation once revealed; keep the entrance there.
+		--hero-photo-drift: celestial-hero-media-reveal;
+		--hero-photo-drift-duration: 0.86s;
 		--hero-constellation-display: block;
 		--hero-constellation-opacity: 0.8;
 		--hero-constellation:
