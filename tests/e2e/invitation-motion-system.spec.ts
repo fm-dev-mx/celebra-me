@@ -1,14 +1,16 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { waitForSettledAnimations } from './harness/settled-animations';
 
 const ROUTES = [
 	{
 		name: 'celestial',
 		path: '/xv/demo-xv-celestial-blue?skipEnvelope=true',
+		editorial: true,
 	},
 	{
 		name: 'abril',
 		path: '/xv/abril-michelle-becerra-rea?skipEnvelope=true',
+		editorial: false,
 	},
 ] as const;
 
@@ -19,6 +21,23 @@ const VIEWPORTS = [
 	{ width: 430, height: 932 },
 	{ width: 1440, height: 900 },
 ] as const;
+
+/** Scrolls from top to bottom in half-viewport steps, so every observer sees its targets. */
+async function scrollThroughPage(page: Page) {
+	await page.evaluate(async () => {
+		const frames = () =>
+			new Promise<void>((resolve) =>
+				requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+			);
+		const step = Math.round(window.innerHeight / 2);
+		for (let top = 0; top < document.documentElement.scrollHeight; top += step) {
+			window.scrollTo({ top, behavior: 'instant' });
+			await frames();
+		}
+		window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
+		await frames();
+	});
+}
 
 for (const route of ROUTES) {
 	test.describe(`${route.name} invitation motion system`, () => {
@@ -47,13 +66,16 @@ for (const route of ROUTES) {
 			await page.addInitScript(() => {
 				const NativeObserver = window.IntersectionObserver;
 				window.__invitationObserverAudit = { instances: 0 };
+				// Islands, the song and the opening quote own observers outside the motion limit.
 				window.IntersectionObserver = class extends NativeObserver {
 					constructor(
 						callback: IntersectionObserverCallback,
 						options?: IntersectionObserverInit,
 					) {
 						super(callback, options);
-						window.__invitationObserverAudit.instances += 1;
+						if (new Error().stack?.includes('motion-coordinator')) {
+							window.__invitationObserverAudit.instances += 1;
+						}
 					}
 				};
 			});
@@ -66,6 +88,7 @@ for (const route of ROUTES) {
 			}
 
 			const instances = await page.evaluate(() => window.__invitationObserverAudit.instances);
+			expect(instances).toBeGreaterThanOrEqual(1);
 			expect(instances).toBeLessThanOrEqual(3);
 			expect(errors).toEqual([]);
 		});
@@ -75,18 +98,49 @@ for (const route of ROUTES) {
 			await page.emulateMedia({ reducedMotion: 'reduce' });
 			await page.goto(route.path);
 
-			const hidden = await page.locator('[data-screenshot-section]').evaluateAll((sections) =>
-				sections.filter((section) => {
-					const style = getComputedStyle(section);
-					return (
-						style.display === 'none' ||
-						style.visibility === 'hidden' ||
-						style.opacity === '0'
-					);
-				}),
-			);
-			expect(hidden).toHaveLength(0);
-			expect(await page.locator('.has-motion').count()).toBe(0);
+			if (route.editorial) {
+				// The editorial recipe keeps observing and only fades each entrance in.
+				await expect(page.locator('[data-reveal-pending]').first()).toBeAttached();
+				await scrollThroughPage(page);
+				await expect(page.locator('[data-reveal-pending]')).toHaveCount(0);
+				const entrances = await page.locator('.is-visible').evaluateAll((elements) =>
+					elements.map((element) => {
+						const style = getComputedStyle(element);
+						return {
+							name: style.animationName,
+							duration: Number.parseFloat(style.animationDuration),
+							delay: Number.parseFloat(style.animationDelay),
+							transform: style.transform,
+						};
+					}),
+				);
+				expect(entrances.length).toBeGreaterThan(0);
+				for (const entrance of entrances) {
+					expect(['none', 'invitation-reveal-fade']).toContain(entrance.name);
+					expect(entrance.duration).toBeLessThanOrEqual(0.2);
+					expect(entrance.delay).toBe(0);
+					expect(entrance.transform).toBe('none');
+				}
+				await waitForSettledAnimations(page);
+			} else {
+				await expect(page.locator('.has-motion')).toHaveCount(0);
+			}
+
+			const hidden = await page
+				.locator('[data-screenshot-section], [data-reveal-item], [data-reveal-role]')
+				.evaluateAll((elements) =>
+					elements
+						.filter((element) => {
+							const style = getComputedStyle(element);
+							return (
+								style.display === 'none' ||
+								style.visibility === 'hidden' ||
+								style.opacity === '0'
+							);
+						})
+						.map((element) => element.className),
+				);
+			expect(hidden).toEqual([]);
 		});
 
 		test('keeps ordinary timing within the documented budgets', async ({ page }) => {
@@ -161,7 +215,7 @@ for (const route of ROUTES) {
 	});
 }
 
-test('gives Celestial its cinematic hero, editorial bridges, and narrative climaxes', async ({
+test('gives Celestial its constellation hero, folio turns and stacked access card', async ({
 	page,
 }) => {
 	for (const viewport of [
@@ -173,151 +227,87 @@ test('gives Celestial its cinematic hero, editorial bridges, and narrative clima
 		await page.goto('/xv/demo-xv-celestial-blue?skipEnvelope=true');
 
 		const hero = page.locator('.event--demo-xv-celestial-blue .invitation-hero');
-		const arch = page.locator(
-			'.invitation-section-wrapper[data-section-kind="interlude"][data-intersection="arch"][data-intersection-source="location"]',
-		);
-		const familyOverlap = page.locator(
-			'.invitation-section-wrapper[data-section-kind="interlude"][data-intersection="overlap"][data-intersection-source="family"]',
-		);
-		const galleryBlend = page.locator(
-			'.invitation-section-wrapper[data-section-kind="gallery"][data-intersection="atmospheric-blend"][data-intersection-source="interlude-after-family"]',
-		);
-		const itineraryOverlap = page.locator(
-			'.invitation-section-wrapper[data-section-kind="interlude"][data-intersection="overlap"][data-intersection-source="itinerary"]',
-		);
-		const blend = page.locator(
-			'.invitation-section-wrapper[data-section-kind="interlude"][data-intersection="atmospheric-blend"][data-intersection-source="rsvp"]',
-		);
+		const wrapper = (kind: string, intersection: string, source: string) =>
+			page.locator(
+				`.invitation-section-wrapper[data-section-kind="${kind}"][data-intersection="${intersection}"][data-intersection-source="${source}"]`,
+			);
+		const family = wrapper('family', 'folio', 'countdown');
+		const interlude = wrapper('interlude', 'neutral', 'interlude-after-family');
+		const gifts = wrapper('gifts', 'folio', 'gallery');
+		const access = wrapper('personalized-access', 'stack', 'gifts');
 
 		await expect(hero.getByRole('heading', { level: 1 })).toBeVisible();
-		expect(await arch.count()).toBe(1);
-		expect(await familyOverlap.count()).toBe(1);
-		expect(await galleryBlend.count()).toBe(1);
-		expect(await itineraryOverlap.count()).toBe(1);
-		expect(await blend.count()).toBe(1);
-		await familyOverlap.scrollIntoViewIfNeeded();
-		await expect(familyOverlap).toHaveClass(/is-visible/);
-		await galleryBlend.scrollIntoViewIfNeeded();
-		await expect(galleryBlend).toHaveClass(/is-visible/);
-		await arch.scrollIntoViewIfNeeded();
-		await expect(arch).toHaveClass(/is-visible/);
-		await waitForSettledAnimations(page);
-		await blend.scrollIntoViewIfNeeded();
-		await expect(blend).toHaveClass(/is-visible/);
+		for (const section of [family, interlude, gifts, access]) {
+			await expect(section).toHaveCount(1);
+		}
+		await interlude.scrollIntoViewIfNeeded();
+		await expect(interlude).toHaveClass(/is-visible/);
+		await access.scrollIntoViewIfNeeded();
+		await expect(access).toHaveClass(/is-visible/);
 		await waitForSettledAnimations(page);
 
-		const treatment = await page.evaluate(() => {
-			const heroElement = document.querySelector<HTMLElement>(
-				'.event--demo-xv-celestial-blue .invitation-hero',
-			);
-			const archElement = document.querySelector<HTMLElement>(
-				'.invitation-section-wrapper[data-section-kind="interlude"][data-intersection="arch"][data-intersection-source="location"]',
-			);
-			const familyOverlapElement = document.querySelector<HTMLElement>(
-				'.invitation-section-wrapper[data-section-kind="interlude"][data-intersection="overlap"][data-intersection-source="family"]',
-			);
-			const galleryBlendElement = document.querySelector<HTMLElement>(
-				'.invitation-section-wrapper[data-section-kind="gallery"][data-intersection="atmospheric-blend"][data-intersection-source="interlude-after-family"]',
-			);
-			const itineraryOverlapElement = document.querySelector<HTMLElement>(
-				'.invitation-section-wrapper[data-section-kind="interlude"][data-intersection="overlap"][data-intersection-source="itinerary"]',
-			);
-			const blendElement = document.querySelector<HTMLElement>(
-				'.invitation-section-wrapper[data-section-kind="interlude"][data-intersection="atmospheric-blend"][data-intersection-source="rsvp"]',
-			);
-			if (
-				!heroElement ||
-				!archElement ||
-				!familyOverlapElement ||
-				!galleryBlendElement ||
-				!itineraryOverlapElement ||
-				!blendElement
-			) {
-				throw new Error('Celestial cinematic treatment was not rendered');
-			}
-
-			return {
-				heroConstellationOpacity: Number.parseFloat(
-					getComputedStyle(heroElement, '::before').opacity,
-				),
-				heroMediaAnimation: getComputedStyle(
-					heroElement.querySelector('.invitation-hero__background img')!,
-				).animationName,
-				heroMediaIterations: getComputedStyle(
-					heroElement.querySelector('.invitation-hero__background img')!,
-				).animationIterationCount,
-				heroMediaDuration: Number.parseFloat(
-					getComputedStyle(heroElement.querySelector('.invitation-hero__background img')!)
-						.animationDuration,
-				),
-				portalThreadHeight: Number.parseFloat(
-					getComputedStyle(archElement, '::after').height,
-				),
-				portalThreadAnimation: getComputedStyle(archElement, '::after').animationName,
-				familyOverlapDepth: Number.parseFloat(
-					getComputedStyle(familyOverlapElement).marginTop,
-				),
-				familyPhotoClip: getComputedStyle(
-					familyOverlapElement.querySelector('.invitation-interlude__media')!,
-				).clipPath,
-				familyPhotoFilter: getComputedStyle(
-					familyOverlapElement.querySelector('.invitation-interlude__image')!,
-				).filter,
-				familyReservedPadding: Number.parseFloat(
-					getComputedStyle(
-						familyOverlapElement.previousElementSibling!.querySelector('.family')!,
-					).paddingBottom,
-				),
-				galleryTitleColor: getComputedStyle(
-					galleryBlendElement.querySelector('.gallery-section__title')!,
-				).color,
-				itineraryOverlapDepth: Number.parseFloat(
-					getComputedStyle(itineraryOverlapElement).marginTop,
-				),
-				itineraryPhotoClip: getComputedStyle(
-					itineraryOverlapElement.querySelector('.invitation-interlude__media')!,
-				).clipPath,
-				itineraryPhotoFilter: getComputedStyle(
-					itineraryOverlapElement.querySelector('.invitation-interlude__image')!,
-				).filter,
-				itineraryReservedPadding: Number.parseFloat(
-					getComputedStyle(
-						itineraryOverlapElement.previousElementSibling!.querySelector(
-							'.itinerary',
-						)!,
-					).paddingBottom,
-				),
-				blendDepth: Number.parseFloat(getComputedStyle(blendElement, '::before').height),
-				blendBackground: getComputedStyle(blendElement, '::before').backgroundImage,
-				blendLayer: getComputedStyle(blendElement, '::before').zIndex,
-				blendAnimation: getComputedStyle(blendElement, '::before').animationName,
-			};
+		const constellation = await hero.evaluate((element) => {
+			const style = getComputedStyle(element, '::before');
+			return { name: style.animationName, opacity: Number.parseFloat(style.opacity) };
 		});
+		expect(constellation.name).toBe('celestial-constellation-reveal');
+		expect(constellation.opacity).toBeGreaterThan(0.5);
 
-		expect(treatment.heroConstellationOpacity).toBeGreaterThan(0.5);
-		expect(treatment.heroMediaAnimation).toContain('celestial-hero-media-reveal');
-		expect(treatment.heroMediaAnimation).not.toContain('celestial-hero-media-breathe');
-		expect(treatment.heroMediaIterations).toBe('1');
-		expect(treatment.heroMediaDuration).toBeLessThanOrEqual(0.9);
-		expect(treatment.portalThreadHeight).toBeGreaterThan(0);
-		expect(treatment.portalThreadAnimation).toContain('celestial-portal-thread-arrival');
-		expect(treatment.familyOverlapDepth).toBeLessThanOrEqual(-32);
-		expect(treatment.familyOverlapDepth).toBeGreaterThanOrEqual(-64);
-		expect(treatment.familyPhotoClip).toBe('none');
-		expect(treatment.familyPhotoFilter).not.toContain('blur');
-		expect(treatment.familyReservedPadding).toBeGreaterThanOrEqual(80);
-		expect(treatment.galleryTitleColor).not.toBe('rgb(255, 255, 255)');
-		expect(treatment.itineraryOverlapDepth).toBeLessThanOrEqual(-32);
-		expect(treatment.itineraryOverlapDepth).toBeGreaterThanOrEqual(-64);
-		expect(treatment.itineraryPhotoClip).toBe('none');
-		expect(treatment.itineraryPhotoFilter).not.toContain('blur');
-		expect(treatment.itineraryReservedPadding).toBeGreaterThanOrEqual(64);
-		expect(treatment.blendDepth).toBeGreaterThanOrEqual(56);
-		expect(treatment.blendDepth).toBeLessThanOrEqual(80);
-		expect(treatment.blendBackground).toContain('radial-gradient');
-		expect(treatment.blendLayer).toBe('0');
-		expect(treatment.blendAnimation).toContain('celestial-blend-arrival');
+		const heroMedia = await hero
+			.locator('.invitation-hero__background img')
+			.evaluate((element) => {
+				const style = getComputedStyle(element);
+				return {
+					name: style.animationName,
+					iterations: style.animationIterationCount,
+					duration: Number.parseFloat(style.animationDuration),
+				};
+			});
+		expect(heroMedia.name).toBe('celestial-hero-media-reveal');
+		expect(heroMedia.iterations).toBe('1');
+		expect(heroMedia.duration).toBeLessThanOrEqual(0.9);
+
+		for (const section of [family, gifts]) {
+			const fold = await section.evaluate((element) => {
+				const style = getComputedStyle(element, '::after');
+				return { name: style.animationName, height: Number.parseFloat(style.height) };
+			});
+			expect(fold.name).toBe('intersection-folio-turn');
+			expect(fold.height).toBeGreaterThanOrEqual(32);
+			expect(fold.height).toBeLessThanOrEqual(80);
+		}
+
+		// Gifts stays in place and recedes while the access card slides over it.
+		await expect(gifts).toHaveCSS('position', 'sticky');
+		await expect(gifts.locator(':scope > *').first()).toHaveCSS(
+			'animation-name',
+			'intersection-stack-recede',
+		);
+		await expect(access).toHaveCSS('border-top-left-radius', '36px');
+
+		await expect(page.locator('.gallery-section__title')).not.toHaveCSS(
+			'color',
+			'rgb(255, 255, 255)',
+		);
 	}
+});
+
+test('plays the Celestial photo entrance when the envelope opens, not behind it', async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.emulateMedia({ reducedMotion: 'no-preference' });
+	await page.goto('/xv/demo-xv-celestial-blue?forceEnvelope=true');
+
+	const photo = page.locator('.invitation-hero__background img');
+	const wrapper = page.locator('.event-theme-wrapper');
+	await expect(wrapper).toHaveAttribute('data-reveal-state', 'sealed');
+	expect(await photo.evaluate((element) => element.getAnimations().length)).toBe(0);
+
+	await page.getByRole('button', { name: 'Abrir sobre de la invitación' }).click();
+	await expect(wrapper).toHaveAttribute('data-reveal-state', 'revealed', { timeout: 10_000 });
+	await expect(photo).toHaveCSS('animation-name', 'celestial-hero-media-reveal');
+	await expect(photo).toHaveCSS('opacity', '1');
 });
 
 test('keeps Celestial section entrances pending during a slow read, then reveals each family on scroll', async ({
@@ -330,84 +320,44 @@ test('keeps Celestial section entrances pending during a slow read, then reveals
 	// A slow read: no script timer may reveal a section on its own.
 	await page.clock.fastForward(8_500);
 
-	const access = page.locator(
-		'.invitation-section-wrapper[data-section-kind="personalized-access"]',
+	const section = (kind: string) =>
+		page.locator(`.invitation-section-wrapper[data-section-kind="${kind}"]`);
+	const interlude = section('interlude');
+	const itineraryItem = section('itinerary').locator('[data-itinerary-item]').first();
+	const galleryItem = section('gallery').locator('[data-gallery-item]').first();
+	const access = section('personalized-access');
+
+	// Most sections wait item by item; the access card and the interlude wait as one block.
+	await expect(interlude).not.toHaveClass(/is-visible/);
+	for (const target of [itineraryItem, galleryItem, access]) {
+		await expect(target).toHaveAttribute('data-reveal-pending', /.*/);
+		await expect(target).not.toHaveClass(/is-visible/);
+	}
+
+	await interlude.scrollIntoViewIfNeeded();
+	await expect(interlude).toHaveClass(/is-visible/);
+	await expect(interlude.locator('.invitation-interlude__media')).toHaveCSS(
+		'animation-name',
+		/invitation-reveal-media/,
 	);
-	const gallery = page.locator('.invitation-section-wrapper[data-section-kind="gallery"]');
-	const itinerary = page.locator('.invitation-section-wrapper[data-section-kind="itinerary"]');
-	const locationInterlude = page.locator(
-		'.invitation-section-wrapper[data-section-kind="interlude"][data-intersection-source="location"]',
-	);
-	const familyInterlude = page.locator(
-		'.invitation-section-wrapper[data-section-kind="interlude"][data-intersection="overlap"][data-intersection-source="family"]',
-	);
-	const itineraryInterlude = page.locator(
-		'.invitation-section-wrapper[data-section-kind="interlude"][data-intersection="overlap"][data-intersection-source="itinerary"]',
+	await expect(interlude.locator('.invitation-interlude__image')).toHaveCSS(
+		'animation-name',
+		/interlude-ambient/,
 	);
 
-	for (const section of [
-		access,
-		gallery,
-		itinerary,
-		locationInterlude,
-		familyInterlude,
-		itineraryInterlude,
-	]) {
-		await expect(section).not.toHaveClass(/is-visible/);
+	for (const item of [itineraryItem, galleryItem]) {
+		await item.scrollIntoViewIfNeeded();
+		await expect(item).toHaveClass(/is-visible/);
+		await expect(item).not.toHaveAttribute('data-reveal-pending', /.*/);
+		await expect(item).toHaveCSS('animation-name', /editorial-rise/);
 	}
+	await expect(galleryItem).toHaveAttribute('data-in-view', 'true');
 
 	await access.scrollIntoViewIfNeeded();
 	await expect(access).toHaveClass(/is-visible/);
 	await expect(access.locator('.access-card__count')).toHaveCSS(
 		'animation-name',
 		/pa-celestial-count-in/,
-	);
-
-	await gallery.scrollIntoViewIfNeeded();
-	await expect(gallery).toHaveClass(/is-visible/);
-	await expect(gallery.locator('[data-gallery-item]').first()).toHaveCSS(
-		'animation-name',
-		/celestial-gallery-anchor-reveal/,
-	);
-	await expect(gallery.locator('[data-gallery-item]').first()).toHaveAttribute(
-		'data-in-view',
-		'true',
-	);
-
-	await itinerary.scrollIntoViewIfNeeded();
-	await expect(itinerary).toHaveClass(/is-visible/);
-	await expect(itinerary.locator('[data-itinerary-item]').first()).toHaveCSS(
-		'animation-name',
-		/celestial-itinerary-row-reveal/,
-	);
-	await expect(itinerary.locator('.itinerary__program-flourish')).toHaveCSS(
-		'animation-name',
-		/celestial-itinerary-flourish-reveal/,
-	);
-
-	await familyInterlude.scrollIntoViewIfNeeded();
-	await expect(familyInterlude).toHaveClass(/is-visible/);
-	await expect(familyInterlude.locator('.invitation-interlude__image')).toHaveCSS(
-		'animation-name',
-		'none',
-	);
-
-	await locationInterlude.scrollIntoViewIfNeeded();
-	await expect(locationInterlude).toHaveClass(/is-visible/);
-	await expect(locationInterlude.locator('.invitation-interlude__media')).toHaveCSS(
-		'animation-name',
-		/invitation-reveal-media/,
-	);
-	await expect(locationInterlude.locator('.invitation-interlude__image')).toHaveCSS(
-		'animation-name',
-		/interlude-ambient/,
-	);
-
-	await itineraryInterlude.scrollIntoViewIfNeeded();
-	await expect(itineraryInterlude).toHaveClass(/is-visible/);
-	await expect(itineraryInterlude.locator('.invitation-interlude__image')).toHaveCSS(
-		'animation-name',
-		'none',
 	);
 });
 
@@ -417,27 +367,31 @@ test('removes the Celestial flagship treatment under reduced motion', async ({ p
 	await page.goto('/xv/demo-xv-celestial-blue?skipEnvelope=true');
 
 	const reduced = await page.evaluate(() => {
+		const wrapper = (kind: string) =>
+			document.querySelector<HTMLElement>(
+				`.invitation-section-wrapper[data-section-kind="${kind}"]`,
+			);
 		const hero = document.querySelector<HTMLElement>(
 			'.event--demo-xv-celestial-blue .invitation-hero',
 		);
 		const media = hero?.querySelector<HTMLElement>('.invitation-hero__background img');
-		if (!hero || !media) throw new Error('Celestial hero was not rendered');
+		const family = wrapper('family');
+		const gifts = wrapper('gifts');
+		const recede = gifts?.firstElementChild;
+		const ambient = document.querySelector<HTMLElement>('.invitation-interlude__image');
+		if (!hero || !media || !family || !gifts || !recede || !ambient) {
+			throw new Error('Celestial flagship treatment was not rendered');
+		}
 
 		return {
 			constellationAnimation: getComputedStyle(hero, '::before').animationName,
 			mediaAnimation: getComputedStyle(media).animationName,
 			mediaTransform: getComputedStyle(media).transform,
 			mediaScale: getComputedStyle(media).scale,
-			familyOverlapAnimation: getComputedStyle(
-				document.querySelector<HTMLElement>(
-					'.invitation-section-wrapper[data-section-kind="interlude"][data-intersection="overlap"][data-intersection-source="family"] .invitation-interlude__image',
-				)!,
-			).animationName,
-			itineraryOverlapAnimation: getComputedStyle(
-				document.querySelector<HTMLElement>(
-					'.invitation-section-wrapper[data-section-kind="interlude"][data-intersection="overlap"][data-intersection-source="itinerary"] .invitation-interlude__image',
-				)!,
-			).animationName,
+			familyFoldAnimation: getComputedStyle(family, '::after').animationName,
+			giftsFoldAnimation: getComputedStyle(gifts, '::after').animationName,
+			giftsRecedeAnimation: getComputedStyle(recede).animationName,
+			interludeAmbientAnimation: getComputedStyle(ambient).animationName,
 		};
 	});
 
@@ -446,8 +400,10 @@ test('removes the Celestial flagship treatment under reduced motion', async ({ p
 		mediaAnimation: 'none',
 		mediaTransform: 'none',
 		mediaScale: 'none',
-		familyOverlapAnimation: 'none',
-		itineraryOverlapAnimation: 'none',
+		familyFoldAnimation: 'none',
+		giftsFoldAnimation: 'none',
+		giftsRecedeAnimation: 'none',
+		interludeAmbientAnimation: 'none',
 	});
 });
 
