@@ -1,5 +1,5 @@
 {
-    "generatedAt": "2026-11-23T19:47:29.833Z",
+    "generatedAt": "2026-11-24T00:23:52.490Z",
     "runtimeFingerprint": {
         "node": "v24.14.1",
         "pnpm": "11.23.0",
@@ -19,8 +19,8 @@
     },
     "status": "ACCEPTED",
     "mode": "accepted",
-    "totalCaptures": 250,
-    "matrixHash": "62715c719b48066fc06a88076d8c6382dd228f87ff917cc329950c4474764ae1",
+    "totalCaptures": 252,
+    "matrixHash": "7f0b37f16e877c178860187e2211460f124703eae395aed58f8d7318a8894c52",
     "baselinePreset": "jewelry-box",
     "crossPreset": "celestial-blue",
     "captures": [
@@ -3082,6 +3082,30 @@
         },
         {
             "kind": "invitation",
+            "slug": "maripau-charles",
+            "eventType": "xv",
+            "preset": "jewelry-box",
+            "viewport": "mobile",
+            "file": "pages/invitation-xv-maripau-charles-mobile.png",
+            "sha256": "717cac5cad76424912b9ccb4fd2748d342c71223c6752e19cbfd0db6c87f3671",
+            "contentHash": "6a9cb06fc642a6a8256f134de62aeadf7b38b3ad3d7e459a9c36ff5f43a9ef8b",
+            "assetHash": "ad100aef117b8336f2e9e7a358178738d58d78eaee4c93deac339c8bd81dfc46",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
+            "slug": "maripau-charles",
+            "eventType": "xv",
+            "preset": "jewelry-box",
+            "viewport": "desktop",
+            "file": "pages/invitation-xv-maripau-charles-desktop.png",
+            "sha256": "2eeba3a3a468a2ddd03baa0e2f3aad45bf6a4ec80098612b345b80853501c060",
+            "contentHash": "6a9cb06fc642a6a8256f134de62aeadf7b38b3ad3d7e459a9c36ff5f43a9ef8b",
+            "assetHash": "ad100aef117b8336f2e9e7a358178738d58d78eaee4c93deac339c8bd81dfc46",
+            "comparisonResult": "ACCEPTED"
+        },
+        {
+            "kind": "invitation",
             "slug": "naomi-huerta",
             "eventType": "xv",
             "preset": "storybook-blush",
@@ -3153,9 +3177,9 @@
             "comparisonResult": "ACCEPTED"
         }
     ],
-    "referenceSha": "0326dc9d11cbc40f2c130af35164302b24a65628",
+    "referenceSha": "7ee6b5c7d1c29312a0f2427ab7e8d0939fc1fb9d",
     "variantManifest": {
-        "generatedAt": "2026-11-23T19:47:29.833Z",
+        "generatedAt": "2026-11-24T00:23:52.490Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -5757,10 +5781,10 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "0326dc9d11cbc40f2c130af35164302b24a65628"
+        "referenceSha": "7ee6b5c7d1c29312a0f2427ab7e8d0939fc1fb9d"
     },
     "pageManifest": {
-        "generatedAt": "2026-11-23T19:47:29.840Z",
+        "generatedAt": "2026-11-24T00:23:52.498Z",
         "runtimeFingerprint": {
             "node": "v24.14.1",
             "pnpm": "11.23.0",
@@ -5780,9 +5804,9 @@
         },
         "status": "CANDIDATE",
         "mode": "candidate",
-        "totalCaptures": 66,
-        "matrixHash": "41c22964b83f0aa4b8daab63b6ccc72ee33f7bb09088a7baaa1bdc3a57c55f94",
-        "cases": 33,
+        "totalCaptures": 68,
+        "matrixHash": "3e12ee817099c93b5bc24bf78d43ac87b2a9cf353e90c58551d43927f08770c7",
+        "cases": 34,
         "captures": [
             {
                 "kind": "invitation",
@@ -6266,6 +6290,30 @@
             },
             {
                 "kind": "invitation",
+                "slug": "maripau-charles",
+                "eventType": "xv",
+                "preset": "jewelry-box",
+                "viewport": "mobile",
+                "file": "pages/invitation-xv-maripau-charles-mobile.png",
+                "sha256": "717cac5cad76424912b9ccb4fd2748d342c71223c6752e19cbfd0db6c87f3671",
+                "contentHash": "6a9cb06fc642a6a8256f134de62aeadf7b38b3ad3d7e459a9c36ff5f43a9ef8b",
+                "assetHash": "ad100aef117b8336f2e9e7a358178738d58d78eaee4c93deac339c8bd81dfc46",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
+                "slug": "maripau-charles",
+                "eventType": "xv",
+                "preset": "jewelry-box",
+                "viewport": "desktop",
+                "file": "pages/invitation-xv-maripau-charles-desktop.png",
+                "sha256": "2eeba3a3a468a2ddd03baa0e2f3aad45bf6a4ec80098612b345b80853501c060",
+                "contentHash": "6a9cb06fc642a6a8256f134de62aeadf7b38b3ad3d7e459a9c36ff5f43a9ef8b",
+                "assetHash": "ad100aef117b8336f2e9e7a358178738d58d78eaee4c93deac339c8bd81dfc46",
+                "comparisonResult": "CANDIDATE"
+            },
+            {
+                "kind": "invitation",
                 "slug": "naomi-huerta",
                 "eventType": "xv",
                 "preset": "storybook-blush",
@@ -6337,9 +6385,9 @@
                 "comparisonResult": "CANDIDATE"
             }
         ],
-        "referenceSha": "0326dc9d11cbc40f2c130af35164302b24a65628"
+        "referenceSha": "7ee6b5c7d1c29312a0f2427ab7e8d0939fc1fb9d"
     },
-    "candidateManifestSha256": "0f42e5eba7c90e053a1dbc7abf0f6bf6eb9acaf8d949ed1d9bb1d3fbf301186e",
-    "acceptedFromCommit": "0326dc9d11cbc40f2c130af35164302b24a65628",
-    "acceptedAt": "2026-11-23T19:48:58.325Z"
+    "candidateManifestSha256": "94fa2d968f442a86e5d29d3c050b484669d7b75ae51d6b49e612eaff2f9a59df",
+    "acceptedFromCommit": "7ee6b5c7d1c29312a0f2427ab7e8d0939fc1fb9d",
+    "acceptedAt": "2026-11-24T00:25:27.062Z"
 }
