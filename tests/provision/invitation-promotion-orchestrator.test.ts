@@ -267,6 +267,90 @@ describe('revalidatePromotionVolatilePreconditions', () => {
 		).toBe(false);
 	});
 
+	it('accepts a verified Production rename from a previous slug with the same identity', () => {
+		expect(
+			reviewedInvitationIdentityHolds({
+				plannedCreate: false,
+				matches: [
+					{
+						id: '11111111-1111-4111-8111-111111111111',
+						created_by: '22222222-2222-4222-8222-222222222222',
+						managed_identity_id: '3c4d5e6f-7081-42a3-b4c5-d6e7f8091a2b',
+						slug: 'old-demo',
+					},
+				],
+				targetInvitationId: '11111111-1111-4111-8111-111111111111',
+				targetOwnerUserId: '22222222-2222-4222-8222-222222222222',
+				expectedManagedIdentityId: '3c4d5e6f-7081-42a3-b4c5-d6e7f8091a2b',
+				expectedSlug: 'demo',
+				previousSlugs: ['old-demo'],
+			}),
+		).toBe(true);
+	});
+
+	it('rejects a previous-slug row whose managed identity is still null', () => {
+		expect(
+			reviewedInvitationIdentityHolds({
+				plannedCreate: false,
+				matches: [
+					{
+						id: '11111111-1111-4111-8111-111111111111',
+						created_by: '22222222-2222-4222-8222-222222222222',
+						managed_identity_id: null,
+						slug: 'old-demo',
+					},
+				],
+				targetInvitationId: '11111111-1111-4111-8111-111111111111',
+				targetOwnerUserId: '22222222-2222-4222-8222-222222222222',
+				expectedManagedIdentityId: '3c4d5e6f-7081-42a3-b4c5-d6e7f8091a2b',
+				expectedSlug: 'demo',
+				previousSlugs: ['old-demo'],
+			}),
+		).toBe(false);
+	});
+
+	it('rejects a previous-slug row whose managed identity differs', () => {
+		expect(
+			reviewedInvitationIdentityHolds({
+				plannedCreate: false,
+				matches: [
+					{
+						id: '11111111-1111-4111-8111-111111111111',
+						created_by: '22222222-2222-4222-8222-222222222222',
+						managed_identity_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+						slug: 'old-demo',
+					},
+				],
+				targetInvitationId: '11111111-1111-4111-8111-111111111111',
+				targetOwnerUserId: '22222222-2222-4222-8222-222222222222',
+				expectedManagedIdentityId: '3c4d5e6f-7081-42a3-b4c5-d6e7f8091a2b',
+				expectedSlug: 'demo',
+				previousSlugs: ['old-demo'],
+			}),
+		).toBe(false);
+	});
+
+	it('rejects a slug change that the package does not declare as previous', () => {
+		expect(
+			reviewedInvitationIdentityHolds({
+				plannedCreate: false,
+				matches: [
+					{
+						id: '11111111-1111-4111-8111-111111111111',
+						created_by: '22222222-2222-4222-8222-222222222222',
+						managed_identity_id: '3c4d5e6f-7081-42a3-b4c5-d6e7f8091a2b',
+						slug: 'old-demo',
+					},
+				],
+				targetInvitationId: '11111111-1111-4111-8111-111111111111',
+				targetOwnerUserId: '22222222-2222-4222-8222-222222222222',
+				expectedManagedIdentityId: '3c4d5e6f-7081-42a3-b4c5-d6e7f8091a2b',
+				expectedSlug: 'demo',
+				previousSlugs: [],
+			}),
+		).toBe(false);
+	});
+
 	it('accepts retained target, schema, approval, and project evidence (happy path)', async () => {
 		const reviewed = reviewedWithVolatileState();
 		const result = await revalidatePromotionVolatilePreconditions(happyDeps(reviewed));

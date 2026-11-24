@@ -10,6 +10,15 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.77.6] - 2026-11-24
+
+Lets the production write accept the Adriana e Israel rename. No database migrations.
+
+### Fixed
+
+- Provisioning: the pre-write revalidation accepts a live row on one of the package's previous slugs
+  when its managed identity matches exactly, instead of failing as PLAN_DRIFT.
+
 ## [0.77.5] - 2026-11-24
 
 Lets production apply the Adriana e Israel rename. No database migrations.
