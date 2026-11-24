@@ -10,6 +10,17 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.77.5] - 2026-11-24
+
+Lets production apply the Adriana e Israel rename. No database migrations.
+
+### Fixed
+
+- Provisioning: production applies a slug rename when the package's previous slug has an active row
+  with the same managed identity, keeping the R2 objects under the old prefix (#1114).
+- Provisioning: the production preflight now shows rekey errors instead of a generic message
+  (#1114).
+
 ## [0.77.4] - 2026-11-23
 
 Publishes Maripau Charles' XV invitation and moves Adriana e Israel to its new slug. No database
