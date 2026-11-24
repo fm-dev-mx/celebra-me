@@ -110,8 +110,8 @@ describe('hosted R2 namespace guard', () => {
 	});
 	describe('verified rekey source', () => {
 		const sourceKey = 'invitations/xv/renata-vieja/hero-old.webp';
-		it.each(['REUSE', 'RETAIN', 'REPAIR_METADATA'] as const)(
-			'allows %s of an object kept under the rekey source prefix',
+		it.each(['REUSE', 'RETAIN', 'REPAIR_METADATA', 'OVERWRITE', 'UPLOAD'] as const)(
+			'allows %s of a row whose object is under the rekey source prefix',
 			(action) => {
 				expect(() =>
 					assertReconciledMutationTargets(
@@ -123,13 +123,31 @@ describe('hosted R2 namespace guard', () => {
 				).not.toThrow();
 			},
 		);
+		it('still rejects deleting an object under the rekey source prefix', () => {
+			const base = plan('RETAIN');
+			const pruning: AssetReconciliationResult = {
+				...base,
+				reconciledAssets: [],
+				unreferencedAssets: [
+					{ ...base.reconciledAssets[0]!, plannedAction: 'PRUNE_STORAGE_AND_METADATA' },
+				],
+			};
+			expect(() =>
+				assertReconciledMutationTargets(
+					pruning,
+					[{ ...record, providerPublicId: sourceKey }],
+					identity,
+					'renata-vieja',
+				),
+			).toThrow('belongs to another invitation');
+		});
 		it.each(['OVERWRITE', 'UPLOAD'] as const)(
-			'still rejects %s of an object under the rekey source prefix',
+			'still rejects %s of an object under another prefix during a rekey',
 			(action) => {
 				expect(() =>
 					assertReconciledMutationTargets(
 						plan(action),
-						[{ ...record, providerPublicId: sourceKey }],
+						[{ ...record, providerPublicId: 'invitations/xv/otra/hero-old.webp' }],
 						identity,
 						'renata-vieja',
 					),
