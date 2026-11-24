@@ -1,4 +1,7 @@
-import { assertReconciledMutationTargets } from '../../scripts/provision/invitation-import-engine.ts';
+import {
+	assertReconciledMutationTargets,
+	isRekeySourceObject,
+} from '../../scripts/provision/invitation-import-engine.ts';
 import type {
 	AssetReconciliationResult,
 	TargetAssetRecord,
@@ -19,7 +22,7 @@ const record: TargetAssetRecord = {
 	managedByDefinitionSlug: 'renata',
 	managedSourceKey: 'hero',
 };
-function plan(action: 'REUSE' | 'OVERWRITE'): AssetReconciliationResult {
+function plan(action: 'REUSE' | 'OVERWRITE' | 'RETAIN' | 'UPLOAD'): AssetReconciliationResult {
 	return {
 		policy: 'sync',
 		pruneAssets: false,
@@ -100,5 +103,52 @@ describe('hosted R2 namespace guard', () => {
 				identity,
 			),
 		).not.toThrow();
+	});
+	describe('verified rekey source', () => {
+		const sourceKey = 'invitations/xv/renata-vieja/hero-old.webp';
+		it.each(['REUSE', 'RETAIN'] as const)(
+			'allows %s of an object kept under the rekey source prefix',
+			(action) => {
+				expect(() =>
+					assertReconciledMutationTargets(
+						plan(action),
+						[{ ...record, providerPublicId: sourceKey }],
+						identity,
+						'renata-vieja',
+					),
+				).not.toThrow();
+			},
+		);
+		it.each(['OVERWRITE', 'UPLOAD'] as const)(
+			'still rejects %s of an object under the rekey source prefix',
+			(action) => {
+				expect(() =>
+					assertReconciledMutationTargets(
+						plan(action),
+						[{ ...record, providerPublicId: sourceKey }],
+						identity,
+						'renata-vieja',
+					),
+				).toThrow('belongs to another invitation');
+			},
+		);
+		it('still rejects reuse under a prefix that is not the rekey source', () => {
+			expect(() =>
+				assertReconciledMutationTargets(
+					plan('REUSE'),
+					[{ ...record, providerPublicId: 'invitations/xv/otra/hero-old.webp' }],
+					identity,
+					'renata-vieja',
+				),
+			).toThrow('belongs to another invitation');
+		});
+		it('matches the source prefix only for the same event type and a full segment', () => {
+			expect(isRekeySourceObject(sourceKey, 'xv', 'renata-vieja')).toBe(true);
+			expect(isRekeySourceObject(sourceKey, 'boda', 'renata-vieja')).toBe(false);
+			expect(
+				isRekeySourceObject('invitations/xv/renata-viejas/a.webp', 'xv', 'renata-vieja'),
+			).toBe(false);
+			expect(isRekeySourceObject(sourceKey, 'xv', undefined)).toBe(false);
+		});
 	});
 });
