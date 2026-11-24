@@ -23,7 +23,7 @@ import {
 } from '@/lib/commercial/meta-capi/service';
 
 import { ingestTrackingEvent } from '@/lib/tracking/ingestion.service';
-import { INTERNAL_TRACKING_EVENT_NAMES } from '@/lib/tracking/event-contract';
+import { INTERNAL_TRACKING_EVENT_NAMES } from '@/lib/tracking/event-names';
 import { findSessionLeadCustomerId } from '@/lib/tracking/lead.repository';
 import { createLeadFromTrackingEvent } from '@/lib/tracking/lead.service';
 import { insertTrackingEvent, upsertVisitorSession } from '@/lib/tracking/repository';
