@@ -4,6 +4,9 @@ import { isRecord } from '@/lib/shared/data-utils';
 import { safeErr } from '@/lib/server/safe-error';
 
 const DEFAULT_BUCKET = 'invitation-assets';
+/** Uploads carry the image itself, so they get far more time than a metadata call. */
+const UPLOAD_TIMEOUT_MS = 60_000;
+const DELETE_TIMEOUT_MS = 15_000;
 const STORAGE_CONFIG_MESSAGE = 'La carga de imágenes no está disponible en este momento.';
 const STORAGE_UNAUTHORIZED_MESSAGE = 'No se pudo autorizar la carga de la imagen.';
 const STORAGE_BUCKET_MISSING_MESSAGE = 'La biblioteca de imágenes no está configurada.';
@@ -79,6 +82,7 @@ export async function uploadToStorage(
 	const url = `${supabaseUrl}/storage/v1/object/${bucket}/${path}`;
 
 	const response = await fetch(url, {
+		signal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS),
 		method: 'POST',
 		headers: {
 			apikey: serviceRoleKey,
@@ -108,6 +112,7 @@ export async function uploadToStorage(
 export async function deleteFromStorage(bucket: string, path: string): Promise<void> {
 	const { supabaseUrl, serviceRoleKey } = resolveStorageConfig();
 	const response = await fetch(`${supabaseUrl}/storage/v1/object/${bucket}`, {
+		signal: AbortSignal.timeout(DELETE_TIMEOUT_MS),
 		method: 'DELETE',
 		headers: {
 			apikey: serviceRoleKey,

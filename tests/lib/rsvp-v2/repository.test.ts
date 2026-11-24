@@ -199,26 +199,36 @@ describe('rsvp repository', () => {
 
 		it('searches by exact national phone', () => {
 			const query = getQuery('1000000103');
-			expect(query).toContain('or=(full_name.ilike.*1000000103*,phone.ilike.*1000000103*)');
+			expect(query).toContain(
+				'or=(full_name.ilike.%22*1000000103*%22,phone.ilike.*1000000103*)',
+			);
 		});
 
 		it('searches by partial phone', () => {
 			const query = getQuery('6681');
-			expect(query).toContain('or=(full_name.ilike.*6681*,phone.ilike.*6681*)');
+			expect(query).toContain('or=(full_name.ilike.%22*6681*%22,phone.ilike.*6681*)');
 		});
 
 		it('strips formatting from phone input', () => {
 			const query = getQuery('100 000 0103');
 			expect(query).toContain(
-				'or=(full_name.ilike.*100%20000%200103*,phone.ilike.*1000000103*)',
+				'or=(full_name.ilike.%22*100%20000%200103*%22,phone.ilike.*1000000103*)',
 			);
 		});
 
 		it('extracts last 10 digits from international formatted input', () => {
 			const query = getQuery('+52 1000000103');
 			expect(query).toContain(
-				'or=(full_name.ilike.*%2B52%201000000103*,phone.ilike.*1000000103*)',
+				'or=(full_name.ilike.%22*%2B52%201000000103*%22,phone.ilike.*1000000103*)',
 			);
+		});
+
+		it.each([
+			['(668) 123 4567', 'or=(full_name.ilike."*(668) 123 4567*",phone.ilike.*6681234567*)'],
+			['Ana, 2', 'or=(full_name.ilike."*Ana, 2*",phone.ilike.*2*)'],
+			['mesa "2" \\', 'or=(full_name.ilike."*mesa \\"2\\" \\\\*",phone.ilike.*2*)'],
+		])('keeps the punctuation of %s inside one quoted value', (search, expected) => {
+			expect(decodeURIComponent(getQuery(search))).toContain(expected);
 		});
 
 		it('composes search with attendance_status filter', () => {
@@ -243,7 +253,7 @@ describe('rsvp repository', () => {
 
 		it('delivery filter composes with digit search', () => {
 			const query = getQuery('6681', undefined, 'generated');
-			expect(query).toContain('or=(full_name.ilike.*6681*,phone.ilike.*6681*)');
+			expect(query).toContain('or=(full_name.ilike.%22*6681*%22,phone.ilike.*6681*)');
 			expect(query).toContain('delivery_status=eq.generated');
 		});
 
