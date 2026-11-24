@@ -201,8 +201,12 @@ export const PERMANENT_REDIRECTS: readonly PermanentRedirectRule[] = [
 		destination: '/boda/adriana-e-israel/i/:shortId',
 	},
 	{
-		source: '/i/adriana-y-israel/:code',
-		destination: '/i/adriana-e-israel/:code',
+		source: '/adriana-y-israel/:code',
+		destination: '/adriana-e-israel/:code',
+	},
+	{
+		source: '/adriana-y-israel/:code/',
+		destination: '/adriana-e-israel/:code',
 	},
 ];
 
