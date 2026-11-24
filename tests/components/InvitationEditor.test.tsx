@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import InvitationEditor, {
 	getCriticalSections,
 } from '@/components/dashboard/intake/editor/InvitationEditor';
@@ -959,5 +959,66 @@ describe('InvitationEditor', () => {
 				'Esta invitación aún no tiene un borrador. Al guardar cualquier sección se creará un borrador a partir del contenido existente.',
 			),
 		).toBeInTheDocument();
+	});
+
+	it('keeps text typed while a section save is in flight as unsaved', async () => {
+		let finishSave: (value: { draftUpdatedAt: string }) => void = () => undefined;
+		saveSection.mockImplementationOnce(
+			() =>
+				new Promise((resolve) => {
+					finishSave = resolve;
+				}),
+		);
+		render(<InvitationEditor initialContext={mockContext} />);
+		const title = screen.getByLabelText('Título público');
+
+		fireEvent.change(title, { target: { value: 'Primera versión' } });
+		fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+		await waitFor(() => expect(saveSection).toHaveBeenCalledTimes(1));
+		fireEvent.change(title, { target: { value: 'Segunda versión' } });
+		await act(async () => finishSave({ draftUpdatedAt: '2026-05-30T03:00:00Z' }));
+
+		expect(title).toHaveValue('Segunda versión');
+		fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+		await waitFor(() => expect(saveSection).toHaveBeenCalledTimes(2));
+		expect(saveSection).toHaveBeenLastCalledWith(
+			'main',
+			expect.objectContaining({ title: 'Segunda versión' }),
+			expect.any(String),
+		);
+		await waitFor(() =>
+			expect(
+				screen.queryByRole('button', { name: 'Guardar borrador' }),
+			).not.toBeInTheDocument(),
+		);
+	});
+
+	it('does not overwrite metadata typed while its save is in flight', async () => {
+		let finishSave: (value: unknown) => void = () => undefined;
+		saveMetadata.mockImplementationOnce(
+			() =>
+				new Promise((resolve) => {
+					finishSave = resolve;
+				}),
+		);
+		render(<InvitationEditor initialContext={mockContext} />);
+		const nav = screen.getByRole('navigation', { name: 'Secciones del editor' });
+		fireEvent.click(within(nav).getByRole('button', { name: 'Datos de la invitación' }));
+		const clientName = screen.getByLabelText('Nombre del cliente');
+
+		fireEvent.change(clientName, { target: { value: 'Cliente Uno' } });
+		fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+		await waitFor(() => expect(saveMetadata).toHaveBeenCalledTimes(1));
+		fireEvent.change(clientName, { target: { value: 'Cliente Dos' } });
+		await act(async () => finishSave({ ...mockContext.invitation, clientName: 'Cliente Uno' }));
+
+		expect(clientName).toHaveValue('Cliente Dos');
+		fireEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }));
+		await waitFor(() =>
+			expect(saveMetadata).toHaveBeenLastCalledWith(
+				expect.objectContaining({ clientName: 'Cliente Dos' }),
+				expect.any(String),
+			),
+		);
 	});
 });

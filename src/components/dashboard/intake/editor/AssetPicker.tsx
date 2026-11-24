@@ -54,6 +54,7 @@ export default function AssetPicker({ invitationId, onSelect, onClose }: Props) 
 		displayName: string;
 	}) {
 		if (asset.isBundled) {
+			setImportError('');
 			setImportingId(asset.id);
 			try {
 				const csrfToken = getCsrfToken();

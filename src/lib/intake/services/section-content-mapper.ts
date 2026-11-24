@@ -133,6 +133,18 @@ export function applySectionValue(
 	return { ...next, [section]: value };
 }
 
+/** Section fields are replaced, never mutated, so identity says whether an edit happened. */
+export function isSectionUnchanged(
+	before: DraftContent,
+	after: DraftContent,
+	section: InvitationEditorSectionKey,
+): boolean {
+	const merged = applySectionToBaseline(before, section, after);
+	return (Object.keys(merged) as Array<keyof DraftContent>).every(
+		(key) => merged[key] === before[key],
+	);
+}
+
 export function applySectionToBaseline(
 	baseline: DraftContent,
 	section: InvitationEditorSectionKey,

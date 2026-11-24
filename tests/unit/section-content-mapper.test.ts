@@ -4,6 +4,7 @@ import {
 	buildSectionSaveValue,
 	getDirtySectionKey,
 	getSectionValue,
+	isSectionUnchanged,
 	mergeSectionSaveValue,
 } from '@/lib/intake/services/section-content-mapper';
 import type { DraftContent } from '@/lib/intake/schemas/invitation-content-draft.schema';
@@ -345,6 +346,33 @@ describe('buildSectionSaveValue', () => {
 			expect(parsed.data.revealVariant).toBe(REVEAL);
 			expect(parsed.data.tooltipText).toBe(UPDATED_TOOLTIP);
 			expect(parsed.data.sealInitials).toBe(base.envelope?.sealInitials);
+		}
+	});
+});
+
+describe('isSectionUnchanged', () => {
+	const before: DraftContent = {
+		title: 'Sample event',
+		hero: { name: 'Honoree' },
+		quote: { text: 'Sample quote' },
+		thankYou: { message: 'Sample thanks' },
+		countdown: { title: 'Soon' },
+		location: { introHeading: 'Venues' },
+		eventTiming: { localDateTime: '2026-09-11T20:00', timeZone: 'America/Mazatlan' },
+	};
+
+	it.each([
+		['main', { title: 'Edited event' }],
+		['main', { hero: { name: 'Edited' } }],
+		['messages', { thankYou: { message: 'Edited thanks' } }],
+		['location', { eventTiming: { ...before.eventTiming!, timeZone: 'America/Tijuana' } }],
+		['countdown', { title: before.title, countdown: { title: 'Sooner' } }],
+	] as const)('sees an edit in %s and only there', (section, edit) => {
+		const after = { ...before, ...edit } as DraftContent;
+
+		expect(isSectionUnchanged(before, after, section)).toBe(false);
+		for (const other of ['main', 'messages', 'location', 'countdown'] as const) {
+			if (other !== section) expect(isSectionUnchanged(before, after, other)).toBe(true);
 		}
 	});
 });
