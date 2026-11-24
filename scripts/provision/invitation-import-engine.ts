@@ -465,6 +465,7 @@ export function assertReconciledMutationTargets(
 	reconciliation: AssetReconciliationResult,
 	targetDbAssets: TargetAssetRecord[],
 	targetIdentity: { environment: 'preview' | 'production'; eventType: string; slug: string },
+	verifiedRekeyFrom?: string,
 ): void {
 	for (const item of [...reconciliation.reconciledAssets, ...reconciliation.unreferencedAssets]) {
 		const targetRecord = targetDbAssets.find(
@@ -472,11 +473,31 @@ export function assertReconciledMutationTargets(
 				record.id === item.targetAssetId || record.storagePath === item.targetStoragePath,
 		);
 		if (targetRecord?.provider !== 'r2') continue;
-		assertR2MutationTarget(
-			targetRecord.providerPublicId ?? targetRecord.storagePath,
-			targetIdentity,
-		);
+		const objectKey = targetRecord.providerPublicId ?? targetRecord.storagePath;
+		if (
+			NON_MUTATING_ASSET_ACTIONS.has(item.plannedAction) &&
+			isRekeySourceObject(objectKey, targetIdentity.eventType, verifiedRekeyFrom)
+		) {
+			continue;
+		}
+		assertR2MutationTarget(objectKey, targetIdentity);
 	}
+}
+
+/** Actions that leave the R2 object untouched, so an object under the rekey source stays valid. */
+const NON_MUTATING_ASSET_ACTIONS: ReadonlySet<string> = new Set(['REUSE', 'RETAIN']);
+
+/**
+ * True when the object lives under the verified rekey source prefix. A rekey keeps the
+ * invitation's binaries where they were uploaded; only reads and reuse may target them.
+ */
+export function isRekeySourceObject(
+	objectKey: string | undefined,
+	eventType: string,
+	verifiedRekeyFrom: string | undefined,
+): boolean {
+	if (!objectKey || !verifiedRekeyFrom) return false;
+	return objectKey.startsWith(`invitations/${eventType}/${verifiedRekeyFrom}/`);
 }
 async function scanAssetStatus(
 	assets: InvitationPackageAsset[],
@@ -488,6 +509,7 @@ async function scanAssetStatus(
 	definitionSlug?: string,
 	resultingContent?: Record<string, unknown>,
 	targetIdentity?: { environment: 'preview' | 'production'; eventType: string; slug: string },
+	verifiedRekeyFrom?: string,
 ): Promise<{
 	assetsToUpload: InvitationPackageAsset[];
 	assetsToUpsertDbOnly: InvitationPackageAsset[];
@@ -523,7 +545,12 @@ async function scanAssetStatus(
 	}
 
 	if (targetIdentity)
-		assertReconciledMutationTargets(reconciliation, targetDbAssets, targetIdentity);
+		assertReconciledMutationTargets(
+			reconciliation,
+			targetDbAssets,
+			targetIdentity,
+			verifiedRekeyFrom,
+		);
 	const assetsToUpload: InvitationPackageAsset[] = [];
 	const assetsToUpsertDbOnly: InvitationPackageAsset[] = [];
 	const assetsToDelete: Array<{ record: TargetAssetRecord; deleteStorage: boolean }> = [];
@@ -650,6 +677,7 @@ async function verifyContentOnlyHostedAssets(
 	targetEnvironment: 'preview' | 'production',
 	targetAssets: readonly TargetAssetRecord[],
 	assetRefs: UploadedAssetMap,
+	verifiedRekeyFrom?: string,
 ): Promise<void> {
 	const failures: string[] = [];
 	for (const asset of assets) {
@@ -662,7 +690,9 @@ async function verifyContentOnlyHostedAssets(
 			if (provider === 'r2') {
 				const objectKey = record.providerPublicId ?? record.storagePath;
 				if (!objectKey) throw new Error('missing R2 object key.');
-				assertR2MutationTarget(objectKey, identity);
+				if (!isRekeySourceObject(objectKey, identity.eventType, verifiedRekeyFrom)) {
+					assertR2MutationTarget(objectKey, identity);
+				}
 				await verifyR2Asset({
 					targetEnvironment,
 					objectKey,
@@ -2018,6 +2048,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		pkg.sourceSlug,
 		drift.targetDraftContent,
 		{ environment: expectedTarget, eventType: pkg.invitation.eventType, slug: drift.slug },
+		rekeyFrom,
 	);
 	assertContentOnlyAllowsNoAssetMutations({
 		updateScope,
@@ -2032,6 +2063,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			expectedTarget,
 			fetchTargetDbAssets(targetDbUrl, drift.targetInvitationId),
 			assetRefs,
+			rekeyFrom,
 		);
 	}
 	const actions = buildResourceActions({
@@ -2593,6 +2625,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			pkg.sourceSlug,
 			targetDraftContent,
 			{ environment: expectedTarget, eventType: pkg.invitation.eventType, slug: drift.slug },
+			rekeyFrom,
 		);
 		if (
 			finalAssets.assetsToUpload.length > 0 ||
