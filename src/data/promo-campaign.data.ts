@@ -118,9 +118,21 @@ export interface PromoStatus {
 
 /** Packages in screen order. */
 export const PACKAGE_CATALOG: readonly CatalogPackage[] = [
-	{ id: 'esencial', name: 'Esencial', regularPrice: PRICE_TIERS.regular.esencial },
-	{ id: 'signature', name: 'Signature', regularPrice: PRICE_TIERS.regular.signature },
-	{ id: 'atelier', name: 'Atelier', regularPrice: PRICE_TIERS.regular.atelier },
+	{
+		id: 'esencial',
+		name: 'Invitación Digital de Autor',
+		regularPrice: PRICE_TIERS.regular.esencial,
+	},
+	{
+		id: 'signature',
+		name: 'Invitación + Álbum QR de fotos',
+		regularPrice: PRICE_TIERS.regular.signature,
+	},
+	{
+		id: 'atelier',
+		name: 'Servicio Completo (48 h y cargamos su lista)',
+		regularPrice: PRICE_TIERS.regular.atelier,
+	},
 ];
 
 const PROMO_EXTRAS: readonly PromoExtra[] = [
