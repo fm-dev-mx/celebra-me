@@ -82,7 +82,6 @@ export function ImportSummary({
 
 	return (
 		<div className="import-summary">
-			<h3>Resultado de la importación</h3>
 			<div className="import-summary__results">
 				{created > 0 && (
 					<StatItem

@@ -143,7 +143,9 @@ describe('AssetPicker', () => {
 			expect(screen.getByRole('dialog')).toBeInTheDocument();
 		});
 
-		fireEvent.click(screen.getByRole('dialog'));
+		const backdrop = document.querySelector('.dashboard-modal-backdrop') as HTMLElement | null;
+		expect(backdrop).not.toBeNull();
+		fireEvent.click(backdrop!);
 		expect(onClose).toHaveBeenCalledTimes(1);
 	});
 
@@ -160,7 +162,7 @@ describe('AssetPicker', () => {
 			expect(screen.getByRole('dialog')).toBeInTheDocument();
 		});
 
-		fireEvent.keyDown(window, { key: 'Escape' });
+		fireEvent.keyDown(document, { key: 'Escape' });
 		expect(onClose).toHaveBeenCalledTimes(1);
 	});
 
@@ -171,17 +173,13 @@ describe('AssetPicker', () => {
 		} as Response);
 
 		const onClose = jest.fn();
-		const { container } = render(
-			<AssetPicker invitationId="test-id" onSelect={jest.fn()} onClose={onClose} />,
-		);
+		render(<AssetPicker invitationId="test-id" onSelect={jest.fn()} onClose={onClose} />);
 
 		await waitFor(() => {
 			expect(screen.getByRole('dialog')).toBeInTheDocument();
 		});
 
-		const inner = container.querySelector('.asset-picker') as HTMLElement | null;
-		expect(inner).not.toBeNull();
-		fireEvent.click(inner!);
+		fireEvent.click(screen.getByRole('dialog'));
 		expect(onClose).not.toHaveBeenCalled();
 	});
 
@@ -191,13 +189,11 @@ describe('AssetPicker', () => {
 			json: async () => MOCK_ASSETS,
 		} as Response);
 
-		const { container } = render(
-			<AssetPicker invitationId="test-id" onSelect={jest.fn()} onClose={jest.fn()} />,
-		);
+		render(<AssetPicker invitationId="test-id" onSelect={jest.fn()} onClose={jest.fn()} />);
 
 		await waitFor(() => {
 			const images = Array.from(
-				container.querySelectorAll('.asset-picker__thumbnail'),
+				document.querySelectorAll('.asset-picker__thumbnail'),
 			) as HTMLImageElement[];
 			expect(images.length).toBeGreaterThan(0);
 			images.forEach((img) => {
@@ -217,7 +213,7 @@ describe('AssetPicker', () => {
 
 		await waitFor(() => {
 			expect(screen.getByLabelText('Seleccionar Foto 1')).toBeInTheDocument();
-			expect(screen.getByLabelText('Cerrar selector de imágenes')).toBeInTheDocument();
+			expect(screen.getByLabelText('Cerrar modal')).toBeInTheDocument();
 		});
 	});
 
@@ -253,5 +249,78 @@ describe('AssetPicker', () => {
 
 		fireEvent.click(item);
 		expect(screen.queryByText('Falló la importación.')).not.toBeInTheDocument();
+	});
+
+	it('traps focus, responds to Escape and restores trigger focus on close', async () => {
+		jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+			ok: true,
+			json: async () => ({ assets: [] }),
+		} as Response);
+
+		const trigger = document.createElement('button');
+		trigger.textContent = 'Abrir selector';
+		document.body.appendChild(trigger);
+		trigger.focus();
+		expect(document.activeElement).toBe(trigger);
+
+		const onClose = jest.fn();
+		const { unmount } = render(
+			<AssetPicker invitationId="test-id" onSelect={jest.fn()} onClose={onClose} />,
+		);
+
+		await waitFor(() => {
+			expect(screen.getByRole('dialog')).toBeInTheDocument();
+		});
+
+		// Escape calls onClose
+		fireEvent.keyDown(document, { key: 'Escape' });
+		expect(onClose).toHaveBeenCalledTimes(1);
+
+		// Unmount restores focus to trigger
+		unmount();
+		expect(document.activeElement).toBe(trigger);
+		trigger.remove();
+	});
+
+	it('blocks backdrop click and Escape while importing bundled asset', async () => {
+		let resolveImport: ((value: unknown) => void) | undefined;
+		const importPromise = new Promise((resolve) => {
+			resolveImport = resolve;
+		});
+
+		jest.spyOn(globalThis, 'fetch').mockImplementation(((url: string) =>
+			String(url).includes('/import-bundled')
+				? importPromise
+				: Promise.resolve({
+						ok: true,
+						json: async () => ({
+							assets: [
+								{
+									...MOCK_ASSETS.assets[0],
+									isBundled: true,
+									bundledKey: 'hero',
+								},
+							],
+						}),
+					})) as never);
+
+		const onClose = jest.fn();
+		render(<AssetPicker invitationId="test-id" onSelect={jest.fn()} onClose={onClose} />);
+
+		const item = await screen.findByLabelText('Seleccionar Foto 1');
+		fireEvent.click(item);
+
+		const backdrop = document.querySelector('.dashboard-modal-backdrop') as HTMLElement;
+		expect(backdrop).toBeInTheDocument();
+		fireEvent.click(backdrop);
+		fireEvent.keyDown(document, { key: 'Escape' });
+		expect(onClose).not.toHaveBeenCalled();
+
+		await waitFor(() => {
+			resolveImport?.({
+				ok: true,
+				json: async () => ({ assetId: 'imported-asset-id' }),
+			});
+		});
 	});
 });
