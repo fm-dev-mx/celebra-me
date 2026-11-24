@@ -44,6 +44,7 @@ export async function captureStablePage(page: Page, fullPage = false): Promise<B
 	let previous = await page.screenshot({ fullPage, animations: 'disabled' });
 	captureTimes.push(Date.now() - started);
 	while (Date.now() < deadline) {
+		// Two captures back to back would match even while the page still paints.
 		await page.waitForTimeout(100);
 		const current = await page.screenshot({ fullPage, animations: 'disabled' });
 		captureTimes.push(Date.now() - started);
@@ -487,6 +488,7 @@ export async function prepareCompletePage(
 	for (let index = 0; index < sectionCount; index++) {
 		if (!(await sections.nth(index).isVisible())) continue;
 		await sections.nth(index).scrollIntoViewIfNeeded();
+		// Dwell so the entrance observers see each section before the next one.
 		await page.waitForTimeout(40);
 	}
 	// A short editorial item at the foot of a tall section can be skipped by the section visits:

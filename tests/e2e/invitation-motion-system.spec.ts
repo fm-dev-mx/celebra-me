@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { waitForSettledAnimations } from './harness/settled-animations';
 
 const ROUTES = [
 	{
@@ -170,7 +171,6 @@ test('gives Celestial its cinematic hero, editorial bridges, and narrative clima
 		await page.setViewportSize(viewport);
 		await page.emulateMedia({ reducedMotion: 'no-preference' });
 		await page.goto('/xv/demo-xv-celestial-blue?skipEnvelope=true');
-		await page.waitForTimeout(1000);
 
 		const hero = page.locator('.event--demo-xv-celestial-blue .invitation-hero');
 		const arch = page.locator(
@@ -201,10 +201,10 @@ test('gives Celestial its cinematic hero, editorial bridges, and narrative clima
 		await expect(galleryBlend).toHaveClass(/is-visible/);
 		await arch.scrollIntoViewIfNeeded();
 		await expect(arch).toHaveClass(/is-visible/);
-		await page.waitForTimeout(750);
+		await waitForSettledAnimations(page);
 		await blend.scrollIntoViewIfNeeded();
 		await expect(blend).toHaveClass(/is-visible/);
-		await page.waitForTimeout(750);
+		await waitForSettledAnimations(page);
 
 		const treatment = await page.evaluate(() => {
 			const heroElement = document.querySelector<HTMLElement>(
@@ -325,8 +325,10 @@ test('keeps Celestial section entrances pending during a slow read, then reveals
 }) => {
 	await page.setViewportSize({ width: 390, height: 844 });
 	await page.emulateMedia({ reducedMotion: 'no-preference' });
+	await page.clock.install();
 	await page.goto('/xv/demo-xv-celestial-blue?skipEnvelope=true');
-	await page.waitForTimeout(8500);
+	// A slow read: no script timer may reveal a section on its own.
+	await page.clock.fastForward(8_500);
 
 	const access = page.locator(
 		'.invitation-section-wrapper[data-section-kind="personalized-access"]',
@@ -454,9 +456,9 @@ test('renders locked Abril RSVP without an island or RSVP client requests', asyn
 	page.on('request', (request) => requested.push(request.url()));
 	await page.goto('/xv/abril-michelle-becerra-rea?skipEnvelope=true');
 	await page.locator('#rsvp').scrollIntoViewIfNeeded();
-	await page.waitForTimeout(500);
-
 	await expect(page.locator('#rsvp [data-state="locked"]')).toBeVisible();
+	// A request that must not happen gives no event to wait for; an island would load by now.
+	await page.waitForTimeout(500);
 	await expect(
 		page.locator('.invitation-section-wrapper[data-section-kind="rsvp"] astro-island'),
 	).toHaveCount(0);

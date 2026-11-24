@@ -139,12 +139,14 @@ for (const phone of PHONES) {
 			for (let i = 1; i <= steps; i += 1) {
 				const height = Math.round(from.height + ((to - from.height) * i) / steps);
 				await page.setViewportSize({ width: from.width, height });
+				// Device cadence: the gap between steps is the input under test.
 				await page.waitForTimeout(50);
 			}
 		}
 
 		/** The browser moves the content by the bar height a few frames after the bar settles. */
 		async function shiftAfterUrlBar(page: Page) {
+			// Device delay: the gap before the shift is the input under test.
 			await page.waitForTimeout(100);
 			await page.evaluate((dy) => window.scrollBy(0, dy), -urlBar);
 			await frames(page);

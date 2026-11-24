@@ -1,14 +1,22 @@
 import { expect, test } from '@playwright/test';
 import { memoriesGalleryCopy } from '../../src/lib/memories/copy';
+import { buildCanonicalGalleryPath } from '../../scripts/playwright/canonical-memories-fixture';
 
 /**
  * Shared gallery links are credentials, so every failure is the same 404 with no
- * caching and no indexing. Set MEMORIES_E2E_GALLERY_PATH to a live link
- * (`/r/<slug>/galeria/<token>`) of a space with available files to also check
- * that the gallery renders thumbnails and opens the viewer.
+ * caching and no indexing. Under the canonical fixtures the live link is signed
+ * with the synthetic share secret of the fixture space and its files are mocked.
+ * Set MEMORIES_E2E_GALLERY_PATH to a live link (`/r/<slug>/galeria/<token>`) of a
+ * real space to check that one instead.
  */
 
-const GALLERY_PATH = process.env.MEMORIES_E2E_GALLERY_PATH ?? '';
+const LIVE_GALLERY_PATH = process.env.MEMORIES_E2E_GALLERY_PATH ?? '';
+const USE_FIXTURES = process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES === 'true';
+const GALLERY_PATH = LIVE_GALLERY_PATH || (USE_FIXTURES ? buildCanonicalGalleryPath() : '');
+const PNG_1X1 = Buffer.from(
+	'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+	'base64',
+);
 const WRONG_TOKEN = 'A'.repeat(43);
 
 test.describe('memories shared gallery: fail closed', () => {
@@ -32,6 +40,35 @@ test.describe('memories shared gallery: live link', () => {
 	test.skip(!GALLERY_PATH, 'MEMORIES_E2E_GALLERY_PATH is not configured');
 
 	test('shows thumbnails and opens a read-only viewer', async ({ page }) => {
+		if (!LIVE_GALLERY_PATH) {
+			// Fixture mode has no database or storage: the gallery API answers from here.
+			const [, , slug, , token] = GALLERY_PATH.split('/');
+			const itemsPath = `/api/memories/${slug}/gallery/${token}/items`;
+			await page.route(
+				(url) => url.pathname === itemsPath,
+				(route) =>
+					route.fulfill({
+						json: {
+							items: [
+								{
+									id: '11111111-1111-4111-8111-111111111111',
+									mimeType: 'image/png',
+									durationSeconds: null,
+									caption: '',
+									createdAt: new Date().toISOString(),
+									hasThumbnail: true,
+									uploaderName: 'Invitado E2E',
+								},
+							],
+							nextPage: null,
+						},
+					}),
+			);
+			await page.route(
+				(url) => url.pathname.startsWith(`${itemsPath}/`),
+				(route) => route.fulfill({ status: 200, body: PNG_1X1, contentType: 'image/png' }),
+			);
+		}
 		await page.goto(GALLERY_PATH);
 		const tiles = page.locator('.memories-shared-gallery .memories-tile');
 		await expect(tiles.first()).toBeVisible();
