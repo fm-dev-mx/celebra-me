@@ -66,8 +66,12 @@ const EXPECTED_REDIRECTS = [
 		destination: '/boda/adriana-e-israel/i/:shortId',
 	},
 	{
-		source: '/i/adriana-y-israel/:code',
-		destination: '/i/adriana-e-israel/:code',
+		source: '/adriana-y-israel/:code',
+		destination: '/adriana-e-israel/:code',
+	},
+	{
+		source: '/adriana-y-israel/:code/',
+		destination: '/adriana-e-israel/:code',
 	},
 ];
 
@@ -220,6 +224,7 @@ describe('Middleware permanent redirects', () => {
 		'/adriana-e-israel',
 		'/adriana-e-israel/i/ABC123',
 		'/adriana-y-israel/i/ABC123',
+		'/i/adriana-y-israel/ABC123',
 	])('leaves %s alone', (pathname) => {
 		expect(resolvePermanentRedirectPath(pathname)).toBeNull();
 	});
@@ -254,9 +259,19 @@ describe('Middleware permanent redirects', () => {
 		expect(resolvePermanentRedirectPath('/boda/adriana-y-israel/i/ABC123')).toBe(
 			'/boda/adriana-e-israel/i/ABC123',
 		);
-		expect(resolvePermanentRedirectPath('/i/adriana-y-israel/ABC123')).toBe(
-			'/i/adriana-e-israel/ABC123',
+	});
+
+	// `/i/{slug}/{code}` answers 404 to a direct request, so it can never be a destination.
+	it('sends guest code links of the old slug to the public guest link', () => {
+		expect(resolvePermanentRedirectPath('/adriana-y-israel/k7q2')).toBe(
+			'/adriana-e-israel/k7q2',
 		);
+		expect(resolvePermanentRedirectPath('/adriana-y-israel/k7q2/')).toBe(
+			'/adriana-e-israel/k7q2',
+		);
+		for (const { destination } of PERMANENT_REDIRECTS) {
+			expect(destination).not.toMatch(/^\/i\/[^/]+\/[^/]+$/);
+		}
 	});
 });
 
