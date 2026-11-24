@@ -11,7 +11,7 @@ import { dirname, join } from 'node:path';
  * the same shape as before the split.
  */
 export const DEMO_MANIFEST_DIR = 'demos';
-export const DEMO_MANIFEST_VERSION = 1;
+const DEMO_MANIFEST_VERSION = 1;
 
 type Json = Record<string, unknown>;
 
@@ -106,7 +106,7 @@ export function mergeDemoManifests(root: Json, demos: readonly DemoManifest[]): 
 	return merged;
 }
 
-export function demoManifestDirectory(manifestPath: string): string {
+function demoManifestDirectory(manifestPath: string): string {
 	return join(dirname(manifestPath), DEMO_MANIFEST_DIR);
 }
 

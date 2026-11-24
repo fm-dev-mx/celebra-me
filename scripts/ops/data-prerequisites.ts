@@ -11,7 +11,7 @@ import ts from 'typescript';
  * `docs/core/release-process.md`.
  */
 export const DATA_PREREQUISITES_PATH = 'supabase/data-prerequisites.json';
-export const DATA_PREREQUISITE_DOCS = 'docs/core/release-process.md ("Data prerequisites")';
+const DATA_PREREQUISITE_DOCS = 'docs/core/release-process.md ("Data prerequisites")';
 
 type DataPrerequisiteStatus = 'verified' | 'pending' | 'not-applicable';
 const STATUSES: ReadonlySet<string> = new Set(['verified', 'pending', 'not-applicable']);
@@ -172,7 +172,7 @@ export interface AppMetadataKeyRead {
 	line: number;
 }
 
-export const DEFAULT_SCAN_ROOTS = ['src', 'scripts', 'supabase/functions'] as const;
+const DEFAULT_SCAN_ROOTS = ['src', 'scripts', 'supabase/functions'] as const;
 
 function unwrapExpression(expr: ts.Expression): ts.Expression {
 	let current = expr;
@@ -200,7 +200,7 @@ function normalizeModulePath(p: string): string {
  * preserving line numbers so reported reads point to the exact source lines.
  * Returns an empty string if no frontmatter is found.
  */
-export function extractAstroFrontmatter(source: string): string {
+function extractAstroFrontmatter(source: string): string {
 	const match = source
 		.replace(/^\uFEFF/u, '')
 		.match(/^[ \t]*---[^\r\n]*(\r?\n)([\s\S]*?)\r?\n[ \t]*---(?:\r?\n|$)/u);

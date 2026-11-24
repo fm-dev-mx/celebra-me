@@ -135,7 +135,7 @@ export function patchIsReviewedWorkerCompatibleContent(
 }
 
 /** Decided from the reviewed plan; the apply step refuses a patch whose file changed since. */
-export function patchTablesAreWorkerIndependent(tables: readonly string[] | undefined): boolean {
+function patchTablesAreWorkerIndependent(tables: readonly string[] | undefined): boolean {
 	return (
 		tables !== undefined &&
 		tables.length > 0 &&

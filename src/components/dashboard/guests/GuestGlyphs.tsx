@@ -108,19 +108,6 @@ export const ChevronRightGlyph: React.FC<GlyphProps> = (props) => (
 	</Glyph>
 );
 
-export const ListViewGlyph: React.FC<GlyphProps> = (props) => (
-	<Glyph {...props} strokeWidth={2}>
-		<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" />
-	</Glyph>
-);
-
-export const CardViewGlyph: React.FC<GlyphProps> = (props) => (
-	<Glyph {...props}>
-		<rect x="4" y="4" width="16" height="7" rx="2" />
-		<rect x="4" y="14" width="16" height="7" rx="2" />
-	</Glyph>
-);
-
 export const MessageGlyph: React.FC<GlyphProps> = (props) => (
 	<Glyph {...props}>
 		<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z" />
