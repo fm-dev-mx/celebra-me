@@ -1,83 +1,23 @@
 {
-    "referenceSha": "c380044d117b80d8cd235992d4ccac10ba0ab1d1",
-    "acceptedAt": "2026-11-23T19:30:03.645Z",
-    "matrixHash": "d5decbc4b32f3d113171ea399303cd1ae72f59f67fc031ed8a5d14ea848e8046",
-    "candidateManifestSha256": "e46398bae5ea1f8eb1568c39572898e6868dd8a6adf04ea871cf77f2c7ff6824",
-    "acceptedManifestSha256": "5fb5404fde6e406ad0b52f0335e2458b03308fda836a517c9874bccd2888c9bb",
+    "referenceSha": "610b22a05b927f6fcd8e2ef4dd820aadc8b73a52",
+    "acceptedAt": "2026-11-24T00:02:39.343Z",
+    "matrixHash": "366a0e1123bea29661c48966e4f08512f194dce2cf3d946318a7f1ffbb2a2b75",
+    "candidateManifestSha256": "59ea57ce0e669deef0172bf3875ac919b50768610c323dd0e5882d62714bd077",
+    "acceptedManifestSha256": "04b057694f46ebfa145c0106c6882d11b94bad6fa458f2fe2900b5d579ae4c6d",
     "reviewedPaths": [
-        "jewelry-box-mobile-hero-passe-partout-portrait.png",
-        "jewelry-box-desktop-hero-passe-partout-portrait.png",
-        "jewelry-box-mobile-location-arched-scenes.png",
-        "jewelry-box-desktop-location-arched-scenes.png",
-        "jewelry-box-mobile-gifts-sealed-envelope.png",
-        "jewelry-box-desktop-gifts-sealed-envelope.png",
-        "jewelry-box-mobile-rsvp-engraved-register.png",
-        "jewelry-box-desktop-rsvp-engraved-register.png",
-        "jewelry-box-mobile-thankYou-inked-letter.png",
-        "jewelry-box-desktop-thankYou-inked-letter.png",
-        "jewelry-box-mobile-countdown-foil-calendar.png",
-        "jewelry-box-desktop-countdown-foil-calendar.png"
+        "pages/invitation-xv-maripau-charles-mobile.png",
+        "pages/invitation-xv-maripau-charles-desktop.png"
     ],
     "items": [
         {
-            "file": "jewelry-box-mobile-hero-passe-partout-portrait.png",
+            "file": "pages/invitation-xv-maripau-charles-mobile.png",
             "status": "new",
-            "sha256": "18f746e492af9f799abfa7bf0bd27ba4b9ea03830570ae8f798d6e0910f6cfc4"
+            "sha256": "717cac5cad76424912b9ccb4fd2748d342c71223c6752e19cbfd0db6c87f3671"
         },
         {
-            "file": "jewelry-box-desktop-hero-passe-partout-portrait.png",
+            "file": "pages/invitation-xv-maripau-charles-desktop.png",
             "status": "new",
-            "sha256": "2b4ab99ccb011f5c579e0cf144830ae419d4e4981086bab011918fe115fbb0e0"
-        },
-        {
-            "file": "jewelry-box-mobile-location-arched-scenes.png",
-            "status": "new",
-            "sha256": "6423d6df8a1f99762c053353bc4ec29235edba8cdbba4f42bd7133b0be499905"
-        },
-        {
-            "file": "jewelry-box-desktop-location-arched-scenes.png",
-            "status": "new",
-            "sha256": "ecf40009e52d3f15dfbc310c3cc332c11bb1e7347637fe331d697058c7002dca"
-        },
-        {
-            "file": "jewelry-box-mobile-gifts-sealed-envelope.png",
-            "status": "new",
-            "sha256": "466afa748c87de42cebbecd5784ce87b2ef8f0dd7618bccd3f873ac4560acdd4"
-        },
-        {
-            "file": "jewelry-box-desktop-gifts-sealed-envelope.png",
-            "status": "new",
-            "sha256": "e622552c99450648ce7be0ea026d6817411b26877506eadbceec1092653069ef"
-        },
-        {
-            "file": "jewelry-box-mobile-rsvp-engraved-register.png",
-            "status": "new",
-            "sha256": "5c3c3a360ac205f3c21e68629365c9673946c84811251c0bb7ea05f6c932362a"
-        },
-        {
-            "file": "jewelry-box-desktop-rsvp-engraved-register.png",
-            "status": "new",
-            "sha256": "426269edde204dbfbbff540da8dc56d0b8e618e6668c9b5dc445a1c6b6fe0da2"
-        },
-        {
-            "file": "jewelry-box-mobile-thankYou-inked-letter.png",
-            "status": "new",
-            "sha256": "93550257d366f8e9408ff7b1bf10cf4c77f12f7f6fdfff86a0ce425009c5778a"
-        },
-        {
-            "file": "jewelry-box-desktop-thankYou-inked-letter.png",
-            "status": "new",
-            "sha256": "9d389ecd0e8b9fceef644e3780c20e51b62dd56f0026ad51ec67d6f9ca199a60"
-        },
-        {
-            "file": "jewelry-box-mobile-countdown-foil-calendar.png",
-            "status": "new",
-            "sha256": "ab888d487852e1e7f0e574645f722798b1fd75bf2df7de7af56a53325a8cef68"
-        },
-        {
-            "file": "jewelry-box-desktop-countdown-foil-calendar.png",
-            "status": "new",
-            "sha256": "96156ec3bded2dd27fe4258435d5182b4ce9299a42b94a5dee30c06c7d107060"
+            "sha256": "2eeba3a3a468a2ddd03baa0e2f3aad45bf6a4ec80098612b345b80853501c060"
         }
     ],
     "renderNoise": 135,
