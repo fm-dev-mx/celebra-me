@@ -475,7 +475,7 @@ export function assertReconciledMutationTargets(
 		if (targetRecord?.provider !== 'r2') continue;
 		const objectKey = targetRecord.providerPublicId ?? targetRecord.storagePath;
 		if (
-			NON_MUTATING_ASSET_ACTIONS.has(item.plannedAction) &&
+			!SOURCE_DELETING_ASSET_ACTIONS.has(item.plannedAction) &&
 			isRekeySourceObject(objectKey, targetIdentity.eventType, verifiedRekeyFrom)
 		) {
 			continue;
@@ -485,13 +485,13 @@ export function assertReconciledMutationTargets(
 }
 
 /**
- * Actions that leave the R2 object untouched, so an object under the rekey source stays valid.
- * REPAIR_METADATA rewrites only the DB row, and keeps the row pointing at the existing object.
+ * Actions that delete the R2 object a row points at. Under a verified rekey source these stay
+ * blocked. The rest leave that object untouched: REUSE, RETAIN and REPAIR_METADATA keep it,
+ * and UPLOAD and OVERWRITE write the new binary under the new slug's own key
+ * (`uploadOrReconcileR2Asset` derives it from the target identity), so the old object remains.
  */
-const NON_MUTATING_ASSET_ACTIONS: ReadonlySet<string> = new Set([
-	'REUSE',
-	'RETAIN',
-	'REPAIR_METADATA',
+const SOURCE_DELETING_ASSET_ACTIONS: ReadonlySet<string> = new Set([
+	'PRUNE_STORAGE_AND_METADATA',
 ]);
 
 /**
