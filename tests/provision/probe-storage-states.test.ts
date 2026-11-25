@@ -79,6 +79,65 @@ describe('probeStorageStates', () => {
 		}
 	});
 
+	it('records present=false for a new asset when Supabase Storage reports the missing object as HTTP 400', async () => {
+		const originalFetch = global.fetch;
+		global.fetch = jest.fn<typeof fetch>().mockResolvedValue({
+			ok: false,
+			status: 400,
+			json: async () => ({
+				statusCode: '404',
+				error: 'not_found',
+				message: 'Object not found',
+			}),
+		} as Response);
+
+		try {
+			const res = await probeStorageStates([mockAsset], [], 'https://storage.local');
+			expect(res.observedStorage[mockAsset.storagePath]).toEqual({
+				present: false,
+				sha256: null,
+				httpStatus: 400,
+			});
+		} finally {
+			global.fetch = originalFetch;
+		}
+	});
+
+	it.each([
+		[
+			'a missing bucket',
+			async () => ({
+				statusCode: '404',
+				error: 'Bucket not found',
+				message: 'Bucket not found',
+			}),
+		],
+		['an empty JSON body', async () => null],
+		[
+			'a non-JSON body',
+			async () => {
+				throw new SyntaxError('Unexpected token <');
+			},
+		],
+	])('records present=unknown on HTTP 400 with %s', async (_label, json) => {
+		const originalFetch = global.fetch;
+		global.fetch = jest
+			.fn<typeof fetch>()
+			.mockResolvedValue({ ok: false, status: 400, json } as Response);
+
+		try {
+			const res = await probeStorageStates([mockAsset], [], 'https://storage.local');
+			expect(res.observedStorage[mockAsset.storagePath]).toEqual({
+				present: 'unknown',
+				sha256: null,
+				httpStatus: 400,
+				error: 'HTTP 400',
+			});
+		} finally {
+			global.fetch = originalFetch;
+		}
+	});
+
 	it('records present=unknown on network error or exception', async () => {
 		const originalFetch = global.fetch;
 		global.fetch = jest

@@ -408,6 +408,21 @@ function fetchTargetDbAssets(
 	return targetDbAssets;
 }
 
+/**
+ * Supabase Storage answers HTTP 400 for a missing public object and carries the
+ * real 404 in the JSON body, so the status alone cannot tell "absent" from "failed".
+ */
+async function isMissingStorageObject(response: Response): Promise<boolean> {
+	if (response.status === 404) return true;
+	if (response.status !== 400) return false;
+	try {
+		const body = (await response.json()) as { statusCode?: unknown; message?: unknown } | null;
+		return String(body?.statusCode) === '404' && body?.message === 'Object not found';
+	} catch {
+		return false;
+	}
+}
+
 export async function probeStorageStates(
 	assets: InvitationPackageAsset[],
 	targetDbAssets: TargetAssetRecord[],
@@ -449,7 +464,7 @@ export async function probeStorageStates(
 							httpStatus: fetchRes.status,
 						};
 						probedHashes[storagePath] = hash;
-					} else if (fetchRes.status === 404) {
+					} else if (await isMissingStorageObject(fetchRes)) {
 						observedStorage[storagePath] = {
 							present: false,
 							sha256: null,
