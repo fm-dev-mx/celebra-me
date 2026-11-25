@@ -644,7 +644,3 @@ export const MEMORIES_VARIANTS = variantsFor('memories');
 export type MemoriesVariant = (typeof MEMORIES_VARIANTS)[number];
 export const QUOTE_VARIANTS = variantsFor('quote');
 export type QuoteVariant = (typeof QUOTE_VARIANTS)[number];
-
-/** Sections without a layout/skin choice emit this closed value. */ type StandardSectionVariant =
-	'standard';
-export type SharedSectionVariant = StandardSectionVariant;

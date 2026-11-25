@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-export const GUEST_MESSAGES_SEEN_STORAGE_KEY = 'rsvp-dashboard-guest-messages-seen';
+const GUEST_MESSAGES_SEEN_STORAGE_KEY = 'rsvp-dashboard-guest-messages-seen';
 
 type SeenMap = Record<string, number>;
 
