@@ -248,7 +248,7 @@
         "markdownlint-cli2": "^0.24.0",
         "prettier": "^3.9.10",
         "prettier-plugin-astro": "^1.1.2",
-        "sass": "1.105.1",
+        "sass": "1.108.2",
         "sass-embedded": "^1.108.1",
         "sharp": "^0.35.5",
         "stylelint": "17.16.0",
