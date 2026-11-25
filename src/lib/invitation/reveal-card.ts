@@ -1,5 +1,6 @@
 import type { IconName } from '@/lib/icons/icon-catalog';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import { joinSpanishNames } from '@/lib/invitation/spanish-names';
 import { formatSpanishLongDate } from '@/lib/invitation/venue-datetime';
 
 /** Canonical editable seal palette accepted by the Envelope contract. */
@@ -208,7 +209,7 @@ function optionalTrim(value: string | undefined): string | undefined {
 function joinHonoreeNames(primaryName: string, secondaryName: string | undefined): string {
 	const primary = optionalTrim(primaryName) ?? '';
 	const secondary = optionalTrim(secondaryName);
-	return secondary ? `${primary} y ${secondary}` : primary;
+	return secondary ? joinSpanishNames(primary, secondary) : primary;
 }
 
 /** `short` is the legacy dot-separated card date; `long` spells the month out (standard A8). */
