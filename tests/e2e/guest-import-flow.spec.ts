@@ -181,7 +181,7 @@ test.describe('Guest import flow', () => {
 			}),
 		]);
 
-		await result.getByRole('button', { name: 'Cerrar' }).click();
+		await result.getByRole('button', { name: 'Cerrar', exact: true }).click();
 		await expect(result).toBeHidden();
 		await expect(
 			page.getByRole('button', { name: 'Más acciones de María Ruiz' }),
