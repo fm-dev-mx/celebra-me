@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- Asset reconciliation governs complete classification, pruning, policy gates, and storage drift checks. */
 import type { InvitationPackageAsset } from './invitation-package.ts';
 
 type AssetClassification =
@@ -50,9 +51,10 @@ export interface TargetAssetRecord {
 }
 
 export interface ObservedStorageState {
-	present: boolean;
+	present: boolean | 'unknown';
 	sha256: string | null;
 	httpStatus?: number;
+	error?: string;
 }
 
 interface ReconciledAsset {
@@ -514,6 +516,28 @@ function reconcileCanonicalAsset(
 		};
 	}
 
+	if (storageState.present === 'unknown') {
+		return {
+			item: {
+				key: canonical.key,
+				displayName: canonical.displayName,
+				canonicalHash: canonical.sha256,
+				canonicalSize: canonical.fileSize,
+				canonicalMimeType: canonical.mimeType,
+				targetStoragePath: targetPath,
+				targetAssetId: dbRecord?.id,
+				classification: 'INVALID',
+				plannedAction: 'BLOCK',
+				reasonCode: 'ASSET_STORAGE_PROBE_ERROR',
+				reason: `No se pudo verificar el estado en Storage para "${canonical.displayName}" debido a un error de red o de acceso (${storageState.error ?? 'error desconocido'}).`,
+				observedHash: null,
+				observedSize: dbRecord?.fileSize ?? null,
+			},
+			blocked: true,
+			blockReason: `Error de red o verificación al sondear Storage para "${canonical.displayName}".`,
+		};
+	}
+
 	if (!storageState.present) {
 		return reconcileBinaryAbsent(canonical, dbRecord, targetPath, policy);
 	}
@@ -596,17 +620,25 @@ function reconcileUnreferencedAssets(
 			reasonCode = 'ASSET_STILL_REFERENCED_RETAIN';
 			reason = `El archivo "${dbRecord.displayName}" sigue referenciado por el estado resultante.`;
 		} else if (pruneAssets) {
-			const deleteStorage =
-				(dbRecord.provider === 'supabase' || !dbRecord.provider) && storageState.present;
-			plannedAction = deleteStorage ? 'PRUNE_STORAGE_AND_METADATA' : 'PRUNE_METADATA';
-			classification = storageState.present ? 'UNREFERENCED' : 'STALE_METADATA';
-			reasonCode = storageState.present
-				? 'ASSET_MANAGED_UNREFERENCED_PRUNE'
-				: 'ASSET_STALE_METADATA_PRUNE';
-			reason = deleteStorage
-				? `El archivo administrado "${dbRecord.displayName}" no está referenciado y se eliminará de Storage y DB.`
-				: `Los metadatos administrados de "${dbRecord.displayName}" no están referenciados y se marcarán como eliminados en DB.`;
-			deletesCount++;
+			if (storageState.present === 'unknown') {
+				classification = 'INVALID';
+				plannedAction = 'BLOCK';
+				reasonCode = 'ASSET_STORAGE_PROBE_ERROR';
+				reason = `No se puede podar "${dbRecord.displayName}" porque el estado en Storage es desconocido (${storageState.error ?? 'error de red'}).`;
+			} else {
+				const deleteStorage =
+					(dbRecord.provider === 'supabase' || !dbRecord.provider) &&
+					storageState.present;
+				plannedAction = deleteStorage ? 'PRUNE_STORAGE_AND_METADATA' : 'PRUNE_METADATA';
+				classification = storageState.present ? 'UNREFERENCED' : 'STALE_METADATA';
+				reasonCode = storageState.present
+					? 'ASSET_MANAGED_UNREFERENCED_PRUNE'
+					: 'ASSET_STALE_METADATA_PRUNE';
+				reason = deleteStorage
+					? `El archivo administrado "${dbRecord.displayName}" no está referenciado y se eliminará de Storage y DB.`
+					: `Los metadatos administrados de "${dbRecord.displayName}" no están referenciados y se marcarán como eliminados en DB.`;
+				deletesCount++;
+			}
 		}
 
 		unreferencedAssets.push({

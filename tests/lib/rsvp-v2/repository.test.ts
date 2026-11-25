@@ -287,5 +287,56 @@ describe('rsvp repository', () => {
 				'deleted_at=is.null',
 			);
 		});
+
+		it('reads every page by id and stops only on an empty page', async () => {
+			const pageOf = (start: number, count: number) =>
+				Array.from({ length: count }, (_, i) =>
+					makeGuestRow({ id: `guest-${String(start + i).padStart(5, '0')}` }),
+				);
+			supabaseRestRequestMock.mockResolvedValueOnce(pageOf(0, 1000));
+			supabaseRestRequestMock.mockResolvedValueOnce(pageOf(1000, 400));
+			supabaseRestRequestMock.mockResolvedValueOnce(pageOf(1400, 1000));
+			supabaseRestRequestMock.mockResolvedValueOnce([]);
+
+			const results = await findGuestsByEvent({ eventId: 'evt-1' }, 'token');
+
+			expect(new Set(results.map((guest) => guest.id)).size).toBe(2400);
+			expect(results).toHaveLength(2400);
+			const queries = supabaseRestRequestMock.mock.calls.map(
+				([request]) => request?.pathWithQuery ?? '',
+			);
+			expect(queries).toHaveLength(4);
+			expect(queries[0]).toContain('order=id.asc&limit=1000');
+			expect(queries[0]).not.toContain('id=gt.');
+			expect(queries[1]).toContain('&id=gt.guest-00999');
+			expect(queries[2]).toContain('&id=gt.guest-01399');
+			expect(queries[3]).toContain('&id=gt.guest-02399');
+			for (const query of queries) expect(query).not.toContain('offset=');
+		});
+
+		it('returns the latest updates first across pages', async () => {
+			supabaseRestRequestMock.mockResolvedValueOnce([
+				makeGuestRow({ id: 'a', updated_at: '2026-11-01T00:00:00+00:00' }),
+				makeGuestRow({ id: 'b', updated_at: '2026-11-03T00:00:00+00:00' }),
+			]);
+			supabaseRestRequestMock.mockResolvedValueOnce([
+				makeGuestRow({ id: 'c', updated_at: '2026-11-03T00:00:00+00:00' }),
+				makeGuestRow({ id: 'd', updated_at: '2026-11-02T00:00:00+00:00' }),
+			]);
+			supabaseRestRequestMock.mockResolvedValueOnce([]);
+
+			const results = await findGuestsByEvent({ eventId: 'evt-1' }, 'token');
+
+			expect(results.map((guest) => guest.id)).toEqual(['b', 'c', 'd', 'a']);
+		});
+
+		it('throws instead of returning a partial list when the page cap is reached', async () => {
+			supabaseRestRequestMock.mockResolvedValue([makeGuestRow()]);
+
+			await expect(findGuestsByEvent({ eventId: 'evt-1' }, 'token')).rejects.toThrow(
+				'refusing a partial list',
+			);
+			expect(supabaseRestRequestMock).toHaveBeenCalledTimes(100);
+		});
 	});
 });
