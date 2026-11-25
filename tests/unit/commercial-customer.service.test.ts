@@ -1,8 +1,12 @@
-jest.mock('@/lib/commercial/customer.repository', () => ({
+jest.mock('@/lib/shared/data-utils', () => ({
+	...jest.requireActual('@/lib/shared/data-utils'),
 	emptyToUndefined: jest.fn((value: string | undefined) => {
 		const trimmed = value?.trim();
 		return trimmed ? trimmed : undefined;
 	}),
+}));
+
+jest.mock('@/lib/commercial/customer.repository', () => ({
 	findCommercialCustomerByEmail: jest.fn(),
 	findCommercialCustomerByPhone: jest.fn(),
 	linkCommercialLeadToCustomer: jest.fn(),

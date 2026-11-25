@@ -40,9 +40,7 @@ interface ClientOptions {
 	maxPages?: number;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+import { isRecord } from '@/lib/shared/data-utils';
 
 function number(value: unknown): number | undefined {
 	return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : undefined;

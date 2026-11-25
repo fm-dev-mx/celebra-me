@@ -4,12 +4,8 @@
  * failure: partial data is discarded so a dataset never reports half a figure.
  */
 
-import {
-	type ProviderFailure,
-	fetchProviderJson,
-	isRecord,
-	sanitizeProviderCode,
-} from './provider-request';
+import { isRecord } from '@/lib/shared/data-utils';
+import { type ProviderFailure, fetchProviderJson, sanitizeProviderCode } from './provider-request';
 
 const GRAPHQL_ENDPOINT = 'https://api.cloudflare.com/client/v4/graphql';
 

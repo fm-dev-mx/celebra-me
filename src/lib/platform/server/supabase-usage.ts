@@ -10,7 +10,8 @@
  * quota.
  */
 
-import { type ProviderFailure, fetchProviderJson, isRecord } from './provider-request';
+import { isRecord } from '@/lib/shared/data-utils';
+import { type ProviderFailure, fetchProviderJson } from './provider-request';
 
 const MANAGEMENT_ENDPOINT = 'https://api.supabase.com/v1/projects';
 

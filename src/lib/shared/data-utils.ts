@@ -113,6 +113,11 @@ export function trimmedStr(value: unknown): string | undefined {
 	return undefined;
 }
 
+export function emptyToUndefined(value: string | null | undefined): string | undefined {
+	const trimmed = value?.trim();
+	return trimmed ? trimmed : undefined;
+}
+
 export function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

@@ -1,3 +1,4 @@
+import { emptyToUndefined } from '@/lib/shared/data-utils';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { ConsentSnapshot } from '@/lib/tracking/consent-policy';
 import type { TrackingEventName } from '@/lib/tracking/event-names';
@@ -57,11 +58,6 @@ interface VisitorSessionMetaAttributionRow {
 	fbp?: string | null;
 	fbc?: string | null;
 	fbclid?: string | null;
-}
-
-function emptyToUndefined(value: string | undefined): string | undefined {
-	const trimmed = value?.trim();
-	return trimmed ? trimmed : undefined;
 }
 
 export async function upsertVisitorSession(input: VisitorSessionInput): Promise<void> {

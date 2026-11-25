@@ -1,3 +1,4 @@
+import { emptyToUndefined } from '@/lib/shared/data-utils';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { getOrderPaymentStatus } from './order-payment-status';
 import {
@@ -119,11 +120,6 @@ interface MetaConversionEventRow {
 
 const ORDER_SELECT =
 	'id,order_number,customer_id,lead_id,session_id,source_event_id,status,event_type,package_id,package_name,currency,total_amount,deposit_amount,amount_paid,deposit_paid_at,paid_at,idempotency_key,deposit_idempotency_key,is_past_sale,sold_at,referred_by_customer_id,referral_code_used,discount_amount,referrer_credit_awarded,referrer_credit_redeemed,event_date';
-
-function emptyToUndefined(value: string | undefined | null): string | undefined {
-	const trimmed = value?.trim();
-	return trimmed ? trimmed : undefined;
-}
 
 function toNumber(value: number | string | null | undefined): number {
 	if (typeof value === 'number') return value;

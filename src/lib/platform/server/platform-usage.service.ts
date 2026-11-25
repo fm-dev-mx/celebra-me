@@ -30,7 +30,8 @@ import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { PlatformSnapshotProvider } from './collector/types';
 import { PLATFORM_ENV } from './config';
 import { readProfileVar } from './env-profiles';
-import { finiteNumber, isRecord } from './provider-request';
+import { isRecord } from '@/lib/shared/data-utils';
+import { finiteNumber } from './provider-request';
 
 const BUCKET_NAME_PATTERN = /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/;
 const DECIMAL_GB = 1_000_000_000;
