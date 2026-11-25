@@ -239,13 +239,13 @@ describe('promo copy', () => {
 			`Hola, quiero una invitación digital para mi evento. Ref. ${getGeneralPromoCode(row)}`,
 		);
 		expect(buildPackageMessage('signature', row)).toBe(
-			`Hola, quiero el paquete Signature de ${formatMxn(PRICE_TIERS.promo.signature)} MXN. Ref. ${getPromoCode('signature', row)}`,
+			`Hola, quiero el paquete Invitación + Álbum QR de fotos de ${formatMxn(PRICE_TIERS.promo.signature)} MXN. Ref. ${getPromoCode('signature', row)}`,
 		);
 		expect(buildGeneralMessage(null)).toBe(
 			'Hola, quiero una invitación digital para mi evento.',
 		);
 		expect(buildPackageMessage('esencial', null)).toBe(
-			`Hola, quiero el paquete Esencial de ${formatMxn(getStartingRegularPrice())} MXN.`,
+			`Hola, quiero el paquete Invitación Digital de Autor de ${formatMxn(getStartingRegularPrice())} MXN.`,
 		);
 	});
 
