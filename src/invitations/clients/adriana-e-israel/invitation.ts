@@ -65,7 +65,7 @@ const content: CanonicalEventContentInput = {
 				title: 'Padres del novio',
 				items: [
 					{ name: 'Luis Hernández Santiago' },
-					{ name: 'Virgina Irma Martínez Santiago', deceased: true },
+					{ name: 'Virginia Irma Martínez Santiago', deceased: true },
 				],
 			},
 		],
