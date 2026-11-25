@@ -63,8 +63,8 @@ describe('promo calendar', () => {
 			expect.arrayContaining([
 				'clash: overlaps octubre-2026',
 				'clash: duplicate codePrefix',
-				'clash: esencial promo price must be below 1299',
-				'clash: atelier promo price must be below 2499',
+				'clash: esencial promo price must be below 1899',
+				'clash: atelier promo price must be below 2999',
 			]),
 		);
 	});
@@ -188,7 +188,7 @@ describe('promo prices and codes', () => {
 
 	it('keeps the three fixed price tiers', () => {
 		expect(PRICE_TIERS).toEqual({
-			regular: { esencial: 1299, signature: 1799, atelier: 2499 },
+			regular: { esencial: 1899, signature: 2299, atelier: 2999 },
 			promo: { esencial: 999, signature: 1399, atelier: 1999 },
 			fuerte: { esencial: 899, signature: 1299, atelier: 1899 },
 		});

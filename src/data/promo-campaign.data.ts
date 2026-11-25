@@ -46,7 +46,7 @@ export type PackagePrices = Readonly<Record<PromoPackageId, number>>;
  * one; a row picks `promo` or `fuerte`.
  */
 export const PRICE_TIERS: Readonly<Record<PriceTierId, PackagePrices>> = {
-	regular: { esencial: 1299, signature: 1799, atelier: 2499 },
+	regular: { esencial: 1899, signature: 2299, atelier: 2999 },
 	promo: { esencial: 999, signature: 1399, atelier: 1999 },
 	fuerte: { esencial: 899, signature: 1299, atelier: 1899 },
 };
