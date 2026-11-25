@@ -81,3 +81,68 @@ it('blocks reset until an explicit role is supplied and displays failures', () =
 	fireEvent.click(reset);
 	expect(onResetPassword).toHaveBeenCalledTimes(1);
 });
+
+it('traps focus, responds to Escape and restores trigger focus on close', () => {
+	const trigger = document.createElement('button');
+	trigger.textContent = 'Editar credenciales';
+	document.body.appendChild(trigger);
+	trigger.focus();
+	expect(document.activeElement).toBe(trigger);
+
+	const user: UserListItemDTO = {
+		id: 'synthetic-user',
+		email: 'host@example.test',
+		role: 'host_client',
+		createdAt: '',
+		assignedEvents: [],
+	};
+	const onClose = jest.fn();
+	const { unmount } = render(
+		<UserCredentialsModal
+			user={user}
+			busy={false}
+			error=""
+			onClose={onClose}
+			onSaveLoginAlias={jest.fn()}
+			onResetPassword={jest.fn()}
+		/>,
+	);
+
+	expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+	// Escape calls onClose
+	fireEvent.keyDown(document, { key: 'Escape' });
+	expect(onClose).toHaveBeenCalledTimes(1);
+
+	// Unmount restores focus to trigger
+	unmount();
+	expect(document.activeElement).toBe(trigger);
+	trigger.remove();
+});
+
+it('blocks backdrop click and Escape while busy saving or resetting', () => {
+	const user: UserListItemDTO = {
+		id: 'synthetic-user',
+		email: 'host@example.test',
+		role: 'host_client',
+		createdAt: '',
+		assignedEvents: [],
+	};
+	const onClose = jest.fn();
+	render(
+		<UserCredentialsModal
+			user={user}
+			busy={true}
+			error=""
+			onClose={onClose}
+			onSaveLoginAlias={jest.fn()}
+			onResetPassword={jest.fn()}
+		/>,
+	);
+
+	const backdrop = document.querySelector('.dashboard-modal-backdrop') as HTMLElement;
+	expect(backdrop).toBeInTheDocument();
+	fireEvent.click(backdrop);
+	fireEvent.keyDown(document, { key: 'Escape' });
+	expect(onClose).not.toHaveBeenCalled();
+});
