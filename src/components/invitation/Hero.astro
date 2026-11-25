@@ -10,6 +10,7 @@ import {
 	shouldOptimizeThroughImageService,
 } from '@/lib/assets/image-delivery-policy';
 import type { ImageAsset } from '@/lib/assets/asset-registry';
+import { joinSpanishNames } from '@/lib/invitation/spanish-names';
 import type { HeroVariant } from '@/lib/invitation/section-variants';
 import { buildR2ResponsiveSrcset } from '@/lib/intake/services/r2-invitation-media';
 import {
@@ -176,7 +177,7 @@ if (!isFramedPortrait && !isCeremonialPortrait) {
 const mobileSrcset = mobileBgSrc && isNightArch ? buildR2ResponsiveSrcset(mobileBgSrc) : undefined;
 const desktopSrcset =
 	desktopBgSrc && isNightArch ? buildR2ResponsiveSrcset(desktopBgSrc) : undefined;
-const imageAlt = isNightArch && secondaryName ? `${name} y ${secondaryName}` : name;
+const imageAlt = isNightArch && secondaryName ? joinSpanishNames(name, secondaryName) : name;
 
 if (!isEditorialCover && !isFramedPortrait && !isCeremonialPortrait) {
 	ageLockupMatch = displayLabel ? displayLabel.trim().match(/^(\d+)\s+(AÑOS)$/iu) : null;

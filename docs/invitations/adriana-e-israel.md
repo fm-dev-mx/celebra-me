@@ -53,9 +53,9 @@ document and remains owned by `pnpm invitation:release -- --status` / `invitatio
 | receptionVenueAddress | Punta Diamante 108, San Francisco Tutla                    | verified       | wa-export     |                                                                  |
 | receptionVenueMapsUrl | maps.app.goo.gl/bP3hRCpcCcjKx38w5                          | verified       | wa-export     | Pin sent by the client                                           |
 | brideParents          | Eduardo Rivas Márquez; Clemencia Hernández Ramírez         | verified       | wa-export     |                                                                  |
-| groomParents          | Luis Hernández Santiago; Virgina Irma Martínez Santiago    | verified       | wa-export     | Mother deceased; shown with «†». Spelling «Virgina» as typed     |
+| groomParents          | Luis Hernández Santiago; Virginia Irma Martínez Santiago   | verified       | wa-export     | Mother deceased; «†». «Virginia» confirmed by owner 2026-11-24   |
 | godparents            | Ramiro Vallejo Ríos; Jesseni de Vallejo                    | verified       | wa-export     | Padrinos type (velación, anillos…) not stated                    |
-| nameSpelling          | [[PENDIENTE:NAME_SPELLING]]                                | pending        | wa-export     | «Virgina» and «Ríos» shown as written until confirmed            |
+| nameSpelling          | [[PENDIENTE:NAME_SPELLING]]                                | pending        | wa-export     | «Ríos» shown as written until confirmed                          |
 | clientColors          | Azul índigo                                                | verified       | wa-export     | Gold appears only as hairlines                                   |
 | dressCode             | A su gusto                                                 | verified       | wa-export     | Client wording rewritten in «usted»; approval pending            |
 | passRules             | [[PENDIENTE:PASS_RULES]]                                   | pending        | wa-export     | Children policy not stated; copy silent                          |
