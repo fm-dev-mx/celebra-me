@@ -14,7 +14,7 @@ import {
 	CLIENT_ONLY_TRACKING_EVENT_NAMES,
 	type ClientOnlyTrackingEventName,
 	type PublicTrackingEventName,
-} from '@/lib/tracking/event-contract';
+} from '@/lib/tracking/event-names';
 import { normalizeReferralCode, readReferralCodeFromUrl } from '@/lib/commercial/referrals';
 import { readTtclidFromUrl, sanitizeTtclid } from '@/lib/tracking/tiktok-attribution';
 

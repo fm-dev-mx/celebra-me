@@ -50,16 +50,28 @@ const EXPECTED_REDIRECTS = [
 		destination: '/comunion-angelical',
 	},
 	{
-		source: '/adriana-e-israel',
-		destination: '/adriana-y-israel',
+		source: '/adriana-y-israel',
+		destination: '/adriana-e-israel',
 	},
 	{
-		source: '/adriana-e-israel/',
-		destination: '/adriana-y-israel',
+		source: '/adriana-y-israel/',
+		destination: '/adriana-e-israel',
 	},
 	{
-		source: '/boda/adriana-e-israel',
-		destination: '/adriana-y-israel',
+		source: '/boda/adriana-y-israel',
+		destination: '/adriana-e-israel',
+	},
+	{
+		source: '/boda/adriana-y-israel/i/:shortId',
+		destination: '/boda/adriana-e-israel/i/:shortId',
+	},
+	{
+		source: '/adriana-y-israel/:code',
+		destination: '/adriana-e-israel/:code',
+	},
+	{
+		source: '/adriana-y-israel/:code/',
+		destination: '/adriana-e-israel/:code',
 	},
 ];
 
@@ -209,8 +221,10 @@ describe('Middleware permanent redirects', () => {
 		'/bautizo/demo-bautismo-angelic-presence/extra',
 		'/demo-bautismo-angelic-presence',
 		'/bautizo/demo-bautizo-angelic-presence',
-		'/adriana-y-israel',
+		'/adriana-e-israel',
+		'/adriana-e-israel/i/ABC123',
 		'/adriana-y-israel/i/ABC123',
+		'/i/adriana-y-israel/ABC123',
 	])('leaves %s alone', (pathname) => {
 		expect(resolvePermanentRedirectPath(pathname)).toBeNull();
 	});
@@ -240,6 +254,24 @@ describe('Middleware permanent redirects', () => {
 		expect(response.status).toBe(301);
 		expect(response.headers.get('Location')).toBe('/comunion-angelical');
 		expect(next).not.toHaveBeenCalled();
+	});
+	it('sends personalized links of the old slug to the new one', () => {
+		expect(resolvePermanentRedirectPath('/boda/adriana-y-israel/i/ABC123')).toBe(
+			'/boda/adriana-e-israel/i/ABC123',
+		);
+	});
+
+	// `/i/{slug}/{code}` answers 404 to a direct request, so it can never be a destination.
+	it('sends guest code links of the old slug to the public guest link', () => {
+		expect(resolvePermanentRedirectPath('/adriana-y-israel/k7q2')).toBe(
+			'/adriana-e-israel/k7q2',
+		);
+		expect(resolvePermanentRedirectPath('/adriana-y-israel/k7q2/')).toBe(
+			'/adriana-e-israel/k7q2',
+		);
+		for (const { destination } of PERMANENT_REDIRECTS) {
+			expect(destination).not.toMatch(/^\/i\/[^/]+\/[^/]+$/);
+		}
 	});
 });
 

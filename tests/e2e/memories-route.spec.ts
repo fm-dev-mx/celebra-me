@@ -1,15 +1,18 @@
 import { expect, test } from '@playwright/test';
+import { CANONICAL_MEMORIES_SLUG } from '../../scripts/playwright/canonical-memories-fixture';
 import { memoriesCaptureCopy } from '../../src/lib/memories/copy';
 import { gotoAfterIslandEffect } from './harness/hydrated-navigation';
 
 /**
- * Public memories routes resolve a space from the database. Without a seeded
- * space only the fail-closed paths are exercised; set MEMORIES_E2E_SLUG to an
- * activated space with an open window to run the guest capture flow against
- * mocked guest APIs.
+ * Public memories routes resolve a space from the database. The guest capture flow
+ * runs against mocked guest APIs on the canonical fixture space, or on the activated
+ * space with an open window named by MEMORIES_E2E_SLUG. Without either, only the
+ * fail-closed paths are exercised.
  */
 
-const SLUG = process.env.MEMORIES_E2E_SLUG ?? '';
+const SLUG =
+	process.env.MEMORIES_E2E_SLUG ??
+	(process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES === 'true' ? CANONICAL_MEMORIES_SLUG : '');
 
 test.describe('memories public routes', () => {
 	test('unknown public slug fails closed with 404 and no caching', async ({ page }) => {
@@ -30,7 +33,7 @@ test.describe('memories public routes', () => {
 });
 
 test.describe('memories guest capture', () => {
-	test.skip(!SLUG, 'MEMORIES_E2E_SLUG is not configured');
+	test.skip(!SLUG, 'No canonical fixture space and MEMORIES_E2E_SLUG is not configured');
 
 	test('starts a session and uploads through the signed capability', async ({ page }) => {
 		const sessionPath = `/api/memories/${SLUG}/session`;

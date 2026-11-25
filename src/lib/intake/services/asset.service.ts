@@ -24,6 +24,9 @@ import { getEventAsset, isValidEvent } from '@/lib/assets/asset-registry';
 import type { InvitationAsset } from '@/lib/intake/types';
 import { normalizeInvitationImage } from '@/lib/intake/services/asset-policy';
 
+/** Bound on reading one of our own bundled images before copying it to the library. */
+const BUNDLED_IMAGE_TIMEOUT_MS = 15_000;
+
 function deliverySourceFromAsset(asset: InvitationAsset) {
 	return {
 		id: asset.id,
@@ -356,7 +359,9 @@ export async function importBundledAsset(
 		imageSrc = new URL(imageSrc, requestUrl).toString();
 	}
 
-	const response = await fetch(imageSrc as string);
+	const response = await fetch(imageSrc as string, {
+		signal: AbortSignal.timeout(BUNDLED_IMAGE_TIMEOUT_MS),
+	});
 	if (!response.ok) {
 		throw new ApiError(
 			502,

@@ -340,10 +340,10 @@ Every managed digital invitation must define:
     allowed only when the target row is absent, has a null managed identity, or already matches.
 - **Previous Slugs** (`previousSlugs`, optional): Historical slugs for this managed identity. Used
   for alias diagnostics and fail-closed `REKEY_REQUIRED` protection. Creating a new row when a
-  previous slug is still active is forbidden; operators must pass `--rekey-from <old-slug>`. Guarded
-  rekey (Local and Preview only; Production blocked) preserves invitation UUID, owner, publication,
-  event, RSVP data, provenance, and assets; it aborts on collisions or drift. `managedIdentityId` is
-  assigned/backfilled even when content is otherwise unchanged.
+  previous slug is still active is forbidden; operators must pass `--rekey-from <old-slug>`
+  (Production derives it from a verified `previousSlugs` match). Guarded rekey preserves invitation
+  UUID, owner, publication, event, RSVP data, provenance, and assets; it aborts on collisions or
+  drift. `managedIdentityId` is assigned/backfilled even when content is otherwise unchanged.
 - **Display Name** (`title`): Spanish human-readable title (e.g. `Romina Ríos Chaparro`).
 - **Canonical Slug** (`slug`): Lowercase hyphenated unique identifier (e.g. `romina-rios-chaparro`,
   `daniela-y-martin`). Slug drives public URLs, assets, and storage paths. It is **not** the host
@@ -700,8 +700,14 @@ not query it; `pnpm lane:sync` prints the same bounded status after synchronizat
 
 ### Rekey Target Semantics
 
-- Identity rekeying (`--rekey-from <old-slug>`) is supported on Local and Preview only.
-- Production fails closed with `IDENTITY_REKEY_UNSUPPORTED_TARGET`.
+- Explicit identity rekeying (`--rekey-from <old-slug>`) is supported on Local and Preview only.
+  Production still fails closed with `IDENTITY_REKEY_UNSUPPORTED_TARGET` when the flag is passed.
+- Production renames a managed invitation without the flag. `prod:apply` and its preflight treat a
+  package `previousSlugs` entry as an implicit rekey only when the active Production row on that old
+  slug carries the SAME `managedIdentityId` and the new slug is free. Any mismatch (other identity,
+  null identity, new slug taken, no active old row) keeps failing closed with `REKEY_REQUIRED`,
+  `IDENTITY_CONFLICT` or `IDENTITY_NOT_FOUND`. The preflight shows that message.
+- A verified rename follows the Preview rekey path: R2 objects stay under the old slug prefix.
 - Rekeying preserves the invitation UUID, event ownership, and RSVP records while updating the
   canonical slug and release provenance.
 

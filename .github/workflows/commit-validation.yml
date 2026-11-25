@@ -107,6 +107,7 @@ jobs:
         name: Repository Policy
         if: github.event.inputs.visual_mode != 'candidate'
         runs-on: ubuntu-24.04
+        timeout-minutes: 10
 
         steps:
             - name: Checkout repository
@@ -518,6 +519,7 @@ jobs:
     application-validation:
         name: Application Suite
         runs-on: ubuntu-24.04
+        timeout-minutes: 5
         needs:
             [
                 evidence-reuse,

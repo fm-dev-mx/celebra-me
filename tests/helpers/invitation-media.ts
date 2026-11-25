@@ -17,7 +17,7 @@ export type NormalizedAssetFacts = Pick<
 	'fileSize' | 'validationVersion' | 'mimeType' | 'width' | 'height'
 >;
 
-export function invitationAssetRoot(definition: InvitationDefinition): string {
+function invitationAssetRoot(definition: InvitationDefinition): string {
 	return join(process.cwd(), getInvitationAssetSourceDir(definition));
 }
 

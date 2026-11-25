@@ -228,6 +228,7 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 					).toMatch(/^[1-9]\d*$/u);
 				}
 
+				// Part of the cadence the approved baselines were captured with.
 				await page.waitForTimeout(100);
 				const snapshotName = visualPageCaseFile(entry, viewport.name);
 				const captureStarted = Date.now();
@@ -239,6 +240,7 @@ test.describe('Canonical invitation complete-page visual parity', () => {
 					file: snapshotName,
 					image,
 					recapture: async () => {
+						// Late on purpose: tells slow painting from a real change.
 						await page.waitForTimeout(500);
 						return captureCompletePage(page);
 					},

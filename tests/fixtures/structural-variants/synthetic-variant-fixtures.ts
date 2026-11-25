@@ -322,6 +322,7 @@ const TWO_ITEM_INCOMPATIBLE_GALLERIES = new Set([
 const IMAGE_THANK_YOU_VARIANTS = new Set([
 	'full-bleed-photo',
 	'portrait-letter',
+	'inked-letter',
 	'portrait-keepsake',
 	'last-song',
 	'veiled-photo',
@@ -343,6 +344,7 @@ function makeLocationIncompatible(data: Record<string, unknown>, variant: string
 		];
 	} else if (
 		variant === 'stacked-venue-plates' ||
+		variant === 'arched-scenes' ||
 		variant === 'night-route' ||
 		variant === 'star-route'
 	) {
@@ -359,7 +361,12 @@ function makeLocationIncompatible(data: Record<string, unknown>, variant: string
 
 const GROUPED_FAMILY_VARIANTS = new Set(['split-groups', 'asymmetric-groups', 'framed-groups']);
 
-const ITEMIZED_GIFT_VARIANTS = new Set(['editorial-catalog', 'gift-tag', 'framed-card']);
+const ITEMIZED_GIFT_VARIANTS = new Set([
+	'editorial-catalog',
+	'gift-tag',
+	'framed-card',
+	'sealed-envelope',
+]);
 
 export function buildIncompatiblePrerequisiteEvent(
 	entry: CanonicalVariantRegistryEntry,
@@ -379,6 +386,7 @@ export function buildIncompatiblePrerequisiteEvent(
 					'night-arch',
 					'veiled-arch',
 					'framed-portrait',
+					'passe-partout-portrait',
 					'bleed-portrait',
 					'cased-portrait',
 					'disco-stage',

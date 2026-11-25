@@ -20,10 +20,6 @@ export function sanitizePassword(value: unknown): string {
 	return sanitize(value, 200);
 }
 
-export function sanitizeToken(value: unknown): string {
-	return sanitize(value, 4096);
-}
-
 export function assertValidEmail(email: string): void {
 	if (!email || !EMAIL_PATTERN.test(email)) {
 		throw new ApiError(400, 'bad_request', 'El correo electrónico es inválido.');

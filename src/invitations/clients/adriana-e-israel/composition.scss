@@ -15,7 +15,7 @@
 // margin; each group stands on a silver hairline at its left edge, the script title a step above
 // its names. From 62rem the heading takes a narrow left column and the groups the wider right
 // one, so the block reads across the screen instead of down a centered axis.
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding .family[data-variant='framed-groups'] {
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding .family[data-variant='framed-groups'] {
 	--framed-groups-title-size: clamp(2rem, 1.3rem + 3.2vw, 3.5rem);
 
 	// The names are what the guest reads, so they outweigh the script titles above them.
@@ -40,13 +40,13 @@
 }
 
 // Cover and quote: shared indigo stationery scenes.
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding {
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding {
 	@include indigo-stationery-scenes.veiled-arch-hero;
 	@include indigo-stationery-scenes.veiled-photo-quote;
 }
 
 // Reveal: under the monogram the guest's name leads; the small lines step back to light ivory.
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding
 	.envelope-wrapper[data-variant='silver-thread'] {
 	// The action line sits closer to the monogram instead of at the foot of the screen.
 	padding-bottom: max(22svh, 4.5rem);
@@ -87,11 +87,10 @@
 
 // Frames: only the guest pass keeps a silver hairline; the full-screen frames around the location
 // and the gifts are dropped, so the page does not read as a stack of boxes.
-// Each scene mixin keeps its own scope rule so the cascade order stays as authored.
+// Each scene mixin below keeps its own scope rule so the cascade order stays as authored.
 /* stylelint-disable-next-line no-duplicate-selectors */
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding {
-	// Cotton stationery shared by the gifts envelope and the guest pass: a fine warm grain and long
-	// horizontal fibres.
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding {
+	// Cotton stationery shared by the gifts envelope and the guest pass: fine grain, long fibres.
 	--indigo-env-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.38 0 0 0 0 0.26 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url%28%23n%29'/%3E%3C/svg%3E");
 	--indigo-env-fibres: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.01 0.35' numOctaves='2' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.43 0 0 0 0 0.3 0.6 0 0 0 -0.36'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url%28%23f%29'/%3E%3C/svg%3E");
 
@@ -107,7 +106,7 @@
 // photographs, a wide strip and two more; tablets and desktop set three upright photographs over
 // two wider ones. The faces sit in the upper third of every photograph, so each one keeps its own
 // focal point (invitation.ts) and the wide cells crop from the top.
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding
 	.gallery-section[data-variant='rising-stack'] {
 	--rising-stack-paper: var(--indigo-ivory);
 
@@ -178,7 +177,7 @@
 // The fifth photograph joins the pinned sequence last.
 @include motion.motion-safe {
 	@supports (animation-timeline: view()) {
-		.event--adriana-y-israel.theme-preset--jewelry-box-wedding:not(
+		.event--adriana-e-israel.theme-preset--jewelry-box-wedding:not(
 				[data-scroll-scenes='static']
 			)
 			#invitation-sections-container
@@ -190,7 +189,7 @@
 
 		// The ceremony is already on the card while it rises over the countdown, so scrolling back
 		// up never leaves an empty program on screen.
-		.event--adriana-y-israel.theme-preset--jewelry-box-wedding:not(
+		.event--adriana-e-israel.theme-preset--jewelry-box-wedding:not(
 				[data-scroll-scenes='static']
 			)
 			#invitation-sections-container
@@ -206,7 +205,7 @@
 
 // Keyframes of the ceremony entry above, kept inside the slug scope.
 /* stylelint-disable-next-line no-duplicate-selectors */
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding {
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding {
 	@keyframes adriana-pinned-ceremony {
 		0%,
 		34% {
@@ -226,9 +225,8 @@
 
 // Gifts: the night-indigo ground of the cover returns, and the single entry is an ivory envelope
 // with its flap closed by a champagne seal (shared indigo stationery gifts).
-// Each scene mixin keeps its own scope rule so the cascade order stays as authored.
 /* stylelint-disable-next-line no-duplicate-selectors */
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding {
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding {
 	@include indigo-stationery-gifts.sealed-envelope-gifts;
 }
 
@@ -236,14 +234,14 @@
 // ground. A champagne hairline frames it with a silver one inside, a fine indigo lattice runs
 // along its head, the seal is pressed in champagne, and the reserved places sit in an indigo chip
 // lettered in champagne. The perforated stub keeps its notches, punched through to the ground.
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding
 	.invitation-section-wrapper.invitation-section-wrapper.invitation-section-wrapper[data-section-kind='personalized-access'] {
 	background: var(--indigo-indigo-deep);
 }
 
 // The indigo ground is always painted, so the light page never shows while the pass waits to
 // enter; only the card rises in (or fades, under reduced motion).
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding
 	#invitation-sections-container
 	> .invitation-section-wrapper[data-reveal='editorial'][data-section-kind='personalized-access'] {
 	opacity: 100%;
@@ -265,7 +263,7 @@
 
 // RSVP: the wrapper carries the section's own indigo and never fades, so the white wrapper ground
 // never shows while the register waits to enter; only the register card rises in.
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding
 	#invitation-sections-container
 	> .invitation-section-wrapper.invitation-section-wrapper[data-section-kind='rsvp'] {
 	opacity: 100%;
@@ -316,16 +314,14 @@
 	}
 }
 
-// Each scene mixin keeps its own scope rule so the cascade order stays as authored.
 /* stylelint-disable-next-line no-duplicate-selectors */
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding {
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding {
 	@include indigo-stationery-register.framed-pass-access;
 }
 
 // Location: the small lines step up to a readable size and each event gets more air.
-// Each scene mixin keeps its own scope rule so the cascade order stays as authored.
 /* stylelint-disable-next-line no-duplicate-selectors */
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding {
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding {
 	@include indigo-stationery-scenes.pinned-program-location;
 
 	// Wide, short screens (phones held sideways): the pinned card is only as tall as the screen, so
@@ -349,26 +345,84 @@
 	}
 }
 
-// Footer: only the reply and the credits; the cover already carries the date and the city. It is
-// held like the latest invitations: the page stops at the thank-you, and a pull past the bottom
-// (two wheel notches, or a swipe up on the pearl cue) opens it.
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+// Footer: held like the latest invitations (a pull past the thank-you opens it), in cool ivory ink
+// on the same indigo, with no seam. One centered column in three steps: the guests' link, then the
+// platform under a short silver rule (signature over its contact button), then the credits.
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding
 	.invitation-footer[data-variant='framed-closing'] {
 	--invitation-footer-reveal: held;
 	--footer-open-glide: 720ms;
+	--framed-closing-beige-rgb: var(--indigo-ivory-rgb);
+	--framed-closing-ivory: var(--indigo-ivory);
+	--framed-closing-olive-deep: var(--indigo-indigo-deep);
+	--footer-border-color: transparent;
+	--footer-sky: none;
+	--footer-content-gap: 1.75rem;
+	--footer-replay-opacity: 92%;
+	--footer-replay-font-size: 0.75rem;
+	--footer-platform-rule-space: 2.25rem;
+	--footer-primary-row-direction: column;
+	--footer-primary-row-direction-sm: column;
+	--footer-logo-width: 132px;
+	--footer-logo-opacity: 92%;
+	--footer-powered-opacity: 55%;
+	--footer-rights-size: 0.6875rem;
 
 	.footer-reply__note,
 	.footer__closing-phrase {
 		display: none;
 	}
+
+	.footer__replay-link {
+		letter-spacing: 0.22em;
+	}
+
+	.footer__primary-row {
+		gap: 1.25rem;
+	}
+
+	.footer__rights {
+		letter-spacing: 0.04em;
+		line-height: 1.7;
+		text-wrap: balance;
+	}
+}
+
+// Thank-you on phones: a full-screen crop would cut both faces, so the selfie spans the width from
+// the top, whole and unframed (as the couple asked), and fades into indigo where the words sit.
+@media (width < 62rem) {
+	.event--adriana-e-israel.theme-preset--jewelry-box-wedding
+		.thank-you-section[data-variant='veiled-photo'] {
+		--thank-you-bleed-photo-veil-content: '';
+		--thank-you-bleed-veil: linear-gradient(
+			180deg,
+			transparent 0%,
+			transparent 55%,
+			rgb(var(--indigo-indigo-deep-rgb) / 70%) 80%,
+			var(--indigo-indigo-deep) 100%
+		);
+
+		background: var(--indigo-indigo-deep);
+
+		.photo-frame {
+			--thank-you-focal-point: 50% 0%;
+
+			inset: 0 0 auto;
+			height: auto;
+			aspect-ratio: 3 / 4;
+		}
+
+		.hairline-frame {
+			display: none;
+		}
+	}
 }
 
 // Thank-you: the couple's selfie under the indigo veil, with their words at the foot. A selfie
 // spread across a wide screen would put the message on Adriana's face, so from 62rem the photo
-// stands framed on the left, as the cover frames it on phones, and the words take the right half
-// of the indigo ground.
+// stands unframed on the left, and the words take the right half of the indigo ground.
 @media (width >= 62rem) {
-	.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+	.event--adriana-e-israel.theme-preset--jewelry-box-wedding
 		.thank-you-section[data-variant='veiled-photo'] {
 		--indigo-thanks-frame-top: calc(
 			var(--header-height-scrolled, 64px) + var(--preview-banner-height, 0px) + 2.5rem
@@ -393,11 +447,8 @@
 				var(--indigo-thanks-gutter);
 			width: auto;
 			height: auto;
-			aspect-ratio: 4 / 5;
-			box-shadow:
-				0 0 0 0.375rem var(--indigo-indigo-deep),
-				0 0 0 calc(0.375rem + 1px) rgb(var(--indigo-silver-rgb) / 70%),
-				0 30px 60px -24px rgb(0 0 0 / 60%);
+			aspect-ratio: 3 / 4;
+			box-shadow: 0 30px 60px -24px rgb(0 0 0 / 60%);
 		}
 
 		.hairline-frame {
@@ -412,10 +463,9 @@
 	}
 }
 
-// The countdown is set in silver, like the monogram that opens the invitation: the sprig, the
-// hairlines and the unit labels. The labels are read, not ornament, so they keep a legible size
-// and almost full strength on the indigo.
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding
+// The countdown is set in silver, like the opening monogram: the sprig, the hairlines and the unit
+// labels, which are read, not ornament, so they keep a legible size and almost full strength.
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding
 	.countdown-section[data-variant='framed-scene'] {
 	--framed-scene-label-size: clamp(0.75rem, 0.68rem + 0.3vw, 0.875rem);
 
@@ -430,8 +480,121 @@
 }
 
 // RSVP: the register keeps its night-indigo ground (shared indigo stationery register).
-// Each scene mixin keeps its own scope rule so the cascade order stays as authored.
 /* stylelint-disable-next-line no-duplicate-selectors */
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding {
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding {
 	@include indigo-stationery-register.framed-register-rsvp;
+}
+
+// Cover: two portraits in the arch. The star portrait eases in on the couple and resets unseen while
+// the second, on a layer above it under the shared veil (::after), covers it; the transform lifts
+// the image above unstacked siblings, so both layers take a z-index. Reduced motion: first, still.
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding
+	.invitation-hero[data-variant='veiled-arch']
+	.invitation-hero__background::after {
+	z-index: 2;
+}
+
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding
+	.invitation-hero[data-variant='veiled-arch']
+	.invitation-hero__background
+	img {
+	transform-origin: 45% 68%;
+	animation: adriana-israel-hero-star-zoom 14s ease-in-out 3s infinite;
+
+	@include motion.reduced-motion {
+		animation: none;
+	}
+
+	@keyframes adriana-israel-hero-star-zoom {
+		33%,
+		60% {
+			transform: scale(1.08);
+		}
+
+		// The reset lands while the second portrait is fully opaque (45%-85%), so no zoom-out shows.
+		0%,
+		60.5%,
+		100% {
+			transform: scale(1);
+		}
+	}
+}
+
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding
+	.invitation-hero[data-variant='veiled-arch']
+	.invitation-hero__background::before {
+	content: '';
+	position: absolute;
+	z-index: 1;
+	inset: 0;
+	border-radius: inherit;
+	background: url('./assets/hero-02.webp') 50% 0% / cover no-repeat;
+	filter: opacity(0%);
+	pointer-events: none;
+	animation: adriana-israel-crossfade 14s ease-in-out 3s infinite;
+
+	@media (width >= 62rem) {
+		background-position: 50% 20%;
+	}
+
+	@include motion.reduced-motion {
+		display: none;
+	}
+}
+
+// Quote: both portraits start at the section top (the header hides on scroll); the second crossfades
+// on the hero's rhythm via `filter: opacity()`, since `opacity` belongs to the scroll animations.
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding
+	.quote-section[data-variant='veiled-photo'] {
+	&::before {
+		top: 0;
+	}
+
+	.quote-texture {
+		position: absolute;
+		z-index: -1;
+		inset: 0 0 auto;
+		display: block;
+		aspect-ratio: 2 / 3;
+		background: var(--indigo-quote-photo-02) 50% 0 / 100% auto no-repeat;
+		opacity: 100%;
+		mix-blend-mode: normal;
+		filter: opacity(0%);
+		transform-origin: 50% 30%;
+		pointer-events: none;
+		animation: adriana-israel-crossfade 14s ease-in-out infinite;
+
+		@media (width >= 62rem) {
+			inset: 0 50% 0 0;
+			aspect-ratio: auto;
+			background-size: cover;
+		}
+
+		@include motion.reduced-motion {
+			display: none;
+		}
+
+		@supports (animation-timeline: view()) {
+			@include motion.motion-safe {
+				animation:
+					indigo-quote-near linear both,
+					adriana-israel-crossfade 14s ease-in-out infinite;
+				animation-timeline: --veiled-photo-stage, auto;
+			}
+		}
+
+		@keyframes adriana-israel-crossfade {
+			0%,
+			35%,
+			95%,
+			100% {
+				filter: opacity(0%);
+			}
+
+			45%,
+			85% {
+				filter: opacity(100%);
+			}
+		}
+	}
 }

@@ -6,8 +6,8 @@
  * Worktree path alone is never authorization.
  */
 
-import { SUPABASE_PROJECT_REFS } from '@/lib/intake/mutations/environment-identity';
 import type { DeployEnvironment } from '@/lib/server/deploy-identity';
+import { isPreviewSupabaseUrl } from '@/lib/server/preview-supabase-url';
 
 export interface DashboardEnvBannerInput {
 	/** Resolved deploy identity; null when it is missing or invalid. */
@@ -21,19 +21,6 @@ type DashboardEnvBanner =
 	| { kind: 'local'; label: string; className: string }
 	| { kind: 'preview-db'; label: string; className: string }
 	| { kind: 'hosted-preview'; label: string; className: string };
-
-function isPreviewSupabaseUrl(urlString: string | undefined): boolean {
-	if (!urlString) return false;
-	try {
-		const url = new URL(urlString);
-		if (url.protocol !== 'https:' || url.username || url.password) return false;
-		const hostname = url.hostname.toLowerCase();
-		const ref = SUPABASE_PROJECT_REFS.preview;
-		return hostname === `${ref}.supabase.co` || hostname === `${ref}.supabase.com`;
-	} catch {
-		return false;
-	}
-}
 
 /**
  * Pure resolver for the non-production dashboard environment banner.

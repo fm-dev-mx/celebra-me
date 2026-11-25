@@ -301,6 +301,27 @@ function loadTargetInvitationRows(
 	);
 }
 
+/**
+ * Production never accepts a free-form --rekey-from. A rename is implied only when the package
+ * lists the old slug in previousSlugs, the active row on that slug already carries the SAME
+ * managedIdentityId, and the new slug is free. Anything else falls through to REKEY_REQUIRED.
+ */
+export function deriveProductionRekeyFrom(input: {
+	slug: string;
+	managedIdentityId: string;
+	previousSlugs: readonly string[];
+	activeRows: ReadonlyArray<Record<string, unknown>>;
+}): string | undefined {
+	if (input.activeRows.some((row) => String(row.slug) === input.slug)) return undefined;
+	for (const previousSlug of input.previousSlugs) {
+		const hit = input.activeRows.find((row) => String(row.slug) === previousSlug);
+		if (hit && String(hit.managed_identity_id ?? '') === input.managedIdentityId) {
+			return previousSlug;
+		}
+	}
+	return undefined;
+}
+
 function rowToManagedIdentity(row: Record<string, unknown> | null | undefined): {
 	id: string;
 	slug: string;
@@ -465,6 +486,7 @@ export function assertReconciledMutationTargets(
 	reconciliation: AssetReconciliationResult,
 	targetDbAssets: TargetAssetRecord[],
 	targetIdentity: { environment: 'preview' | 'production'; eventType: string; slug: string },
+	verifiedRekeyFrom?: string,
 ): void {
 	for (const item of [...reconciliation.reconciledAssets, ...reconciliation.unreferencedAssets]) {
 		const targetRecord = targetDbAssets.find(
@@ -472,11 +494,63 @@ export function assertReconciledMutationTargets(
 				record.id === item.targetAssetId || record.storagePath === item.targetStoragePath,
 		);
 		if (targetRecord?.provider !== 'r2') continue;
-		assertR2MutationTarget(
-			targetRecord.providerPublicId ?? targetRecord.storagePath,
-			targetIdentity,
-		);
+		const objectKey = targetRecord.providerPublicId ?? targetRecord.storagePath;
+		if (
+			!SOURCE_DELETING_ASSET_ACTIONS.has(item.plannedAction) &&
+			isRekeySourceObject(objectKey, targetIdentity.eventType, verifiedRekeyFrom)
+		) {
+			continue;
+		}
+		assertR2MutationTarget(objectKey, targetIdentity);
 	}
+}
+
+/**
+ * Actions that delete the R2 object a row points at. Under a verified rekey source these stay
+ * blocked. The rest leave that object untouched: REUSE, RETAIN and REPAIR_METADATA keep it,
+ * and UPLOAD and OVERWRITE write the new binary under the new slug's own key
+ * (`uploadOrReconcileR2Asset` derives it from the target identity), so the old object remains.
+ */
+const SOURCE_DELETING_ASSET_ACTIONS: ReadonlySet<string> = new Set(['PRUNE_STORAGE_AND_METADATA']);
+
+/**
+ * A metadata repair after a verified rekey must keep the row on the object that already exists
+ * under the old slug; the canonical asset carries the new slug's key, which was never uploaded.
+ */
+export function keepRekeySourceObject(
+	pAsset: InvitationPackageAsset,
+	item: { targetAssetId?: string | null; targetStoragePath?: string | null },
+	targetDbAssets: readonly TargetAssetRecord[],
+	targetIdentity: { environment: 'preview' | 'production'; eventType: string } | undefined,
+	verifiedRekeyFrom: string | undefined,
+): InvitationPackageAsset {
+	if (!targetIdentity) return pAsset;
+	const record = targetDbAssets.find(
+		(candidate) =>
+			candidate.id === item.targetAssetId || candidate.storagePath === item.targetStoragePath,
+	);
+	if (record?.provider !== 'r2') return pAsset;
+	const objectKey = record.providerPublicId ?? record.storagePath;
+	if (!isRekeySourceObject(objectKey, targetIdentity.eventType, verifiedRekeyFrom)) return pAsset;
+	return {
+		...pAsset,
+		storagePath: record.storagePath,
+		providerPublicId: objectKey,
+		secureUrl: buildR2PublicUrl(targetIdentity.environment, objectKey),
+	};
+}
+
+/**
+ * True when the object lives under the verified rekey source prefix. A rekey keeps the
+ * invitation's binaries where they were uploaded; only reads and reuse may target them.
+ */
+export function isRekeySourceObject(
+	objectKey: string | undefined,
+	eventType: string,
+	verifiedRekeyFrom: string | undefined,
+): boolean {
+	if (!objectKey || !verifiedRekeyFrom) return false;
+	return objectKey.startsWith(`invitations/${eventType}/${verifiedRekeyFrom}/`);
 }
 async function scanAssetStatus(
 	assets: InvitationPackageAsset[],
@@ -488,6 +562,7 @@ async function scanAssetStatus(
 	definitionSlug?: string,
 	resultingContent?: Record<string, unknown>,
 	targetIdentity?: { environment: 'preview' | 'production'; eventType: string; slug: string },
+	verifiedRekeyFrom?: string,
 ): Promise<{
 	assetsToUpload: InvitationPackageAsset[];
 	assetsToUpsertDbOnly: InvitationPackageAsset[];
@@ -523,7 +598,12 @@ async function scanAssetStatus(
 	}
 
 	if (targetIdentity)
-		assertReconciledMutationTargets(reconciliation, targetDbAssets, targetIdentity);
+		assertReconciledMutationTargets(
+			reconciliation,
+			targetDbAssets,
+			targetIdentity,
+			verifiedRekeyFrom,
+		);
 	const assetsToUpload: InvitationPackageAsset[] = [];
 	const assetsToUpsertDbOnly: InvitationPackageAsset[] = [];
 	const assetsToDelete: Array<{ record: TargetAssetRecord; deleteStorage: boolean }> = [];
@@ -543,7 +623,15 @@ async function scanAssetStatus(
 				detail: `R2 binary and metadata up-to-date (SHA-256: ${item.canonicalHash.slice(0, 12)}…)`,
 			});
 		} else if (item.plannedAction === 'REPAIR_METADATA') {
-			assetsToUpsertDbOnly.push(pAsset);
+			assetsToUpsertDbOnly.push(
+				keepRekeySourceObject(
+					pAsset,
+					item,
+					targetDbAssets,
+					targetIdentity,
+					verifiedRekeyFrom,
+				),
+			);
 			assetActions.push({
 				resource: 'invitation_assets',
 				name: item.displayName,
@@ -650,6 +738,7 @@ async function verifyContentOnlyHostedAssets(
 	targetEnvironment: 'preview' | 'production',
 	targetAssets: readonly TargetAssetRecord[],
 	assetRefs: UploadedAssetMap,
+	verifiedRekeyFrom?: string,
 ): Promise<void> {
 	const failures: string[] = [];
 	for (const asset of assets) {
@@ -662,7 +751,9 @@ async function verifyContentOnlyHostedAssets(
 			if (provider === 'r2') {
 				const objectKey = record.providerPublicId ?? record.storagePath;
 				if (!objectKey) throw new Error('missing R2 object key.');
-				assertR2MutationTarget(objectKey, identity);
+				if (!isRekeySourceObject(objectKey, identity.eventType, verifiedRekeyFrom)) {
+					assertR2MutationTarget(objectKey, identity);
+				}
 				await verifyR2Asset({
 					targetEnvironment,
 					objectKey,
@@ -876,6 +967,8 @@ export interface HostedAssetUpsertInput {
 	targetEnvironment: 'preview' | 'production';
 	eventType: string;
 	slug: string;
+	/** Set only after the rekey source was verified; lets the row keep the old slug's object. */
+	verifiedRekeyFrom?: string;
 }
 
 /**
@@ -887,7 +980,8 @@ export function buildHostedAssetUpsertSql(input: HostedAssetUpsertInput): string
 	const provider = asset.provider ?? 'r2';
 	const providerPublicId = asset.providerPublicId ?? asset.storagePath;
 	if (provider === 'r2') {
-		assertR2MutationTarget(providerPublicId, input);
+		if (!isRekeySourceObject(providerPublicId, input.eventType, input.verifiedRekeyFrom))
+			assertR2MutationTarget(providerPublicId, input);
 		if (asset.secureUrl !== buildR2PublicUrl(input.targetEnvironment, providerPublicId))
 			throw new Error('Hosted R2 asset lacks its canonical destination URL.');
 	}
@@ -917,6 +1011,7 @@ function upsertAssetRows(
 	targetEnvironment: 'preview' | 'production',
 	eventType: string,
 	slug: string,
+	verifiedRekeyFrom?: string,
 ): number {
 	let count = 0;
 	for (const pAsset of assets) {
@@ -933,6 +1028,7 @@ function upsertAssetRows(
 				targetEnvironment,
 				eventType,
 				slug,
+				verifiedRekeyFrom,
 			}),
 			targetDbUrl,
 			{ tuplesOnly: false },
@@ -1084,6 +1180,7 @@ function executeDatabaseUpserts(params: DatabaseUpsertParams): number {
 			params.targetEnvironment,
 			params.eventType,
 			params.slug,
+			params.rekeyFrom,
 		);
 	}
 
@@ -1867,7 +1964,21 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		rekeyFrom: options.rekeyFrom,
 	});
 	const activeRows = invitationRows.filter((row) => row.archived_at === null);
-	const rekeyFrom = options.rekeyFrom?.trim();
+	const rekeyFrom =
+		options.rekeyFrom?.trim() ||
+		(expectedTarget === 'production'
+			? deriveProductionRekeyFrom({
+					slug: pkg.invitation.slug,
+					managedIdentityId,
+					previousSlugs,
+					activeRows,
+				})
+			: undefined);
+	if (rekeyFrom && !options.rekeyFrom) {
+		console.log(
+			`[IDENTITY_REKEY] Production rename verified by managedIdentityId ${managedIdentityId}: "${rekeyFrom}" -> "${pkg.invitation.slug}" (R2 objects stay under the old prefix).`,
+		);
+	}
 	let existingInvitationRow: Record<string, unknown> | null;
 	if (rekeyFrom) {
 		const sourceByOldSlug = activeRows.find((row) => String(row.slug) === rekeyFrom) ?? null;
@@ -2018,6 +2129,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 		pkg.sourceSlug,
 		drift.targetDraftContent,
 		{ environment: expectedTarget, eventType: pkg.invitation.eventType, slug: drift.slug },
+		rekeyFrom,
 	);
 	assertContentOnlyAllowsNoAssetMutations({
 		updateScope,
@@ -2032,6 +2144,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			expectedTarget,
 			fetchTargetDbAssets(targetDbUrl, drift.targetInvitationId),
 			assetRefs,
+			rekeyFrom,
 		);
 	}
 	const actions = buildResourceActions({
@@ -2593,6 +2706,7 @@ export async function runImportEngine(options: ImportEngineOptions): Promise<Imp
 			pkg.sourceSlug,
 			targetDraftContent,
 			{ environment: expectedTarget, eventType: pkg.invitation.eventType, slug: drift.slug },
+			rekeyFrom,
 		);
 		if (
 			finalAssets.assetsToUpload.length > 0 ||

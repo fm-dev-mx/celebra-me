@@ -530,6 +530,7 @@ async function runVariantVisualTest(
 		file: snapshotName,
 		image: viewportSnapshotBuffer,
 		recapture: async () => {
+			// Late on purpose: tells slow painting from a real change.
 			await page.waitForTimeout(500);
 			await waitForVisualHydration(page);
 			return captureStablePage(page);
@@ -781,6 +782,7 @@ test('complete-page stabilization allows slow encoding across a changed first fr
 	const final = await screenshot();
 	let calls = 0;
 	page.screenshot = async () => {
+		// Simulates the slow capture this test is about.
 		await page.waitForTimeout(3000);
 		return ++calls === 1 ? first : final;
 	};

@@ -1,31 +1,23 @@
 {
-    "referenceSha": "785afe1eea825062ecd3ef582f905fb81fce17ef",
-    "acceptedAt": "2026-11-21T00:58:12.097Z",
-    "matrixHash": "cbd3152ea1b0947ad893879ae91aab90f89058a61c678642dd9e81f1292fe10a",
-    "candidateManifestSha256": "f08db0d7db6474d99476dc776dbfa1e431bc5d600c4049a1b9a330d0675831de",
-    "acceptedManifestSha256": "72b0d2b057a083cf2d975db2954bf64bfc9634c6762ee84e99f201f8ea4b04b4",
+    "referenceSha": "7ee6b5c7d1c29312a0f2427ab7e8d0939fc1fb9d",
+    "acceptedAt": "2026-11-24T00:25:27.062Z",
+    "matrixHash": "7f0b37f16e877c178860187e2211460f124703eae395aed58f8d7318a8894c52",
+    "candidateManifestSha256": "94fa2d968f442a86e5d29d3c050b484669d7b75ae51d6b49e612eaff2f9a59df",
+    "acceptedManifestSha256": "3bfa48c797f73ea16ca20ed742dd073a4a3afff508ab8e5f0adee044044aee76",
     "reviewedPaths": [
-        "pages/invitation-boda-adriana-y-israel-mobile.png",
-        "pages/invitation-boda-adriana-y-israel-desktop.png"
+        "pages/invitation-xv-maripau-charles-mobile.png",
+        "pages/invitation-xv-maripau-charles-desktop.png"
     ],
     "items": [
         {
-            "file": "pages/invitation-boda-adriana-y-israel-mobile.png",
-            "status": "changed",
-            "sha256": "6a5f7fa968c51478ce94610e3c38c80d32f2e75df689c926c93099d326aae11a",
-            "previousSha256": "d0b08297c3ff7dfe5037d99eebce7d658d6bbb48ca369f93f56295a72daf70cc",
-            "differentPixels": 924087,
-            "pixelRatio": 0.27304146648465616,
-            "heightDelta": -292
+            "file": "pages/invitation-xv-maripau-charles-mobile.png",
+            "status": "new",
+            "sha256": "717cac5cad76424912b9ccb4fd2748d342c71223c6752e19cbfd0db6c87f3671"
         },
         {
-            "file": "pages/invitation-boda-adriana-y-israel-desktop.png",
-            "status": "changed",
-            "sha256": "8fe43b5e1d749059357bd55b3fab377a3722cbffe0d1223d399eebb9c1dbdaa3",
-            "previousSha256": "5e110eec7dd4f6172372811f3742d80cedcbd6c4d49369c960a74eba107053ef",
-            "differentPixels": 2298046,
-            "pixelRatio": 0.17710190631203837,
-            "heightDelta": -111
+            "file": "pages/invitation-xv-maripau-charles-desktop.png",
+            "status": "new",
+            "sha256": "2eeba3a3a468a2ddd03baa0e2f3aad45bf6a4ec80098612b345b80853501c060"
         }
     ],
     "renderNoise": 135,

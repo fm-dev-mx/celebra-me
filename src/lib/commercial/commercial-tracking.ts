@@ -1,5 +1,5 @@
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
-import type { TrackingEventName } from '@/lib/tracking/event-contract';
+import type { TrackingEventName } from '@/lib/tracking/event-names';
 import { safeErr } from '@/lib/server/safe-error';
 
 /**

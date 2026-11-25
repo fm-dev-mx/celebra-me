@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import ModalShell from '@/components/dashboard/ModalShell';
 import AssetUploader from '@/components/dashboard/intake/editor/AssetUploader';
 import { useAssetLibrary } from '@/lib/intake/use-asset-library';
 import { getCsrfToken } from '@/lib/csrf';
@@ -19,33 +20,6 @@ export default function AssetPicker({ invitationId, onSelect, onClose }: Props) 
 	const [importingId, setImportingId] = useState<string | null>(null);
 	const [importError, setImportError] = useState('');
 	const { assets, loading, error, refresh: fetchAssets } = useAssetLibrary(invitationId);
-	const closeButtonRef = useRef<HTMLButtonElement>(null);
-	const previouslyFocused = useRef<HTMLElement | null>(null);
-
-	useEffect(() => {
-		previouslyFocused.current = document.activeElement as HTMLElement | null;
-		closeButtonRef.current?.focus();
-		return () => {
-			previouslyFocused.current?.focus?.();
-		};
-	}, []);
-
-	useEffect(() => {
-		function handleKeyDown(event: KeyboardEvent) {
-			if (event.key === 'Escape') {
-				event.preventDefault();
-				onClose();
-			}
-		}
-		window.addEventListener('keydown', handleKeyDown);
-		return () => window.removeEventListener('keydown', handleKeyDown);
-	}, [onClose]);
-
-	function handleOverlayClick(event: React.MouseEvent<HTMLDivElement>) {
-		if (event.target === event.currentTarget) {
-			onClose();
-		}
-	}
 
 	async function handleSelect(asset: {
 		id: string;
@@ -54,6 +28,7 @@ export default function AssetPicker({ invitationId, onSelect, onClose }: Props) 
 		displayName: string;
 	}) {
 		if (asset.isBundled) {
+			setImportError('');
 			setImportingId(asset.id);
 			try {
 				const csrfToken = getCsrfToken();
@@ -89,31 +64,14 @@ export default function AssetPicker({ invitationId, onSelect, onClose }: Props) 
 	}
 
 	return (
-		<div
-			className="asset-picker-overlay"
-			onClick={handleOverlayClick}
-			role="dialog"
-			aria-modal="true"
-			aria-labelledby="asset-picker-title"
+		<ModalShell
+			title="Biblioteca de imágenes"
+			size="lg"
+			className="asset-picker"
+			onClose={onClose}
+			disableClose={importingId !== null}
 		>
-			<div
-				className="asset-picker"
-				onClick={(event) => event.stopPropagation()}
-				aria-busy={loading || importingId !== null}
-			>
-				<div className="asset-picker__header">
-					<h3 id="asset-picker-title">Biblioteca de imágenes</h3>
-					<button
-						ref={closeButtonRef}
-						className="asset-picker__close"
-						type="button"
-						onClick={onClose}
-						aria-label="Cerrar selector de imágenes"
-					>
-						Cerrar
-					</button>
-				</div>
-
+			<div className="dashboard-modal__content" aria-busy={loading || importingId !== null}>
 				<AssetUploader invitationId={invitationId} onUploaded={fetchAssets} />
 
 				{loading && (
@@ -189,6 +147,6 @@ export default function AssetPicker({ invitationId, onSelect, onClose }: Props) 
 					</ul>
 				)}
 			</div>
-		</div>
+		</ModalShell>
 	);
 }

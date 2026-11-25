@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { waitForSettledAnimations } from './harness/settled-animations';
 
 /**
  * Collector edition of the editorial cover (/xv/destenid-sofia): drag-to-turn, tap, keyboard,
@@ -31,7 +32,7 @@ async function openCover(page: Page) {
 		return Boolean(img && img.complete && img.naturalWidth > 0);
 	});
 	// Let the arrival (magazine drop, ribbon drop) settle before interacting.
-	await page.waitForTimeout(2000);
+	await waitForSettledAnimations(page);
 }
 
 async function bookBox(page: Page) {
@@ -50,6 +51,7 @@ async function dragFromCorner(page: Page, fraction: number, steps = 18) {
 		await page.mouse.move(startX - box.width * fraction * (i / steps), startY - 4 * i, {
 			steps: 1,
 		});
+		// One frame between moves: the release reads the speed of the drag.
 		await page.waitForTimeout(16);
 	}
 	await page.mouse.up();
@@ -88,15 +90,21 @@ test.describe('collector editorial cover', () => {
 	test('a short drag falls back closed without opening', async ({ page }) => {
 		await openCover(page);
 		await dragFromCorner(page, 0.35);
-		await page.waitForTimeout(900);
+		await expect
+			.poll(() =>
+				page.evaluate(
+					() =>
+						document.querySelector<HTMLElement>('[data-collector-flap]')?.style
+							.clipPath,
+				),
+			)
+			.toBe('polygon(0px 0px, 0px 0px, 0px 0px)');
 		const state = await page.evaluate(() => ({
 			reveal: document.querySelector<HTMLElement>('.event-theme-wrapper')?.dataset
 				.revealState,
-			flap: document.querySelector<HTMLElement>('[data-collector-flap]')?.style.clipPath,
 			stored: localStorage.getItem('envelope-opened-destenid-sofia'),
 		}));
 		expect(state.reveal).not.toBe('revealed');
-		expect(state.flap).toBe('polygon(0px 0px, 0px 0px, 0px 0px)');
 		expect(state.stored).toBeNull();
 		await expect(page.locator('ds-editorial-cover')).toBeVisible();
 	});
@@ -153,6 +161,7 @@ test.describe('collector editorial cover', () => {
 			});
 			// The bookmark ribbon sways continuously, so skip Playwright's stability wait.
 			await page.locator('.editorial-cover__cta').click({ force: true });
+			// The sampling window itself: a fixed span that covers the whole opening.
 			await page.waitForTimeout(4600);
 			const frames = await page.evaluate(() =>
 				(window as unknown as { __frames: number[] }).__frames.slice(2),

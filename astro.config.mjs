@@ -198,6 +198,9 @@ export default defineConfig({
 	server: {
 		port: devServerPort,
 	},
+	// Canonical fixtures run under Playwright's fake clock, which removes
+	// `performance.addEventListener`; the dev toolbar calls it on load and throws.
+	devToolbar: { enabled: process.env.PLAYWRIGHT_USE_CANONICAL_FIXTURES !== 'true' },
 	image: {
 		// `astro dev` renders through sharp; match the hosted Cloudflare fit (see the service).
 		...(usesCloudflareAdapter

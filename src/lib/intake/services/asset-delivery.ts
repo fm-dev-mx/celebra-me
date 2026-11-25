@@ -4,6 +4,7 @@
  */
 
 import { getPublicUrl } from '@/lib/intake/storage';
+import { isHttpUrl } from './remote-media-hosting';
 
 type AssetDeliveryProvider = 'supabase' | 'r2';
 
@@ -26,10 +27,6 @@ class AssetDeliveryResolutionError extends Error {
 		super(message);
 		this.name = 'AssetDeliveryResolutionError';
 	}
-}
-
-function isHttpUrl(value: string): boolean {
-	return /^https?:\/\//i.test(value.trim());
 }
 
 function resolveR2AssetUrl(asset: AssetDeliverySource, provider: string): string {

@@ -57,6 +57,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 	},
 	{
 		section: 'hero',
+		variant: 'passe-partout-portrait',
+		default: false,
+		prerequisites: ['hero.backgroundImage'],
+		cssOwner: 'src/styles/themes/sections/hero/_passe-partout-portrait.scss',
+	},
+	{
+		section: 'hero',
 		variant: 'disco-stage',
 		default: false,
 		prerequisites: ['hero.backgroundImage'],
@@ -145,6 +152,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		default: false,
 		prerequisites: ['At least two visible venues'],
 		cssOwner: 'src/styles/themes/sections/location/_stacked-venue-plates.scss',
+	},
+	{
+		section: 'location',
+		variant: 'arched-scenes',
+		default: false,
+		prerequisites: ['At least two visible venues'],
+		cssOwner: 'src/styles/themes/sections/location/_arched-scenes.scss',
 	},
 	{
 		section: 'location',
@@ -308,6 +322,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		cssOwner: 'src/styles/themes/sections/gifts/_gift-tag.scss',
 	},
 	{
+		section: 'gifts',
+		variant: 'sealed-envelope',
+		default: false,
+		prerequisites: ['gifts.items or an explicit compatible presentation'],
+		cssOwner: 'src/styles/themes/sections/gifts/_sealed-envelope.scss',
+	},
+	{
 		section: 'rsvp',
 		variant: 'standard',
 		default: true,
@@ -334,6 +355,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		default: false,
 		prerequisites: ['rsvp.personalizedAccess'],
 		cssOwner: 'src/styles/themes/sections/rsvp/_formal-register.scss',
+	},
+	{
+		section: 'rsvp',
+		variant: 'engraved-register',
+		default: false,
+		prerequisites: ['rsvp.personalizedAccess'],
+		cssOwner: 'src/styles/themes/sections/rsvp/_engraved-register.scss',
 	},
 	{
 		section: 'personalizedAccess',
@@ -390,6 +418,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		default: false,
 		prerequisites: ['thankYou.message', 'thankYou.closingName', 'thankYou.image'],
 		cssOwner: 'src/styles/themes/sections/thank-you/_portrait-letter.scss',
+	},
+	{
+		section: 'thankYou',
+		variant: 'inked-letter',
+		default: false,
+		prerequisites: ['thankYou.message', 'thankYou.closingName', 'thankYou.image'],
+		cssOwner: 'src/styles/themes/sections/thank-you/_inked-letter.scss',
 	},
 	{
 		section: 'thankYou',
@@ -453,6 +488,13 @@ const canonicalVariantRegistry: readonly CanonicalVariantRegistryEntry[] = [
 		default: false,
 		prerequisites: ['countdown'],
 		cssOwner: 'src/styles/themes/sections/countdown/_clock-face.scss',
+	},
+	{
+		section: 'countdown',
+		variant: 'foil-calendar',
+		default: false,
+		prerequisites: ['countdown'],
+		cssOwner: 'src/styles/themes/sections/countdown/_foil-calendar.scss',
 	},
 	{
 		section: 'gallery',
@@ -602,7 +644,3 @@ export const MEMORIES_VARIANTS = variantsFor('memories');
 export type MemoriesVariant = (typeof MEMORIES_VARIANTS)[number];
 export const QUOTE_VARIANTS = variantsFor('quote');
 export type QuoteVariant = (typeof QUOTE_VARIANTS)[number];
-
-/** Sections without a layout/skin choice emit this closed value. */ type StandardSectionVariant =
-	'standard';
-export type SharedSectionVariant = StandardSectionVariant;

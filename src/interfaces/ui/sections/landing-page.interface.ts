@@ -47,7 +47,7 @@ interface PricingTier {
 	badge?: string;
 	isPrimary?: boolean;
 	isExclusive?: boolean;
-	/** Lead-in for incremental tiers, e.g. "Todo lo de Esencial, más:". */
+	/** Lead-in for incremental tiers, e.g. "Todo lo de Invitación Digital de Autor, más:". */
 	includesFrom?: string;
 	includes: string[];
 	details: PricingTierDetail[];

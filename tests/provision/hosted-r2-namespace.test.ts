@@ -1,4 +1,9 @@
-import { assertReconciledMutationTargets } from '../../scripts/provision/invitation-import-engine.ts';
+import {
+	assertReconciledMutationTargets,
+	isRekeySourceObject,
+	keepRekeySourceObject,
+} from '../../scripts/provision/invitation-import-engine.ts';
+import type { InvitationPackageAsset } from '../../scripts/provision/invitation-package.ts';
 import type {
 	AssetReconciliationResult,
 	TargetAssetRecord,
@@ -19,7 +24,9 @@ const record: TargetAssetRecord = {
 	managedByDefinitionSlug: 'renata',
 	managedSourceKey: 'hero',
 };
-function plan(action: 'REUSE' | 'OVERWRITE'): AssetReconciliationResult {
+function plan(
+	action: 'REUSE' | 'OVERWRITE' | 'RETAIN' | 'UPLOAD' | 'REPAIR_METADATA',
+): AssetReconciliationResult {
 	return {
 		policy: 'sync',
 		pruneAssets: false,
@@ -100,5 +107,99 @@ describe('hosted R2 namespace guard', () => {
 				identity,
 			),
 		).not.toThrow();
+	});
+	describe('verified rekey source', () => {
+		const sourceKey = 'invitations/xv/renata-vieja/hero-old.webp';
+		it.each(['REUSE', 'RETAIN', 'REPAIR_METADATA', 'OVERWRITE', 'UPLOAD'] as const)(
+			'allows %s of a row whose object is under the rekey source prefix',
+			(action) => {
+				expect(() =>
+					assertReconciledMutationTargets(
+						plan(action),
+						[{ ...record, providerPublicId: sourceKey }],
+						identity,
+						'renata-vieja',
+					),
+				).not.toThrow();
+			},
+		);
+		it('still rejects deleting an object under the rekey source prefix', () => {
+			const base = plan('RETAIN');
+			const pruning: AssetReconciliationResult = {
+				...base,
+				reconciledAssets: [],
+				unreferencedAssets: [
+					{ ...base.reconciledAssets[0]!, plannedAction: 'PRUNE_STORAGE_AND_METADATA' },
+				],
+			};
+			expect(() =>
+				assertReconciledMutationTargets(
+					pruning,
+					[{ ...record, providerPublicId: sourceKey }],
+					identity,
+					'renata-vieja',
+				),
+			).toThrow('belongs to another invitation');
+		});
+		it.each(['OVERWRITE', 'UPLOAD'] as const)(
+			'still rejects %s of an object under another prefix during a rekey',
+			(action) => {
+				expect(() =>
+					assertReconciledMutationTargets(
+						plan(action),
+						[{ ...record, providerPublicId: 'invitations/xv/otra/hero-old.webp' }],
+						identity,
+						'renata-vieja',
+					),
+				).toThrow('belongs to another invitation');
+			},
+		);
+		it('still rejects reuse under a prefix that is not the rekey source', () => {
+			expect(() =>
+				assertReconciledMutationTargets(
+					plan('REUSE'),
+					[{ ...record, providerPublicId: 'invitations/xv/otra/hero-old.webp' }],
+					identity,
+					'renata-vieja',
+				),
+			).toThrow('belongs to another invitation');
+		});
+		it('keeps the old object, path and URL when repairing metadata after a verified rekey', () => {
+			const pAsset = {
+				key: 'hero',
+				storagePath: 'managed/renata/hero-new.webp',
+				providerPublicId: 'invitations/xv/renata/hero-new.webp',
+				secureUrl:
+					'https://media-staging.celebra-me.com/invitations/xv/renata/hero-new.webp',
+			} as unknown as InvitationPackageAsset;
+			const item = plan('REPAIR_METADATA').reconciledAssets[0]!;
+			const kept = keepRekeySourceObject(
+				pAsset,
+				item,
+				[{ ...record, providerPublicId: sourceKey }],
+				identity,
+				'renata-vieja',
+			);
+			expect(kept.providerPublicId).toBe(sourceKey);
+			expect(kept.storagePath).toBe(record.storagePath);
+			expect(kept.secureUrl).toBe(`https://media-staging.celebra-me.com/${sourceKey}`);
+			expect(
+				keepRekeySourceObject(
+					pAsset,
+					item,
+					[{ ...record, providerPublicId: sourceKey }],
+					identity,
+					undefined,
+				),
+			).toBe(pAsset);
+		});
+		it('matches the source prefix only for the same event type and a full segment', () => {
+			expect(isRekeySourceObject(sourceKey, 'xv', 'renata-vieja')).toBe(true);
+			expect(isRekeySourceObject(sourceKey, 'boda', 'renata-vieja')).toBe(false);
+			expect(
+				isRekeySourceObject('invitations/xv/renata-viejas/a.webp', 'xv', 'renata-vieja'),
+			).toBe(false);
+			expect(isRekeySourceObject(sourceKey, 'xv', undefined)).toBe(false);
+		});
 	});
 });

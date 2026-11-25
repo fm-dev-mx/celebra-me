@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { test, expect, type Page } from '@playwright/test';
+import { waitForSettledAnimations } from './harness/settled-animations';
 
 /**
  * Face-safety contract for /xv/destenid-sofia: no visible copy may overlap the celebrant's
@@ -48,7 +49,8 @@ const HERO_TEXT = [
 	'.invitation-hero__deck',
 	'.invitation-hero__details',
 	'.invitation-hero__credits',
-	'.event-header__title',
+	// The drawn initials: their link is a larger, empty touch target.
+	'.event-header__title-initials',
 	'.event-header__actions',
 ];
 
@@ -248,7 +250,7 @@ test.describe('destenid-sofia face safety', () => {
 			const image = COVER_IMAGE;
 			await waitForImage(page, image);
 			// Measure the settled composition, after the magazine and ribbon have landed.
-			await page.waitForTimeout(2200);
+			await waitForSettledAnimations(page);
 
 			const { overlaps, checked } = await findOverlaps(
 				page,
@@ -273,7 +275,7 @@ test.describe('destenid-sofia face safety', () => {
 			});
 			await waitForImage(page, image);
 			// Let the hero entrance settle so measured boxes are final.
-			await page.waitForTimeout(1200);
+			await waitForSettledAnimations(page);
 
 			const { overlaps, checked } = await findOverlaps(
 				page,
@@ -295,7 +297,7 @@ test.describe('destenid-sofia face safety', () => {
 			for (const plate of PLATES) {
 				await page.locator(plate.frame).scrollIntoViewIfNeeded();
 				// Let the plate wipe and signature finish before measuring.
-				await page.waitForTimeout(2000);
+				await waitForSettledAnimations(page);
 				const { overlaps, checked } = await findPlateOverlaps(
 					page,
 					plate.frame,

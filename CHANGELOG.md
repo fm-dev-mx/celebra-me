@@ -10,6 +10,51 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.77.6] - 2026-11-24
+
+Lets the production write accept the Adriana e Israel rename. No database migrations.
+
+### Fixed
+
+- Provisioning: the pre-write revalidation accepts a live row on one of the package's previous slugs
+  when its managed identity matches exactly, instead of failing as PLAN_DRIFT.
+
+## [0.77.5] - 2026-11-24
+
+Lets production apply the Adriana e Israel rename. No database migrations.
+
+### Fixed
+
+- Provisioning: production applies a slug rename when the package's previous slug has an active row
+  with the same managed identity, keeping the R2 objects under the old prefix (#1114).
+- Provisioning: the production preflight now shows rekey errors instead of a generic message
+  (#1114).
+
+## [0.77.4] - 2026-11-23
+
+Publishes Maripau Charles' XV invitation and moves Adriana e Israel to its new slug. No database
+migrations.
+
+### Changed
+
+- Invitations: Maripau Charles gets the redesigned XV invitation with shared vellum variants (#1102)
+  and is ready to publish (#1106).
+- Invitations: Adriana e Israel drops the quote band and moves to `adriana-e-israel` (#1107).
+- Provisioning: a verified rekey can keep the R2 objects stored under the old slug (#1108).
+- Provisioning: a metadata repair after a verified rekey keeps the old slug's objects (#1109), and a
+  verified rekey can upload changed assets under the new slug (#1110).
+- Provisioning: the release hash baseline records both invitations as applied to Preview (#1111).
+
+## [0.77.3] - 2026-11-23
+
+Updates Adriana e Israel's photos and ceremony details. No database migrations.
+
+### Changed
+
+- Invitations: Adriana e Israel gets the new hero, quote and thank-you photos (crossfades turn off
+  with reduced motion), a one-column framed footer, and the ceremony at 17:00 in Claveles 291, Las
+  Flores Sur, Santa Lucía del Camino, with short Maps links for both venues (#1101).
+
 ## [0.77.2] - 2026-11-21
 
 Sends the shared Adriana e Israel link to the published invitation. No database migrations.

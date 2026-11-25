@@ -4,11 +4,10 @@ import type { CanonicalEventContentInput } from '../../../lib/schemas/content/ba
 /**
  * Wedding invitation on the jewelry-box-wedding preset, recolored by the profile into indigo
  * stationery: an indigo envelope, a full-bleed cover under an indigo veil, and light cards for the
- * inner sections, with silver only as hairlines. The couple's own photographs carry the cover (the
- * two on a bench under a flower arch), the quote (a selfie of the two), a short gallery of their
- * selfies and the closing thank-you. The
- * ceremony time is pending at the parish, so the ceremony entry carries no time and no calendar
- * link; the event timing follows the reception.
+ * inner sections, with silver only as hairlines. The couple's own photographs carry the cover (two
+ * portraits that crossfade inside the arch), the quote (two portraits that alternate), a short
+ * gallery of their selfies and the closing thank-you. The ceremony is at 17:00; the event timing follows the
+ * reception.
  */
 const WEDDING_TIMING = {
 	localDateTime: '2027-07-10T20:00',
@@ -105,13 +104,11 @@ const content: CanonicalEventContentInput = {
 				type: 'ceremony',
 				venueEvent: 'Ceremonia religiosa',
 				venueName: 'Parroquia Corazón Eucarístico de Jesús',
-				address: 'Calle Claveles 102, col. Las Flores',
+				address: 'Claveles 291, Las Flores Sur, Santa Lucía del Camino',
 				city: CITY_LABEL,
 				date: '2027-07-10',
-				// Pending at the parish: an empty time renders no hour and no calendar link.
-				time: '',
-				googleMapsUrl:
-					'https://www.google.com/maps/search/?api=1&query=Parroquia+Coraz%C3%B3n+Eucar%C3%ADstico+de+Jes%C3%BAs+Claveles+102+Oaxaca',
+				time: '17:00',
+				googleMapsUrl: 'https://maps.app.goo.gl/gNjW4So5aCaxURWY6',
 				isVisible: true,
 			},
 			{
@@ -124,8 +121,7 @@ const content: CanonicalEventContentInput = {
 				time: '20:00',
 				// The reception runs until 01:00; the calendar entry blocks those five hours.
 				durationMinutes: 300,
-				googleMapsUrl:
-					'https://www.google.com/maps/search/?api=1&query=Sal%C3%B3n+Santa+M%C3%B3nica+San+Francisco+Tutla+Oaxaca',
+				googleMapsUrl: 'https://maps.app.goo.gl/bP3hRCpcCcjKx38w5',
 				isVisible: true,
 			},
 		],
@@ -204,12 +200,11 @@ const content: CanonicalEventContentInput = {
 		},
 	},
 	thankYou: {
-		// The couple's own words, from the phrase card they sent, over their selfie in green under the
-		// indigo veil (the profile maps the veil tokens). Both faces sit in the upper third; the focal
-		// point leans left so the phone crop keeps Israel's face whole.
+		// The couple's own words, from the phrase card they sent, over the selfie they chose for the
+		// closing, under the indigo veil (the profile maps the veil tokens).
 		variant: 'veiled-photo',
 		image: 'thankYouPortrait',
-		focalPoint: '38% 20%',
+		focalPoint: '50% 30%',
 		message:
 			'Qué suerte tenerlos en este día. Hay momentos que se vuelven todavía más especiales cuando los compartimos con las personas que queremos. Gracias por estar aquí, por acompañarnos y por formar parte de un recuerdo que guardaremos para siempre.',
 		closingName: COUPLE_NAME,
@@ -240,10 +235,11 @@ const content: CanonicalEventContentInput = {
 		// Hero formats its display date in UTC; eventTiming owns the real instant.
 		date: '2027-07-10T12:00:00.000Z',
 		backgroundImage: 'hero',
-		// The flower-arch portrait: the arch fills the top and both faces sit just below the middle.
-		// Below 62rem composition.scss frames it above the names, so the names never cross a face.
-		focalPoint: '50% 20%',
-		focalPointMobile: '48% 30%',
+		// First of the two cover portraits, kept at full width so the whole light star fits the arch;
+		// composition.scss crossfades the second over it and slowly pushes this one in on the couple.
+		// The asset adds a blurred sky band on top so narrow arches keep both side points; anchor bottom.
+		focalPoint: '50% 100%',
+		focalPointMobile: '50% 100%',
 	},
 	envelope: {
 		disabled: false,
@@ -271,29 +267,29 @@ const content: CanonicalEventContentInput = {
 };
 
 export default defineCanonicalInvitation({
-	slug: 'adriana-y-israel',
+	slug: 'adriana-e-israel',
+	previousSlugs: ['adriana-y-israel'],
 	eventType: 'boda',
 	title: `Nuestra boda — ${COUPLE_NAME}`,
 	clientName: 'Adriana Rivas',
 	themeId: 'jewelry-box-wedding',
-	visualProfileId: 'adriana-y-israel',
+	visualProfileId: 'adriana-e-israel',
 	eventTiming: WEDDING_TIMING,
 	content,
 	managedIdentityId: '219a037e-f9f3-4cdf-9827-3739ea60d14c',
 	managedIdentityProvenance: 'persisted',
 	lifecycle: 'published',
 	hostLoginAlias: 'adriana_rivas',
-	assetDir: 'src/invitations/clients/adriana-y-israel/assets',
-	// Cropped from the couple's photographs; the quote photo is wired by the profile.
+	assetDir: 'src/invitations/clients/adriana-e-israel/assets',
+	// Cropped from the couple's photographs; the two quote photos are wired by the profile.
 	assetFiles: {
-		// The flower-arch portrait (#2) carries the cover; the selfie (#6) moved to the quote.
-		hero: 'quote.webp',
+		hero: 'hero-01.webp',
 		gallery01: 'gallery-01.webp',
 		gallery02: 'gallery-02.webp',
 		gallery03: 'gallery-03.webp',
 		gallery04: 'gallery-04.webp',
 		gallery05: 'gallery-05.webp',
-		thankYouPortrait: 'gallery-01.webp',
+		thankYouPortrait: 'thank-you.webp',
 		ogShare: 'og-share.webp',
 	},
 	deliveryScope: 'content-and-assets',

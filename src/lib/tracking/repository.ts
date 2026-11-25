@@ -1,6 +1,7 @@
+import { emptyToUndefined } from '@/lib/shared/data-utils';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import type { ConsentSnapshot } from '@/lib/tracking/consent-policy';
-import type { TrackingEventName } from '@/lib/tracking/event-contract';
+import type { TrackingEventName } from '@/lib/tracking/event-names';
 import type { MetaAttribution } from '@/lib/tracking/meta-attribution';
 import type { TrackingRouteClass } from '@/lib/tracking/route-policy';
 import { ApiError } from '@/lib/rsvp/core/errors';
@@ -57,11 +58,6 @@ interface VisitorSessionMetaAttributionRow {
 	fbp?: string | null;
 	fbc?: string | null;
 	fbclid?: string | null;
-}
-
-function emptyToUndefined(value: string | undefined): string | undefined {
-	const trimmed = value?.trim();
-	return trimmed ? trimmed : undefined;
 }
 
 export async function upsertVisitorSession(input: VisitorSessionInput): Promise<void> {

@@ -52,6 +52,9 @@
     "ignoreIssues": {
         "src/components/common/icons/**": ["exports", "types"],
         "workers/**/src/index.ts": ["exports"],
-        "workers/shared/replay-guard.ts": ["exports"]
+        "workers/shared/replay-guard.ts": ["exports"],
+        "src/lib/invitation/composition-contract.ts": ["exports"],
+        "src/lib/theme/theme-contract.ts": ["exports"],
+        "scripts/shared/task-kinds.mjs": ["exports"]
     }
 }

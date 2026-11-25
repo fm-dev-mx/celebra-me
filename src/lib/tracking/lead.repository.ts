@@ -1,3 +1,4 @@
+import { emptyToUndefined } from '@/lib/shared/data-utils';
 import { createHash } from 'node:crypto';
 import { findCommercialCustomerByReferralCode } from '@/lib/commercial/customer.repository';
 import { normalizeReferralCode } from '@/lib/commercial/referrals';
@@ -62,11 +63,6 @@ export interface StoredLead {
 	referredByCustomerId?: string | null;
 	referralCodeUsed?: string | null;
 	referrerExternalId?: string | null;
-}
-
-function emptyToUndefined(value: string | undefined): string | undefined {
-	const trimmed = value?.trim();
-	return trimmed ? trimmed : undefined;
 }
 
 function hashCustomerExternalId(customerId: string): string {

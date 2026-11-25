@@ -4,7 +4,7 @@
 // mist and ivory carry the paper, and silver appears only as hairlines. Tokens only; layout that the
 // variants do not expose lives in the composition.
 
-.event--adriana-y-israel.theme-preset--jewelry-box-wedding {
+.event--adriana-e-israel.theme-preset--jewelry-box-wedding {
 	--indigo-indigo: rgb(44 56 124);
 	--indigo-indigo-rgb: 44 56 124;
 	--indigo-indigo-deep: rgb(22 28 70);
@@ -215,8 +215,10 @@
 	--indigo-art-corner: url('./assets/branch-corner.svg');
 	--indigo-art-sprig: url('./assets/branch-sprig.svg');
 
-	// Quote: the couple under the flower arch, full screen under an indigo veil, the text in ivory.
-	--indigo-quote-photo: url('./assets/hero.webp');
+	// Quote: two of the couple's portraits (the car selfie, then the traditional dress) crossfade
+	// full screen under an indigo veil, the text in ivory. composition.scss owns the second layer.
+	--indigo-quote-photo: url('./assets/quote-photo.webp');
+	--indigo-quote-photo-02: url('./assets/quote-photo-02.webp');
 	--framed-groups-sprig: var(--indigo-art-sprig);
 	--framed-scene-sprig: var(--indigo-art-sprig);
 	--framed-scene-sprig-display: block;

@@ -165,6 +165,9 @@ describe('importBundledAsset', () => {
 
 			expect(result.asset.id).toBe('new-asset-id');
 			expect(result.asset.displayName).toBe('hero');
+			expect(globalThis.fetch).toHaveBeenCalledWith(DEFAULT_METADATA.src, {
+				signal: expect.any(AbortSignal),
+			});
 			expect(mockFindPublishedContent).toHaveBeenCalledWith(INVITATION_ID);
 			expect(mockResolveAssetSlug).toHaveBeenCalled();
 			expect(mockCreateAsset).toHaveBeenCalledWith(
