@@ -10,6 +10,36 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.78.0] - 2026-11-24
+
+Publishes the new regular package prices and names on the landing, fixes old guest links and the
+Adriana e Israel copy, and hardens the dashboard and the guest import. No database migrations.
+
+### Changed
+
+- Landing: the regular package prices are 1,899, 2,299 and 2,999 MXN; promotional prices do not
+  change (#1138).
+- Landing: package names match the WhatsApp Business catalog (#1133).
+- Performance: the public tracking client no longer loads Zod (#1123), and RSVP and the dashboard
+  toast load framer-motion through LazyMotion (#1127).
+- Dashboard: the import, user and asset dialogs use the shared modal, with focus trapping and Escape
+  handling (#1129).
+- Provisioning: guests are read in pages, and a storage probe that fails blocks the import until it
+  succeeds (#1128).
+- Dependencies: Astro platform group (#1096), tooling group (#1099), Sass (#1100), Knip (#1098) and
+  Testing Library (#1097) updates.
+- Code and tests: shared helpers replace duplicates (#1130, #1132), unused exports are removed
+  (#1135), and end-to-end checks and CI timeouts are tightened (#1126, #1131, #1136, #1137).
+
+### Fixed
+
+- Invitations: guest links of the old Adriana e Israel slug redirect to the public guest path
+  instead of a 404 (#1122).
+- Invitations: Adriana e Israel uses couple wording and the corrected family name (#1139, #1140).
+- Dashboard: edits and the selected customer are kept while a request is pending (#1124).
+- Dashboard: guest search quotes its values, and storage calls have a deadline (#1125).
+- Demos: the Celestial hero photo plays its entrance (#1134).
+
 ## [0.77.6] - 2026-11-24
 
 Lets the production write accept the Adriana e Israel rename. No database migrations.
