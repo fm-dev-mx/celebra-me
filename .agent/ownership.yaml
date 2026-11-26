@@ -270,6 +270,12 @@ ownership:
       non_owners:
           - 'Copied command tables in stale docs'
 
+    - aspect: 'Browser policy & web feature baselines'
+      owner: 'docs/core/project-conventions.md'
+      non_owners:
+          - 'Ad-hoc per-invitation rules'
+          - 'modern-web-guidance as an automated gate or dependency'
+
     - aspect: 'Worktree topology & ports (exec)'
       owner: '.agent/carriles.json'
       non_owners:
