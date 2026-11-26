@@ -367,7 +367,7 @@ const RSVP: React.FC<RSVPProps> = ({
 				}}
 			>
 				{/* Keep the first server/client render visible regardless of motion preference. */}
-				<LazyMotion features={domAnimation}>
+				<LazyMotion features={domAnimation} strict>
 					<AnimatePresence initial={false} mode="wait">
 						{rsvpClosed && !submitted ? (
 							<m.div key="rsvp-closed">
