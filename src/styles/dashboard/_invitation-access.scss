@@ -1,3 +1,5 @@
+@use '../tokens/type-scale';
+
 // Payment status and public access of a client invitation (admin list and detail).
 
 .invitation-access-badges {
@@ -60,5 +62,6 @@
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
-	font-size: 0.875rem;
+
+	@include type-scale.text(body-small);
 }
