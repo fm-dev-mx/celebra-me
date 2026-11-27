@@ -7,6 +7,10 @@ jest.mock('@/lib/rsvp/security/admin-rate-limit', () => ({
 	requireAdminRateLimit: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock('@/lib/rsvp/repositories/supabase', () => ({ supabaseRestRequest: jest.fn() }));
+jest.mock('@/lib/rsvp/repositories/event.repository', () => ({
+	findEventByInvitationIdService: jest.fn(),
+}));
+jest.mock('@/lib/rsvp/services/user-admin.service', () => ({ findHostAccountAdmin: jest.fn() }));
 
 import { GET, PATCH } from '@/pages/api/dashboard/intake/[id]/access';
 import {
@@ -16,6 +20,8 @@ import {
 import { requireAdminRateLimit } from '@/lib/rsvp/security/admin-rate-limit';
 import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 import { ApiError } from '@/lib/rsvp/core/errors';
+import { findEventByInvitationIdService } from '@/lib/rsvp/repositories/event.repository';
+import { findHostAccountAdmin } from '@/lib/rsvp/services/user-admin.service';
 
 const mutationAuth = jest.mocked(requireAdminMutationAccess);
 const readAuth = jest.mocked(requireAdminStrongSession);
@@ -187,8 +193,16 @@ describe('GET /api/dashboard/intake/[id]/access', () => {
 		>);
 	});
 
-	it('returns the access record to an administrator', async () => {
+	it('returns the access record and the host account to an administrator', async () => {
 		db.mockResolvedValue([row]);
+		jest.mocked(findEventByInvitationIdService).mockResolvedValue({
+			ownerUserId: 'host-1',
+		} as Awaited<ReturnType<typeof findEventByInvitationIdService>>);
+		jest.mocked(findHostAccountAdmin).mockResolvedValue({
+			userId: 'host-1',
+			login: 'ana',
+			managed: true,
+		});
 
 		const response = await get();
 
@@ -196,7 +210,17 @@ describe('GET /api/dashboard/intake/[id]/access', () => {
 		expect(requireAdminRateLimit).toHaveBeenCalled();
 		await expect(response.json()).resolves.toMatchObject({
 			item: { invitationId: id, paymentStatus: 'paid', version: 3 },
+			host: { userId: 'host-1', login: 'ana', managed: true },
 		});
+		expect(findHostAccountAdmin).toHaveBeenCalledWith('host-1');
+	});
+
+	it('returns no host when the event has no owner', async () => {
+		db.mockResolvedValue([row]);
+		jest.mocked(findEventByInvitationIdService).mockResolvedValue(null);
+
+		await expect((await get()).json()).resolves.toMatchObject({ host: null });
+		expect(findHostAccountAdmin).not.toHaveBeenCalled();
 	});
 
 	it('answers 404 when the invitation has no access row', async () => {

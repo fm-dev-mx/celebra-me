@@ -1,4 +1,4 @@
-import { useId, type FC } from 'react';
+import { useId, type FC, type ReactNode } from 'react';
 import ModalShell from '@/components/dashboard/ModalShell';
 
 interface Props {
@@ -16,6 +16,8 @@ interface Props {
 		{ state: 'idle' }
 	>;
 	hideCancel?: boolean;
+	/** Extra form controls shown under the message. */
+	children?: ReactNode;
 }
 
 const ConfirmModal: FC<Props> = ({
@@ -30,6 +32,7 @@ const ConfirmModal: FC<Props> = ({
 	summary,
 	feedback,
 	hideCancel = false,
+	children,
 }) => {
 	const descriptionId = useId();
 	return (
@@ -45,6 +48,7 @@ const ConfirmModal: FC<Props> = ({
 				<p id={descriptionId} className="confirm-modal__message">
 					{message}
 				</p>
+				{children}
 				{feedback && (
 					<div
 						className={`confirm-modal__feedback confirm-modal__feedback--${feedback.state}`}

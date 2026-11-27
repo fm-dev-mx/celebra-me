@@ -147,23 +147,15 @@ owns these fields; `PATCH /api/dashboard/intake/[id]/workflow` writes them with 
 
 ## Payment Status and Public Access
 
-`invitation_access_controls` (one row per invitation) holds two independent administrative
-decisions: `payment_status` (`unpaid` | `paid`) and `public_access` (`enabled` | `disabled`). Only
-`super_admin` changes them, from `/dashboard/invitaciones` (row menu) or the invitation detail,
-through `PATCH /api/dashboard/intake/[id]/access` → RPC `set_invitation_access_control` (optimistic
-`version`, `audit_logs` row in the same transaction). Hosts have no route, grant or RLS path to
-them.
+Model, guest behavior and the handover at payment:
+[`docs/domains/invitations/payment-access-and-preview.md`](../../docs/domains/invitations/payment-access-and-preview.md).
+Only `super_admin` changes `payment_status` and `public_access`; hosts have no route, grant or RLS
+path to them.
 
-- An unpaid client invitation renders as the preview (banner only), a disabled one renders the
-  neutral unavailable page (initial values:
-  [creation contract](../../docs/core/invitation-creation-contract.md#3-invitation-identity--requirements)).
-  Demos never carry access state.
 - Changing either value does not touch `invitations.updated_at`, so an open editor keeps its token.
 - Publication, promotion (`invitation:release`, `prod:apply`) and the Production → Preview mirror
   never copy these decisions; each environment owns its own.
 - Agents must not change Production access state; Local/Preview changes stay within the task.
-- Guest-facing behavior (preview, neutral page, crawlers, limits):
-  [`docs/domains/invitations/payment-access-and-preview.md`](../../docs/domains/invitations/payment-access-and-preview.md).
 
 ## Draft → Editor → Publish Flow
 

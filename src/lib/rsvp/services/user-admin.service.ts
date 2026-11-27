@@ -22,7 +22,11 @@ import {
 	getAuthUserAdminById,
 	listAuthUsers,
 } from '@/lib/rsvp/auth/auth-api';
-import type { UserAssignedEventDTO, UserListItemDTO } from '@/lib/dashboard/dto/users';
+import type {
+	InvitationHostDTO,
+	UserAssignedEventDTO,
+	UserListItemDTO,
+} from '@/lib/dashboard/dto/users';
 import { listAllEventsService } from '@/lib/rsvp/repositories/event.repository';
 import { logAdminAction, logAdminActionStrict } from '@/lib/rsvp/services/audit-logger.service';
 import { createHash, randomBytes, randomInt } from 'node:crypto';
@@ -458,7 +462,10 @@ export async function resetUserPasswordAdmin(input: {
 	};
 }
 
-function resolveCurrentManagedAlias(input: { email?: string; loginAlias?: string }): string | null {
+export function resolveCurrentManagedAlias(input: {
+	email?: string;
+	loginAlias?: string;
+}): string | null {
 	if (!isManagedHostEmail(input.email)) return null;
 	const alias = input.loginAlias?.trim().toLowerCase();
 	if (alias && isValidLoginAlias(alias)) return alias;
@@ -762,4 +769,17 @@ export async function updateUserEventMembershipAdmin(input: {
 		previousMembershipRole: removed.membershipRole,
 		changedAt: new Date().toISOString(),
 	};
+}
+
+/** Host account of an event owner. Null when the owner is not a host (an admin-owned draft). */
+export async function findHostAccountAdmin(userId: string): Promise<InvitationHostDTO | null> {
+	const roleRecord = await findAppUserRoleByUserIdService(userId);
+	if (roleRecord?.role !== 'host_client') return null;
+	const auth = await getAuthUserAdminById(userId);
+	const mappedAlias =
+		typeof auth.app_metadata?.login_alias === 'string'
+			? auth.app_metadata.login_alias
+			: undefined;
+	const alias = resolveCurrentManagedAlias({ email: auth.email, loginAlias: mappedAlias });
+	return { userId, login: alias ?? sanitize(auth.email || '', 320), managed: alias !== null };
 }

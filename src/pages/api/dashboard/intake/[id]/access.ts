@@ -11,6 +11,8 @@ import { InvitationAccessCommandSchema } from '@/lib/invitation/access/invitatio
 import { findInvitationAccessRecord } from '@/lib/invitation/access/invitation-access.repository';
 import { setInvitationAccessControl } from '@/lib/invitation/access/invitation-access.service';
 import { UUID_PATTERN } from '@/lib/intake/constants';
+import { findEventByInvitationIdService } from '@/lib/rsvp/repositories/event.repository';
+import { findHostAccountAdmin } from '@/lib/rsvp/services/user-admin.service';
 
 function requireInvitationId(id: string | undefined): string {
 	if (!id || !UUID_PATTERN.test(id)) {
@@ -19,15 +21,22 @@ function requireInvitationId(id: string | undefined): string {
 	return id;
 }
 
-/** Payment status and public access of one client invitation (administrators only). */
+/**
+ * Payment status and public access of one client invitation (administrators only), plus the
+ * host account the paid handover resets.
+ */
 export const GET: APIRoute = async ({ request, params }) => {
 	try {
 		await requireAdminRateLimit(request, 'intake:list');
 		await requireAdminStrongSession(request);
 		const invitationId = requireInvitationId(params.id);
-		const item = await findInvitationAccessRecord(invitationId);
+		const [item, event] = await Promise.all([
+			findInvitationAccessRecord(invitationId),
+			findEventByInvitationIdService(invitationId),
+		]);
 		if (!item) throw new ApiError(404, 'not_found', 'La invitación no tiene estado de acceso.');
-		return jsonResponse({ item });
+		const host = event?.ownerUserId ? await findHostAccountAdmin(event.ownerUserId) : null;
+		return jsonResponse({ item, host });
 	} catch (error) {
 		return errorResponse(error);
 	}

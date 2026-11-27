@@ -1,5 +1,10 @@
 jest.mock('@/lib/dashboard/admin-api', () => ({
-	adminApi: { getInvitationAccess: jest.fn(), setInvitationAccess: jest.fn() },
+	adminApi: {
+		getInvitationAccess: jest.fn(),
+		setInvitationAccess: jest.fn(),
+		updateUserLoginAlias: jest.fn(),
+		resetUserPassword: jest.fn(),
+	},
 }));
 
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
@@ -24,7 +29,10 @@ describe('InvitationAccessPanel', () => {
 	beforeEach(() => jest.clearAllMocks());
 
 	it('explains what guests see for the current state', async () => {
-		getAccess.mockResolvedValue({ ...paidVisible, paymentStatus: 'unpaid' });
+		getAccess.mockResolvedValue({
+			item: { ...paidVisible, paymentStatus: 'unpaid' },
+			host: null,
+		});
 
 		render(<InvitationAccessPanel invitationId="inv-1" archived={false} />);
 
@@ -36,7 +44,7 @@ describe('InvitationAccessPanel', () => {
 	});
 
 	it('disables with the internal note after confirmation', async () => {
-		getAccess.mockResolvedValue(paidVisible);
+		getAccess.mockResolvedValue({ item: paidVisible, host: null });
 		setAccess.mockResolvedValue({
 			...paidVisible,
 			publicAccess: 'disabled',
@@ -67,10 +75,9 @@ describe('InvitationAccessPanel', () => {
 	});
 
 	it('reloads the state when another change won the race', async () => {
-		getAccess.mockResolvedValueOnce(paidVisible).mockResolvedValueOnce({
-			...paidVisible,
-			paymentStatus: 'unpaid',
-			version: 3,
+		getAccess.mockResolvedValueOnce({ item: paidVisible, host: null }).mockResolvedValueOnce({
+			item: { ...paidVisible, paymentStatus: 'unpaid', version: 3 },
+			host: null,
 		});
 		setAccess.mockRejectedValue(
 			new ApiError(409, 'conflict', 'El estado de la invitación cambió.'),
@@ -92,7 +99,7 @@ describe('InvitationAccessPanel', () => {
 	});
 
 	it('offers no changes while the invitation is archived', async () => {
-		getAccess.mockResolvedValue(paidVisible);
+		getAccess.mockResolvedValue({ item: paidVisible, host: null });
 
 		render(<InvitationAccessPanel invitationId="inv-1" archived />);
 
@@ -102,5 +109,39 @@ describe('InvitationAccessPanel', () => {
 		expect(
 			screen.queryByRole('button', { name: 'Marcar como no pagada' }),
 		).not.toBeInTheDocument();
+	});
+
+	it('hands over new credentials when marking paid', async () => {
+		const unpaid = { ...paidVisible, paymentStatus: 'unpaid' as const };
+		getAccess.mockResolvedValue({
+			item: unpaid,
+			host: { userId: 'host-1', login: 'ana', managed: true },
+		});
+		setAccess.mockResolvedValue({ ...paidVisible, version: 3 });
+		(adminApi.updateUserLoginAlias as jest.Mock).mockResolvedValue({
+			item: { email: 'ana-y-luis' },
+			outcome: 'applied',
+		});
+		(adminApi.resetUserPassword as jest.Mock).mockResolvedValue({
+			userId: 'host-1',
+			credentials: { temporaryPassword: 'luna-sol-mar-123' },
+			outcome: 'applied',
+		});
+
+		render(<InvitationAccessPanel invitationId="inv-1" archived={false} />);
+		fireEvent.click(await screen.findByRole('button', { name: 'Marcar como pagada' }));
+		const dialog = screen.getByRole('dialog');
+		expect(within(dialog).getByLabelText('Entregar credenciales nuevas a ana')).toBeChecked();
+		fireEvent.change(within(dialog).getByLabelText('Nuevo usuario (opcional)'), {
+			target: { value: 'Ana-y-Luis' },
+		});
+		fireEvent.click(within(dialog).getByRole('button', { name: 'Marcar como pagada' }));
+
+		expect(await screen.findByDisplayValue('luna-sol-mar-123')).toBeInTheDocument();
+		expect(adminApi.updateUserLoginAlias).toHaveBeenCalledWith('host-1', {
+			loginAlias: 'ana-y-luis',
+		});
+		expect(adminApi.resetUserPassword).toHaveBeenCalledWith('host-1');
+		expect(screen.getByDisplayValue('ana-y-luis')).toBeInTheDocument();
 	});
 });

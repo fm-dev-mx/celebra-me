@@ -2,7 +2,7 @@
 title: Invitation Payment Status, Public Access and Preview Protection
 lifecycle: evergreen
 domain: invitation-delivery
-last_reviewed: 2026-10-19
+last_reviewed: 2026-11-27
 ---
 
 # Invitation payment status, public access and preview protection
@@ -28,13 +28,22 @@ guests get exactly what a disabled invitation gets, whatever both values say. Ex
 request time from the published event date; no row changes, the administrator cannot extend it, and
 an invitation without a resolvable event date never expires.
 
-Demos never carry access state and never expire. New invitations start unpaid and enabled; every
-invitation that existed before `20261010150000` was backfilled as paid. Re-enabling restores the
-previous payment state because the values are independent.
+Demos never carry access state and never expire. New invitations start unpaid and enabled.
+Re-enabling restores the previous payment state because the values are independent.
 
 Only `super_admin` changes them (row menu in `/dashboard/invitaciones` or the invitation detail),
 through `PATCH /api/dashboard/intake/[id]/access` and the audited RPC. Governance:
 [`.agent/rules/intake-publishing.md`](../../../.agent/rules/intake-publishing.md).
+
+## Handover at payment
+
+«Marcar como pagada» also offers to hand the host account of the invitation's event over to the
+client (`GET .../access` returns that account). With «Entregar credenciales nuevas» checked, the
+panel marks the invitation paid, renames the managed login if «Nuevo usuario» was filled, and issues
+a new temporary password, shown once. Each step is the existing audited endpoint (`login-alias`,
+`reset-password`). The temporary password forces a password change on the next request, so earlier
+sessions stop working until the client sets their own password. If a later step fails, the
+invitation stays paid and the credentials are reset from Usuarios.
 
 ## Server control points
 
@@ -66,9 +75,6 @@ What actually protects an unpaid invitation is the administrator's switch (disab
 page, RSVP, location and memories) and the expiry window: the invitation's value is the live link,
 and the banner tells guests it is not final. The photos belong to the client.
 
-The former watermarked-photo endpoint (`/vista-previa/`) was removed; previously issued URLs, such
-as social cards WhatsApp cached, now answer `404`.
-
 ## Indexing, AI crawlers and rights
 
 - Every client invitation response is `noindex, nofollow, noarchive, noimageindex` (meta and
@@ -93,8 +99,6 @@ before an invitation was marked unpaid remain wherever they were saved.
 
 - **Cloudflare AI Crawl Control:** keep the per-crawler blocks active and confirm WhatsApp and
   Facebook link previews still work.
-- **Unpaid existing invitations:** mark them from the panel when the client is informed (the
-  backfill left all existing invitations paid).
 - **Terms:** `/terminos` §4 (owner-approved 2026-10-10) states that an unpaid preview grants no
   license, that Celebra-me may disable it, and that copying, AI training and automated recreation of
   the designs are prohibited; client photos and texts remain the client's.
