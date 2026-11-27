@@ -574,4 +574,59 @@ describe('section-css-resolver-map', () => {
 			},
 		]);
 	});
+
+	it('marks RSVP section variant blocking when rendered in locked mode', () => {
+		const bundleUrlMap = buildSectionBundleUrlMap({
+			'/src/styles/invitation-sections-by-preset/jewelry-box-wedding.scss': {
+				default: '/_astro/jewelry-box-wedding-bundle.css',
+			},
+		});
+		const sectionUrlMap = buildSectionUrlMap({
+			'/src/styles/themes/sections/rsvp/_framed-register.scss': {
+				default: '/_astro/rsvp-framed-register.css',
+			},
+		});
+
+		// Normal unlocked RSVP -> deferred (blocking: false)
+		expect(
+			resolveInvitationCssLoadPlan(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'jewelry-box-wedding',
+				sectionVariants: { rsvp: 'framed-register' },
+				isLockedRsvp: false,
+			}),
+		).toEqual([
+			{
+				href: '/_astro/jewelry-box-wedding-bundle.css',
+				owner: 'section-bundle',
+				blocking: false,
+			},
+			{
+				href: '/_astro/rsvp-framed-register.css',
+				owner: 'section-variant',
+				canonicalPath: 'src/styles/themes/sections/rsvp/_framed-register.scss',
+				blocking: false,
+			},
+		]);
+
+		// Locked RSVP -> blocking (blocking: true) to eliminate CLS upon deferred CSS promotion
+		expect(
+			resolveInvitationCssLoadPlan(bundleUrlMap, sectionUrlMap, {
+				themePreset: 'jewelry-box-wedding',
+				sectionVariants: { rsvp: 'framed-register' },
+				isLockedRsvp: true,
+			}),
+		).toEqual([
+			{
+				href: '/_astro/jewelry-box-wedding-bundle.css',
+				owner: 'section-bundle',
+				blocking: false,
+			},
+			{
+				href: '/_astro/rsvp-framed-register.css',
+				owner: 'section-variant',
+				canonicalPath: 'src/styles/themes/sections/rsvp/_framed-register.scss',
+				blocking: true,
+			},
+		]);
+	});
 });

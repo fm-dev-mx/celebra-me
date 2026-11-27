@@ -473,7 +473,7 @@ function renderBlock(
 	}
 }
 
-function isLockedRsvpDescriptor(descriptor: DescriptorData): boolean {
+export function isLockedRsvpDescriptor(descriptor: DescriptorData): boolean {
 	return (
 		descriptor.component === 'rsvp' &&
 		descriptor.props.accessMode === 'personalized-only' &&

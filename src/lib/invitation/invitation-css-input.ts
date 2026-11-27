@@ -3,6 +3,20 @@ import type { InvitationPageContext } from '@/lib/invitation/page-data';
 import type { InvitationCssResolverInput } from '@/lib/invitation/section-css-resolver-map';
 import { resolveEnvelopeDataVariant } from '@/lib/invitation/reveal-card';
 
+/** Determine whether the RSVP section renders in locked mode. */
+export function isLockedRsvpPage(
+	page: InvitationPageContext,
+	viewModel: InvitationViewModel,
+): boolean {
+	const rsvp = viewModel.sections.rsvp;
+	if (!rsvp) return false;
+	return (
+		rsvp.accessMode === 'personalized-only' &&
+		!page.guestContext?.inviteId &&
+		!page.isDemoPreview
+	);
+}
+
 /** Build the single CSS resolver input shared by Public and Preview routes. */
 export function buildInvitationCssResolverInput(input: {
 	page: InvitationPageContext;
@@ -36,5 +50,6 @@ export function buildInvitationCssResolverInput(input: {
 				: undefined,
 		ornamentSet: viewModel.composition?.ornaments,
 		footerVariant: viewModel.composition?.footerVariant,
+		isLockedRsvp: isLockedRsvpPage(page, viewModel),
 	};
 }

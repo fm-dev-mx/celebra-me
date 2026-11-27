@@ -189,7 +189,7 @@ describe('Style boundary governance', () => {
 			.map(read)
 			.join('\n');
 
-		expect(invitationScss).toContain("@use 'themes/sections'");
+		expect(invitationScss).toContain("@use 'themes/sections/base-theme'");
 		expect(sectionIndex).not.toContain('xv-valentina-hernandez');
 		expect(sharedBase).not.toContain('.theme-preset--');
 		expect(sharedBase).not.toContain('.event--');
