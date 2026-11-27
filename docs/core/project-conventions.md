@@ -284,7 +284,23 @@ pipeline consumes the graph directly.
 Prefer Context7 (or equivalent) against the pinned versions when API details are uncertain. Major
 framework upgrades should not mix with invitation production work.
 
-## 13) Adding Real or Client Invitations
+## 13) Browser Policy
+
+Web platform feature usage across Celebra-me surfaces follows these baseline tiers:
+
+- **Public Pages, Invitations, and RSVP:** Covers all public surfaces—including the homepage (`/`),
+  catalog and demos (`/demos`), short and redirect routes (`/{slug}`, `/i`, `/r`), authentication
+  and host onboarding entry points (`/login`), legal and policy pages (`/privacidad`, `/terminos`),
+  and all public invitations and RSVP flows (`/{eventType}/{slug}`). Restricted strictly to Web
+  Platform Baseline **Widely available** features. A newer feature may be used only with a verified
+  fallback or graceful degradation that never breaks rendering or functionality on older devices
+  (e.g., older iPhones) or in-app webviews (notably WhatsApp in-app browser).
+- **Host / Admin Dashboard (`/dashboard`):** Baseline **Newly available** features are permitted in
+  addition to Widely available capabilities.
+- **Reference Guidance:** `modern-web-guidance` serves strictly for consultation and evaluation; it
+  must never add external runtime dependencies or be introduced as an automated gate in CI.
+
+## 14) Adding Real or Client Invitations
 
 Real/client invitations are DB-published content. Use `docs/domains/content/event-governance.md` as
 the source of truth for real invitation governance.
