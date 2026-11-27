@@ -288,11 +288,14 @@ framework upgrades should not mix with invitation production work.
 
 Web platform feature usage across Celebra-me surfaces follows these baseline tiers:
 
-- **Public Invitations and RSVP (`/{eventType}/{slug}`):** Restricted strictly to Web Platform
-  Baseline **Widely available** features. A newer feature may be used only with a verified fallback
-  or graceful degradation that never breaks rendering or functionality on older devices (e.g., older
-  iPhones) or in-app webviews (notably WhatsApp in-app browser).
-- **Host / Admin Dashboard (`/panel`):** Baseline **Newly available** features are permitted in
+- **Public Pages, Invitations, and RSVP:** Covers all public surfaces—including the homepage (`/`),
+  catalog and demos (`/demos`), short and redirect routes (`/{slug}`, `/i`, `/r`), authentication
+  and host onboarding entry points (`/login`), legal and policy pages (`/privacidad`, `/terminos`),
+  and all public invitations and RSVP flows (`/{eventType}/{slug}`). Restricted strictly to Web
+  Platform Baseline **Widely available** features. A newer feature may be used only with a verified
+  fallback or graceful degradation that never breaks rendering or functionality on older devices
+  (e.g., older iPhones) or in-app webviews (notably WhatsApp in-app browser).
+- **Host / Admin Dashboard (`/dashboard`):** Baseline **Newly available** features are permitted in
   addition to Widely available capabilities.
 - **Reference Guidance:** `modern-web-guidance` serves strictly for consultation and evaluation; it
   must never add external runtime dependencies or be introduced as an automated gate in CI.
