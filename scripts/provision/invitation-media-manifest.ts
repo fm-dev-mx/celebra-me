@@ -16,8 +16,8 @@ import {
 import { gitCommonPath } from '../shared/git-paths.ts';
 import { sha256Hex } from '../shared/hash.ts';
 
-export const MEDIA_MANIFEST_FILE = 'media-manifest.json';
-export const MEDIA_MANIFEST_SCHEMA_VERSION = 1;
+const MEDIA_MANIFEST_FILE = 'media-manifest.json';
+const MEDIA_MANIFEST_SCHEMA_VERSION = 1;
 
 export interface InvitationMediaManifestEntry {
 	key: string;
@@ -90,7 +90,7 @@ export function assertManifestMatchesDefinition(
 	return entries;
 }
 
-export function invitationMediaObjectKey(
+function invitationMediaObjectKey(
 	manifest: Pick<InvitationMediaManifest, 'slug' | 'eventType'>,
 	entry: Pick<InvitationMediaManifestEntry, 'key' | 'sha256' | 'mimeType'>,
 ): string {

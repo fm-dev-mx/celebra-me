@@ -99,6 +99,11 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 	const customerToolRef = useRef<HTMLDetailsElement>(null);
 	const feedbackRef = useRef<HTMLDivElement>(null);
 	const pollGenerationRef = useRef(0);
+	// Only the newest request of each kind may write: a slow answer for the previous
+	// customer must not replace the one on screen.
+	const ordersRequestRef = useRef(0);
+	const timelineRequestRef = useRef(0);
+	const customerRequestRef = useRef(0);
 
 	useEffect(() => {
 		if (!customerToolOpen) return;
@@ -119,12 +124,14 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 	}, []);
 
 	const fetchCustomerOrders = async (customerId: string) => {
+		const request = ++ordersRequestRef.current;
 		setLoadingOrders(true);
 		setOrdersError('');
 		try {
 			const response = await dashboardApi.get<{ data: SalesOrder[] }>(
 				`/api/dashboard/commercial/orders?customerId=${encodeURIComponent(customerId)}`,
 			);
+			if (request !== ordersRequestRef.current) return;
 			if (response.ok) setCustomerOrders(response.data.data);
 			else {
 				setCustomerOrders([]);
@@ -132,33 +139,50 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 			}
 		} catch (error) {
 			console.error('Error fetching orders:', error);
+			if (request !== ordersRequestRef.current) return;
 			setCustomerOrders([]);
 			setOrdersError('No se pudieron cargar las órdenes. Intente de nuevo.');
 		} finally {
-			setLoadingOrders(false);
+			if (request === ordersRequestRef.current) setLoadingOrders(false);
 		}
 	};
 
 	const fetchTimeline = async (id: string, kind: 'customerId' | 'leadId' = 'customerId') => {
+		const request = ++timelineRequestRef.current;
 		setLoadingTimeline(true);
 		try {
 			const response = await dashboardApi.get<{ data: CrmTimelineEntry[] }>(
 				`/api/dashboard/commercial/timeline?${kind}=${encodeURIComponent(id)}`,
 			);
+			if (request !== timelineRequestRef.current) return;
 			setTimelineEntries(response.ok ? response.data.data : []);
 		} catch (error) {
 			console.error('Error fetching timeline:', error);
+			if (request !== timelineRequestRef.current) return;
 			setTimelineEntries([]);
 		} finally {
-			setLoadingTimeline(false);
+			if (request === timelineRequestRef.current) setLoadingTimeline(false);
 		}
 	};
 
+	const dropPendingCustomerRequests = () => {
+		customerRequestRef.current += 1;
+		ordersRequestRef.current += 1;
+		setLoadingOrders(false);
+	};
+
+	const dropPendingTimelineRequest = () => {
+		timelineRequestRef.current += 1;
+		setLoadingTimeline(false);
+	};
+
 	const fetchRealCustomer = async (customerId: string) => {
+		const request = ++customerRequestRef.current;
 		try {
 			const response = await dashboardApi.get<{ data: Customer }>(
 				`/api/dashboard/commercial/customers?id=${encodeURIComponent(customerId)}`,
 			);
+			if (request !== customerRequestRef.current) return;
 			if (response.ok) {
 				setActiveCustomer(response.data.data);
 				setCustomerLookupError('');
@@ -170,6 +194,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 				);
 			}
 		} catch {
+			if (request !== customerRequestRef.current) return;
 			setActiveCustomer(null);
 			setCustomerLookupError(
 				'No se pudo cargar la ficha del cliente. Los datos mostrados pueden estar incompletos.',
@@ -234,6 +259,7 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 	};
 
 	const handleReconcileLead = (lead: LeadCandidate) => {
+		dropPendingCustomerRequests();
 		setActiveCustomer(null);
 		setSelectedLead(lead);
 		void fetchTimeline(lead.id, 'leadId');
@@ -638,6 +664,8 @@ const SalesWorkspace: React.FC<SalesWorkspaceProps> = ({ initialLeads, demoInven
 								pendingBalance={pendingBalance}
 								suggestedAction={getCustomerSuggestedAction(customerOrders)}
 								onClear={() => {
+									dropPendingCustomerRequests();
+									dropPendingTimelineRequest();
 									setActiveCustomer(null);
 									setCustomerOrders([]);
 									setTimelineEntries([]);

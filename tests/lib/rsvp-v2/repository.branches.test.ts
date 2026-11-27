@@ -30,7 +30,7 @@ describe('rsvp repository branches', () => {
 	});
 
 	it('findGuestsByEvent builds filtered queries and maps rows', async () => {
-		supabaseRestRequestMock.mockResolvedValue([
+		supabaseRestRequestMock.mockResolvedValueOnce([
 			{
 				id: 'g1',
 				invite_id: 'i1',
@@ -52,6 +52,7 @@ describe('rsvp repository branches', () => {
 				updated_at: new Date().toISOString(),
 			},
 		] as never);
+		supabaseRestRequestMock.mockResolvedValueOnce([] as never);
 
 		const result = await findGuestsByEvent(
 			{

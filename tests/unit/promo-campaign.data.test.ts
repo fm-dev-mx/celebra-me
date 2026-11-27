@@ -63,8 +63,8 @@ describe('promo calendar', () => {
 			expect.arrayContaining([
 				'clash: overlaps octubre-2026',
 				'clash: duplicate codePrefix',
-				'clash: esencial promo price must be below 1299',
-				'clash: atelier promo price must be below 2499',
+				'clash: esencial promo price must be below 1899',
+				'clash: atelier promo price must be below 2999',
 			]),
 		);
 	});
@@ -188,7 +188,7 @@ describe('promo prices and codes', () => {
 
 	it('keeps the three fixed price tiers', () => {
 		expect(PRICE_TIERS).toEqual({
-			regular: { esencial: 1299, signature: 1799, atelier: 2499 },
+			regular: { esencial: 1899, signature: 2299, atelier: 2999 },
 			promo: { esencial: 999, signature: 1399, atelier: 1999 },
 			fuerte: { esencial: 899, signature: 1299, atelier: 1899 },
 		});
@@ -239,13 +239,13 @@ describe('promo copy', () => {
 			`Hola, quiero una invitación digital para mi evento. Ref. ${getGeneralPromoCode(row)}`,
 		);
 		expect(buildPackageMessage('signature', row)).toBe(
-			`Hola, quiero el paquete Signature de ${formatMxn(PRICE_TIERS.promo.signature)} MXN. Ref. ${getPromoCode('signature', row)}`,
+			`Hola, quiero el paquete Invitación + Álbum QR de fotos de ${formatMxn(PRICE_TIERS.promo.signature)} MXN. Ref. ${getPromoCode('signature', row)}`,
 		);
 		expect(buildGeneralMessage(null)).toBe(
 			'Hola, quiero una invitación digital para mi evento.',
 		);
 		expect(buildPackageMessage('esencial', null)).toBe(
-			`Hola, quiero el paquete Esencial de ${formatMxn(getStartingRegularPrice())} MXN.`,
+			`Hola, quiero el paquete Invitación Digital de Autor de ${formatMxn(getStartingRegularPrice())} MXN.`,
 		);
 	});
 

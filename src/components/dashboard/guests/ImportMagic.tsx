@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useMemo } from 'react';
-import DashboardModalPortal from '@/components/dashboard/DashboardModalPortal';
+import ModalShell from '@/components/dashboard/ModalShell';
 import type { DashboardGuestItem } from '@/interfaces/dashboard/guest.interface';
 import {
 	classifyImportedRows,
@@ -469,157 +469,137 @@ const ImportMagic: React.FC<ImportMagicProps> = ({
 
 	if (importResult) {
 		return (
-			<DashboardModalPortal>
-				<div
-					className="dashboard-modal-backdrop"
-					role="dialog"
-					aria-modal="true"
-					onClick={onClose}
-				>
-					<div
-						className="dashboard-modal dashboard-modal--full"
-						onClick={(e) => e.stopPropagation()}
-					>
-						<ImportSummary
-							created={importResult.created}
-							updated={importResult.updated}
-							skipped={importResult.skipped}
-							conflicts={importResult.conflicts}
-							totalAttempted={preview.length}
-							errors={importResult.errors}
-							onClose={onClose}
-							onBack={() => setImportResult(null)}
-						/>
-					</div>
+			<ModalShell
+				title="Resultado de la importación"
+				size="lg"
+				onClose={onClose}
+				disableClose={parsing}
+			>
+				<div className="dashboard-modal__content">
+					<ImportSummary
+						created={importResult.created}
+						updated={importResult.updated}
+						skipped={importResult.skipped}
+						conflicts={importResult.conflicts}
+						totalAttempted={preview.length}
+						errors={importResult.errors}
+						onClose={onClose}
+						onBack={() => setImportResult(null)}
+					/>
 				</div>
-			</DashboardModalPortal>
+			</ModalShell>
 		);
 	}
 
 	return (
-		<DashboardModalPortal>
-			<div
-				className="dashboard-modal-backdrop"
-				role="dialog"
-				aria-modal="true"
-				onClick={onClose}
-			>
-				<div
-					className="dashboard-modal dashboard-modal--full"
-					onClick={(e) => e.stopPropagation()}
-				>
-					<h3>Importación de invitados</h3>
-					<div className="dashboard-modal__content">
-						<p className="dashboard-modal__description">
-							Pegue aquí sus invitados desde Excel o Google Sheets, o seleccione un
-							archivo CSV.
-						</p>
-						<p className="dashboard-modal__description">
-							Columnas esperadas: <strong>nombre</strong>, <strong>teléfono</strong>,{' '}
-							<strong>clave_pais</strong> (ej. +52), <strong>correo</strong>.
-							<br />
-							Si el teléfono no empieza con +, la columna <strong>
-								clave_pais
-							</strong>{' '}
-							es obligatoria.
-						</p>
+		<ModalShell
+			title="Importación de invitados"
+			size="lg"
+			onClose={onClose}
+			disableClose={parsing}
+		>
+			<div className="dashboard-modal__content">
+				<p className="dashboard-modal__description">
+					Pegue aquí sus invitados desde Excel o Google Sheets, o seleccione un archivo
+					CSV.
+				</p>
+				<p className="dashboard-modal__description">
+					Columnas esperadas: <strong>nombre</strong>, <strong>teléfono</strong>,{' '}
+					<strong>clave_pais</strong> (ej. +52), <strong>correo</strong>.
+					<br />
+					Si el teléfono no empieza con +, la columna <strong>clave_pais</strong> es
+					obligatoria.
+				</p>
 
-						<div className="import-magic__section">
-							<textarea
-								value={text}
-								onPaste={handlePaste}
-								onChange={(e) => {
-									setText(e.target.value);
-									parseContent(e.target.value);
-								}}
-								placeholder="Ejemplo: Juan Pérez	+52	6691234567"
-								rows={sourceCollapsed ? 2 : 4}
-								className={`import-magic__textarea ${sourceCollapsed ? 'import-magic__textarea--collapsed' : ''}`}
-							/>
-							{sourceCollapsed && (
-								<button
-									type="button"
-									className="import-magic__source-toggle"
-									onClick={() => setSourceCollapsed(false)}
-								>
-									Editar datos pegados
-								</button>
-							)}
-						</div>
-
-						<div className="import-magic__section">
-							<div className="dashboard-modal__file-actions">
-								<input
-									type="file"
-									accept=".csv"
-									ref={fileInputRef}
-									className="hidden-input"
-									onChange={handleFileChange}
-								/>
-								<button
-									type="button"
-									className="btn-secondary"
-									onClick={() => fileInputRef.current?.click()}
-								>
-									Seleccionar CSV
-								</button>
-							</div>
-						</div>
-
-						{showColumnMapping && (
-							<ImportColumnMapping
-								columnAssignments={columnAssignments}
-								isNombreMapped={isNombreMapped}
-								onMappingChange={handleMappingChange}
-								onConfirmMapping={handleConfirmMapping}
-								mappingConfirmDisabled={mappingConfirmDisabled}
-							/>
-						)}
-
-						<ImportPreviewPanel
-							preview={preview}
-							display={display}
-							isFatalError={isFatalError}
-							visibleRows={visibleRows}
-							showColumnMapping={showColumnMapping}
-							text={text}
-							importError={importError}
-							showPossibleDuplicates={showPossibleDuplicates}
-							onShowPossibleDuplicatesChange={setShowPossibleDuplicates}
-							handleEdit={handleEdit}
-							handleActionChange={handleActionChange}
-							handleDelete={handleDelete}
-						/>
-					</div>
-
-					<div className="dashboard-modal__actions">
-						<button type="button" className="btn-secondary" onClick={onClose}>
-							Cancelar
-						</button>
+				<div className="import-magic__section">
+					<textarea
+						value={text}
+						onPaste={handlePaste}
+						onChange={(e) => {
+							setText(e.target.value);
+							parseContent(e.target.value);
+						}}
+						placeholder="Ejemplo: Juan Pérez	+52	6691234567"
+						rows={sourceCollapsed ? 2 : 4}
+						className={`import-magic__textarea ${sourceCollapsed ? 'import-magic__textarea--collapsed' : ''}`}
+					/>
+					{sourceCollapsed && (
 						<button
 							type="button"
-							className={
-								!importDisabled ? 'btn-primary' : 'import-magic__submit--neutral'
-							}
-							disabled={importDisabled}
-							onClick={handleImport}
+							className="import-magic__source-toggle"
+							onClick={() => setSourceCollapsed(false)}
 						>
-							{importLabel}
+							Editar datos pegados
+						</button>
+					)}
+				</div>
+
+				<div className="import-magic__section">
+					<div className="dashboard-modal__file-actions">
+						<input
+							type="file"
+							accept=".csv"
+							ref={fileInputRef}
+							className="hidden-input"
+							onChange={handleFileChange}
+						/>
+						<button
+							type="button"
+							className="btn-secondary"
+							onClick={() => fileInputRef.current?.click()}
+						>
+							Seleccionar CSV
 						</button>
 					</div>
-					{display.actionable === 0 &&
-						!parsing &&
-						!isFatalError &&
-						preview.length > 0 && (
-							<p className="import-magic__submit-note">
-								{display.error > 0
-									? 'Corrige los errores en la tabla para importar.'
-									: 'Todos los registros coinciden con invitados existentes o están duplicados.'}
-							</p>
-						)}
 				</div>
+
+				{showColumnMapping && (
+					<ImportColumnMapping
+						columnAssignments={columnAssignments}
+						isNombreMapped={isNombreMapped}
+						onMappingChange={handleMappingChange}
+						onConfirmMapping={handleConfirmMapping}
+						mappingConfirmDisabled={mappingConfirmDisabled}
+					/>
+				)}
+
+				<ImportPreviewPanel
+					preview={preview}
+					display={display}
+					isFatalError={isFatalError}
+					visibleRows={visibleRows}
+					showColumnMapping={showColumnMapping}
+					text={text}
+					importError={importError}
+					showPossibleDuplicates={showPossibleDuplicates}
+					onShowPossibleDuplicatesChange={setShowPossibleDuplicates}
+					handleEdit={handleEdit}
+					handleActionChange={handleActionChange}
+					handleDelete={handleDelete}
+				/>
 			</div>
-		</DashboardModalPortal>
+
+			<div className="dashboard-modal__actions">
+				<button type="button" className="btn-secondary" onClick={onClose}>
+					Cancelar
+				</button>
+				<button
+					type="button"
+					className={!importDisabled ? 'btn-primary' : 'import-magic__submit--neutral'}
+					disabled={importDisabled}
+					onClick={handleImport}
+				>
+					{importLabel}
+				</button>
+			</div>
+			{display.actionable === 0 && !parsing && !isFatalError && preview.length > 0 && (
+				<p className="import-magic__submit-note">
+					{display.error > 0
+						? 'Corrige los errores en la tabla para importar.'
+						: 'Todos los registros coinciden con invitados existentes o están duplicados.'}
+				</p>
+			)}
+		</ModalShell>
 	);
 };
 

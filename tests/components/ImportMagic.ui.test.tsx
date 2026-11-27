@@ -430,4 +430,73 @@ describe('all duplicates', () => {
 		importCsv('full_name,phone\nAna López,\nLuis,+521000000002,');
 		expect(screen.getByText(/duplicado oculto/i)).toBeInTheDocument();
 	});
+
+	it('traps focus, responds to Escape and restores trigger focus on close', async () => {
+		const trigger = document.createElement('button');
+		trigger.textContent = 'Importar invitados';
+		document.body.appendChild(trigger);
+		trigger.focus();
+		expect(document.activeElement).toBe(trigger);
+
+		const onClose = jest.fn();
+		const { unmount } = render(
+			<ImportMagic
+				onImport={jest.fn()}
+				onUpdate={jest.fn()}
+				onClose={onClose}
+				eventId="550e8400-e29b-41d4-a716-446655440000"
+				existingGuests={[]}
+			/>,
+		);
+
+		await screen.findByPlaceholderText(/Ejemplo:/i);
+		expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+		// Escape calls onClose
+		fireEvent.keyDown(document, { key: 'Escape' });
+		expect(onClose).toHaveBeenCalledTimes(1);
+
+		// Unmount restores focus to trigger
+		unmount();
+		expect(document.activeElement).toBe(trigger);
+		trigger.remove();
+	});
+
+	it('blocks backdrop click and Escape while importing', async () => {
+		let resolveImport: ((value: unknown) => void) | undefined;
+		const importPromise = new Promise((resolve) => {
+			resolveImport = resolve;
+		});
+
+		const onClose = jest.fn();
+		render(
+			<ImportMagic
+				onImport={() => importPromise as never}
+				onUpdate={jest.fn()}
+				onClose={onClose}
+				eventId="550e8400-e29b-41d4-a716-446655440000"
+				existingGuests={[]}
+			/>,
+		);
+
+		await screen.findByPlaceholderText(/Ejemplo:/i);
+		importCsv('full_name,phone,country_code\nAna,+521000000001,');
+
+		fireEvent.click(getImportButton());
+
+		const backdrop = document.querySelector('.dashboard-modal-backdrop') as HTMLElement;
+		expect(backdrop).toBeInTheDocument();
+		fireEvent.click(backdrop);
+		fireEvent.keyDown(document, { key: 'Escape' });
+		expect(onClose).not.toHaveBeenCalled();
+
+		resolveImport?.({
+			created: 1,
+			updated: 0,
+			skipped: 0,
+			conflicts: 0,
+			status: 'success',
+		});
+		await screen.findByText('1');
+	});
 });

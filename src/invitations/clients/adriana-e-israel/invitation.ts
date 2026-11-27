@@ -65,7 +65,7 @@ const content: CanonicalEventContentInput = {
 				title: 'Padres del novio',
 				items: [
 					{ name: 'Luis Hernández Santiago' },
-					{ name: 'Virgina Irma Martínez Santiago', deceased: true },
+					{ name: 'Virginia Irma Martínez Santiago', deceased: true },
 				],
 			},
 		],
@@ -73,6 +73,8 @@ const content: CanonicalEventContentInput = {
 		labels: {
 			sectionTitle: 'Con la bendición de nuestras familias',
 			sectionSubtitle: 'Nos acompañan en este día',
+			sectionMessage:
+				'Gracias por caminar con nosotros en este momento tan especial. Su amor, guía y bendición forman parte de este día que guardaremos para siempre.',
 			godparentsTitle: 'Nuestros padrinos',
 		},
 	},

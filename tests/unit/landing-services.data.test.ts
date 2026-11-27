@@ -43,9 +43,9 @@ describe('landing package catalog', () => {
 
 		expect(tiers.map((tier) => tier.packageId)).toEqual(PACKAGE_CATALOG.map((pkg) => pkg.id));
 		expect(tiers.map((tier) => getCatalogPackage(tier.packageId).name)).toEqual([
-			'Esencial',
-			'Signature',
-			'Atelier',
+			'Invitación Digital de Autor',
+			'Invitación + Álbum QR de fotos',
+			'Servicio Completo (48 h y cargamos su lista)',
 		]);
 		expect(tiers.filter((tier) => tier.isPrimary).map((tier) => tier.packageId)).toEqual([
 			'signature',
@@ -56,11 +56,11 @@ describe('landing package catalog', () => {
 		const [esencial, signature, atelier] = landingData.pricing.tiers;
 
 		expect(esencial.includesFrom).toBeUndefined();
-		expect(signature.includesFrom).toBe('Todo lo de Esencial, más:');
+		expect(signature.includesFrom).toBe('Todo lo de Invitación Digital de Autor, más:');
 		expect(signature.includes).toContain(
 			'QR para que sus invitados compartan fotos y videos del evento',
 		);
-		expect(atelier.includesFrom).toBe('Todo lo de Signature, más:');
+		expect(atelier.includesFrom).toBe('Todo lo de Invitación + Álbum QR de fotos, más:');
 		expect(atelier.includes).toContain('Su invitación a su nombre, sin la firma de Celebra-me');
 
 		const copy = JSON.stringify(landingData.pricing);

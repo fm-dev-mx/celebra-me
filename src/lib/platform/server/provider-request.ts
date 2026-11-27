@@ -22,9 +22,7 @@ export type ProviderFailure =
 export type ProviderJsonResult =
 	{ ok: true; body: unknown } | { ok: false; failure: ProviderFailure; code?: string };
 
-export function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+import { isRecord } from '@/lib/shared/data-utils';
 
 export function asRows(value: unknown): Record<string, unknown>[] | null {
 	return Array.isArray(value) ? value.filter(isRecord) : null;

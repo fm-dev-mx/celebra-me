@@ -21,6 +21,8 @@ import { supabaseRestRequest } from '@/lib/rsvp/repositories/supabase';
 
 const TABLE = 'guest_invitations';
 const ACTIVE_GUEST_FILTER = 'deleted_at=is.null';
+const GUEST_PAGE_SIZE = 1000;
+const MAX_GUEST_PAGES = 100;
 
 function buildGuestInsertBody(input: CreateGuestInput) {
 	const { phone, countryCode } = normalizeOptionalPhonePair({
@@ -107,6 +109,20 @@ function buildGuestUpdateBody(input: UpdateGuestInput) {
 	return updateBody;
 }
 
+/**
+ * A value inside `or=(…)` ends at the first comma or parenthesis unless it is double-quoted, so a
+ * search such as «(668) 123 4567» would silently drop the conditions after it. Only logic trees
+ * understand the quotes; a plain `column=ilike.…` filter reads them literally.
+ */
+function quoteLogicTreeValue(value: string): string {
+	return encodeURIComponent(`"${value.replace(/["\\]/g, '\\$&')}"`);
+}
+
+function compareByLatestUpdate(a: GuestInvitationRecord, b: GuestInvitationRecord): number {
+	if (a.updatedAt !== b.updatedAt) return a.updatedAt < b.updatedAt ? 1 : -1;
+	return a.id < b.id ? -1 : 1;
+}
+
 export async function findGuestsByEvent(
 	filters: GuestFilters,
 	hostAccessToken: string,
@@ -123,26 +139,38 @@ export async function findGuestsByEvent(
 		const raw = filters.search.trim();
 		if (raw) {
 			const digitsOnly = raw.replace(/\D/g, '');
-			const orConditions = [`full_name.ilike.*${encodeURIComponent(raw)}*`];
 			if (digitsOnly) {
 				const phoneTerm = digitsOnly.length > 10 ? digitsOnly.slice(-10) : digitsOnly;
-				orConditions.push(`phone.ilike.*${encodeURIComponent(phoneTerm)}*`);
+				queryParts.push(
+					`or=(full_name.ilike.${quoteLogicTreeValue(`*${raw}*`)},phone.ilike.*${phoneTerm}*)`,
+				);
+			} else {
+				queryParts.push(`full_name=ilike.*${encodeURIComponent(raw)}*`);
 			}
-			queryParts.push(
-				orConditions.length > 1
-					? `or=(${orConditions.join(',')})`
-					: orConditions[0].replace('.ilike.', '=ilike.'),
-			);
 		}
 	}
 	if (filters.delivery && filters.delivery !== 'all') {
 		queryParts.push(`delivery_status=eq.${encodeURIComponent(filters.delivery)}`);
 	}
-	queryParts.push('order=updated_at.desc');
+	queryParts.push('order=id.asc', `limit=${GUEST_PAGE_SIZE}`);
 
-	return findMany(TABLE, queryParts.join('&'), '*', toGuestRecord, {
-		authToken: hostAccessToken,
-	});
+	const baseQuery = queryParts.join('&');
+	const guests: GuestInvitationRecord[] = [];
+
+	// Pages are keyed by the immutable id: an RSVP that bumps `updated_at` between two requests can
+	// neither skip nor repeat a guest. Only an empty page ends the list, because the API may cap a
+	// page below the requested limit.
+	for (let page = 0; page < MAX_GUEST_PAGES; page++) {
+		const lastId = guests.at(-1)?.id;
+		const pageQuery = lastId ? `${baseQuery}&id=gt.${encodeURIComponent(lastId)}` : baseQuery;
+		const batch = await findMany(TABLE, pageQuery, '*', toGuestRecord, {
+			authToken: hostAccessToken,
+		});
+		if (batch.length === 0) return guests.sort(compareByLatestUpdate);
+		guests.push(...batch);
+	}
+
+	throw new Error(`Guest list exceeded ${MAX_GUEST_PAGES} pages; refusing a partial list.`);
 }
 
 export async function createGuestInvitation(

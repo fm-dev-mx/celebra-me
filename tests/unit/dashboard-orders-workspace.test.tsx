@@ -274,7 +274,7 @@ test.each([400, 409, 422])(
 		expect(post.mock.calls.at(-1)?.[1]).toEqual({
 			...first,
 			packageId: 'signature',
-			packageName: 'Signature',
+			packageName: 'Invitación + Álbum QR de fotos',
 			totalAmount: 1250,
 		});
 	},

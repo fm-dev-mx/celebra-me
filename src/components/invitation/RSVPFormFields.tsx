@@ -1,5 +1,5 @@
 import { formatParty, maxConfirmableAdults } from '@/lib/rsvp/guest-cap';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useRef, type RefObject } from 'react';
 import { useRsvpContext } from '@/components/invitation/rsvp-context';
 import { getDefaultGuestHint, type RsvpAttendanceChoice } from '@/components/invitation/rsvp-logic';
@@ -50,7 +50,7 @@ function FloatingField({
 }: FloatingFieldProps) {
 	const hasError = touched && error;
 	return (
-		<motion.div
+		<m.div
 			className={`rsvp__field ${hasError ? 'rsvp__field--error' : ''} ${
 				value ? 'rsvp__field--has-value' : ''
 			}`}
@@ -89,7 +89,7 @@ function FloatingField({
 					{error}
 				</p>
 			)}
-		</motion.div>
+		</m.div>
 	);
 }
 
@@ -164,7 +164,7 @@ export function PhoneField(props: {
 	if (!showPhoneField) return null;
 
 	return (
-		<motion.div
+		<m.div
 			className={`rsvp__field rsvp__field--phone ${
 				touched.phone && errors.phone ? 'rsvp__field--error' : ''
 			}`}
@@ -213,7 +213,7 @@ export function PhoneField(props: {
 					{errors.phone}
 				</p>
 			)}
-		</motion.div>
+		</m.div>
 	);
 }
 
@@ -246,7 +246,7 @@ export function AttendanceField(props: {
 	} = props;
 
 	return (
-		<motion.fieldset
+		<m.fieldset
 			className={`rsvp__field rsvp__fieldset ${
 				touched.attendance && errors.attendance ? 'rsvp__field--error' : ''
 			}`}
@@ -297,7 +297,7 @@ export function AttendanceField(props: {
 					{errors.attendance}
 				</p>
 			)}
-		</motion.fieldset>
+		</m.fieldset>
 	);
 }
 

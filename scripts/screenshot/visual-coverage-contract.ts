@@ -192,7 +192,7 @@ export function computeVisualMatrixHash(cases: readonly VisualCoverageCase[]): s
 
 /** Commands that regenerate accepted references after the matrix or a page changes. */
 export const VISUAL_CANDIDATE_COMMAND = 'pnpm visual:parity:candidate:certified -- --sha <commit>';
-export const VISUAL_ACCEPT_COMMAND =
+const VISUAL_ACCEPT_COMMAND =
 	'pnpm visual:parity:accept -- --reviewed=<paths> --reference-sha=<commit> --matrix-hash=<hash> --candidate-manifest-sha256=<hash>';
 
 /** Failure text for an accepted manifest whose matrix hash no longer matches the current matrix. */

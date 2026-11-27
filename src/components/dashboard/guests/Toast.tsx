@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { m, AnimatePresence, LazyMotion, domAnimation, useReducedMotion } from 'framer-motion';
 
 interface ToastProps {
 	message: string;
@@ -67,45 +67,47 @@ const Toast: React.FC<ToastProps> = ({ message, type = 'info', onClose }) => {
 	const Icon = type === 'success' ? CheckIcon : type === 'warning' ? AlertIcon : InfoIcon;
 
 	return (
-		<AnimatePresence>
-			<motion.div
-				initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
-				animate={{ opacity: 1, y: 0 }}
-				exit={
-					prefersReducedMotion
-						? { opacity: 0 }
-						: { opacity: 0, y: 10, transition: { duration: 0.18 } }
-				}
-				transition={
-					prefersReducedMotion
-						? { duration: 0 }
-						: { type: 'spring', stiffness: 420, damping: 38, mass: 0.72 }
-				}
-				className={`dashboard-toast dashboard-toast--${type}`}
-				role="status"
-				aria-live="polite"
-			>
-				{/* Icon & Content */}
-				<div className="dashboard-toast__body">
-					<div className="dashboard-toast__icon">
-						<Icon />
-					</div>
-					<div className="dashboard-toast__content">
-						<p>{message}</p>
-					</div>
-				</div>
-
-				{/* Close */}
-				<button
-					type="button"
-					className="dashboard-toast__close"
-					onClick={onClose}
-					aria-label="Cerrar notificación"
+		<LazyMotion features={domAnimation} strict>
+			<AnimatePresence>
+				<m.div
+					initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
+					animate={{ opacity: 1, y: 0 }}
+					exit={
+						prefersReducedMotion
+							? { opacity: 0 }
+							: { opacity: 0, y: 10, transition: { duration: 0.18 } }
+					}
+					transition={
+						prefersReducedMotion
+							? { duration: 0 }
+							: { type: 'spring', stiffness: 420, damping: 38, mass: 0.72 }
+					}
+					className={`dashboard-toast dashboard-toast--${type}`}
+					role="status"
+					aria-live="polite"
 				>
-					<span>×</span>
-				</button>
-			</motion.div>
-		</AnimatePresence>
+					{/* Icon & Content */}
+					<div className="dashboard-toast__body">
+						<div className="dashboard-toast__icon">
+							<Icon />
+						</div>
+						<div className="dashboard-toast__content">
+							<p>{message}</p>
+						</div>
+					</div>
+
+					{/* Close */}
+					<button
+						type="button"
+						className="dashboard-toast__close"
+						onClick={onClose}
+						aria-label="Cerrar notificación"
+					>
+						<span>×</span>
+					</button>
+				</m.div>
+			</AnimatePresence>
+		</LazyMotion>
 	);
 };
 

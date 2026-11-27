@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import { LOCAL_SUPABASE_URL } from './scripts/shared/celebra-runtime-env';
+import { CANONICAL_MEMORIES_SHARE_SECRET } from './scripts/playwright/canonical-memories-fixture';
 import { resolvePlaywrightRuntimeEnvironment } from './scripts/playwright/preview-environment';
 
 // Intentionally does not load `.env.e2e.local`. That file is for Preview harness configs
@@ -123,6 +124,7 @@ export default defineConfig({
 										'canonical-browser-fixture-not-a-credential',
 									// Fake, non-placeholder number: contact CTAs render as in the accepted references.
 									CONTACT_WHATSAPP: '5216681234567',
+									MEMORIES_SHARE_SECRET: CANONICAL_MEMORIES_SHARE_SECRET,
 								}
 							: {}),
 						CELEBRA_RUNTIME_TARGET:

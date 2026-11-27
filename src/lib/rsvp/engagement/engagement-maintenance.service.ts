@@ -4,6 +4,7 @@ import {
 	computeInvitationEngagementSnapshotRpc,
 	listEngagementSnapshotCandidatesRpc,
 } from '@/lib/rsvp/repositories/engagement.repository';
+import { safeErr } from '@/lib/server/safe-error';
 import { DESIGN_SCHEMA_VERSION, extractDesignAttributes } from './design-attributes';
 
 const ANONYMIZE_BATCH = 1000;
@@ -22,8 +23,12 @@ async function designFor(invitationId: string | null) {
 	try {
 		const published = await findPublishedByInvitationId(invitationId);
 		return published ? extractDesignAttributes(published.content) : null;
-	} catch {
+	} catch (error) {
 		// A snapshot without design attributes is still worth keeping.
+		console.warn('[engagement] Design attributes unavailable for the snapshot:', {
+			invitationId,
+			error: safeErr(error),
+		});
 		return null;
 	}
 }
@@ -54,7 +59,12 @@ export async function runEngagementMaintenance(): Promise<EngagementMaintenanceR
 			);
 			if (outcome.status === 'ok') result.snapshotsWritten += 1;
 			else result.snapshotsUnchanged += 1;
-		} catch {
+		} catch (error) {
+			console.error('[engagement] Snapshot failed:', {
+				eventId: candidate.event_id,
+				kind: candidate.snapshot_kind,
+				error: safeErr(error),
+			});
 			result.snapshotsFailed += 1;
 		}
 	}

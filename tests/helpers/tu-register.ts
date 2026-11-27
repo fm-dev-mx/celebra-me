@@ -2,7 +2,7 @@
  * Informal "tú" forms that must not appear in visitor-facing copy (visible UI uses "usted").
  * Ambiguous forms shared with the "usted" present tense are intentionally not listed.
  */
-export const TU_FORMS = [
+const TU_FORMS = [
 	'tú',
 	'tu',
 	'tus',

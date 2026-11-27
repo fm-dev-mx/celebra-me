@@ -9,6 +9,7 @@ import {
 	initializeVisualCapture,
 	waitForVisualHydration,
 } from './harness/complete-page-capture';
+import { waitForSettledAnimations } from './harness/settled-animations';
 
 test('visual capture initializes audit mode before application scripts', async ({ page }) => {
 	await initializeVisualCapture(page);
@@ -81,6 +82,7 @@ for (const variant of ['editorial-press-pass', 'formal-register']) {
 				'/test/variant?section=rsvp&variant=' + variant + '&preset=jewelry-box',
 			);
 			await prepareCompletePage(page);
+			// The second capture is late on purpose: late hydration must not change it.
 			await page.waitForTimeout(delay);
 			images.push(await page.locator('#rsvp').screenshot({ animations: 'disabled' }));
 		}
@@ -102,7 +104,7 @@ for (const slug of ['romina-rios-chaparro', 'valentina-hernandez']) {
 			expect(response?.status()).toBe(200);
 			await expect(page.locator('.invitation-hero__title')).toBeVisible();
 			await page.evaluate(() => document.fonts.ready);
-			await page.waitForTimeout(500);
+			await waitForSettledAnimations(page);
 			expect(await page.locator('body').evaluate(auditCriticalLayout)).toEqual([]);
 			const play = page.locator('.music-player__button--play');
 			if (await play.count()) {
