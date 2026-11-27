@@ -101,6 +101,8 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 							<OptimizedImage
 								imagePath={image}
 								alt={closingName}
+								loading="lazy"
+								fetchpriority="low"
 								{...imageConfig}
 							/>
 							{ambientVideo && (
@@ -142,6 +144,8 @@ const imageConfig = IMAGE_CONFIGS[configKey];
 						<OptimizedImage
 							imagePath={image}
 							alt={closingName}
+							loading="lazy"
+							fetchpriority="low"
 							{...imageConfig}
 						/>
 						<HairlineFrame />

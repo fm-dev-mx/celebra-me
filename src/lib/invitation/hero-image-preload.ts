@@ -5,7 +5,8 @@ import { plainImgSrc, shouldOptimizeThroughImageService } from '@/lib/assets/ima
 import { buildR2ResponsiveSrcset } from '@/lib/intake/services/r2-invitation-media';
 
 /** Rendered arch width per breakpoint; `Hero.astro` and the preload share these `sizes`. */
-export const NIGHT_ARCH_MOBILE_SIZES = 'min(74vw, 22rem)';
+export const NIGHT_ARCH_MOBILE_SIZES =
+	'min(calc((100svh - 8.25rem - 13.25rem) * 0.68), calc(100vw - 3rem), 22rem)';
 export const NIGHT_ARCH_DESKTOP_SIZES = 'min(30vw, 26rem)';
 export const HERO_MOBILE_MEDIA = '(max-width: 991px)';
 export const HERO_DESKTOP_MEDIA = '(min-width: 992px)';

@@ -29,6 +29,11 @@
 	min-block-size: auto;
 	padding-block: var(--formal-register-shell-padding, clamp(3rem, 6vh, 4.75rem));
 	background: var(--rsvp-bg, var(--rsvp-bg-fallback));
+
+	&:has(> .rsvp[data-state='locked']) {
+		min-block-size: 100svh;
+		align-content: center;
+	}
 }
 
 .rsvp[data-variant='framed-register'] {

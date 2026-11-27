@@ -18,8 +18,8 @@ import { resolveWebAnalyticsBeacon } from '@/lib/tracking/web-analytics';
 import { getWebAnalyticsToken } from '@/lib/tracking/web-analytics-env';
 import { getEstimatedLeadValue } from '@/lib/commercial/meta-capi/estimated-lead-value';
 
-// Typography: Montserrat UI font is loaded globally. Preset-specific fonts are loaded dynamically.
-import '@fontsource-variable/montserrat';
+// Typography: Montserrat UI font (latin subset) is loaded globally. Preset-specific fonts are loaded dynamically.
+import '@/styles/fonts/_montserrat-latin.scss';
 
 import type { ImageMetadata } from 'astro';
 
