@@ -10,6 +10,7 @@ import type {
 	UserRoleChangeResponse,
 	UpdateUserEventMembershipDTO,
 	UpdateUserLoginAliasDTO,
+	InvitationHostDTO,
 	UserEventMembershipChangeResponse,
 	UserListItemDTO,
 } from './dto/users';
@@ -190,11 +191,15 @@ class AdminApi {
 	}
 
 	// Intake — Payment status and public access
-	async getInvitationAccess(invitationId: string): Promise<InvitationAccessRecord> {
-		const result = await dashboardApi.get<{ item: InvitationAccessRecord }>(
-			`/api/dashboard/intake/${encodeURIComponent(invitationId)}/access`,
-		);
-		return this.handleResponse(result).item;
+	async getInvitationAccess(
+		invitationId: string,
+	): Promise<{ item: InvitationAccessRecord; host: InvitationHostDTO | null }> {
+		const result = await dashboardApi.get<{
+			item: InvitationAccessRecord;
+			host: InvitationHostDTO | null;
+		}>(`/api/dashboard/intake/${encodeURIComponent(invitationId)}/access`);
+		const response = this.handleResponse(result);
+		return { item: response.item, host: response.host ?? null };
 	}
 
 	async setInvitationAccess(

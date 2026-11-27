@@ -241,8 +241,8 @@ Visitor → `/{eventType}/{slug}` → `resolveInvitationContent()`:
 
 1. Tries `published_invitation_content` lookup via `(event_type, slug)`, embedding the linked
    invitation's `invitation_access_controls` row in the same read
-2. A disabled client invitation resolves as unavailable (neutral page, `403`); an unpaid one renders
-   as the preview; a missing access row is treated as unpaid
+2. Applies the access state
+   ([payment and access](../invitations/payment-access-and-preview.md#server-control-points))
 3. Falls back to static Astro content collection for demo entries
 4. Non-demo static entries are explicitly blocked (must come from DB)
 
@@ -285,14 +285,11 @@ entitlement), `event_memory_sessions`, `event_memory_items`, and `event_memory_a
 ### Commercial Access State
 
 `invitation_access_controls` (`20261013100000_invitation_access_controls.sql`) holds one row per
-invitation: `payment_status` (`unpaid` | `paid`) and `public_access` (`enabled` | `disabled`) are
-independent, so re-enabling an invitation restores its previous payment state. An `AFTER INSERT`
-trigger on `invitations` creates each row unpaid and enabled; the migration backfilled every
-invitation that existed before it as paid and enabled. The only write path is the service-role RPC
-`set_invitation_access_control()` (optimistic `version`, `audit_logs` row in the same transaction,
-client invitations that are not archived only). These are administrative decisions owned by each
-environment: publication, promotion and the Production → Preview mirror never copy them. Archiving
-keeps the row, so a restore returns the same state.
+invitation with `payment_status` (`unpaid` | `paid`) and `public_access` (`enabled` | `disabled`).
+An `AFTER INSERT` trigger on `invitations` creates each row unpaid and enabled. The only write path
+is the service-role RPC `set_invitation_access_control()` (optimistic `version`, `audit_logs` row in
+the same transaction, client invitations that are not archived only). Archiving keeps the row.
+Behavior: [`payment-access-and-preview.md`](../invitations/payment-access-and-preview.md).
 
 ### Archive / Restore
 

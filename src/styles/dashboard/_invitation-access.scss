@@ -1,3 +1,5 @@
+@use '../tokens/type-scale';
+
 // Payment status and public access of a client invitation (admin list and detail).
 
 .invitation-access-badges {
@@ -48,4 +50,18 @@
 	&--error {
 		color: var(--color-state-danger-text);
 	}
+}
+
+.invitation-access__handover {
+	display: grid;
+	gap: 0.75rem;
+	margin-top: 1rem;
+}
+
+.invitation-access__handover-toggle {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+
+	@include type-scale.text(body-small);
 }

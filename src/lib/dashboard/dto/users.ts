@@ -70,3 +70,12 @@ export interface UserEventMembershipChangeResponse {
 	previousMembershipRole: 'owner' | 'manager' | null;
 	changedAt: string;
 }
+
+/** Host account that owns an invitation's event; the paid-invitation handover resets it. */
+export interface InvitationHostDTO {
+	userId: string;
+	/** Login alias for managed accounts, otherwise the real email. */
+	login: string;
+	/** Managed accounts (no real email) can be renamed. */
+	managed: boolean;
+}
