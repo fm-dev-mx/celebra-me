@@ -22,6 +22,8 @@ export type InvitationCssResolverInput = {
 	ornamentSet?: string;
 	/** Closing variant from `composition.footerVariant`; `standard` needs no sheet. */
 	footerVariant?: string;
+	/** True when the RSVP section renders in locked mode. */
+	isLockedRsvp?: boolean;
 };
 
 type InvitationCssOwner =
@@ -197,7 +199,7 @@ function resolveSectionVariantLoadItems(
 			{
 				href: exactUrl,
 				owner: 'section-variant' as const,
-				blocking: section === 'hero',
+				blocking: section === 'hero' || (section === 'rsvp' && Boolean(input.isLockedRsvp)),
 				canonicalPath: entry.cssOwner,
 			},
 		];

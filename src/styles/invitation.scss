@@ -8,7 +8,7 @@
 @use 'invitation/scroll-accents';
 @use 'invitation/section-intersections';
 @use 'invitation/edition-labels';
-@use 'themes/sections';
+@use 'themes/sections/base-theme';
 
 // Invitations are designed for a light ground only. Declaring it stops phone browsers (Android
 // Chrome, Samsung Internet) from applying their forced dark mode, which darkened the palettes.
