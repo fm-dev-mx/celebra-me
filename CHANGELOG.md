@@ -10,6 +10,18 @@ Política por capas (qué va aquí vs notas por invitación vs migraciones):
 
 ## [Unreleased]
 
+## [0.78.1] - 2026-11-27
+
+Lightens invitation pages and documents the supported browser baseline. No database migrations.
+
+### Changed
+
+- Performance: invitation images request sizes closer to the mobile slot, fonts load only the latin
+  subset, and the thank-you section loads lazily (#1145).
+- Performance: RSVP loads framer-motion through strict LazyMotion, so the full bundle is never
+  imported (#1144).
+- Docs: the web platform browser baseline policy is documented (#1143).
+
 ## [0.78.0] - 2026-11-24
 
 Publishes the new regular package prices and names on the landing, fixes old guest links and the
